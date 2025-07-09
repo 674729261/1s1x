@@ -114,7 +114,7 @@ void delete_address(int id) {
   *(int *)writer_pointer = 0;
 }
 void print_address(struct Address addr) {
-  printf("ID    : %8d\tName  : %s\tEmail : %s\n", addr.id, addr.name,
+  printf("ID        : %8d\tName    : %s\tEmail : %s\n", addr.id, addr.name,
          addr.email);
 }
 
