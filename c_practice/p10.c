@@ -12,10 +12,10 @@ int main(int argc, char *argv[])
 
     // let's make our own array of strings
     char *states[] = {
-        "California", "Oregon",
+        NULL, "Oregon",
         "Washington", "Texas"
     };
-    states[1][3] = 't';
+    // states[1][3] = 't';
     int num_states = 4;
 
     for(i = 0; i < num_states; i++) {

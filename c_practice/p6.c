@@ -2,16 +2,16 @@
 
 int main(int argc, char *argv[])
 {
-    int distance = 100;
+    int distance = 10023123;
     float power = 2.345f;
     double super_power = 56789.4532;
     char initial = 'A';
     char first_name[] = "Zed";
     char last_name[] = "Shaw";
 
-    printf("You are %d miles away.\n", distance);
+    printf("You are %x/%o/%d miles away.\n", distance, distance, distance);
     printf("You have %f levels of power.\n", power);
-    printf("You have %f awesome super powers.\n", super_power);
+    printf("You have %.4e awesome super powers.\n", super_power);
     printf("I have an initial %c.\n", initial);
     printf("I have a first name %s.\n", first_name);
     printf("I have a last name %s.\n", last_name);
