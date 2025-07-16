@@ -2,6 +2,8 @@
 *
 !*/
 !/c_practice/*
+!/c_practice/p32_33/**
+!/c_practice/p42/**
 !/nemu/*
 !/nexus-am/*
 !/nanos-lite/*
@@ -11,4 +13,6 @@
 !README.md
 !.gitignore
 !init.sh
+/c_practice/p32_33/build/
+/c_practice/p32_33/bin/
 /fceux-am
