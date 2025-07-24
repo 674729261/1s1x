@@ -46,4 +46,6 @@ error:
 int main(void) {
   unsigned int v = 42;
   myprintf("This integer is : %b\n", v);
+  unsigned int v2 = 0;
+  myprintf("That integer is : %b\n", v2);
 }
