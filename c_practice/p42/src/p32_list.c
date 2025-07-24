@@ -146,7 +146,6 @@ void __List_merge(ListNode **left, ListNode **right, ListNode *p_mid, Comparer c
 	ListNode *m = p_mid->next;
 	ListNode *end_pos = (*right)->next;
 	ListNode *l = *left;
-	ListNode *r = *right;
 	while(m != end_pos && l != m) {
 		// printf("%p %p %p %p\n", m, left, end_pos, right);
 		if(cmp(l->value, m->value) < 0)
@@ -175,7 +174,6 @@ void __List_merge(ListNode **left, ListNode **right, ListNode *p_mid, Comparer c
 void __List_sort(ListNode **left, ListNode **right, Comparer cmp) {
 	ListNode *p_mid = *left;
 	ListNode *p_helper = *left;
-	int a = 0, b = 0;
 	while(p_helper != *right) {
 		p_helper = p_helper->next;
 		if(p_helper != *right) {
