@@ -1,5 +1,5 @@
-#ifndef _ex19_h
-#define _ex19_h
+#ifndef _p19_h
+#define _p19_h
 
 #include "object.h"
 
