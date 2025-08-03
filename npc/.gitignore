@@ -10,3 +10,6 @@
 !.gitignore
 !README.md
 build/
+compile_commands.json
+.cache/
+obj_dir/
