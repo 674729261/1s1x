@@ -7,7 +7,7 @@ inline uint32_t get_part(uint32_t instr, int from, int cnt) {
   return (instr >> from) & ((1 << cnt) - 1);
 }
 
-inline uint32_t sign_extend(uint32_t value, int bits) {
+inline uint32_t sign_extend(uint32_t value, unsigned bits) {
   if (value & (1 << (bits - 1))) {
     value |= ~((1 << bits) - 1);
   }
