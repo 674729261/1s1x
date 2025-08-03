@@ -1,8 +1,8 @@
 *.*
 *
-build/
-.cache/
-compile_commands.json
+**/build/
+**/.cache/
+**/compile_commands.json
 !*/
 !/c_practice/prepro/**/*
 !/c_practice/p19/*
