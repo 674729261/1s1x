@@ -26,8 +26,18 @@ int main(void) {
   unsigned long long last = 0;
   unsigned long long fps = 30;
 
-  load_inst(
-      "/home/shitful/1s1x/ysyx-workbench/c_practice/prepro/vga/hex/vga.data");
+  char program_path[256];
+
+  fgets(program_path, sizeof(program_path), stdin);
+  printf("Enter the path to the program file: ");
+  for (int i = 0; i < sizeof(program_path); i++) {
+    if (program_path[i] == '\r' || program_path[i] == '\n' ||
+        program_path[i] == '\0') {
+      program_path[i] = '\0';
+      break;
+    }
+  }
+  load_inst(program_path);
   printf("Program file loaded successfully.\n");
   while (1) {
 
