@@ -32,4 +32,5 @@
 **/build/
 **/.cache/
 **/compile_commands.json
+**/obj_dir/
 /nvboard
