@@ -1,31 +1,38 @@
-#include "Vlight.h"
 #include "verilated.h"
-#include <random>
+#include "verilated_vcd_c.h"
+#include <Vlight.h>
+#include <nvboard.h>
+static TOP_NAME dut;
 
-void single_cycle(Vlight *top) {
-  top->clk = 0;
-  top->eval();
-  top->clk = 1;
-  top->eval();
+void nvboard_bind_all_pins(TOP_NAME *top);
+
+static void single_cycle() {
+  dut.clk = 0;
+  dut.eval();
+  dut.clk = 1;
+  dut.eval();
 }
 
-void reset(Vlight *top, int n) {
-  top->rst = 1;
+static void reset(int n) {
+  dut.rst = 1;
   while (n-- > 0)
-    single_cycle(top);
-  top->rst = 0;
+    single_cycle();
+  dut.rst = 0;
 }
 
-int main(int argc, char **argv) {
-  std::mt19937 rng(0x12345678);
-  VerilatedContext *contextp = new VerilatedContext;
-  contextp->commandArgs(argc, argv);
-  Vlight *top = new Vlight{contextp};
-  reset(top, 10);
-  while (!contextp->gotFinish()) {
-    single_cycle(top);
+int main() {
+  Verilated::traceEverOn(true);
+  nvboard_bind_all_pins(&dut);
+  nvboard_init();
+  VerilatedVcdC *vcd = new VerilatedVcdC;
+  dut.trace(vcd, 0);
+  reset(10);
+  vcd->open("wave.vcd");
+  for (int i = 0; i < 64; ++i) {
+    nvboard_update();
+    single_cycle();
+    vcd->dump(i);
   }
-  delete top;
-  delete contextp;
-  return 0;
+  vcd->close();
+  nvboard_quit();
 }

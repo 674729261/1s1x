@@ -1,6 +1,7 @@
 *.*
 *
 !*/
+!/misc/
 !/c_practice/prepro/**/*
 !/c_practice/p19/*
 !/c_practice/p20/*
