@@ -1,0 +1,968 @@
+
+ /----------------------------------------------------------------------------\
+ |  yosys -- Yosys Open SYnthesis Suite                                       |
+ |  Copyright (C) 2012 - 2025  Claire Xenia Wolf <claire@yosyshq.com>         |
+ |  Distributed under an ISC-like license, type "license" to see terms        |
+ \----------------------------------------------------------------------------/
+ Yosys 0.55+150 (git sha1 15b4716d1, clang++ 18.1.8 -fPIC -O3)
+
+-- Executing script file `-' --
+[TCL: yosys -import] Command name collision: found pre-existing command `cd' -> skip.
+[TCL: yosys -import] Command name collision: found pre-existing command `eval' -> skip.
+[TCL: yosys -import] Command name collision: found pre-existing command `exec' -> skip.
+[TCL: yosys -import] Command name collision: found pre-existing command `read' -> skip.
+[TCL: yosys -import] Command name collision: found pre-existing command `trace' -> skip.
+
+1. Executing Verilog-2005 frontend: example/e2/EXP2.v
+Parsing SystemVerilog input from `example/e2/EXP2.v' to AST representation.
+Generating RTLIL representation for module `\top_e2'.
+Generating RTLIL representation for module `\decode24'.
+Note: Assuming pure combinatorial block at example/e2/EXP2.v:57.3-65.26 in
+compliance with IEC 62142(E):2005 / IEEE Std. 1364.1(E):2002. Recommending
+use of @* instead of @(...) for better match of synthesis and simulation.
+Generating RTLIL representation for module `\encode42'.
+Note: Assuming pure combinatorial block at example/e2/EXP2.v:78.3-88.6 in
+compliance with IEC 62142(E):2005 / IEEE Std. 1364.1(E):2002. Recommending
+use of @* instead of @(...) for better match of synthesis and simulation.
+Generating RTLIL representation for module `\prior_encoder_83'.
+Note: Assuming pure combinatorial block at example/e2/EXP2.v:100.3-114.6 in
+compliance with IEC 62142(E):2005 / IEEE Std. 1364.1(E):2002. Recommending
+use of @* instead of @(...) for better match of synthesis and simulation.
+Generating RTLIL representation for module `\bcd7seg'.
+Successfully finished Verilog frontend.
+
+2. Executing Verilog-2005 frontend: /home/shitful/1s1x/ysyx-workbench/misc_items/expE5/scripts/../pdk/nangate45/verilog/blackbox.v
+Parsing Verilog input from `/home/shitful/1s1x/ysyx-workbench/misc_items/expE5/scripts/../pdk/nangate45/verilog/blackbox.v' to AST representation.
+Successfully finished Verilog frontend.
+
+3. Executing Verilog-2005 frontend: /home/shitful/1s1x/ysyx-workbench/misc_items/expE5/scripts/../pdk/nangate45/verilog/cells_clkgate.v
+Parsing Verilog input from `/home/shitful/1s1x/ysyx-workbench/misc_items/expE5/scripts/../pdk/nangate45/verilog/cells_clkgate.v' to AST representation.
+Generating RTLIL representation for module `\OPENROAD_CLKGATE'.
+Successfully finished Verilog frontend.
+
+4. Executing SYNTH pass.
+
+4.1. Executing HIERARCHY pass (managing design hierarchy).
+
+4.1.1. Analyzing design hierarchy..
+Top module:  \top_e2
+Used module:     \bcd7seg
+Used module:     \prior_encoder_83
+Used module:     \encode42
+Used module:     \decode24
+
+4.1.2. Analyzing design hierarchy..
+Top module:  \top_e2
+Used module:     \bcd7seg
+Used module:     \prior_encoder_83
+Used module:     \encode42
+Used module:     \decode24
+Removing unused module `\OPENROAD_CLKGATE'.
+Removed 1 unused modules.
+
+4.2. Executing PROC pass (convert processes to netlists).
+
+4.2.1. Executing PROC_CLEAN pass (remove empty switches from decision trees).
+Cleaned up 0 empty switches.
+
+4.2.2. Executing PROC_RMDEAD pass (remove dead branches from decision trees).
+Removed 1 dead cases from process $proc$example/e2/EXP2.v:122$4 in module bcd7seg.
+Marked 1 switch rules as full_case in process $proc$example/e2/EXP2.v:122$4 in module bcd7seg.
+Marked 2 switch rules as full_case in process $proc$example/e2/EXP2.v:100$3 in module prior_encoder_83.
+Marked 2 switch rules as full_case in process $proc$example/e2/EXP2.v:78$2 in module encode42.
+Removed 1 dead cases from process $proc$example/e2/EXP2.v:57$1 in module decode24.
+Marked 2 switch rules as full_case in process $proc$example/e2/EXP2.v:57$1 in module decode24.
+Removed a total of 2 dead cases.
+
+4.2.3. Executing PROC_PRUNE pass (remove redundant assignments in processes).
+Removed 0 redundant assignments.
+Promoted 4 assignments to connections.
+
+4.2.4. Executing PROC_INIT pass (extract init attributes).
+
+4.2.5. Executing PROC_ARST pass (detect async resets in processes).
+
+4.2.6. Executing PROC_ROM pass (convert switches to ROMs).
+Converted 1 switch.
+<suppressed ~6 debug messages>
+
+4.2.7. Executing PROC_MUX pass (convert decision trees to multiplexers).
+Creating decoders for process `\bcd7seg.$proc$example/e2/EXP2.v:122$4'.
+     1/1: $1\h[6:0]
+Creating decoders for process `\prior_encoder_83.$proc$example/e2/EXP2.v:100$3'.
+     1/2: $2\y[2:0]
+     2/2: $1\y[2:0]
+Creating decoders for process `\encode42.$proc$example/e2/EXP2.v:78$2'.
+     1/2: $2\y[1:0]
+     2/2: $1\y[1:0]
+Creating decoders for process `\decode24.$proc$example/e2/EXP2.v:57$1'.
+     1/2: $2\y[3:0]
+     2/2: $1\y[3:0]
+
+4.2.8. Executing PROC_DLATCH pass (convert process syncs to latches).
+No latch inferred for signal `\bcd7seg.\h' from process `\bcd7seg.$proc$example/e2/EXP2.v:122$4'.
+No latch inferred for signal `\prior_encoder_83.\y' from process `\prior_encoder_83.$proc$example/e2/EXP2.v:100$3'.
+No latch inferred for signal `\encode42.\y' from process `\encode42.$proc$example/e2/EXP2.v:78$2'.
+No latch inferred for signal `\decode24.\y' from process `\decode24.$proc$example/e2/EXP2.v:57$1'.
+
+4.2.9. Executing PROC_DFF pass (convert process syncs to FFs).
+
+4.2.10. Executing PROC_MEMWR pass (convert process memory writes to cells).
+
+4.2.11. Executing PROC_CLEAN pass (remove empty switches from decision trees).
+Found and cleaned up 1 empty switch in `\bcd7seg.$proc$example/e2/EXP2.v:122$4'.
+Removing empty process `bcd7seg.$proc$example/e2/EXP2.v:122$4'.
+Found and cleaned up 2 empty switches in `\prior_encoder_83.$proc$example/e2/EXP2.v:100$3'.
+Removing empty process `prior_encoder_83.$proc$example/e2/EXP2.v:100$3'.
+Found and cleaned up 2 empty switches in `\encode42.$proc$example/e2/EXP2.v:78$2'.
+Removing empty process `encode42.$proc$example/e2/EXP2.v:78$2'.
+Found and cleaned up 2 empty switches in `\decode24.$proc$example/e2/EXP2.v:57$1'.
+Removing empty process `decode24.$proc$example/e2/EXP2.v:57$1'.
+Cleaned up 7 empty switches.
+
+4.2.12. Executing OPT_EXPR pass (perform const folding).
+Optimizing module bcd7seg.
+Optimizing module prior_encoder_83.
+Optimizing module encode42.
+Optimizing module decode24.
+<suppressed ~1 debug messages>
+Optimizing module top_e2.
+
+4.3. Executing FLATTEN pass (flatten design).
+Deleting now unused module bcd7seg.
+Deleting now unused module prior_encoder_83.
+Deleting now unused module encode42.
+Deleting now unused module decode24.
+<suppressed ~4 debug messages>
+
+4.4. Executing OPT_EXPR pass (perform const folding).
+Optimizing module top_e2.
+
+4.5. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \top_e2..
+Removed 0 unused cells and 22 unused wires.
+<suppressed ~1 debug messages>
+
+4.6. Executing CHECK pass (checking for obvious problems).
+Checking module top_e2...
+Found and reported 0 problems.
+
+4.7. Executing OPT pass (performing simple optimizations).
+
+4.7.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module top_e2.
+
+4.7.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\top_e2'.
+Removed a total of 0 cells.
+
+4.7.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \top_e2..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+    dead port 2/2 on $mux $flatten\p_encode42.$procmux$20.
+    dead port 2/2 on $mux $flatten\u_decode24.$procmux$42.
+    dead port 2/2 on $mux $flatten\u_encode42.$procmux$31.
+Removed 3 multiplexer ports.
+<suppressed ~3 debug messages>
+
+4.7.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \top_e2.
+Performed a total of 0 changes.
+
+4.7.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\top_e2'.
+Removed a total of 0 cells.
+
+4.7.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+4.7.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \top_e2..
+Removed 0 unused cells and 3 unused wires.
+<suppressed ~1 debug messages>
+
+4.7.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module top_e2.
+
+4.7.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+4.7.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \top_e2..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~3 debug messages>
+
+4.7.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \top_e2.
+Performed a total of 0 changes.
+
+4.7.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\top_e2'.
+Removed a total of 0 cells.
+
+4.7.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+4.7.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \top_e2..
+
+4.7.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module top_e2.
+
+4.7.16. Finished OPT passes. (There is nothing left to do.)
+
+4.8. Executing FSM pass (extract and optimize FSM).
+
+4.8.1. Executing FSM_DETECT pass (finding FSMs in design).
+
+4.8.2. Executing FSM_EXTRACT pass (extracting FSM from design).
+
+4.8.3. Executing FSM_OPT pass (simple optimizations of FSMs).
+
+4.8.4. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \top_e2..
+
+4.8.5. Executing FSM_OPT pass (simple optimizations of FSMs).
+
+4.8.6. Executing FSM_RECODE pass (re-assigning FSM state encoding).
+
+4.8.7. Executing FSM_INFO pass (dumping all available information on FSM cells).
+
+4.8.8. Executing FSM_MAP pass (mapping FSMs to basic logic).
+
+4.9. Executing OPT pass (performing simple optimizations).
+
+4.9.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module top_e2.
+
+4.9.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\top_e2'.
+Removed a total of 0 cells.
+
+4.9.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \top_e2..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~3 debug messages>
+
+4.9.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \top_e2.
+Performed a total of 0 changes.
+
+4.9.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\top_e2'.
+Removed a total of 0 cells.
+
+4.9.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+4.9.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \top_e2..
+
+4.9.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module top_e2.
+
+4.9.9. Finished OPT passes. (There is nothing left to do.)
+
+4.10. Executing WREDUCE pass (reducing word size of cells).
+Removed top 28 address bits (of 32) from memory init port top_e2.$flatten\u_bcd7seg.$auto$mem.cc:328:emit$8 ($flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6).
+Removed top 1 bits (of 2) from port B of cell top_e2.$flatten\u_decode24.$procmux$40_CMP0 ($eq).
+Removed top 2 bits (of 4) from port B of cell top_e2.$flatten\u_encode42.$procmux$30_CMP0 ($eq).
+Removed top 1 bits (of 4) from port B of cell top_e2.$flatten\u_encode42.$procmux$29_CMP0 ($eq).
+Removed top 6 bits (of 7) from port B of cell top_e2.$flatten\p_encode42.$procmux$19_CMP0 ($eq).
+Removed top 5 bits (of 6) from port B of cell top_e2.$flatten\p_encode42.$procmux$18_CMP0 ($eq).
+Removed top 4 bits (of 5) from port B of cell top_e2.$flatten\p_encode42.$procmux$17_CMP0 ($eq).
+Removed top 3 bits (of 4) from port B of cell top_e2.$flatten\p_encode42.$procmux$16_CMP0 ($eq).
+Removed top 2 bits (of 3) from port B of cell top_e2.$flatten\p_encode42.$procmux$15_CMP0 ($eq).
+Removed top 1 bits (of 2) from port B of cell top_e2.$flatten\p_encode42.$procmux$14_CMP0 ($eq).
+
+4.11. Executing PEEPOPT pass (run peephole optimizers).
+
+4.12. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \top_e2..
+
+4.13. Executing ALUMACC pass (create $alu and $macc cells).
+Extracting $alu and $macc cells in module top_e2:
+  created 0 $alu and 0 $macc cells.
+
+4.14. Executing SHARE pass (SAT-based resource sharing).
+
+4.15. Executing OPT pass (performing simple optimizations).
+
+4.15.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module top_e2.
+
+4.15.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\top_e2'.
+Removed a total of 0 cells.
+
+4.15.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \top_e2..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~3 debug messages>
+
+4.15.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \top_e2.
+Performed a total of 0 changes.
+
+4.15.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\top_e2'.
+Removed a total of 0 cells.
+
+4.15.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+4.15.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \top_e2..
+
+4.15.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module top_e2.
+
+4.15.9. Finished OPT passes. (There is nothing left to do.)
+
+4.16. Executing MEMORY pass.
+
+4.16.1. Executing OPT_MEM pass (optimize memories).
+Performed a total of 0 transformations.
+
+4.16.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
+Performed a total of 0 transformations.
+
+4.16.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
+
+4.16.4. Executing MEMORY_BMUX2ROM pass (converting muxes to ROMs).
+
+4.16.5. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
+Checking read port `$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6'[0] in module `\top_e2': no output FF found.
+Checking read port address `$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6'[0] in module `\top_e2': no address FF found.
+
+4.16.6. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \top_e2..
+
+4.16.7. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
+
+4.16.8. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
+Performed a total of 0 transformations.
+
+4.16.9. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \top_e2..
+
+4.16.10. Executing MEMORY_COLLECT pass (generating $mem cells).
+
+4.17. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \top_e2..
+
+4.18. Executing OPT pass (performing simple optimizations).
+
+4.18.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module top_e2.
+<suppressed ~1 debug messages>
+
+4.18.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\top_e2'.
+Removed a total of 0 cells.
+
+4.18.3. Executing OPT_DFF pass (perform DFF optimizations).
+
+4.18.4. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \top_e2..
+Removed 1 unused cells and 1 unused wires.
+<suppressed ~2 debug messages>
+
+4.18.5. Finished fast OPT passes.
+
+4.19. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
+Mapping memory $flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6 in module \top_e2:
+  created 16 $dff cells and 0 static cells of width 7.
+  read interface: 0 $dff and 15 $mux cells.
+  write interface: 0 write mux blocks.
+
+4.20. Executing OPT pass (performing simple optimizations).
+
+4.20.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module top_e2.
+<suppressed ~1 debug messages>
+
+4.20.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\top_e2'.
+Removed a total of 0 cells.
+
+4.20.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \top_e2..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+    dead port 1/2 on $mux $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][3][5]$89.
+    dead port 2/2 on $mux $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][3][5]$89.
+    dead port 1/2 on $mux $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][3][4]$86.
+    dead port 2/2 on $mux $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][3][4]$86.
+    dead port 1/2 on $mux $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][3]$71.
+    dead port 2/2 on $mux $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][3]$71.
+    dead port 1/2 on $mux $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][2]$68.
+    dead port 2/2 on $mux $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][2]$68.
+    dead port 1/2 on $mux $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][1][1]$59.
+    dead port 2/2 on $mux $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][1][1]$59.
+    dead port 1/2 on $mux $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][3][6]$92.
+    dead port 2/2 on $mux $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][3][6]$92.
+    dead port 1/2 on $mux $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][3][7]$95.
+    dead port 2/2 on $mux $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][3][7]$95.
+Removed 14 multiplexer ports.
+<suppressed ~4 debug messages>
+
+4.20.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \top_e2.
+    Consolidated identical input bits for $mux cell $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][3][2]$80:
+      Old ports: A=7'1001100, B=7'0100100, Y=$memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][1]$a$66
+      New ports: A=2'01, B=2'10, Y={ $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][1]$a$66 [5] $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][1]$a$66 [3] }
+      New connections: { $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][1]$a$66 [6] $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][1]$a$66 [4] $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][1]$a$66 [2:0] } = { $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][1]$a$66 [3] 4'0100 }
+    Consolidated identical input bits for $mux cell $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][3][1]$77:
+      Old ports: A=7'0010010, B=7'0000110, Y=$memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][0]$b$64
+      New ports: A=2'10, B=2'01, Y={ $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][0]$b$64 [4] $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][0]$b$64 [2] }
+      New connections: { $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][0]$b$64 [6:5] $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][0]$b$64 [3] $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][0]$b$64 [1:0] } = 5'00010
+    Consolidated identical input bits for $mux cell $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][3][0]$74:
+      Old ports: A=7'0000001, B=7'1001111, Y=$memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][0]$a$63
+      New ports: A=1'0, B=1'1, Y=$memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][0]$a$63 [1]
+      New connections: { $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][0]$a$63 [6:2] $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][0]$a$63 [0] } = { $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][0]$a$63 [1] 2'00 $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][0]$a$63 [1] $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][0]$a$63 [1] 1'1 }
+    Consolidated identical input bits for $mux cell $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][3][3]$83:
+      Old ports: A=7'0100000, B=7'0001111, Y=$memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][1]$b$67
+      New ports: A=2'10, B=2'01, Y={ $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][1]$b$67 [5] $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][1]$b$67 [0] }
+      New connections: { $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][1]$b$67 [6] $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][1]$b$67 [4:1] } = { 2'00 $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][1]$b$67 [0] $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][1]$b$67 [0] $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][1]$b$67 [0] }
+  Optimizing cells in module \top_e2.
+    Consolidated identical input bits for $mux cell $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][1]$65:
+      Old ports: A=$memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][1]$a$66, B=$memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][1]$b$67, Y=$memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][1][0]$b$58
+      New ports: A={ $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][1]$a$66 [3] $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][1]$a$66 [5] $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][1]$a$66 [3] 2'10 }, B={ 1'0 $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][1]$b$67 [5] $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][1]$b$67 [0] $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][1]$b$67 [0] $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][1]$b$67 [0] }, Y={ $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][1][0]$b$58 [6:5] $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][1][0]$b$58 [3:2] $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][1][0]$b$58 [0] }
+      New connections: { $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][1][0]$b$58 [4] $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][1][0]$b$58 [1] } = { 1'0 $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][1][0]$b$58 [0] }
+    Consolidated identical input bits for $mux cell $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][0]$62:
+      Old ports: A=$memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][0]$a$63, B=$memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][0]$b$64, Y=$memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][1][0]$a$57
+      New ports: A={ 1'0 $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][0]$a$63 [1] $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][0]$a$63 [1] $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][0]$a$63 [1] 1'1 }, B={ $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][0]$b$64 [4] 1'0 $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][2][0]$b$64 [2] 2'10 }, Y=$memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][1][0]$a$57 [4:0]
+      New connections: $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][1][0]$a$57 [6:5] = { $memory$flatten\u_bcd7seg.$auto$proc_rom.cc:155:do_switch$6$rdmux[0][1][0]$a$57 [3] 1'0 }
+  Optimizing cells in module \top_e2.
+Performed a total of 6 changes.
+
+4.20.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\top_e2'.
+<suppressed ~3 debug messages>
+Removed a total of 1 cells.
+
+4.20.6. Executing OPT_SHARE pass.
+
+4.20.7. Executing OPT_DFF pass (perform DFF optimizations).
+
+4.20.8. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \top_e2..
+Removed 0 unused cells and 25 unused wires.
+<suppressed ~1 debug messages>
+
+4.20.9. Executing OPT_EXPR pass (perform const folding).
+Optimizing module top_e2.
+<suppressed ~1 debug messages>
+
+4.20.10. Rerunning OPT passes. (Maybe there is more to do..)
+
+4.20.11. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \top_e2..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~5 debug messages>
+
+4.20.12. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \top_e2.
+Performed a total of 0 changes.
+
+4.20.13. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\top_e2'.
+Removed a total of 0 cells.
+
+4.20.14. Executing OPT_SHARE pass.
+
+4.20.15. Executing OPT_DFF pass (perform DFF optimizations).
+
+4.20.16. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \top_e2..
+Removed 0 unused cells and 1 unused wires.
+<suppressed ~1 debug messages>
+
+4.20.17. Executing OPT_EXPR pass (perform const folding).
+Optimizing module top_e2.
+
+4.20.18. Rerunning OPT passes. (Maybe there is more to do..)
+
+4.20.19. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \top_e2..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~5 debug messages>
+
+4.20.20. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \top_e2.
+Performed a total of 0 changes.
+
+4.20.21. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\top_e2'.
+Removed a total of 0 cells.
+
+4.20.22. Executing OPT_SHARE pass.
+
+4.20.23. Executing OPT_DFF pass (perform DFF optimizations).
+
+4.20.24. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \top_e2..
+
+4.20.25. Executing OPT_EXPR pass (perform const folding).
+Optimizing module top_e2.
+
+4.20.26. Finished OPT passes. (There is nothing left to do.)
+
+4.21. Executing TECHMAP pass (map to technology primitives).
+
+4.21.1. Executing Verilog-2005 frontend: /opt/oss-cad-suite/lib/../share/yosys/techmap.v
+Parsing Verilog input from `/opt/oss-cad-suite/lib/../share/yosys/techmap.v' to AST representation.
+Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
+Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
+Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
+Generating RTLIL representation for module `\_90_simplemap_compare_ops'.
+Generating RTLIL representation for module `\_90_simplemap_various'.
+Generating RTLIL representation for module `\_90_simplemap_registers'.
+Generating RTLIL representation for module `\_90_shift_ops_shr_shl_sshl_sshr'.
+Generating RTLIL representation for module `\_90_shift_shiftx'.
+Generating RTLIL representation for module `\_90_fa'.
+Generating RTLIL representation for module `\_90_lcu_brent_kung'.
+Generating RTLIL representation for module `\_90_alu'.
+Generating RTLIL representation for module `\_90_macc'.
+Generating RTLIL representation for module `\_90_alumacc'.
+Generating RTLIL representation for module `\$__div_mod_u'.
+Generating RTLIL representation for module `\$__div_mod_trunc'.
+Generating RTLIL representation for module `\_90_div'.
+Generating RTLIL representation for module `\_90_mod'.
+Generating RTLIL representation for module `\$__div_mod_floor'.
+Generating RTLIL representation for module `\_90_divfloor'.
+Generating RTLIL representation for module `\_90_modfloor'.
+Generating RTLIL representation for module `\_90_pow'.
+Generating RTLIL representation for module `\_90_pmux'.
+Generating RTLIL representation for module `\_90_demux'.
+Generating RTLIL representation for module `\_90_lut'.
+Successfully finished Verilog frontend.
+
+4.21.2. Continuing TECHMAP pass.
+Using extmapper simplemap for cells of type $mux.
+Using extmapper simplemap for cells of type $eq.
+Using template $paramod$c2e415ef15bc3ccd2723772353a6b450d3d76206\_90_pmux for cells of type $pmux.
+Using template $paramod$97565c3687be688407d1272a293bd9d0ae6852dc\_90_pmux for cells of type $pmux.
+Using template $paramod$a285b5a57fe61eabc57c91b8c412748ee1151a85\_90_pmux for cells of type $pmux.
+Using extmapper simplemap for cells of type $reduce_or.
+Using extmapper simplemap for cells of type $and.
+No more expansions possible.
+<suppressed ~165 debug messages>
+
+4.22. Executing OPT pass (performing simple optimizations).
+
+4.22.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module top_e2.
+<suppressed ~106 debug messages>
+
+4.22.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\top_e2'.
+<suppressed ~36 debug messages>
+Removed a total of 12 cells.
+
+4.22.3. Executing OPT_DFF pass (perform DFF optimizations).
+
+4.22.4. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \top_e2..
+Removed 0 unused cells and 109 unused wires.
+<suppressed ~1 debug messages>
+
+4.22.5. Finished fast OPT passes.
+
+4.23. Executing ABC pass (technology mapping using ABC).
+
+4.23.1. Extracting gate netlist of module `\top_e2' to `<abc-temp-dir>/input.blif'..
+Extracted 103 gates and 119 wires to a netlist network with 14 inputs and 16 outputs.
+
+4.23.1.1. Executing ABC.
+Running ABC command: "<yosys-exe-dir>/yosys-abc" -s -f <abc-temp-dir>/abc.script 2>&1
+ABC: ABC command line: "source <abc-temp-dir>/abc.script".
+ABC: 
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_library <abc-temp-dir>/stdcells.genlib 
+ABC: + strash 
+ABC: + dretime 
+ABC: + map 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+4.23.1.2. Re-integrating ABC results.
+ABC RESULTS:               AND cells:        2
+ABC RESULTS:            ANDNOT cells:       26
+ABC RESULTS:               MUX cells:        5
+ABC RESULTS:              NAND cells:        2
+ABC RESULTS:               NOR cells:        6
+ABC RESULTS:               NOT cells:        3
+ABC RESULTS:                OR cells:       17
+ABC RESULTS:             ORNOT cells:       11
+ABC RESULTS:              XNOR cells:        2
+ABC RESULTS:        internal signals:       89
+ABC RESULTS:           input signals:       14
+ABC RESULTS:          output signals:       16
+Removing temp directory.
+
+4.24. Executing OPT pass (performing simple optimizations).
+
+4.24.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module top_e2.
+
+4.24.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\top_e2'.
+<suppressed ~9 debug messages>
+Removed a total of 3 cells.
+
+4.24.3. Executing OPT_DFF pass (perform DFF optimizations).
+
+4.24.4. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \top_e2..
+Removed 0 unused cells and 86 unused wires.
+<suppressed ~1 debug messages>
+
+4.24.5. Finished fast OPT passes.
+
+4.25. Executing HIERARCHY pass (managing design hierarchy).
+Attribute `top' found on module `top_e2'. Setting top module to top_e2.
+
+4.25.1. Analyzing design hierarchy..
+Top module:  \top_e2
+
+4.25.2. Analyzing design hierarchy..
+Top module:  \top_e2
+Removed 0 unused modules.
+
+4.26. Printing statistics.
+
+=== top_e2 ===
+
+   Number of wires:                 74
+   Number of wire bits:            123
+   Number of public wires:          19
+   Number of public wire bits:      68
+   Number of ports:                  8
+   Number of port bits:             31
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                 75
+     $_ANDNOT_                      26
+     $_AND_                          2
+     $_MUX_                          5
+     $_NAND_                         2
+     $_NOR_                          5
+     $_NOT_                          3
+     $_ORNOT_                       10
+     $_OR_                          17
+     $_XNOR_                         1
+     $scopeinfo                      4
+
+4.27. Executing CHECK pass (checking for obvious problems).
+Checking module top_e2...
+Found and reported 0 problems.
+
+5. Executing AUTONAME pass.
+Renamed 329 objects in module top_e2 (16 iterations).
+<suppressed ~126 debug messages>
+
+6. Executing SPLITNETS pass (splitting up multi-bit signals).
+
+7. Executing OPT pass (performing simple optimizations).
+
+7.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module top_e2.
+
+7.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\top_e2'.
+Removed a total of 0 cells.
+
+7.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \top_e2..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+7.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \top_e2.
+Performed a total of 0 changes.
+
+7.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\top_e2'.
+Removed a total of 0 cells.
+
+7.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+7.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \top_e2..
+Removed 4 unused cells and 37 unused wires.
+<suppressed ~41 debug messages>
+
+7.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module top_e2.
+
+7.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+7.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \top_e2..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+7.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \top_e2.
+Performed a total of 0 changes.
+
+7.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\top_e2'.
+Removed a total of 0 cells.
+
+7.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+7.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \top_e2..
+
+7.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module top_e2.
+
+7.16. Finished OPT passes. (There is nothing left to do.)
+
+8. Executing CLOCK_GATE pass (extract clock gating out of flip flops).
+Selected rising edge ICG \CLKGATE_X1 from Liberty file
+Converted 0 FFs.
+<suppressed ~24 debug messages>
+
+9. Executing DFFLIBMAP pass (mapping DFF cells to sequential cells from liberty file).
+  cell DFF_X1 (noninv, pins=4, area=4.52) is a direct match for cell type $_DFF_P_.
+  cell DFFR_X1 (noninv, pins=5, area=5.32) is a direct match for cell type $_DFF_PN0_.
+  cell DFFS_X1 (noninv, pins=5, area=5.32) is a direct match for cell type $_DFF_PN1_.
+  cell DFFRS_X1 (noninv, pins=6, area=6.38) is a direct match for cell type $_DFFSR_PNN_.
+  final dff cell mappings:
+    unmapped dff cell: $_DFF_N_
+    \DFF_X1 _DFF_P_ (.CK( C), .D( D), .Q( Q), .QN(~Q));
+    unmapped dff cell: $_DFF_NN0_
+    unmapped dff cell: $_DFF_NN1_
+    unmapped dff cell: $_DFF_NP0_
+    unmapped dff cell: $_DFF_NP1_
+    \DFFR_X1 _DFF_PN0_ (.CK( C), .D( D), .Q( Q), .QN(~Q), .RN( R));
+    \DFFS_X1 _DFF_PN1_ (.CK( C), .D( D), .Q( Q), .QN(~Q), .SN( R));
+    unmapped dff cell: $_DFF_PP0_
+    unmapped dff cell: $_DFF_PP1_
+    unmapped dff cell: $_DFFE_NN_
+    unmapped dff cell: $_DFFE_NP_
+    unmapped dff cell: $_DFFE_PN_
+    unmapped dff cell: $_DFFE_PP_
+    unmapped dff cell: $_DFFSR_NNN_
+    unmapped dff cell: $_DFFSR_NNP_
+    unmapped dff cell: $_DFFSR_NPN_
+    unmapped dff cell: $_DFFSR_NPP_
+    \DFFRS_X1 _DFFSR_PNN_ (.CK( C), .D( D), .Q( Q), .QN(~Q), .RN( R), .SN( S));
+    unmapped dff cell: $_DFFSR_PNP_
+    unmapped dff cell: $_DFFSR_PPN_
+    unmapped dff cell: $_DFFSR_PPP_
+
+9.1. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
+<suppressed ~8 debug messages>
+Mapping DFF cells in module `\top_e2':
+
+10. Executing OPT pass (performing simple optimizations).
+
+10.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module top_e2.
+
+10.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\top_e2'.
+Removed a total of 0 cells.
+
+10.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \top_e2..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+10.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \top_e2.
+Performed a total of 0 changes.
+
+10.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\top_e2'.
+Removed a total of 0 cells.
+
+10.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+10.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \top_e2..
+
+10.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module top_e2.
+
+10.9. Finished OPT passes. (There is nothing left to do.)
+
+11. Executing ABC pass (technology mapping using ABC).
+
+11.1. Extracting gate netlist of module `\top_e2' to `/tmp/yosys-abc-0m3D17/input.blif'..
+Extracted 71 gates and 85 wires to a netlist network with 14 inputs and 16 outputs.
+
+11.1.1. Executing ABC.
+Running ABC command: "/opt/oss-cad-suite/lib/yosys-abc" -s -f /tmp/yosys-abc-0m3D17/abc.script 2>&1
+ABC: ABC command line: "source /tmp/yosys-abc-0m3D17/abc.script".
+ABC: 
+ABC: + read_blif /tmp/yosys-abc-0m3D17/input.blif 
+ABC: + read_lib -w /home/shitful/1s1x/ysyx-workbench/misc_items/expE5/scripts/../pdk/nangate45/lib/Nangate45_fast.lib 
+ABC: Parsing finished successfully.  Parsing time =     0.04 sec
+ABC: Scl_LibertyReadGenlib() skipped cell "ANTENNA_X1" due to dont_use attribute.
+ABC: Scl_LibertyReadGenlib() skipped cell "CLKGATETST_X1" without logic function.
+ABC: Scl_LibertyReadGenlib() skipped cell "CLKGATETST_X2" without logic function.
+ABC: Scl_LibertyReadGenlib() skipped cell "CLKGATETST_X4" without logic function.
+ABC: Scl_LibertyReadGenlib() skipped cell "CLKGATETST_X8" without logic function.
+ABC: Scl_LibertyReadGenlib() skipped cell "CLKGATE_X1" without logic function.
+ABC: Scl_LibertyReadGenlib() skipped cell "CLKGATE_X2" without logic function.
+ABC: Scl_LibertyReadGenlib() skipped cell "CLKGATE_X4" without logic function.
+ABC: Scl_LibertyReadGenlib() skipped cell "CLKGATE_X8" without logic function.
+ABC: Scl_LibertyReadGenlib() skipped sequential cell "DFFRS_X1".
+ABC: Scl_LibertyReadGenlib() skipped sequential cell "DFFRS_X2".
+ABC: Scl_LibertyReadGenlib() skipped sequential cell "DFFR_X1".
+ABC: Scl_LibertyReadGenlib() skipped sequential cell "DFFR_X2".
+ABC: Scl_LibertyReadGenlib() skipped sequential cell "DFFS_X1".
+ABC: Scl_LibertyReadGenlib() skipped sequential cell "DFFS_X2".
+ABC: Scl_LibertyReadGenlib() skipped sequential cell "DFF_X1".
+ABC: Scl_LibertyReadGenlib() skipped sequential cell "DFF_X2".
+ABC: Scl_LibertyReadGenlib() skipped sequential cell "DLH_X1".
+ABC: Scl_LibertyReadGenlib() skipped sequential cell "DLH_X2".
+ABC: Scl_LibertyReadGenlib() skipped sequential cell "DLL_X1".
+ABC: Scl_LibertyReadGenlib() skipped sequential cell "DLL_X2".
+ABC: Scl_LibertyReadGenlib() skipped cell "FILLCELL_X1" due to dont_use attribute.
+ABC: Scl_LibertyReadGenlib() skipped cell "FILLCELL_X2" due to dont_use attribute.
+ABC: Scl_LibertyReadGenlib() skipped cell "FILLCELL_X4" due to dont_use attribute.
+ABC: Scl_LibertyReadGenlib() skipped cell "FILLCELL_X8" due to dont_use attribute.
+ABC: Scl_LibertyReadGenlib() skipped cell "FILLCELL_X16" due to dont_use attribute.
+ABC: Scl_LibertyReadGenlib() skipped cell "FILLCELL_X32" due to dont_use attribute.
+ABC: Scl_LibertyReadGenlib() skipped cell "LOGIC0_X1" due to dont_use attribute.
+ABC: Scl_LibertyReadGenlib() skipped cell "LOGIC1_X1" due to dont_use attribute.
+ABC: Scl_LibertyReadGenlib() skipped sequential cell "SDFFRS_X1".
+ABC: Scl_LibertyReadGenlib() skipped sequential cell "SDFFRS_X2".
+ABC: Scl_LibertyReadGenlib() skipped sequential cell "SDFFR_X1".
+ABC: Scl_LibertyReadGenlib() skipped sequential cell "SDFFR_X2".
+ABC: Scl_LibertyReadGenlib() skipped sequential cell "SDFFS_X1".
+ABC: Scl_LibertyReadGenlib() skipped sequential cell "SDFFS_X2".
+ABC: Scl_LibertyReadGenlib() skipped sequential cell "SDFF_X1".
+ABC: Scl_LibertyReadGenlib() skipped sequential cell "SDFF_X2".
+ABC: Scl_LibertyReadGenlib() skipped three-state cell "TBUF_X1".
+ABC: Scl_LibertyReadGenlib() skipped three-state cell "TBUF_X2".
+ABC: Scl_LibertyReadGenlib() skipped three-state cell "TBUF_X4".
+ABC: Scl_LibertyReadGenlib() skipped three-state cell "TBUF_X8".
+ABC: Scl_LibertyReadGenlib() skipped three-state cell "TBUF_X16".
+ABC: Scl_LibertyReadGenlib() skipped three-state cell "TINV_X1".
+ABC: Scl_LibertyReadGenlib() skipped sequential cell "TLAT_X1".
+ABC: Library "NangateOpenCellLibrary_fast" from "/home/shitful/1s1x/ysyx-workbench/misc_items/expE5/scripts/../pdk/nangate45/lib/Nangate45_fast.lib" has 90 cells (44 skipped: 21 seq; 6 tri-state; 8 no func; 9 dont_use; 0 with 2 outputs; 0 with 3+ outputs).  Time =     0.06 sec
+ABC: Memory =   11.44 MB. Time =     0.06 sec
+ABC: Warning: Detected 2 multi-output cells (for example, "FA_X1").
+ABC: + strash 
+ABC: + ifraig 
+ABC: + retime -D 2000.0 -M 6 
+ABC: + strash 
+ABC: + dch -f 
+ABC: + map -p -M 1 -D 2000.0 -f 
+ABC: + topo 
+ABC: + dnsize 
+ABC: + buffer -p 
+ABC: + upsize 
+ABC: + 
+ABC: + write_blif /tmp/yosys-abc-0m3D17/output.blif 
+
+11.1.2. Re-integrating ABC results.
+ABC RESULTS:           AND2_X1 cells:        1
+ABC RESULTS:           AND2_X2 cells:        1
+ABC RESULTS:           AND2_X4 cells:        1
+ABC RESULTS:           AND3_X1 cells:        3
+ABC RESULTS:          AOI21_X1 cells:        1
+ABC RESULTS:            INV_X1 cells:        4
+ABC RESULTS:           INV_X16 cells:        1
+ABC RESULTS:           INV_X32 cells:        1
+ABC RESULTS:          NAND2_X1 cells:        3
+ABC RESULTS:          NAND3_X1 cells:        2
+ABC RESULTS:          NAND3_X2 cells:        1
+ABC RESULTS:           NOR2_X1 cells:        3
+ABC RESULTS:           NOR2_X4 cells:        4
+ABC RESULTS:           NOR3_X1 cells:        4
+ABC RESULTS:         OAI211_X1 cells:        1
+ABC RESULTS:         OAI211_X2 cells:        1
+ABC RESULTS:          OAI21_X1 cells:        4
+ABC RESULTS:            OR2_X1 cells:        1
+ABC RESULTS:          XNOR2_X1 cells:        2
+ABC RESULTS:          XNOR2_X2 cells:        1
+ABC RESULTS:        internal signals:       55
+ABC RESULTS:           input signals:       14
+ABC RESULTS:          output signals:       16
+Removing temp directory.
+
+12. Executing HILOMAP pass (mapping to constant drivers).
+
+13. Executing SETUNDEF pass (replace undef values with defined constants).
+
+14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \top_e2..
+Removed 0 unused cells and 85 unused wires.
+<suppressed ~56 debug messages>
+
+15. Executing Liberty frontend: /home/shitful/1s1x/ysyx-workbench/misc_items/expE5/scripts/../pdk/nangate45/lib/Nangate45_fast.lib
+Imported 134 cell types from liberty file.
+
+16. Executing CHECK pass (checking for obvious problems).
+Checking module top_e2...
+Found and reported 0 problems.
+
+17. Printing statistics.
+
+=== top_e2 ===
+
+   Number of wires:                 55
+   Number of wire bits:             55
+   Number of public wires:          31
+   Number of public wire bits:      31
+   Number of ports:                 31
+   Number of port bits:             31
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                 40
+     AND2_X1                         1
+     AND2_X2                         1
+     AND2_X4                         1
+     AND3_X1                         3
+     AOI21_X1                        1
+     INV_X1                          4
+     INV_X16                         1
+     INV_X32                         1
+     NAND2_X1                        3
+     NAND3_X1                        2
+     NAND3_X2                        1
+     NOR2_X1                         3
+     NOR2_X4                         4
+     NOR3_X1                         4
+     OAI211_X1                       1
+     OAI211_X2                       1
+     OAI21_X1                        4
+     OR2_X1                          1
+     XNOR2_X1                        2
+     XNOR2_X2                        1
+
+   Chip area for module '\top_e2': 62.776000
+     of which used for sequential elements: 0.000000 (0.00%)
+
+18. Executing Verilog backend.
+Dumping module `\top_e2'.
+
+End of script. Logfile hash: 914da7c8cb, CPU: user 0.14s system 0.07s, MEM: 34.75 MB peak
+Yosys 0.55+150 (git sha1 15b4716d1, clang++ 18.1.8 -fPIC -O3)
+Time spent: 48% 2x abc (0 sec), 10% 1x clockgate (0 sec), ...
