@@ -1,0 +1,11 @@
+top=ALU
+
+A (SW3, SW2, SW1, SW0)
+B (SW13, SW12, SW11, SW10)
+
+Sel (SW7, SW6, SW5)
+
+Out (LD3, LD2, LD1, LD0)
+Zero LD15
+Overflow LD14
+Cout LD13

@@ -9,4 +9,6 @@ enc_output (LD5, LD4)
 dec_output (LD3, LD2, LD1, LD0)
 penc_output (LD15, LD14, LD13)
 
+valid LD10
+
 led (SEG0A, SEG0B, SEG0C, SEG0D, SEG0E, SEG0F, SEG0G)

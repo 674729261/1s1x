@@ -7,7 +7,8 @@ module top_e2 (
     penc_input,
     penc_output,
     led,
-    en
+    en,
+    valid
 );
 
   input [3:0] enc_input;
@@ -17,7 +18,10 @@ module top_e2 (
   output [2:0] penc_output;
   output [3:0] dec_output;
   output [6:0] led;
+  output valid;
   input en;
+
+  assign valid = |penc_input;
 
   decode24 u_decode24 (
       .x (dec_input),
