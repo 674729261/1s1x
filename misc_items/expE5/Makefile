@@ -102,9 +102,23 @@ e8: NETLIST_FIXED_V=$(RESULT_DIR)/$(DESIGN).netlist.fixed.v
 e8: TIMING_RPT=$(RESULT_DIR)/$(DESIGN).rpt
 e8: $(RTL_FILES) $(SCRIPT_DIR)/yosys.tcl $(SCRIPT_DIR)/sta.tcl $(SDC_FILE)
 	make -C example/e8/ run
+
+
+sCPU: DESIGN=sCPU
+sCPU: RESULT_DIR=$(O)/$(DESIGN)-$(CLK_FREQ_MHZ)MHz
+sCPU: RTL_FILES="example/sCPU/sCPU.v"
+sCPU: NETLIST_SYN_V=$(RESULT_DIR)/$(DESIGN).netlist.syn.v
+sCPU: NETLIST_FIXED_V=$(RESULT_DIR)/$(DESIGN).netlist.fixed.v
+sCPU: TIMING_RPT=$(RESULT_DIR)/$(DESIGN).rpt
+sCPU: $(RTL_FILES) $(SCRIPT_DIR)/yosys.tcl $(SCRIPT_DIR)/sta.tcl $(SDC_FILE)
+	make -C example/sCPU/ run
 	mkdir -p $(O)/$(DESIGN)-$(CLK_FREQ_MHZ)MHz
 	echo tcl $(SCRIPT_DIR)/yosys.tcl $(DESIGN) $(PDK) \"$(RTL_FILES)\" $(NETLIST_SYN_V) | yosys -l $(@D)/yosys.log -s -
+	set -o pipefail && ./bin/iEDA -script $(SCRIPT_DIR)/fix-fanout.tcl $(SDC_FILE) $(NETLIST_SYN_V) $(DESIGN) $(PDK) $(NETLIST_FIXED_V) 2>&1 | tee $(RESULT_DIR)/fix-fanout.log
+	echo tcl $(SCRIPT_DIR)/yosys-area.tcl $(DESIGN) $(PDK) $(NETLIST_FIXED_V) | yosys -l $(@D)/yosys-fixed.log -s -
+	set -o pipefail && ./bin/iEDA -script $(SCRIPT_DIR)/sta.tcl $(SDC_FILE) $(NETLIST_FIXED_V) $(DESIGN) $(PDK) 2>&1 | tee $(RESULT_DIR)/sta.log
 
+	
 
 include $(NVBOARD_HOME)/scripts/nvboard.mk
 
@@ -115,4 +129,5 @@ clean:
 	make -C example/e4/ clean
 	make -C example/e6/ clean
 	make -C example/e7/ clean
+	make -C example/e8/ clean
 
