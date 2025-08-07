@@ -18,6 +18,7 @@
 #include <isa.h>
 #include <readline/history.h>
 #include <readline/readline.h>
+#include <utils.h>
 
 static int is_batch_mode = false;
 
@@ -48,7 +49,10 @@ static int cmd_c(char *args) {
   return 0;
 }
 
-static int cmd_q(char *args) { return -1; }
+static int cmd_q(char *args) {
+  nemu_state.state = NEMU_QUIT;
+  return -1;
+}
 
 static int cmd_help(char *args);
 
@@ -123,7 +127,6 @@ void sdb_mainloop() {
     for (i = 0; i < NR_CMD; i++) {
       if (strcmp(cmd, cmd_table[i].name) == 0) {
         if (cmd_table[i].handler(args) < 0) {
-          puts("!!");
           return;
         }
         break;
