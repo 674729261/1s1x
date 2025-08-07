@@ -1,6 +1,7 @@
 *.*
 *
 !*/
+!/misc_items/**/*
 !/c_practice/prepro/**/*
 !/c_practice/p19/*
 !/c_practice/p20/*
@@ -28,6 +29,9 @@
 /am-kernels
 /fceux-am
 
+**/*.log
 **/build/
 **/.cache/
 **/compile_commands.json
+**/obj_dir/
+/nvboard
