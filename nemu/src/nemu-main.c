@@ -14,7 +14,7 @@
  ***************************************************************************************/
 
 #include <common.h>
-#include <stdio.h>
+
 void init_monitor(int, char *[]);
 void am_init_monitor();
 void engine_start();
@@ -25,11 +25,8 @@ int main(int argc, char *argv[]) {
 #ifdef CONFIG_TARGET_AM
   am_init_monitor();
 #else
-  printf("%d\n", is_exit_status_bad());
   init_monitor(argc, argv);
 #endif
-  printf("%d\n", is_exit_status_bad());
-  fflush(stdout);
   /* Start engine. */
   engine_start();
 
