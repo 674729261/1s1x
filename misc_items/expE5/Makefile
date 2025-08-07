@@ -123,7 +123,7 @@ sCPU: $(RTL_FILES) $(SCRIPT_DIR)/yosys.tcl $(SCRIPT_DIR)/sta.tcl $(SDC_FILE)
 include $(NVBOARD_HOME)/scripts/nvboard.mk
 
 clean:
-	-rm -rf e2 result/
+	-rm -rf e2 result/ yosys.log yosys-fixed.log
 	make -C example/e2/ clean
 	make -C example/e3/ clean
 	make -C example/e4/ clean

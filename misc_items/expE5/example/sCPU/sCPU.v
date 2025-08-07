@@ -65,16 +65,19 @@ module sCPU (
   assign next_pc = (opcode == BNE && rdata1 != rdata2) ? jmp_addr : pc + 4'h1;
   assign out_valid = opcode == OUT;
 
+  wire [6:0] seg0_, seg1_;
+
   bcd7seg out1 (
       .b(rdata2[3:0]),
-      .h(seg0)
+      .h(seg0_)
   );
+  assign seg0 = out_valid ? seg0_ : 7'h7f;
 
   bcd7seg out2 (
       .b(rdata2[7:4]),
-      .h(seg1)
+      .h(seg1_)
   );
-
+  assign seg1 = out_valid ? seg1_ : 7'h7f;
 
 endmodule
 
