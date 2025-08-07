@@ -29,6 +29,7 @@ int main(int argc, char *argv[]) {
   init_monitor(argc, argv);
 #endif
   printf("%d\n", is_exit_status_bad());
+  fflush(stdout);
   /* Start engine. */
   engine_start();
 
