@@ -8,15 +8,31 @@ module top_e7 (
     seg3,
     seg4,
     seg6,
-    seg7
+    seg7,
+    ctrl,
+    shift
 );
   input clk, rst, ps2_clk, ps2_data;
 
   wire [7:0] data, ascii, display, display_data;
-  wire ready, overflow;
+  wire ready, ready_last, overflow, initial_nextdata;
 
   output [6:0] seg0, seg1, seg3, seg4, seg6, seg7;
+  output ctrl, shift;
 
+
+  Reg #(
+      .WIDTH(1),
+      .RESET_VAL(1'b1)
+  ) u_reg_ready (
+      .clk (clk),
+      .rst (rst),
+      .din (~ready),
+      .dout(ready_last),
+      .wen (1'b1)
+  );
+  wire read;
+  assign read = ready & ~ready_last;
 
   ps2_keyboard u_ps2_keyboard (
       .clk       (clk),
@@ -25,7 +41,7 @@ module top_e7 (
       .ps2_data  (ps2_data),
       .data      (data),
       .ready     (ready),
-      .nextdata_n(1'b0),
+      .nextdata_n(~(initial_nextdata | read)),
       .overflow  (overflow)
   );
 
@@ -34,6 +50,16 @@ module top_e7 (
       .ascii(ascii)
   );
 
+  Reg #(
+      .WIDTH(1),
+      .RESET_VAL(1'b1)
+  ) u_initial_nextdata (
+      .clk (clk),
+      .rst (rst),
+      .din (1'b0),
+      .dout(initial_nextdata),
+      .wen (1'b1)
+  );
   wire release_key = (data == 8'hf0);
   wire waiting_release;
 
@@ -44,7 +70,7 @@ module top_e7 (
       .rst (rst),
       .din (release_key),
       .dout(waiting_release),
-      .wen (ready)
+      .wen (read)
   );
 
   Reg #(
@@ -54,7 +80,7 @@ module top_e7 (
       .rst (rst),
       .din (release_key | waiting_release ? 8'h00 : ascii),
       .dout(display),
-      .wen (ready)
+      .wen (read)
   );
 
   Reg #(
@@ -64,18 +90,18 @@ module top_e7 (
       .rst (rst),
       .din (release_key | waiting_release ? 8'h00 : data),
       .dout(display_data),
-      .wen (ready)
+      .wen (read)
   );
 
   reg [127:0] pressed;
 
   always @(posedge clk) begin
     if (rst) pressed <= 128'h0;
-    else if (ready)
+    else if (read)
       if (waiting_release) begin
-        pressed[ascii[6:0]] <= 1'b0;
-      end else begin
-        pressed[ascii[6:0]] <= 1'b1;
+        pressed[data[6:0]] <= 1'b0;
+      end else if (~release_key) begin
+        pressed[data[6:0]] <= 1'b1;
       end
   end
 
@@ -88,26 +114,31 @@ module top_e7 (
       .rst (rst),
       .din (count + 8'd1),
       .dout(count),
-      .wen (ready & ~waiting_release && ~pressed[ascii[6:0]])
+      .wen (read & ~waiting_release & ~release_key & ~pressed[data[6:0]])
   );
+
+  wire [6:0] seg0_, seg1_, seg3_, seg4_;
 
   bcd7seg u_bcd7seg2 (
       .b(display_data[3:0]),
-      .h(seg0)
+      .h(seg0_)
   );
+  assign seg0 = display_data == 8'h0 ? 7'h7f : seg0_;
   bcd7seg u_bcd7seg3 (
       .b(display_data[7:4]),
-      .h(seg1)
+      .h(seg1_)
   );
-
+  assign seg1 = display_data == 8'h0 ? 7'h7f : seg1_;
   bcd7seg u_bcd7seg0 (
       .b(display[3:0]),
-      .h(seg3)
+      .h(seg3_)
   );
+  assign seg3 = display == 8'h0 ? 7'h7f : seg3_;
   bcd7seg u_bcd7seg1 (
       .b(display[7:4]),
-      .h(seg4)
+      .h(seg4_)
   );
+  assign seg4 = display == 8'h0 ? 7'h7f : seg4_;
 
   bcd7seg u_bcd7seg7 (
       .b(count[3:0]),
@@ -117,6 +148,9 @@ module top_e7 (
       .b(count[7:4]),
       .h(seg7)
   );
+
+  assign ctrl  = ~pressed[7'h14];
+  assign shift = ~pressed[7'h12];
 
 endmodule
 

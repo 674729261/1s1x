@@ -12,3 +12,5 @@ ps2_data PS2_DAT
 
 rst BTNC
 
+ctrl SEG2G
+shift SEG5G

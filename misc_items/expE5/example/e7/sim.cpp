@@ -24,11 +24,9 @@ void design_init() {
 int main() {
   // 上板测试
   nvboard_bind_all_pins(&dut);
-  uint8_t all_high = 0x7f;
-  nvboard_bind_pin(&all_high, 7, SEG2A, SEG2B, SEG2C, SEG2D, SEG2E, SEG2F,
-                   SEG2G);
-  nvboard_bind_pin(&all_high, 7, SEG5A, SEG5B, SEG5C, SEG5D, SEG5E, SEG5F,
-                   SEG5G);
+  uint8_t all_high = 0xff;
+  nvboard_bind_pin(&all_high, 6, SEG2A, SEG2B, SEG2C, SEG2D, SEG2E, SEG2F);
+  nvboard_bind_pin(&all_high, 6, SEG5A, SEG5B, SEG5C, SEG5D, SEG5E, SEG5F);
 
   nvboard_init();
   design_init();
