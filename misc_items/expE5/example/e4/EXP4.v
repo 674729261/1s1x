@@ -99,13 +99,14 @@ module top_e4 (
 
   wire [3:0] second_low, minute_low;
   wire [2:0] second_high, minute_high;
-  wire [1:0] hour_low, hour_high;
+  wire [3:0] hour_low;
+  wire [1:0] hour_high;
   wire second_low_rst, second_high_rst, minute_low_rst, minute_high_rst,hour_low_rst, hour_high_rst;
   assign second_low_rst = update & second_low == 4'd9;
   assign second_high_rst = second_high == 3'd5 & second_low_rst;
   assign minute_low_rst = minute_low == 4'd9 & second_high_rst;
   assign minute_high_rst = minute_high == 3'd5 & minute_low_rst;
-  assign hour_low_rst = hour_low == 2'd3 & minute_high_rst;
+  assign hour_low_rst = (hour_low == 4'd9 || (hour_high == 2'd2 && hour_low == 4'd3)) & minute_high_rst;
   assign hour_high_rst = hour_high == 2'd2 & hour_low_rst;
 
   CounterAdd #(
@@ -145,10 +146,10 @@ module top_e4 (
   );
 
   CounterAdd #(
-      .WIDTH(2)
+      .WIDTH(4)
   ) u_counter_hour_low (
       .clk(clk),
-      .rst(rst | (hour_low_rst && ~tunemode) | (tunemode & hour_low == 2'd3 & (arrow_edge[1] | arrow_edge[2]) & select == 3'd4)),
+      .rst(rst | (hour_low_rst && ~tunemode) | (tunemode & (hour_low == 4'd9 || (hour_high == 2'd2 && hour_low == 4'd3)) & (arrow_edge[1] | arrow_edge[2]) & select == 3'd4)),
       .en   ((update & minute_high_rst& ~tunemode) | (tunemode & (arrow_edge[1] | arrow_edge[2]) & select == 3'd4)),
       .count(hour_low)
   );
@@ -157,7 +158,7 @@ module top_e4 (
       .WIDTH(2)
   ) u_counter_hour_high (
       .clk(clk),
-      .rst(rst | hour_high_rst | (tunemode & hour_high == 2'd2 & (arrow_edge[1] | arrow_edge[2]) & select == 3'd5)),
+      .rst(rst | hour_high_rst | (tunemode & (hour_high == 2'd2 || (hour_low >= 4'd4 && hour_high == 2'd1)) & (arrow_edge[1] | arrow_edge[2]) & select == 3'd5)),
       .en((update & hour_low_rst& ~tunemode) | (tunemode & (arrow_edge[1] | arrow_edge[2]) & select == 3'd5)),
       .count(hour_high)
   );
@@ -221,7 +222,7 @@ module top_e4 (
       .h(dig5)
   );
   bcd7seg o6 (
-      .b(stopwatch ? 4'hf : {2'b0, hour_low}),
+      .b(stopwatch ? 4'hf : hour_low),
       .h(dig6)
   );
 

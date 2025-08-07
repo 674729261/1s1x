@@ -15,7 +15,7 @@ int main() {
   // 自动测试
   std::mt19937 rng(0x12345678);
   int error_count = 0;
-  const int iters = 256;
+  const int iters = 1024;
   int total_cases = 0;
   for (int i = 0; i < iters; i++) {
     for (int sel = 0; sel < 8; ++sel) {
@@ -182,7 +182,9 @@ int main() {
   // 上板测试
   nvboard_bind_all_pins(&dut);
   nvboard_init();
-
+  uint8_t all_high = 0xff;
+  nvboard_bind_pin(&all_high, 7, SEG3A, SEG3B, SEG3C, SEG3D, SEG3E, SEG3F,
+                   SEG3G);
   while (1) {
     nvboard_update();
     dut.eval();

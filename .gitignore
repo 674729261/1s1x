@@ -29,6 +29,7 @@
 /am-kernels
 /fceux-am
 
+**/*.log
 **/build/
 **/.cache/
 **/compile_commands.json

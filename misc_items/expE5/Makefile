@@ -94,6 +94,18 @@ e7: $(RTL_FILES) $(SCRIPT_DIR)/yosys.tcl $(SCRIPT_DIR)/sta.tcl $(SDC_FILE)
 	set -o pipefail && ./bin/iEDA -script $(SCRIPT_DIR)/sta.tcl $(SDC_FILE) $(NETLIST_FIXED_V) $(DESIGN) $(PDK) 2>&1 | tee $(RESULT_DIR)/sta.log
 
 
+e8: DESIGN=top_e8
+e8: RESULT_DIR=$(O)/$(DESIGN)-$(CLK_FREQ_MHZ)MHz
+e8: RTL_FILES="example/e8/top_e8.v"
+e8: NETLIST_SYN_V=$(RESULT_DIR)/$(DESIGN).netlist.syn.v
+e8: NETLIST_FIXED_V=$(RESULT_DIR)/$(DESIGN).netlist.fixed.v
+e8: TIMING_RPT=$(RESULT_DIR)/$(DESIGN).rpt
+e8: $(RTL_FILES) $(SCRIPT_DIR)/yosys.tcl $(SCRIPT_DIR)/sta.tcl $(SDC_FILE)
+	make -C example/e8/ run
+	mkdir -p $(O)/$(DESIGN)-$(CLK_FREQ_MHZ)MHz
+	echo tcl $(SCRIPT_DIR)/yosys.tcl $(DESIGN) $(PDK) \"$(RTL_FILES)\" $(NETLIST_SYN_V) | yosys -l $(@D)/yosys.log -s -
+
+
 include $(NVBOARD_HOME)/scripts/nvboard.mk
 
 clean:
