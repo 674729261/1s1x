@@ -192,7 +192,7 @@ int find_main_token(int p, int q) {
 }
 
 long long eval(int p, int q) {
-  printf("%d %d\n", p, q);
+  printf("\n%d %d\n", p, q);
   for (int i = p; i <= q; i++)
     printf("%s", tokens[i].str);
   printf("\n%p\n", eval_error_flag);
@@ -222,6 +222,7 @@ long long eval(int p, int q) {
     return eval(p + 1, q - 1);
   else {
     int main_token = find_main_token(p, q);
+    printf("%d\n", main_token);
     if (main_token == -1) {
       if (tokens[p].type == '+')
         return eval(p + 1, q);
