@@ -125,10 +125,10 @@ void test_eval() {
                    {"-----------114514", -114514}};
   for (int i = 0; i < sizeof(testcases) / sizeof(testcases[0]); i++) {
     bool success = true;
-    long long result = expr(testcases[0].input, &success);
-    if (!success || result != testcases[0].result) {
-      printf("expr(\"%s\") = %lld, should be %lld\n", testcases[0].input,
-             result, testcases[0].result);
+    long long result = expr(testcases[i].input, &success);
+    if (!success || result != testcases[i].result) {
+      printf("expr(\"%s\") = %lld, should be %lld\n", testcases[i].input,
+             result, testcases[i].result);
       puts("eval() unit test failed, quiting...");
       exit(-1);
     }
