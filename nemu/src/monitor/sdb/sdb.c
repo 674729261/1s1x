@@ -45,9 +45,7 @@ static char *rl_gets() {
 }
 
 static int cmd_c(char *args) {
-  char *parameter = strtok(NULL, " ");
-  puts(parameter);
-  // cpu_exec(-1);
+  cpu_exec(-1);
   return 0;
 }
 
@@ -57,7 +55,9 @@ static int cmd_q(char *args) {
 }
 
 static int cmd_si(char *args) {
-  cpu_exec(-1);
+  char *parameter = strtok(NULL, " ");
+  puts(parameter);
+  // cpu_exec(-1);
   return 0;
 }
 static int cmd_info(char *args) { return 0; }
