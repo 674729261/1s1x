@@ -216,7 +216,7 @@ long long eval(int p, int q) {
   if (tokens[p].type == '+')
     return eval(p + 1, q);
   else if (tokens[p].type == '-')
-    return -eval(p + 1, 1);
+    return -eval(p + 1, q);
   else if (tokens[p].type == '(' && tokens[q].type == ')' &&
            right_brace_pos[p] == q)
     return eval(p + 1, q - 1);
