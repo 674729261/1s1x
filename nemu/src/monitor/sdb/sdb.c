@@ -87,7 +87,7 @@ static int cmd_info(char *args) {
 }
 static int cmd_x(char *args) {
 
-  expr("1 + 2*(3+4)", NULL);
+  expr("  +/*1 + 2*(3+4)", NULL);
 
   char *parameter = strtok(NULL, " ");
   if (parameter == NULL) {
