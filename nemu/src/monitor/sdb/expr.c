@@ -217,6 +217,7 @@ long long eval(int p, int q) {
     Assert(main_token != -1, "Failed to pick main token");
     long long LHS = eval(p, main_token - 1);
     long long RHS = eval(main_token + 1, q);
+    printf("now %d\n", tokens[p].type);
     switch (tokens[main_token].type) {
     case '+':
       return LHS + RHS;
