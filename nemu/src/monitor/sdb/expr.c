@@ -250,13 +250,14 @@ long long expr(char *e, bool *success) {
 
   if (check_brace_legal()) {
     long long result = eval(0, nr_token - 1);
-    Log("Now %lld", result);
+
     if (eval_error_flag) {
       puts(eval_error_flag);
       eval_error_flag = NULL;
       *success = false;
       return 0;
     }
+    Log("Now %lld", result);
     return result;
   }
 
