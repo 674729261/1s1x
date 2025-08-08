@@ -28,7 +28,7 @@
 #include <stdlib.h>
 #include <string.h>
 #define TOKEN_SUBSTR_LEN 32
-#define TOKEN_MAX_COUNT 64
+#define TOKEN_MAX_COUNT 256
 
 enum {
   TK_NOTYPE = 256,
