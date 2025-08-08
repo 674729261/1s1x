@@ -122,7 +122,7 @@ void test_eval() {
   } testcases[] = {{"1 +    2 *  3", 7},
                    {"(1 +    2 ) *  3", 9},
                    {"-1+-2--3+-4*(-5--9)", -16},
-                   {"-----------114514", 114514}};
+                   {"-----------114514", -114514}};
   for (int i = 0; i < sizeof(testcases) / sizeof(testcases[0]); i++) {
     bool success = true;
     long long result = expr(testcases[0].input, &success);
