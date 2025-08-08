@@ -70,7 +70,7 @@ static int cmd_si(char *args) {
 static int cmd_info(char *args) {
   char *parameter = strtok(NULL, " ");
   if (parameter == NULL) {
-    printf("Expecting parameter :\n'r' for registers\n'w' for watcher\n");
+    printf("Expecting argument :\n'r' for registers\n'w' for watcher\n");
     return 0;
   }
 
@@ -84,7 +84,22 @@ static int cmd_info(char *args) {
   }
   return 0;
 }
-static int cmd_x(char *args) { return 0; }
+static int cmd_x(char *args) {
+  char *parameter = strtok(NULL, " ");
+  if (parameter == NULL) {
+    printf("Expecting 2 arguments : [scan length] [address]\n");
+    return 0;
+  }
+  int32_t scan_length = strtoll(parameter, NULL, 10);
+  parameter = strtok(NULL, " ");
+  if (parameter == NULL) {
+    printf("Expecting 2 arguments : [scan length] [address]\n");
+    return 0;
+  }
+  int32_t address = strtoll(parameter, NULL, 16);
+  printf("%d, %d\n", scan_length, address);
+  return 0;
+}
 static int cmd_p(char *args) { return 0; }
 static int cmd_w(char *args) { return 0; }
 static int cmd_d(char *args) { return 0; }
