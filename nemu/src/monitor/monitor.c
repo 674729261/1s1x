@@ -170,7 +170,7 @@ void init_monitor(int argc, char *argv[]) {
 
   /* Initialize the simple debugger. */
   init_sdb();
-  // unit_tests();
+  unit_tests();
   IFDEF(CONFIG_ITRACE, init_disasm());
 
   /* Display welcome message. */
