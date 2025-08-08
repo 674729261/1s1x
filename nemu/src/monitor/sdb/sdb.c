@@ -87,8 +87,6 @@ static int cmd_info(char *args) {
   return 0;
 }
 static int cmd_x(char *args) {
-  printf("%d\n", expr("1 + 2 * (3 + 4)", NULL));
-  exit(0);
 
   char *parameter = strtok(NULL, " ");
   if (parameter == NULL) {
@@ -122,7 +120,6 @@ static int cmd_p(char *args) {
   bool success = true;
 
   long long result = expr(args, &success);
-  Log("Now %lld", result);
   if (success)
     printf("%lld\n", result);
 
