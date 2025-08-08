@@ -63,8 +63,7 @@ static int cmd_si(char *args) {
   if (parameter != NULL)
     n_steps = strtoll(parameter, NULL, 10);
 
-  printf("%lu %lu\n", n_steps, sizeof(n_steps));
-  // cpu_exec(-1);
+  cpu_exec(n_steps);
   return 0;
 }
 static int cmd_info(char *args) { return 0; }
