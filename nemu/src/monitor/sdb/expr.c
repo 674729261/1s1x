@@ -217,9 +217,9 @@ long long eval(int p, int q) {
       return -1;
     }
   }
-  if (tokens[p].type == '+')
+  if (p + 1 == q && tokens[p].type == '+')
     return eval(p + 1, q);
-  else if (tokens[p].type == '-')
+  else if (p + 1 == q && tokens[p].type == '-')
     return -eval(p + 1, q);
   else if (tokens[p].type == '(' && tokens[q].type == ')' &&
            right_brace_pos[p] == q)
