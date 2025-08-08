@@ -192,6 +192,9 @@ int find_main_token(int p, int q) {
 }
 
 long long eval(int p, int q) {
+  for (int i = p; i <= q; i++)
+    printf("%s\n", tokens[i].str);
+
   if (p > q) {
     eval_error_flag = EVAL_ERROR_ILLEGAL_EXPR;
     return -1;
