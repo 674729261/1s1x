@@ -86,8 +86,8 @@ static int cmd_info(char *args) {
   return 0;
 }
 static int cmd_x(char *args) {
-
-  expr("  +/*1 + 2*(3+4)", NULL);
+  printf("%d\n", expr("123", NULL));
+  exit(0);
 
   char *parameter = strtok(NULL, " ");
   if (parameter == NULL) {

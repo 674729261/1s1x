@@ -13,13 +13,19 @@
  * See the Mulan PSL v2 for more details.
  ***************************************************************************************/
 
+#include "common.h"
+#include <assert.h>
+#include <errno.h>
 #include <isa.h>
+#include <stdint.h>
 
 /* We use the POSIX regex functions to process regular expressions.
  * Type 'man regex' for more information about POSIX regex functions.
  */
 #include <debug.h>
 #include <regex.h>
+#include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 #define TOKEN_SUBSTR_LEN 32
 #define TOKEN_MAX_COUNT 64
@@ -28,7 +34,7 @@ enum {
   TK_NOTYPE = 256,
   TK_EQ,
   TK_NEQ,
-  TK_DECIMAL
+  TK_NUMBER
 
   /* TODO: Add more token types */
 
@@ -43,16 +49,16 @@ static struct rule {
      * Pay attention to the precedence level of different rules.
      */
 
-    {" +", TK_NOTYPE},      // spaces
-    {"\\+", '+'},           // plus
-    {"-", '-'},             // minus
-    {"\\*", '*'},           // times
-    {"\\/", '/'},           // over
-    {"==", TK_EQ},          // equal
-    {"!=", TK_NEQ},         // not equal
-    {"[0-9]+", TK_DECIMAL}, // decimals
-    {"\\(", '('},           // left brace
-    {"\\)", ')'},           // right brace
+    {" +", TK_NOTYPE},                   // spaces
+    {"\\+", '+'},                        // plus
+    {"-", '-'},                          // minus
+    {"\\*", '*'},                        // times
+    {"\\/", '/'},                        // over
+    {"==", TK_EQ},                       // equal
+    {"!=", TK_NEQ},                      // not equal
+    {"0[x,X][0-9,a-f,A-F]+", TK_NUMBER}, // a number
+    {"\\(", '('},                        // left brace
+    {"\\)", ')'},                        // right brace
 };
 
 #define NR_REGEX ARRLEN(rules)
@@ -79,6 +85,7 @@ void init_regex() {
 typedef struct token {
   int type;
   char str[TOKEN_SUBSTR_LEN];
+  int str_sz;
 } Token;
 
 static Token tokens[TOKEN_MAX_COUNT] __attribute__((used)) = {};
@@ -113,6 +120,7 @@ static bool make_token(char *e) {
           tokens[nr_token].type = rules[i].token_type;
           strncpy(tokens[nr_token].str, substr_start, substr_len);
           tokens[nr_token].str[substr_len] = '\0';
+          tokens[nr_token].str_sz = substr_len;
           nr_token++;
         }
 
@@ -129,14 +137,66 @@ static bool make_token(char *e) {
   return true;
 }
 
+static int right_brace_pos[TOKEN_MAX_COUNT];
+
+bool check_brace_legal() {
+  int stack_brace[TOKEN_MAX_COUNT];
+  int cnt_stack = 0;
+  for (int i = 0; i < nr_token; i++) {
+    if (tokens[i].type == '(')
+      stack_brace[cnt_stack++] = i;
+    else if (tokens[i].type == ')') {
+      int pos_left_brace = stack_brace[--cnt_stack];
+      if (cnt_stack < 0)
+        return false;
+      right_brace_pos[pos_left_brace] = i;
+    }
+  }
+  return true;
+}
+
+static bool eval_error_flag;
+long long eval(int p, int q) {
+  assert(p <= q);
+  if (p == q) {
+    switch (tokens[p].type) {
+    case TK_NUMBER: {
+      errno = 0;
+      char *end;
+      long long result = strtoll(tokens[p].str, &end, 0);
+      if (errno != 0 || end != tokens[p].str + tokens[p].str_sz) {
+        errno = 0;
+        eval_error_flag = true;
+        return -1;
+      }
+      return result;
+    }
+    default:
+      eval_error_flag = true;
+      return -1;
+    }
+  }
+
+  return 0;
+}
+
 word_t expr(char *e, bool *success) {
   if (!make_token(e)) {
     *success = false;
     return 0;
   }
 
-  /* TODO: Insert codes to evaluate the expression. */
-  TODO();
+  if (check_brace_legal()) {
+    word_t result = eval(0, nr_token - 1);
+    if (eval_error_flag) {
+      printf("Expression is illegal.\n");
+      eval_error_flag = false;
+      return 0;
+    }
+    return result;
+  } else {
+    printf("Expression has illegal parentheses.\n");
+  }
 
   return 0;
 }
