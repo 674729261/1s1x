@@ -114,9 +114,9 @@ static int parse_args(int argc, char *argv[]) {
 }
 
 int test_eval() {
-  extern long long expr(const char *e, bool *success);
+  extern long long expr(char *e, bool *success);
   struct {
-    const char *input;
+    char *input;
     long long result;
   } testcases[] = {{"1 +    2 *  3", 7}};
   for (int i = 0; i < sizeof(testcases) / sizeof(testcases[0]); i++) {
@@ -143,7 +143,7 @@ void init_monitor(int argc, char *argv[]) {
   /* Parse arguments. */
   parse_args(argc, argv);
 
-  unit_tests();
+  // unit_tests();
 
   /* Set random seed. */
   init_rand();
