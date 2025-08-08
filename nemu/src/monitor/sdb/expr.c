@@ -217,16 +217,19 @@ long long eval(int p, int q) {
       return -1;
     }
   }
-  if (p + 1 == q && tokens[p].type == '+')
-    return eval(p + 1, q);
-  else if (p + 1 == q && tokens[p].type == '-')
-    return -eval(p + 1, q);
-  else if (tokens[p].type == '(' && tokens[q].type == ')' &&
-           right_brace_pos[p] == q)
+  if (tokens[p].type == '(' && tokens[q].type == ')' && right_brace_pos[p] == q)
     return eval(p + 1, q - 1);
   else {
     int main_token = find_main_token(p, q);
-    Assert(main_token != -1, "Failed to pick main token");
+    if (main_token == -1) {
+      if (tokens[p].type == '+')
+        return eval(p + 1, q);
+      else if (tokens[p].type == '-')
+        return -eval(p + 1, q);
+      else
+        Assert(0, "Failed to pick main token");
+    }
+
     long long LHS = eval(p, main_token - 1);
     long long RHS = eval(main_token + 1, q);
     switch (tokens[main_token].type) {
