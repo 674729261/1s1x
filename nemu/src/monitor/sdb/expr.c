@@ -91,7 +91,7 @@ typedef struct token {
 static Token tokens[TOKEN_MAX_COUNT] __attribute__((used)) = {};
 static int nr_token __attribute__((used)) = 0;
 
-static bool make_token(char *e) {
+static bool make_token(const char *e) {
   int position = 0;
   int i;
   regmatch_t pmatch;
@@ -250,7 +250,7 @@ long long eval(int p, int q) {
   return 0;
 }
 
-long long expr(char *e, bool *success) {
+long long expr(const char *e, bool *success) {
   if (!make_token(e)) {
     *success = false;
     return 0;
