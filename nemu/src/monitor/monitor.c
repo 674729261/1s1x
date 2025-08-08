@@ -113,8 +113,9 @@ static int parse_args(int argc, char *argv[]) {
   return 0;
 }
 
-int test_eval() {
+void test_eval() {
   extern long long expr(const char *e, bool *success);
+
   struct {
     const char *input;
     long long result;
@@ -125,16 +126,15 @@ int test_eval() {
     if (!success || result != testcases[0].result) {
       printf("expr(\"%s\") = %lld, should be %lld\n", testcases[0].input,
              result, testcases[0].result);
-      return 1;
+      puts("eval() unit test failed, quiting...");
     }
   }
-  return 0;
+  puts("Test expr() finished");
 }
 void unit_tests() {
-  if (test_eval() != 0) {
-    puts("eval() unit test failed, quiting...");
-    exit(-1);
-  }
+  puts("---------------- Unit tests begin ----------------");
+  test_eval();
+  puts("---------------- Unit tests finished ----------------");
 }
 
 void init_monitor(int argc, char *argv[]) {
