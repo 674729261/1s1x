@@ -257,7 +257,7 @@ long long expr(char *e, bool *success) {
       *success = false;
       return 0;
     }
-
+    Log("Now %lld", result);
     return result;
   }
 
