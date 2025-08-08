@@ -17,6 +17,7 @@
 #include <cpu/cpu.h>
 #include <isa.h>
 #include <limits.h>
+#include <memory/vaddr.h>
 #include <readline/history.h>
 #include <readline/readline.h>
 #include <stdint.h>
@@ -90,14 +91,18 @@ static int cmd_x(char *args) {
     printf("Expecting 2 arguments : [scan length] [address]\n");
     return 0;
   }
-  int32_t scan_length = strtoll(parameter, NULL, 10);
+  int32_t scan_length = strtol(parameter, NULL, 10);
   parameter = strtok(NULL, " ");
+  if (scan_length <= 0) {
+    printf("scan_length must be positive\n");
+    return 0;
+  }
   if (parameter == NULL) {
     printf("Expecting 2 arguments : [scan length] [address]\n");
     return 0;
   }
-  int32_t address = strtoll(parameter, NULL, 16);
-  printf("%d, %d\n", scan_length, address);
+  int32_t address = strtol(parameter, NULL, 16);
+  printf("%08x", vaddr_read(address, 4));
   return 0;
 }
 static int cmd_p(char *args) { return 0; }
