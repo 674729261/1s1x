@@ -86,7 +86,7 @@ static int cmd_info(char *args) {
   return 0;
 }
 static int cmd_x(char *args) {
-  printf("%d\n", expr("0123s", NULL));
+  printf("%d\n", expr("1 + 2 * (3 + 4)", NULL));
   exit(0);
 
   char *parameter = strtok(NULL, " ");
