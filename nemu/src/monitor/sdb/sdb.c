@@ -15,6 +15,7 @@
 
 #include "sdb.h"
 #include <cpu/cpu.h>
+#include <debug.h>
 #include <isa.h>
 #include <limits.h>
 #include <memory/vaddr.h>
@@ -121,6 +122,7 @@ static int cmd_p(char *args) {
   bool success = true;
 
   long long result = expr(args, &success);
+  Log("Now %lld", result);
   if (success)
     printf("%lld\n", result);
 
