@@ -102,7 +102,7 @@ static int cmd_x(char *args) {
     return 0;
   }
   int32_t address = strtol(parameter, NULL, 16);
-  printf("%08x", vaddr_read(address, 4));
+  printf("%08x", vaddr_read(address, 8));
   return 0;
 }
 static int cmd_p(char *args) { return 0; }
