@@ -16,6 +16,7 @@
 #include <debug.h>
 #include <isa.h>
 #include <memory/paddr.h>
+#include <stdio.h>
 
 void init_rand();
 void init_log(const char *log_file);
@@ -82,7 +83,7 @@ static int parse_args(int argc, char *argv[]) {
       {0, 0, NULL, 0},
   };
   int o;
-  while ((o = getopt_long(argc, argv, "-bhl:d:p:", table, NULL)) != -1) {
+  while ((o = getopt_long(argc, argv, "-bhl:d:p:t", table, NULL)) != -1) {
     switch (o) {
     case 'b':
       sdb_set_batch_mode();
@@ -110,6 +111,43 @@ static int parse_args(int argc, char *argv[]) {
     }
   }
   return 0;
+}
+
+void test_eval() {
+  extern long long expr(const char *e, bool *success);
+
+  struct {
+    const char *input;
+    long long result;
+  } testcases[] = {{"1 +    2 *  3", 7},
+                   {"(1 +    2 ) *  3", 9},
+                   {"  -1+-  2--3+-4*(-5--9)  ", -16},
+                   {"  -----------114514", -114514},
+                   {"(9--10+-11-+12+(+13--14++15--(16++17--18++19)))  "
+                    "*(1--2++3--4++5--6++7--8)",
+                    3888},
+                   {"(9--10+-11*-+12+(+13--14++15--(16++17*--18++19)))  "
+                    "*(1--2++3--4++5--6++7--8)",
+                    19224},
+                   {"(9*--10+-11*-+12+(+13--14*++15--(16++17*--18++19)))  "
+                    "/    (1--2++3--4++5--6++7--8)",
+                    21}};
+  for (int i = 0; i < sizeof(testcases) / sizeof(testcases[0]); i++) {
+    bool success = true;
+    long long result = expr(testcases[i].input, &success);
+    if (!success || result != testcases[i].result) {
+      printf("expr(\"%s\") = %lld, should be %lld\n", testcases[i].input,
+             result, testcases[i].result);
+      puts("eval() unit test failed, quiting...");
+      exit(-1);
+    }
+  }
+  puts("Test expr() finished");
+}
+void unit_tests() {
+  puts("---------------- Unit tests begin ----------------");
+  test_eval();
+  puts("---------------- Unit tests finished ----------------");
 }
 
 void init_monitor(int argc, char *argv[]) {
@@ -141,7 +179,7 @@ void init_monitor(int argc, char *argv[]) {
 
   /* Initialize the simple debugger. */
   init_sdb();
-
+  unit_tests();
   IFDEF(CONFIG_ITRACE, init_disasm());
 
   /* Display welcome message. */
