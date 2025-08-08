@@ -18,6 +18,6 @@
 
 #include <common.h>
 
-long long expr(char *e, bool *success);
+long long expr(const char *e, bool *success);
 
 #endif

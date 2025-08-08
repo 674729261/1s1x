@@ -16,6 +16,7 @@
 #include <debug.h>
 #include <isa.h>
 #include <memory/paddr.h>
+#include <stdio.h>
 
 void init_rand();
 void init_log(const char *log_file);
@@ -82,7 +83,7 @@ static int parse_args(int argc, char *argv[]) {
       {0, 0, NULL, 0},
   };
   int o;
-  while ((o = getopt_long(argc, argv, "-bhl:d:p:", table, NULL)) != -1) {
+  while ((o = getopt_long(argc, argv, "-bhl:d:p:t", table, NULL)) != -1) {
     switch (o) {
     case 'b':
       sdb_set_batch_mode();
@@ -112,11 +113,37 @@ static int parse_args(int argc, char *argv[]) {
   return 0;
 }
 
+int test_eval() {
+  extern long long expr(const char *e, bool *success);
+  struct {
+    const char *input;
+    long long result;
+  } testcases[] = {{"1 +    2 *  3", 7}};
+  for (int i = 0; i < sizeof(testcases) / sizeof(testcases[0]); i++) {
+    bool success = true;
+    long long result = expr(testcases[0].input, &success);
+    if (!success || result != testcases[0].result) {
+      printf("expr(\"%s\") = %lld, should be %lld\n", testcases[0].input,
+             result, testcases[0].result);
+      return 1;
+    }
+  }
+  return 0;
+}
+void unit_tests() {
+  if (test_eval() != 0) {
+    puts("eval() unit test failed, quiting...");
+    exit(-1);
+  }
+}
+
 void init_monitor(int argc, char *argv[]) {
   /* Perform some global initialization. */
 
   /* Parse arguments. */
   parse_args(argc, argv);
+
+  unit_tests();
 
   /* Set random seed. */
   init_rand();
