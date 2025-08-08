@@ -127,6 +127,7 @@ void test_eval() {
       printf("expr(\"%s\") = %lld, should be %lld\n", testcases[0].input,
              result, testcases[0].result);
       puts("eval() unit test failed, quiting...");
+      exit(-1);
     }
   }
   puts("Test expr() finished");
