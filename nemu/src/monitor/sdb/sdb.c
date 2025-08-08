@@ -16,8 +16,11 @@
 #include "sdb.h"
 #include <cpu/cpu.h>
 #include <isa.h>
+#include <limits.h>
 #include <readline/history.h>
 #include <readline/readline.h>
+#include <stdint.h>
+#include <stdio.h>
 #include <utils.h>
 
 static int is_batch_mode = false;
@@ -56,7 +59,11 @@ static int cmd_q(char *args) {
 
 static int cmd_si(char *args) {
   char *parameter = strtok(NULL, " ");
-  puts(parameter);
+  uint64_t n_steps = 1;
+  if (parameter != NULL)
+    n_steps = strtoll(parameter, NULL, 10);
+
+  printf("%lu %lu\n", n_steps, sizeof(n_steps));
   // cpu_exec(-1);
   return 0;
 }
