@@ -119,8 +119,10 @@ static int cmd_p(char *args) {
     return 0;
   }
   bool success = true;
+
   long long result = expr(args, &success);
-  printf("%lld\n", result);
+  if (success)
+    printf("%lld\n", result);
 
   return 0;
 }
