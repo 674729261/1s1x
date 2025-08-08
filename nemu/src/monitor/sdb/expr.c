@@ -179,7 +179,7 @@ int find_main_token(int p, int q) {
       cnt_brace--;
     else if (tokens[i].catagry == TK_CATAGORY_OPERATOR && cnt_brace == 0) {
       if ((tokens[i].type == '+' || tokens[i].type == '-') &&
-          (i == 0 || tokens[i - 1].catagry == TK_CATAGORY_OPERATOR)) {
+          (i == p || tokens[i - 1].catagry == TK_CATAGORY_OPERATOR)) {
         continue;
       }
       if (lowest_prior >= tokens[i].priority) {
