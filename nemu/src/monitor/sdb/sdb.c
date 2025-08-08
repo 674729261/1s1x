@@ -21,6 +21,7 @@
 #include <readline/readline.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 #include <utils.h>
 
 static int is_batch_mode = false;
@@ -66,7 +67,23 @@ static int cmd_si(char *args) {
   cpu_exec(n_steps);
   return 0;
 }
-static int cmd_info(char *args) { return 0; }
+static int cmd_info(char *args) {
+  char *parameter = strtok(NULL, " ");
+  if (parameter == NULL) {
+    printf("Expecting parameter :\n'r' for registers\n 'w' for watcher\n");
+    return -1;
+  }
+
+  if (strcmp(parameter, "r")) {
+    isa_reg_display();
+  } else if (strcmp(parameter, "w")) {
+
+  } else {
+    printf("Expecting 'r' for registers or 'w' for watcher\n");
+    return -1;
+  }
+  return 0;
+}
 static int cmd_x(char *args) { return 0; }
 static int cmd_p(char *args) { return 0; }
 static int cmd_w(char *args) { return 0; }
