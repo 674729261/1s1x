@@ -20,9 +20,15 @@
  */
 #include <debug.h>
 #include <regex.h>
+#include <string.h>
+#define TOKEN_SUBSTR_LEN 32
+#define TOKEN_MAX_COUNT 64
+
 enum {
   TK_NOTYPE = 256,
   TK_EQ,
+  TK_NEQ,
+  TK_DECIMAL
 
   /* TODO: Add more token types */
 
@@ -37,9 +43,16 @@ static struct rule {
      * Pay attention to the precedence level of different rules.
      */
 
-    {" +", TK_NOTYPE}, // spaces
-    {"\\+", '+'},      // plus
-    {"==", TK_EQ},     // equal
+    {" +", TK_NOTYPE},    // spaces
+    {"\\+", '+'},         // plus
+    {"-", '-'},           // minus
+    {"\\*", '*'},         // times
+    {"\\/", '/'},         // over
+    {"==", TK_EQ},        // equal
+    {"!=", TK_NEQ},       // not equal
+    {"\\d+", TK_DECIMAL}, // decimals
+    {"\\(", '('},         // left brace
+    {"\\)", ')'},         // right brace
 };
 
 #define NR_REGEX ARRLEN(rules)
@@ -65,10 +78,10 @@ void init_regex() {
 
 typedef struct token {
   int type;
-  char str[32];
+  char str[TOKEN_SUBSTR_LEN];
 } Token;
 
-static Token tokens[32] __attribute__((used)) = {};
+static Token tokens[TOKEN_MAX_COUNT] __attribute__((used)) = {};
 static int nr_token __attribute__((used)) = 0;
 
 static bool make_token(char *e) {
@@ -89,16 +102,18 @@ static bool make_token(char *e) {
         Log("match rules[%d] = \"%s\" at position %d with len %d: %.*s", i,
             rules[i].regex, position, substr_len, substr_len, substr_start);
 
-        position += substr_len;
+        Assert(substr_len < TOKEN_SUBSTR_LEN,
+               "Token at position %d with len %d is too long", position,
+               substr_len);
 
-        /* TODO: Now a new token is recognized with rules[i]. Add codes
-         * to record the token in the array `tokens'. For certain types
-         * of tokens, some extra actions should be performed.
-         */
+        position += substr_len;
 
         switch (rules[i].token_type) {
         default:
-          TODO();
+          tokens[nr_token].type = rules[i].token_type;
+          strncpy(tokens[nr_token].str, substr_start, substr_len);
+          tokens[nr_token].str[substr_len] = '\0';
+          nr_token++;
         }
 
         break;
