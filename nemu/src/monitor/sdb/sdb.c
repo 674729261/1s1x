@@ -70,7 +70,7 @@ static int cmd_si(char *args) {
 static int cmd_info(char *args) {
   char *parameter = strtok(NULL, " ");
   if (parameter == NULL) {
-    printf("Expecting parameter :\n'r' for registers\n 'w' for watcher\n");
+    printf("Expecting parameter :\n'r' for registers\n'w' for watcher\n");
     return 0;
   }
 
