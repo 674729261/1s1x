@@ -74,9 +74,9 @@ static int cmd_info(char *args) {
     return -1;
   }
 
-  if (strcmp(parameter, "r")) {
+  if (strcmp(parameter, "r") == 0) {
     isa_reg_display();
-  } else if (strcmp(parameter, "w")) {
+  } else if (strcmp(parameter, "w") == 0) {
 
   } else {
     printf("Expecting 'r' for registers or 'w' for watcher\n");
