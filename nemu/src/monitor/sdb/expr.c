@@ -162,9 +162,8 @@ long long eval(int p, int q) {
     switch (tokens[p].type) {
     case TK_NUMBER: {
       errno = 0;
-      char *end;
-      long long result = strtoll(tokens[p].str, &end, 0);
-      if (errno != 0 || end != tokens[p].str + tokens[p].str_sz) {
+      long long result = strtoll(tokens[p].str, NULL, 0);
+      if (errno != 0) {
         errno = 0;
         eval_error_flag = true;
         return -1;
