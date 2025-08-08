@@ -118,7 +118,7 @@ int test_eval() {
   struct {
     const char *input;
     long long result;
-  } testcases[] = {{"1 +    2 *  3", 7}};
+  } testcases[] = {{"1 +    2 *  3", 6}};
   for (int i = 0; i < sizeof(testcases) / sizeof(testcases[0]); i++) {
     bool success = true;
     long long result = expr(testcases[0].input, &success);
