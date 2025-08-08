@@ -91,18 +91,23 @@ static int cmd_x(char *args) {
     printf("Expecting 2 arguments : [scan length] [address]\n");
     return 0;
   }
-  int32_t scan_length = strtol(parameter, NULL, 10);
+  int scan_length = strtol(parameter, NULL, 10);
   parameter = strtok(NULL, " ");
-  if (scan_length <= 0) {
-    printf("scan_length must be positive\n");
-    return 0;
-  }
+
   if (parameter == NULL) {
     printf("Expecting 2 arguments : [scan length] [address]\n");
     return 0;
   }
+  if (scan_length <= 0) {
+    printf("scan_length must be positive\n");
+    return 0;
+  }
   int32_t address = strtol(parameter, NULL, 16);
-  printf("%08x", vaddr_read(address, 8));
+
+  for (int i = 0; i < scan_length; i++) {
+    printf("%08x : %08x\n", address, vaddr_read(address, 4));
+    address += 4;
+  }
   return 0;
 }
 static int cmd_p(char *args) { return 0; }
