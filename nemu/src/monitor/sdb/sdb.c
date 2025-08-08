@@ -71,7 +71,7 @@ static int cmd_info(char *args) {
   char *parameter = strtok(NULL, " ");
   if (parameter == NULL) {
     printf("Expecting parameter :\n'r' for registers\n 'w' for watcher\n");
-    return -1;
+    return 0;
   }
 
   if (strcmp(parameter, "r") == 0) {
@@ -80,7 +80,7 @@ static int cmd_info(char *args) {
 
   } else {
     printf("Expecting 'r' for registers or 'w' for watcher\n");
-    return -1;
+    return 0;
   }
   return 0;
 }
