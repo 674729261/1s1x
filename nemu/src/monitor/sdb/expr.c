@@ -192,6 +192,7 @@ int find_main_token(int p, int q) {
 }
 
 long long eval(int p, int q) {
+  printf("%d %d\n", p, q);
   for (int i = p; i <= q; i++)
     printf("%s", tokens[i].str);
   printf("\n%p\n", eval_error_flag);
