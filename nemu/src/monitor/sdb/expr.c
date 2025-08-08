@@ -252,7 +252,7 @@ long long expr(char *e, bool *success) {
   if (check_brace_legal()) {
     long long result = eval(0, nr_token - 1);
     if (eval_error_flag) {
-      puts(EVAL_ERROR_ILLEGAL_EXPR);
+      puts(eval_error_flag);
       eval_error_flag = NULL;
       *success = false;
       return 0;
