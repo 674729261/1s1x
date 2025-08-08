@@ -119,18 +119,6 @@ static bool make_token(char *e) {
         case TK_NOTYPE:
           break;
         default:
-
-          if (nr_token == 0 || tokens[nr_token - 1].type == '+' ||
-              tokens[nr_token - 1].type == '-') {
-            Assert(nr_token != TOKEN_MAX_COUNT, "Too many tokens");
-            tokens[nr_token].type = TK_NUMBER;
-            tokens[nr_token].str[0] = '0';
-            tokens[nr_token].str[1] = '\0';
-            tokens[nr_token].str_sz = 1;
-            tokens[nr_token].catagry = TK_CATAGORY_OPERAND;
-            tokens[nr_token].priority = 114514;
-            nr_token++;
-          }
           Assert(nr_token != TOKEN_MAX_COUNT, "Too many tokens");
           tokens[nr_token].type = rules[i].token_type;
           strncpy(tokens[nr_token].str, substr_start, substr_len);
@@ -190,6 +178,10 @@ int find_main_token(int p, int q) {
     else if (tokens[i].type == ')')
       cnt_brace--;
     else if (tokens[i].catagry == TK_CATAGORY_OPERATOR && cnt_brace == 0) {
+      if ((tokens[i].type == '+' || tokens[i].type == '-') &&
+          (i == 0 || tokens[i - 1].catagry == TK_CATAGORY_OPERATOR)) {
+        continue;
+      }
       if (lowest_prior >= tokens[i].priority) {
         lowest_prior = tokens[i].priority;
         selected = i;
@@ -221,8 +213,12 @@ long long eval(int p, int q) {
       return -1;
     }
   }
-
-  if (tokens[p].type == '(' && tokens[q].type == ')' && right_brace_pos[p] == q)
+  if (tokens[p].type == '+')
+    return eval(p + 1, q);
+  else if (tokens[p].type == '-')
+    return -eval(p + 1, 1);
+  else if (tokens[p].type == '(' && tokens[q].type == ')' &&
+           right_brace_pos[p] == q)
     return eval(p + 1, q - 1);
   else {
     int main_token = find_main_token(p, q);
