@@ -119,6 +119,18 @@ static bool make_token(char *e) {
         case TK_NOTYPE:
           break;
         default:
+
+          if (nr_token == 0 || tokens[nr_token - 1].type == '+' ||
+              tokens[nr_token - 1].type == '-') {
+            Assert(nr_token != TOKEN_MAX_COUNT, "Too many tokens");
+            tokens[nr_token].type = TK_NUMBER;
+            tokens[nr_token].str[0] = '0';
+            tokens[nr_token].str[1] = '\0';
+            tokens[nr_token].str_sz = 1;
+            tokens[nr_token].catagry = TK_CATAGORY_OPERAND;
+            tokens[nr_token].priority = 114514;
+            nr_token++;
+          }
           Assert(nr_token != TOKEN_MAX_COUNT, "Too many tokens");
           tokens[nr_token].type = rules[i].token_type;
           strncpy(tokens[nr_token].str, substr_start, substr_len);
@@ -257,7 +269,7 @@ long long expr(char *e, bool *success) {
       *success = false;
       return 0;
     }
-    Log("Now %lld", result);
+
     return result;
   }
 
