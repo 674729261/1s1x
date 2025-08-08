@@ -36,29 +36,27 @@ enum {
   TK_NEQ,
   TK_NUMBER
 
-  /* TODO: Add more token types */
-
 };
+
+enum { TK_CATAGORY_OTHER = 0, TK_CATAGORY_OPERATOR, TK_CATAGORY_OPERAND };
 
 static struct rule {
   const char *regex;
   int token_type;
+  int catagry;
+  int priority;
 } rules[] = {
 
-    /* TODO: Add more rules.
-     * Pay attention to the precedence level of different rules.
-     */
-
-    {" +", TK_NOTYPE},                      // spaces
-    {"\\+", '+'},                           // plus
-    {"-", '-'},                             // minus
-    {"\\*", '*'},                           // times
-    {"\\/", '/'},                           // over
-    {"==", TK_EQ},                          // equal
-    {"!=", TK_NEQ},                         // not equal
-    {"(0[x,X])?[0-9,a-f,A-F]+", TK_NUMBER}, // a number
-    {"\\(", '('},                           // left brace
-    {"\\)", ')'},                           // right brace
+    {" +", TK_NOTYPE},                                           // spaces
+    {"\\+", '+', TK_CATAGORY_OPERATOR, 1},                       // plus
+    {"-", '-', TK_CATAGORY_OPERATOR, 1},                         // minus
+    {"\\*", '*', TK_CATAGORY_OPERATOR, 2},                       // times
+    {"\\/", '/', TK_CATAGORY_OPERATOR, 2},                       // over
+    {"==", TK_EQ, TK_CATAGORY_OPERATOR, 0},                      // equal
+    {"!=", TK_NEQ, TK_CATAGORY_OPERATOR, 0},                     // not equal
+    {"(0[x,X])?[0-9,a-f,A-F]+", TK_NUMBER, TK_CATAGORY_OPERAND}, // a number
+    {"\\(", '('},                                                // left brace
+    {"\\)", ')'},                                                // right brace
 };
 
 #define NR_REGEX ARRLEN(rules)
@@ -86,6 +84,8 @@ typedef struct token {
   int type;
   char str[TOKEN_SUBSTR_LEN];
   int str_sz;
+  int catagry;
+  int priority;
 } Token;
 
 static Token tokens[TOKEN_MAX_COUNT] __attribute__((used)) = {};
@@ -116,11 +116,16 @@ static bool make_token(char *e) {
         position += substr_len;
 
         switch (rules[i].token_type) {
+        case TK_NOTYPE:
+          break;
         default:
+          Assert(nr_token != TOKEN_MAX_COUNT, "Too many tokens");
           tokens[nr_token].type = rules[i].token_type;
           strncpy(tokens[nr_token].str, substr_start, substr_len);
           tokens[nr_token].str[substr_len] = '\0';
           tokens[nr_token].str_sz = substr_len;
+          tokens[nr_token].catagry = rules[i].catagry;
+          tokens[nr_token].priority = rules[i].priority;
           nr_token++;
         }
 
@@ -155,9 +160,38 @@ bool check_brace_legal() {
   return true;
 }
 
-static bool eval_error_flag;
+const char *EVAL_ERROR_ILLEGAL_EXPR = "Expression is illegal.";
+const char *EVAL_ERROR_LATGE_CONST = "Numeric constant id too large.";
+const char *EVAL_ERROR_DIV_BY_ZERO = "Divided by zero";
+
+static const char *eval_error_flag;
+
+int find_main_token(int p, int q) {
+  // 括号内的不选
+  // 非运算符不选
+  // 先选优先级低的
+  // 先选靠右的
+  int cnt_brace = 0, selected = -1, lowest_prior = 114514;
+  for (int i = p; i <= q; i++) {
+    if (tokens[i].type == '(')
+      cnt_brace++;
+    else if (tokens[i].type == ')')
+      cnt_brace--;
+    else if (tokens[i].catagry == TK_CATAGORY_OPERATOR && cnt_brace == 0) {
+      if (lowest_prior >= tokens[i].priority) {
+        lowest_prior = tokens[i].priority;
+        selected = i;
+      }
+    }
+  }
+  return selected;
+}
+
 long long eval(int p, int q) {
-  assert(p <= q);
+  if (p > q) {
+    eval_error_flag = EVAL_ERROR_ILLEGAL_EXPR;
+    return -1;
+  }
   if (p == q) {
     switch (tokens[p].type) {
     case TK_NUMBER: {
@@ -165,37 +199,67 @@ long long eval(int p, int q) {
       long long result = strtoll(tokens[p].str, NULL, 0);
       if (errno != 0) {
         errno = 0;
-        eval_error_flag = true;
+        eval_error_flag = EVAL_ERROR_LATGE_CONST;
         return -1;
       }
       return result;
     }
     default:
-      eval_error_flag = true;
+      eval_error_flag = EVAL_ERROR_ILLEGAL_EXPR;
       return -1;
     }
   }
 
+  if (tokens[p].type == '(' && tokens[q].type == ')' && right_brace_pos[p] == q)
+    return eval(p + 1, q - 1);
+  else {
+    int main_token = find_main_token(p, q);
+    Assert(main_token != -1, "Failed to pick main token");
+    long long LHS = eval(p, main_token - 1);
+    long long RHS = eval(main_token + 1, q);
+    switch (tokens[main_token].type) {
+    case '+':
+      return LHS + RHS;
+    case '-':
+      return LHS - RHS;
+    case '*':
+      return LHS * RHS;
+    case '/':
+      if (RHS == 0) {
+        eval_error_flag = EVAL_ERROR_DIV_BY_ZERO;
+        return -1;
+      }
+      return LHS / RHS;
+    case TK_EQ:
+      return LHS == RHS;
+    case TK_NEQ:
+      return LHS != RHS;
+    default:
+      eval_error_flag = EVAL_ERROR_ILLEGAL_EXPR;
+      return -1;
+    }
+  }
   return 0;
 }
 
-word_t expr(char *e, bool *success) {
+long long expr(char *e, bool *success) {
   if (!make_token(e)) {
     *success = false;
     return 0;
   }
 
   if (check_brace_legal()) {
-    word_t result = eval(0, nr_token - 1);
+    long long result = eval(0, nr_token - 1);
     if (eval_error_flag) {
-      printf("Expression is illegal.\n");
-      eval_error_flag = false;
+      puts(EVAL_ERROR_ILLEGAL_EXPR);
+      eval_error_flag = NULL;
+      *success = false;
       return 0;
     }
     return result;
-  } else {
-    printf("Expression has illegal parentheses.\n");
   }
 
+  printf("Expression has illegal parentheses.\n");
+  *success = false;
   return 0;
 }

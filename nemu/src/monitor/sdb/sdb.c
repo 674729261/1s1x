@@ -86,7 +86,7 @@ static int cmd_info(char *args) {
   return 0;
 }
 static int cmd_x(char *args) {
-  printf("%d\n", expr("1 + 2 * (3 + 4))", NULL));
+  printf("%d\n", expr("1 + 2 * (3 + 4)", NULL));
   exit(0);
 
   char *parameter = strtok(NULL, " ");
@@ -113,7 +113,17 @@ static int cmd_x(char *args) {
   }
   return 0;
 }
-static int cmd_p(char *args) { return 0; }
+static int cmd_p(char *args) {
+  if (args == NULL) {
+    printf("Expecting a expression\n");
+    return 0;
+  }
+  bool success = true;
+  long long result = expr(args, &success);
+  printf("%lld\n", result);
+
+  return 0;
+}
 static int cmd_w(char *args) { return 0; }
 static int cmd_d(char *args) { return 0; }
 
