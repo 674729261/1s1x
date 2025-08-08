@@ -121,6 +121,7 @@ static int cmd_p(char *args) {
   bool success = true;
 
   long long result = expr(args, &success);
+  printf("Now %lld", result);
   if (success)
     printf("%lld\n", result);
 
