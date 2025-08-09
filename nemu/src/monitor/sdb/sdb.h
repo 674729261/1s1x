@@ -28,7 +28,10 @@ typedef struct watchpoint {
 
   char expression[TOKEN_SUBSTR_LEN];
 
+  long long old_value;
+
 } WP;
+
 long long expr(const char *e, bool *success);
 
 #endif
