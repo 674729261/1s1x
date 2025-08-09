@@ -16,6 +16,7 @@
 #include "sdb.h"
 #include <cpu/cpu.h>
 #include <debug.h>
+#include <errno.h>
 #include <isa.h>
 #include <limits.h>
 #include <memory/vaddr.h>
@@ -63,12 +64,21 @@ static int cmd_q(char *args) {
 static int cmd_si(char *args) {
   char *parameter = strtok(NULL, " ");
   uint64_t n_steps = 1;
-  if (parameter != NULL)
-    n_steps = strtoll(parameter, NULL, 10);
+  if (parameter != NULL) {
+    errno = 0;
+    n_steps = strtoull(parameter, NULL, 10);
+    if (errno != 0) {
+      printf("Bad argument %s\n", parameter);
+      return 0;
+    }
+  }
 
   cpu_exec(n_steps);
   return 0;
 }
+
+WP *watcher_table[NR_WP] = {};
+
 static int cmd_info(char *args) {
   char *parameter = strtok(NULL, " ");
   if (parameter == NULL) {
@@ -79,7 +89,8 @@ static int cmd_info(char *args) {
   if (strcmp(parameter, "r") == 0) {
     isa_reg_display();
   } else if (strcmp(parameter, "w") == 0) {
-
+    extern void list_watchers();
+    list_watchers();
   } else {
     printf("Expecting 'r' for registers or 'w' for watcher\n");
     return 0;
@@ -135,8 +146,48 @@ static int cmd_p(char *args) {
 
   return 0;
 }
-static int cmd_w(char *args) { return 0; }
-static int cmd_d(char *args) { return 0; }
+static int cmd_w(char *args) {
+  bool success = true;
+  long long value = expr(args, &success);
+  if (!success) {
+    puts("This expression is invalid, did not setup any watcher.");
+    return 0;
+  }
+  WP *new_wp(const char *expression, long long value);
+  WP *wp = new_wp(args, value);
+  watcher_table[wp->NO] = wp;
+  if (wp)
+    printf("Setup a new watcher #%d\n", wp->NO);
+  else
+    printf("Failed to allocate a new watcher : No more free watchers.\n");
+  return 0;
+}
+static int cmd_d(char *args) {
+  extern void free_wp(WP * wp);
+  char *parameter = strtok(NULL, " ");
+  long id_watcher;
+  if (parameter != NULL) {
+    errno = 0;
+    char *end = NULL;
+    id_watcher = strtol(parameter, &end, 10);
+    if (errno != 0 || id_watcher < 0 || id_watcher >= NR_WP || *end != '\0') {
+      printf("Bad argument %s, need an integer >=0 and <= %d\n", parameter,
+             NR_WP - 1);
+      return 0;
+    }
+  } else {
+    puts("Expecting an argument : watcher id to delete");
+    return 0;
+  }
+  if (watcher_table[id_watcher] == NULL) {
+    printf("Watcher #%ld is inactive.\n", id_watcher);
+    return 0;
+  }
+  free_wp(watcher_table[id_watcher]);
+  watcher_table[id_watcher] = NULL;
+  printf("Removed watcher #%ld.\n", id_watcher);
+  return 0;
+}
 
 static int cmd_help(char *args);
 
