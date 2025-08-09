@@ -9,5 +9,6 @@
 !README.md
 !Kconfig
 !**/*.md
+!/count
 include/config
 include/generated
