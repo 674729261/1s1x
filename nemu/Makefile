@@ -39,6 +39,11 @@ SRCS-BLACKLIST-y += $(SRCS-BLACKLIST) $(shell find -L $(DIRS-BLACKLIST-y) -name 
 SRCS-y += $(shell find -L $(DIRS-y) -name "*.c")
 SRCS = $(filter-out $(SRCS-BLACKLIST-y),$(SRCS-y))
 
+.PHONY: count
+
+count:
+	bash -e ./count
+
 # Extract compiler and options from menuconfig
 ifneq ($(CONFIG_CC),)
 CC = $(call remove_quote,$(CONFIG_CC))
@@ -61,3 +66,6 @@ else
 # Include rules to build NEMU
 include $(NEMU_HOME)/scripts/native.mk
 endif
+
+
+
