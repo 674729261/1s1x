@@ -18,6 +18,17 @@
 
 #include <common.h>
 
+#define TOKEN_SUBSTR_LEN 64
+#define TOKEN_MAX_COUNT 256
+#define NR_WP 32
+
+typedef struct watchpoint {
+  int NO;
+  struct watchpoint *next;
+
+  char expression[TOKEN_SUBSTR_LEN];
+
+} WP;
 long long expr(const char *e, bool *success);
 
 #endif

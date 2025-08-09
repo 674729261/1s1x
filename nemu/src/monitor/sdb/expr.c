@@ -14,6 +14,7 @@
  ***************************************************************************************/
 
 #include "common.h"
+#include "sdb.h"
 #include <assert.h>
 #include <errno.h>
 #include <isa.h>
@@ -29,8 +30,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#define TOKEN_SUBSTR_LEN 32
-#define TOKEN_MAX_COUNT 256
 
 enum {
   TK_NOTYPE = 256,
