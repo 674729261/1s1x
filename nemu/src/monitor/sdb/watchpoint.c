@@ -18,8 +18,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#define NR_WP 32
-
 static WP wp_pool[NR_WP] = {};
 static WP *head = NULL, *free_ = NULL;
 
@@ -85,9 +83,9 @@ void list_watchers() {
     puts("---------------------------------------------------");
     for (WP *iter = head; iter != NULL; iter = iter->next) {
       ++cnt_used;
-      printf("%4d|%20lld|%s\n", iter->NO, iter->old_value, iter->expression);
+      printf("%4d|%20lld|%25s\n", iter->NO, iter->old_value, iter->expression);
     }
-    puts("------------------------------");
+    puts("---------------------------------------------------");
   }
   printf("%d active watchers, %d free watchers.\n", cnt_used, NR_WP - cnt_used);
 }
