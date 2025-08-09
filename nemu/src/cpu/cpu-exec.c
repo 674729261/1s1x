@@ -19,7 +19,6 @@
 #include <debug.h>
 #include <locale.h>
 
-#include "../monitor/sdb/sdb.h"
 #include "utils.h"
 
 /* The assembly code of instructions executed is only output to the screen
