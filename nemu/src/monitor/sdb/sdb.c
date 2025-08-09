@@ -165,10 +165,10 @@ static int cmd_w(char *args) {
 static int cmd_d(char *args) {
   extern void free_wp(WP * wp);
   char *parameter = strtok(NULL, " ");
-  long long id_watcher;
+  long id_watcher;
   if (parameter != NULL) {
     errno = 0;
-    id_watcher = strtoll(parameter, NULL, 10);
+    id_watcher = strtol(parameter, NULL, 10);
     if (errno != 0 || id_watcher < 0 || id_watcher >= NR_WP) {
       printf("Bad argument %s, need an integer >=0 and <= %d\n", parameter,
              NR_WP - 1);
@@ -178,9 +178,13 @@ static int cmd_d(char *args) {
     puts("Expecting an argument : watcher id to delete");
     return 0;
   }
-
+  if (watcher_table[id_watcher] == NULL) {
+    printf("Watcher #%ld is now active.\n", id_watcher);
+    return 0;
+  }
   free_wp(watcher_table[id_watcher]);
   watcher_table[id_watcher] = NULL;
+  printf("Removed watcher #%ld.\n", id_watcher);
   return 0;
 }
 
