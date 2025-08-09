@@ -168,8 +168,9 @@ static int cmd_d(char *args) {
   long id_watcher;
   if (parameter != NULL) {
     errno = 0;
-    id_watcher = strtol(parameter, NULL, 10);
-    if (errno != 0 || id_watcher < 0 || id_watcher >= NR_WP) {
+    char *end = NULL;
+    id_watcher = strtol(parameter, &end, 10);
+    if (errno != 0 || id_watcher < 0 || id_watcher >= NR_WP || *end != '\0') {
       printf("Bad argument %s, need an integer >=0 and <= %d\n", parameter,
              NR_WP - 1);
       return 0;
@@ -179,7 +180,7 @@ static int cmd_d(char *args) {
     return 0;
   }
   if (watcher_table[id_watcher] == NULL) {
-    printf("Watcher #%ld is now active.\n", id_watcher);
+    printf("Watcher #%ld is inactive.\n", id_watcher);
     return 0;
   }
   free_wp(watcher_table[id_watcher]);
