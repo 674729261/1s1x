@@ -94,21 +94,31 @@ static int cmd_x(char *args) {
     return 0;
   }
   int scan_length = strtol(parameter, NULL, 10);
-  parameter = strtok(NULL, " ");
+
+  parameter = strtok(NULL, "\0");
 
   if (parameter == NULL) {
     printf("Expecting 2 arguments : [scan length] [address]\n");
     return 0;
   }
+
   if (scan_length <= 0) {
     printf("scan_length must be positive\n");
     return 0;
   }
-  int32_t address = strtol(parameter, NULL, 16);
+  bool success = true;
+  long long value = expr(parameter, &success);
+  if (!success)
+    printf("Invalid expression %s\n", parameter);
+  else if (value > (long long)UINT32_MAX || value < 0)
+    printf("Invalid address %lld\n", value);
+  else {
+    word_t address = (word_t)value;
 
-  for (int i = 0; i < scan_length; i++) {
-    printf("%08x : %08x\n", address, vaddr_read(address, 4));
-    address += 4;
+    for (int i = 0; i < scan_length; i++) {
+      printf("%08x : %08x\n", address, vaddr_read(address, 4));
+      address += 4;
+    }
   }
   return 0;
 }

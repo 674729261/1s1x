@@ -16,7 +16,9 @@
 #include <debug.h>
 #include <isa.h>
 #include <memory/paddr.h>
+#include <stddef.h>
 #include <stdio.h>
+#include <sys/types.h>
 
 void init_rand();
 void init_log(const char *log_file);
@@ -120,7 +122,7 @@ void test_eval() {
     const char *input;
     long long result;
   } testcases[] = {{"1 +    2 *  3", 7},
-                   {"(1 +    2 ) *  3", 9},
+                   {"(1 +    2 ) *  (3+4)", 21},
                    {"  -1+-  2--3+-4*(-5--9)  ", -16},
                    {"  -----------114514", -114514},
                    {"(9--10+-11-+12+(+13--14++15--(16++17--18++19)))  "
@@ -131,9 +133,11 @@ void test_eval() {
                     19224},
                    {"(9*--10+-11*-+12+(+13--14*++15--(16++17*--18++19)))  "
                     "/    (1--2++3--4++5--6++7--8)",
-                    21}};
+                    21},
+                   {"(((123 | 234 - ~123 & ~234) ^ 42 * 3 )% 29)", 25}};
+  bool success = true;
   for (int i = 0; i < sizeof(testcases) / sizeof(testcases[0]); i++) {
-    bool success = true;
+
     long long result = expr(testcases[i].input, &success);
     if (!success || result != testcases[i].result) {
       printf("expr(\"%s\") = %lld, should be %lld\n", testcases[i].input,
@@ -142,8 +146,42 @@ void test_eval() {
       exit(-1);
     }
   }
+
+  FILE *fp = fopen("test.txt", "r");
+  if (fp != NULL) {
+
+    while (!feof(fp)) {
+      long long result;
+      char *expression = NULL;
+      size_t length;
+      int scanret = fscanf(fp, "%lld", &result);
+      Assert(scanret == 1, "Failed to load standard result");
+      ssize_t read_sz = getline(&expression, &length, fp);
+
+      Assert(read_sz != -1, "Failed to load testcases");
+
+      if (read_sz > 0 && expression[read_sz - 1] == '\n') {
+        expression[read_sz - 1] = '\0';
+      }
+
+      long long ret = expr(expression, &success);
+
+      if (!success || result != ret) {
+        printf("expr(\"%s\") = %lld, should be %lld\n", expression, ret,
+               result);
+        free(expression);
+        puts("eval() unit test failed, quiting...");
+        exit(-1);
+      }
+      free(expression);
+    }
+
+  } else {
+    puts("Failed to open test.txt");
+  }
   puts("Test expr() finished");
 }
+
 void unit_tests() {
   puts("---------------- Unit tests begin ----------------");
   test_eval();
