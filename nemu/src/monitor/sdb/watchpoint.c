@@ -79,7 +79,7 @@ void list_watchers() {
   int cnt_used = 0;
   if (head != NULL) {
     puts("---------------------------------------------------");
-    puts("ID  |value               |expr                     ");
+    puts("ID  |               value|                     expr");
     puts("---------------------------------------------------");
     for (WP *iter = head; iter != NULL; iter = iter->next) {
       ++cnt_used;
