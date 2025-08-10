@@ -67,7 +67,7 @@ lines2=$(find . -name "*.[c|h]" | xargs cat | tr -s '\n' | wc -l)
 echo "相比pa0多了$((lines2-lines1))行"
 ```
 
-# RTFM
+# 4.RTFM
 打开`nemu/scripters/build.mk`文件, 你会在`CFLAGS`变量中看到gcc的一些编译选项. 请解释gcc中的`-Wall`和`-Werror`有什么作用? 为什么要使用`-Wall`和`-Werror`?
 
 `-Wall`作用：开启大部分常用的警告，比如未使用变量、类型不匹配等。可以提前发现代码中的潜在 bug，提高代码质量。
