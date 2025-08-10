@@ -13,6 +13,7 @@
  * See the Mulan PSL v2 for more details.
  ***************************************************************************************/
 
+#include "sdb/sdb.h"
 #include <debug.h>
 #include <isa.h>
 #include <memory/paddr.h>
@@ -116,7 +117,6 @@ static int parse_args(int argc, char *argv[]) {
 }
 
 void test_eval() {
-  extern long long expr(const char *e, bool *success);
 
   struct {
     const char *input;

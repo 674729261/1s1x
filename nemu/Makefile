@@ -41,8 +41,6 @@ SRCS = $(filter-out $(SRCS-BLACKLIST-y),$(SRCS-y))
 
 .PHONY: count
 
-count:
-	bash -e ./count
 
 # Extract compiler and options from menuconfig
 ifneq ($(CONFIG_CC),)
@@ -67,5 +65,5 @@ else
 include $(NEMU_HOME)/scripts/native.mk
 endif
 
-
-
+count:
+	bash -e ./count

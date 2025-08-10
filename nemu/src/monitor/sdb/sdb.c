@@ -89,7 +89,7 @@ static int cmd_info(char *args) {
   if (strcmp(parameter, "r") == 0) {
     isa_reg_display();
   } else if (strcmp(parameter, "w") == 0) {
-    extern void list_watchers();
+
     list_watchers();
   } else {
     printf("Expecting 'r' for registers or 'w' for watcher\n");
@@ -163,7 +163,6 @@ static int cmd_w(char *args) {
   return 0;
 }
 static int cmd_d(char *args) {
-  extern void free_wp(WP * wp);
   char *parameter = strtok(NULL, " ");
   long id_watcher;
   if (parameter != NULL) {
