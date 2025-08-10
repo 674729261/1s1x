@@ -33,6 +33,8 @@ build:
 # The Unit Tests
 .PHONY: tests
 tests: $(TESTS)
+	@echo "练习44：环形缓冲区"
+	@read e
 	sh ./tests/runtests.sh
 
 $(TESTS): %: %.c
