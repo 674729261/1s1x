@@ -171,11 +171,11 @@ static int cmd_w(char *args) {
 
   WP *wp = new_wp(args, value, false);
 
-  if (wp)
+  if (wp) {
     printf("Setup a new watcher #%d\n", wp->NO);
-  else
+    watcher_table[wp->NO] = wp;
+  } else
     printf("Failed to allocate a new watcher : No more free watchers.\n");
-  watcher_table[wp->NO] = wp;
   return 0;
 }
 static int cmd_wh(char *args) {
@@ -188,12 +188,13 @@ static int cmd_wh(char *args) {
 
   WP *wp = new_wp(args, value, true);
 
-  if (wp)
+  if (wp) {
     printf("Setup a new watcher #%d\n", wp->NO);
-  else
+    watcher_table[wp->NO] = wp;
+  } else
     printf("Failed to allocate a new watcher : No more free watchers.\n");
+
   return 0;
-  watcher_table[wp->NO] = wp;
 }
 static int cmd_d(char *args) {
   char *parameter = strtok(NULL, " ");
