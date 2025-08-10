@@ -86,7 +86,7 @@ void list_watchers(void) {
     for (WP *iter = head; iter != NULL; iter = iter->next) {
       ++cnt_used;
       if (iter->is_hex)
-        printf("%4d|0x%018x|%25s\n", iter->NO, (word_t)iter->old_value,
+        printf("%4d|          0x%08x|%25s\n", iter->NO, (word_t)iter->old_value,
                iter->expression);
       else
         printf("%4d|%20lld|%25s\n", iter->NO, iter->old_value,

@@ -157,7 +157,7 @@ static int cmd_ph(char *args) {
 
   long long result = expr(args, &success);
   if (success)
-    printf("0x%x\n", (word_t)result);
+    printf("0x%08x\n", (word_t)result);
 
   return 0;
 }
