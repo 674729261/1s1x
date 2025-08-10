@@ -22,7 +22,7 @@ $$
 
 那么这个学期下来, 你将会在调试上花费多少时间?
 
-$500\times 90\% \times 30\mathrm s \times 20 = 75\mathrm h$
+$500\times 0.9 \times 30\mathrm s \times 20 = 75\mathrm h$
 
 # 3.RTFM
 ### riscv32有哪几种指令格式?
