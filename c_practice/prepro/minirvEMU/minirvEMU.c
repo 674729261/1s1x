@@ -129,7 +129,8 @@ int main(int argc, char *argv[]) {
   printf("Load %d word(s) from program file %s\n", curpos, argv[1]);
   fclose(fp);
   puts("Begin simulation");
-  for (int i = 0; i < cycles; i++) {
+  int emu_cycles;
+  for (emu_cycles = 0; emu_cycles < cycles && !ebreak; emu_cycles++) {
     inst_cycle();
   }
 
@@ -137,7 +138,7 @@ int main(int argc, char *argv[]) {
     puts("Program terminated by ebreak");
   else
     puts("Clock cycles run out");
-  printf("PC = %08x after %d cycle(s)\n", PC, cycles);
+  printf("PC = %08x after %d cycle(s)\n", PC, emu_cycles);
   puts("Registers:");
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 8; j++)
