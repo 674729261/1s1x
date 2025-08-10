@@ -40,7 +40,7 @@ enum {
   TK_LEQ,
   TK_GEQ,
   TK_BOOL_AND,
-  TK_BOOL_OR
+  TK_BOOL_OR,
 
 };
 
@@ -86,6 +86,7 @@ static struct rule {
     {"(0[x,X])?[0-9,a-f,A-F]+", TK_NUMBER, TK_CATAGORY_OPERAND}, // a number
     {"\\(", '('}, // left parentheses
     {"\\)", ')'}, // right parentheses
+
 };
 
 #define NR_REGEX ARRLEN(rules)

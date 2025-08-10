@@ -33,6 +33,8 @@ build:
 # The Unit Tests
 .PHONY: tests
 tests: $(TESTS)
+	@echo "练习32，33：链表和链表排序"
+	@read a
 	sh ./tests/runtests.sh
 
 $(TESTS): %: %.c
