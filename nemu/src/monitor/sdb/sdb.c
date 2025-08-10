@@ -14,6 +14,7 @@
  ***************************************************************************************/
 
 #include "sdb.h"
+#include "common.h"
 #include <cpu/cpu.h>
 #include <debug.h>
 #include <errno.h>
@@ -146,6 +147,20 @@ static int cmd_p(char *args) {
 
   return 0;
 }
+
+static int cmd_ph(char *args) {
+  if (args == NULL) {
+    printf("Expecting a expression\n");
+    return 0;
+  }
+  bool success = true;
+
+  long long result = expr(args, &success);
+  if (success)
+    printf("0x%08x\n", (word_t)result);
+
+  return 0;
+}
 static int cmd_w(char *args) {
   bool success = true;
   long long value = expr(args, &success);
@@ -153,13 +168,32 @@ static int cmd_w(char *args) {
     puts("This expression is invalid, did not setup any watcher.");
     return 0;
   }
-  WP *new_wp(const char *expression, long long value);
-  WP *wp = new_wp(args, value);
-  watcher_table[wp->NO] = wp;
-  if (wp)
+
+  WP *wp = new_wp(args, value, false);
+
+  if (wp) {
     printf("Setup a new watcher #%d\n", wp->NO);
-  else
+    watcher_table[wp->NO] = wp;
+  } else
     printf("Failed to allocate a new watcher : No more free watchers.\n");
+  return 0;
+}
+static int cmd_wh(char *args) {
+  bool success = true;
+  long long value = expr(args, &success);
+  if (!success) {
+    puts("This expression is invalid, did not setup any watcher.");
+    return 0;
+  }
+
+  WP *wp = new_wp(args, value, true);
+
+  if (wp) {
+    printf("Setup a new watcher #%d\n", wp->NO);
+    watcher_table[wp->NO] = wp;
+  } else
+    printf("Failed to allocate a new watcher : No more free watchers.\n");
+
   return 0;
 }
 static int cmd_d(char *args) {
@@ -202,7 +236,9 @@ static struct {
     {"info", "Show program status", cmd_info},
     {"x", "Scan memory", cmd_x},
     {"p", "Evaluate expression", cmd_p},
+    {"ph", "Evaluate hexdecimal expression", cmd_ph},
     {"w", "Setup a watcher", cmd_w},
+    {"wh", "Setup a hexdecimal watcher", cmd_wh},
     {"d", "Remove a watcher", cmd_d}
 
     /* TODO: Add more commands */

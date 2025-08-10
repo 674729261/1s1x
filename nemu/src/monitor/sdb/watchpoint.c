@@ -13,6 +13,7 @@
  * See the Mulan PSL v2 for more details.
  ***************************************************************************************/
 
+#include "common.h"
 #include "debug.h"
 #include "sdb.h"
 #include <stdio.h>
@@ -32,7 +33,7 @@ void init_wp_pool() {
   free_ = wp_pool;
 }
 
-WP *new_wp(const char *expression, long long value) {
+WP *new_wp(const char *expression, long long value, bool is_hex) {
   if (free_ == NULL)
     return NULL;
   WP *ret = free_;
@@ -41,6 +42,7 @@ WP *new_wp(const char *expression, long long value) {
   head = ret;
   strncpy(ret->expression, expression, TOKEN_SUBSTR_LEN);
   ret->old_value = value;
+  ret->is_hex = is_hex;
   return ret;
 }
 void free_wp(WP *wp) {
@@ -83,7 +85,12 @@ void list_watchers(void) {
     puts("---------------------------------------------------");
     for (WP *iter = head; iter != NULL; iter = iter->next) {
       ++cnt_used;
-      printf("%4d|%20lld|%25s\n", iter->NO, iter->old_value, iter->expression);
+      if (iter->is_hex)
+        printf("%4d|          0x%08x|%25s\n", iter->NO, (word_t)iter->old_value,
+               iter->expression);
+      else
+        printf("%4d|%20lld|%25s\n", iter->NO, iter->old_value,
+               iter->expression);
     }
     puts("---------------------------------------------------");
   }
