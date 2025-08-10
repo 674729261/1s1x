@@ -91,7 +91,7 @@ static void gen_rand_expr(int len) {
       break;
     case 'n':
       if (last != ')' && last != 'n') {
-        switch (rand() % 6) {
+        switch (rand() % 8) {
         case 0:
           buf[char_cnt++] = ' ';
           buf[char_cnt++] = '-';
@@ -99,6 +99,10 @@ static void gen_rand_expr(int len) {
         case 1:
           buf[char_cnt++] = ' ';
           buf[char_cnt++] = '+';
+          break;
+        case 2:
+          buf[char_cnt++] = ' ';
+          buf[char_cnt++] = '~';
           break;
         }
         buf[char_cnt++] = (rand() % 9 + '1');
@@ -108,7 +112,7 @@ static void gen_rand_expr(int len) {
       break;
     case '(':
       if (last != ')' && last != 'n') {
-        switch (rand() % 6) {
+        switch (rand() % 8) {
         case 0:
           buf[char_cnt++] = ' ';
           buf[char_cnt++] = '-';
@@ -116,6 +120,10 @@ static void gen_rand_expr(int len) {
         case 1:
           buf[char_cnt++] = ' ';
           buf[char_cnt++] = '+';
+          break;
+        case 2:
+          buf[char_cnt++] = ' ';
+          buf[char_cnt++] = '~';
           break;
         }
         buf[char_cnt++] = last = '(';
