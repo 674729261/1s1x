@@ -37,7 +37,6 @@ long long expr(const char *e, bool *success);
 WP *new_wp(const char *expression, long long value);
 void free_wp(WP *wp);
 bool exam_watchers(void);
-
 void list_watchers(void);
 
 #endif

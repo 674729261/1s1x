@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 /** Our old friend die from ex17. */
 void die(const char *message) {
@@ -92,11 +93,13 @@ int strange_order(int a, int b) {
  */
 void test_sorting(int *numbers, int count, compare_cb cmp, sort_func srt) {
   int i = 0;
+  clock_t begin = clock();
   int *sorted = srt(numbers, count, cmp);
+  double duration = (double)(clock() - begin) / CLOCKS_PER_SEC;
 
   if (!sorted)
     die("Failed to sort as requested.");
-
+  printf("Time : %fms\n", duration * 1000);
   for (i = 0; i < count; i++) {
     printf("%d ", sorted[i]);
   }

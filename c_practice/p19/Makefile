@@ -1,6 +1,6 @@
 CFLAGS=-Wall -g
 
-all: p19
+all: p19 test
 
 p19: object.o
 

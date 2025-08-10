@@ -1,5 +1,6 @@
 # 1.程序是个状态机
-画出计算1+2+...+100的程序的状态机 
+画出计算1+2+...+100的程序的状态机
+
 $$
 状态为(PC,R_{result},R_i)\\
 初始状态(PC,R_{result},R_i)_0=(0,0,0)\\
@@ -21,7 +22,7 @@ $$
 
 那么这个学期下来, 你将会在调试上花费多少时间?
 
-$500\times 90\% \times 30\mathrm s \times 20 = 75\mathrm h$
+$500\times 0.9 \times 30\mathrm s \times 20 = 75\mathrm h$
 
 # 3.RTFM
 ### riscv32有哪几种指令格式?
@@ -67,7 +68,7 @@ lines2=$(find . -name "*.[c|h]" | xargs cat | tr -s '\n' | wc -l)
 echo "相比pa0多了$((lines2-lines1))行"
 ```
 
-# RTFM
+# 4.RTFM
 打开`nemu/scripters/build.mk`文件, 你会在`CFLAGS`变量中看到gcc的一些编译选项. 请解释gcc中的`-Wall`和`-Werror`有什么作用? 为什么要使用`-Wall`和`-Werror`?
 
 `-Wall`作用：开启大部分常用的警告，比如未使用变量、类型不匹配等。可以提前发现代码中的潜在 bug，提高代码质量。

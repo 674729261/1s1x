@@ -1,6 +1,8 @@
-CFLAGS=-Wall -g -DNDEBUG
+CFLAGS=-Wall -g -DNDEBUG -O0
 
 all: p22_main stackoverflow
+	./p22_main
+	./stackoverflow 114 514
 
 p22_main: p22.o
 

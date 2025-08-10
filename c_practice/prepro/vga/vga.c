@@ -28,8 +28,9 @@ int main(void) {
 
   char program_path[256];
 
+  puts("Path to the program file: ");
   fgets(program_path, sizeof(program_path), stdin);
-  printf("Enter the path to the program file: ");
+
   for (int i = 0; i < sizeof(program_path); i++) {
     if (program_path[i] == '\r' || program_path[i] == '\n' ||
         program_path[i] == '\0') {

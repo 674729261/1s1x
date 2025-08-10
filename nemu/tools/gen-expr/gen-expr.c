@@ -31,8 +31,8 @@ static char *code_format = "#include <stdio.h>\n"
                            "}";
 
 static void gen_rand_expr(int len) {
-  const char choices[] =
-      "nnnn++++----**//^^^&||nnnn++++----**//^^^&||(()))r% "; // n代表数字，r代表<><=>===!+
+  const char choices[] = "nnnn++++----**//^^^&||nnnn++++----**//"
+                         "^^^&||(())))r% "; // n代表数字，r代表<><=>===!+
   int cnt_choices = sizeof(choices) - 1;
   char last = '(';
   int cnt_brace = 0;
