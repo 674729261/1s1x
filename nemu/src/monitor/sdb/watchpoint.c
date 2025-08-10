@@ -58,7 +58,7 @@ void free_wp(WP *wp) {
   free_ = wp;
 }
 
-bool exam_watchers() {
+bool exam_watchers(void) {
   bool ret = false;
   for (WP *iter = head; iter != NULL; iter = iter->next) {
     bool success = true;
@@ -75,7 +75,7 @@ bool exam_watchers() {
   return ret;
 }
 
-void list_watchers() {
+void list_watchers(void) {
   int cnt_used = 0;
   if (head != NULL) {
     puts("---------------------------------------------------");

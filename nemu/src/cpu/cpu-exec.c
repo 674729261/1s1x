@@ -13,6 +13,7 @@
  * See the Mulan PSL v2 for more details.
  ***************************************************************************************/
 
+#include "../monitor/sdb/sdb.h"
 #include <cpu/cpu.h>
 #include <cpu/decode.h>
 #include <cpu/difftest.h>
@@ -45,7 +46,6 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
     IFDEF(CONFIG_ITRACE, puts(_this->logbuf));
   }
   IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));
-  extern bool exam_watchers();
 
   bool ret = exam_watchers();
   if (ret)
