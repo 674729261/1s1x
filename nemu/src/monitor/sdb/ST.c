@@ -12,9 +12,9 @@ void pre_log2() {
 static int cmp(int a, int b, const Token *ref) {
   if (a == -1 && b == -1)
     return -1;
-  if (a != -1)
+  if (a == -1)
     return b;
-  if (b != -1)
+  if (b == -1)
     return a;
   if (ref[a].layer < ref[b].layer)
     return a;
