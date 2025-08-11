@@ -13,6 +13,7 @@
  * See the Mulan PSL v2 for more details.
  ***************************************************************************************/
 
+#include "sdb/ST.h"
 #include "sdb/sdb.h"
 #include <debug.h>
 #include <isa.h>
@@ -219,6 +220,8 @@ void init_monitor(int argc, char *argv[]) {
 
   /* Initialize the simple debugger. */
   init_sdb();
+
+  pre_log2();
   unit_tests();
   IFDEF(CONFIG_ITRACE, init_disasm());
 
