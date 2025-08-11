@@ -220,6 +220,8 @@ int find_main_token(int p, int q, TokenST *st) {
 
 TokenST st;
 long long eval(int p, int q, TokenST *st, int *right_buffer) {
+  show_expr(tokens, q - p + 1);
+  puts("");
   if (p > q) {
     eval_error_flag = EVAL_ERROR_ILLEGAL_EXPR;
     return -1;
