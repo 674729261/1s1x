@@ -105,8 +105,8 @@ void init_regex() {
   }
 }
 
-static Token tokens[TOKEN_MAX_COUNT] __attribute__((used)) = {};
-static int nr_token __attribute__((used)) = 0;
+static Token tokens[TOKEN_MAX_COUNT] = {};
+static int nr_token = 0;
 bool make_token(const char *e, Token *buffer, int *cnt) {
   int position = 0;
   int i;
