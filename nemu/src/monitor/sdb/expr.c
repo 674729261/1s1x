@@ -216,6 +216,7 @@ int find_main_token(int p, int q, TokenST *st) {
   putchar('\n');
   int ret = query_ST(st, p, q);
   int cur_layer = tokens[p].layer;
+  printf("%d %d\n", ret, cur_layer);
   if (ret == -1 || cur_layer != tokens[ret].layer)
     return -1;
   return ret;
