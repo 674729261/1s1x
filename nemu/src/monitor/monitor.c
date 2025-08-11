@@ -147,8 +147,9 @@ void test_eval() {
       exit(-1);
     }
   }
-  double time_cost = 0.0;
+
   FILE *fp = fopen("test.txt", "r");
+  clock_t begin = clock();
   if (fp != NULL) {
 
     while (!feof(fp)) {
@@ -164,9 +165,8 @@ void test_eval() {
       if (read_sz > 0 && expression[read_sz - 1] == '\n') {
         expression[read_sz - 1] = '\0';
       }
-      clock_t begin = clock();
       long long ret = expr(expression, &success);
-      time_cost += (double)(clock() - begin) / (CLOCKS_PER_SEC);
+
       if (!success || result != ret) {
         printf("expr(\"%s\") = %lld, should be %lld\n", expression, ret,
                result);
@@ -180,6 +180,7 @@ void test_eval() {
   } else {
     puts("Failed to open test.txt");
   }
+  double time_cost = (double)(clock() - begin) / (CLOCKS_PER_SEC);
   printf("Test expr() finished, time : %fms\n", time_cost * 1000.0);
 }
 
