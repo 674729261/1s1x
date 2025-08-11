@@ -43,7 +43,7 @@ void init_ST(TokenST *st, int n, const Token *ref) {
       st->table[0][i] = -1;
   }
 
-  for (int i = 1; (1 << i) < n; i++) {
+  for (int i = 1; (1 << i) <= n; i++) {
     int bulk_sz = (1 << i);
     for (int j = 0; j + bulk_sz <= n; j++) {
       st->table[i][j] =
