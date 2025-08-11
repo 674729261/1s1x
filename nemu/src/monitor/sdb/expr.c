@@ -41,10 +41,7 @@ enum {
   TK_LEQ,
   TK_GEQ,
   TK_BOOL_AND,
-  TK_BOOL_OR,
-  TK_NEG,
-  TK_POS,
-  TK_DEREF
+  TK_BOOL_OR
 
 };
 
@@ -263,15 +260,15 @@ long long eval(int p, int q, TokenST *st) {
     if (main_token == -1) {
       // 处理一元运算符
       switch (tokens[p].type) {
-      case TK_POS:
+      case '+':
         return eval(p + 1, q, st);
-      case TK_NEG:
+      case '-':
         return -eval(p + 1, q, st);
       case '~':
         return ~eval(p + 1, q, st);
       case '!':
         return !eval(p + 1, q, st);
-      case TK_DEREF: {
+      case '*': {
         long long value = eval(p + 1, q, st);
         if (value > (long long)UINT32_MAX || value < 0) {
           eval_error_flag = EVAL_ERROR_INVALID_ADDRESS;
