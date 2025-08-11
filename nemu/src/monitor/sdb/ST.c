@@ -3,8 +3,8 @@
 int ST_Log2[TOKEN_MAX_COUNT];
 
 void pre_log2() {
-  ST_Log2[0] = 0;
-  ST_Log2[1] = 1;
+  ST_Log2[1] = 0;
+  ST_Log2[2] = 1;
   for (int i = 2; i < TOKEN_MAX_COUNT; i++)
     ST_Log2[i] = ST_Log2[i / 2] + 1;
 }
