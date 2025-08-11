@@ -32,8 +32,9 @@ void init_ST(TokenST *st, int n, const Token *ref) {
   st->ref = ref;
   st->n = n;
 
-  for (int i = 0; i < n; i++)
-    st->table[i] = malloc(sizeof(int) * n);
+  for (int i = 0; i < TOKEN_MAX_COUNT_LOG; i++)
+    if (n - (1 << i) + 1 > 0)
+      st->table[i] = malloc(sizeof(int) * (n - (1 << i) + 1));
 
   for (int i = 0; i < n; i++) {
     if (ref[i].catagry == TK_CATAGORY_OPERATOR)
@@ -59,5 +60,6 @@ int query_ST(TokenST *st, int from, int to) {
 
 void clear_ST(TokenST *st) {
   for (int i = 0; i < TOKEN_MAX_COUNT_LOG; i++)
-    free(st->table[i]);
+    if (st->n - (1 << i) + 1 > 0)
+      free(st->table[i]);
 }
