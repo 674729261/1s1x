@@ -13,6 +13,7 @@
  * See the Mulan PSL v2 for more details.
  ***************************************************************************************/
 
+#include "ST.h"
 #include "common.h"
 #include "sdb.h"
 #include <assert.h>
@@ -41,14 +42,10 @@ enum {
   TK_GEQ,
   TK_BOOL_AND,
   TK_BOOL_OR,
+  TK_NEG,
+  TK_POS,
+  TK_DEREF
 
-};
-
-enum {
-  TK_CATAGORY_OTHER = 0,
-  TK_CATAGORY_OPERATOR,
-  TK_CATAGORY_OPERATOR_SINGLE,
-  TK_CATAGORY_OPERAND
 };
 
 static struct rule {
@@ -110,14 +107,6 @@ void init_regex() {
   }
 }
 
-typedef struct token {
-  int type;
-  char str[TOKEN_SUBSTR_LEN];
-  int str_sz;
-  int catagry;
-  int priority;
-} Token;
-
 static Token tokens[TOKEN_MAX_COUNT] __attribute__((used)) = {};
 static int nr_token __attribute__((used)) = 0;
 
@@ -150,7 +139,26 @@ static bool make_token(const char *e) {
         switch (rules[i].token_type) {
         case TK_NOTYPE:
           break;
+        case '+':
+        case '-':
+        case '*':
+
+          if (nr_token == 0 || tokens[nr_token - 1].type == '(' ||
+              tokens[nr_token - 1].catagry == TK_CATAGORY_OPERATOR ||
+              tokens[nr_token - 1].catagry == TK_CATAGORY_OPERATOR_SINGLE) {
+            Assert(nr_token != TOKEN_MAX_COUNT, "Too many tokens");
+            tokens[nr_token].type = rules[i].token_type;
+            strncpy(tokens[nr_token].str, substr_start, substr_len);
+            tokens[nr_token].str[substr_len] = '\0';
+            tokens[nr_token].str_sz = substr_len;
+            tokens[nr_token].catagry = TK_CATAGORY_OPERATOR_SINGLE;
+            tokens[nr_token].priority = 114514;
+            nr_token++;
+            break;
+          }
+
         default:
+
           Assert(nr_token != TOKEN_MAX_COUNT, "Too many tokens");
           tokens[nr_token].type = rules[i].token_type;
           strncpy(tokens[nr_token].str, substr_start, substr_len);
@@ -180,9 +188,10 @@ bool check_parentheses_legal() {
   int stack_parentheses[TOKEN_MAX_COUNT];
   int cnt_stack = 0;
   for (int i = 0; i < nr_token; i++) {
-    if (tokens[i].type == '(')
+    tokens[i].layer = cnt_stack;
+    if (tokens[i].type == '(') {
       stack_parentheses[cnt_stack++] = i;
-    else if (tokens[i].type == ')') {
+    } else if (tokens[i].type == ')') {
       int pos_left_parentheses = stack_parentheses[--cnt_stack];
       if (cnt_stack < 0)
         return false;
@@ -200,35 +209,20 @@ const char *EVAL_ERROR_INVALID_REGISTER = "Invalid register";
 
 static const char *eval_error_flag;
 
-int find_main_token(int p, int q) {
+int find_main_token(int p, int q, TokenST *st) {
   // 括号内的不选
   // 非运算符不选
   // 先选优先级低的
   // 先选靠右的
-  int cnt_parentheses = 0, selected = -1, lowest_prior = 114514;
-  for (int i = p; i <= q; i++) {
-    if (tokens[i].type == '(')
-      cnt_parentheses++;
-    else if (tokens[i].type == ')')
-      cnt_parentheses--;
-    else if (tokens[i].catagry == TK_CATAGORY_OPERATOR &&
-             cnt_parentheses == 0) {
-      if ((tokens[i].type == '+' || tokens[i].type == '-' ||
-           tokens[i].type == '*') &&
-          (i == p || tokens[i - 1].catagry == TK_CATAGORY_OPERATOR ||
-           tokens[i - 1].catagry == TK_CATAGORY_OPERATOR_SINGLE)) {
-        continue;
-      }
-      if (lowest_prior >= tokens[i].priority) {
-        lowest_prior = tokens[i].priority;
-        selected = i;
-      }
-    }
-  }
-  return selected;
+  int ret = query_ST(st, p, q);
+  int cur_layer = tokens[p].layer;
+  if (ret == -1 || cur_layer != tokens[ret].layer)
+    return -1;
+  return ret;
 }
 
-long long eval(int p, int q) {
+TokenST st;
+long long eval(int p, int q, TokenST *st) {
   if (p > q) {
     eval_error_flag = EVAL_ERROR_ILLEGAL_EXPR;
     return -1;
@@ -262,23 +256,23 @@ long long eval(int p, int q) {
   }
   if (tokens[p].type == '(' && tokens[q].type == ')' &&
       right_parentheses_pos[p] == q)
-    return eval(p + 1, q - 1);
+    return eval(p + 1, q - 1, st);
   else {
-    int main_token = find_main_token(p, q);
+    int main_token = find_main_token(p, q, st);
 
     if (main_token == -1) {
       // 处理一元运算符
       switch (tokens[p].type) {
-      case '+':
-        return eval(p + 1, q);
-      case '-':
-        return -eval(p + 1, q);
+      case TK_POS:
+        return eval(p + 1, q, st);
+      case TK_NEG:
+        return -eval(p + 1, q, st);
       case '~':
-        return ~eval(p + 1, q);
+        return ~eval(p + 1, q, st);
       case '!':
-        return !eval(p + 1, q);
-      case '*': {
-        long long value = eval(p + 1, q);
+        return !eval(p + 1, q, st);
+      case TK_DEREF: {
+        long long value = eval(p + 1, q, st);
         if (value > (long long)UINT32_MAX || value < 0) {
           eval_error_flag = EVAL_ERROR_INVALID_ADDRESS;
           return -1;
@@ -292,8 +286,8 @@ long long eval(int p, int q) {
       }
     }
     // 处理二元运算符
-    long long LHS = eval(p, main_token - 1);
-    long long RHS = eval(main_token + 1, q);
+    long long LHS = eval(p, main_token - 1, st);
+    long long RHS = eval(main_token + 1, q, st);
     switch (tokens[main_token].type) {
     case '+':
       return LHS + RHS;
@@ -354,7 +348,10 @@ long long expr(const char *e, bool *success) {
     return 0;
   }
   if (check_parentheses_legal()) {
-    long long result = eval(0, nr_token - 1);
+
+    TokenST st;
+    init_ST(&st, nr_token, tokens);
+    long long result = eval(0, nr_token - 1, &st);
 
     if (eval_error_flag) {
       puts(eval_error_flag);

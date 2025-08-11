@@ -20,6 +20,7 @@
 
 #define TOKEN_SUBSTR_LEN 64
 #define TOKEN_MAX_COUNT 256
+#define TOKEN_MAX_COUNT_LOG 8
 #define NR_WP 32
 
 typedef struct watchpoint {
@@ -33,6 +34,22 @@ typedef struct watchpoint {
   bool is_hex;
 
 } WP;
+
+enum {
+  TK_CATAGORY_OTHER = 0,
+  TK_CATAGORY_OPERATOR,
+  TK_CATAGORY_OPERATOR_SINGLE,
+  TK_CATAGORY_OPERAND
+};
+
+typedef struct token {
+  int type;
+  char str[TOKEN_SUBSTR_LEN];
+  int str_sz;
+  int catagry;
+  int priority;
+  int layer;
+} Token;
 
 long long expr(const char *e, bool *success);
 
