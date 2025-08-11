@@ -54,24 +54,8 @@ void init_ST(TokenST *st, int n, const Token *ref) {
 
 int query_ST(TokenST *st, int from, int to) {
   int layer = ST_Log2[to - from + 1];
-  //   return cmp(st->table[layer][from], st->table[layer][to - (1 << layer) +
-  //   1],
-  //              st->ref);
-  int a = st->table[layer][from], b = st->table[layer][to - (1 << layer) + 1];
-  const Token *ref = st->ref;
-  if (a == -1 && b == -1)
-    return -1;
-  if (a == -1)
-    return b;
-  if (b == -1)
-    return a;
-  if (ref[a].layer < ref[b].layer)
-    return a;
-  if (ref[a].layer > ref[b].layer)
-    return b;
-  if (ref[a].priority < ref[b].priority)
-    return a;
-  return b;
+  return cmp(st->table[layer][from], st->table[layer][to - (1 << layer) + 1],
+             st->ref);
 }
 
 void clear_ST(TokenST *st) {

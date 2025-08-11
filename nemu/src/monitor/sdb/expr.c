@@ -220,18 +220,16 @@ int find_main_token(int p, int q, TokenST *st) {
 
 TokenST st;
 long long eval(int p, int q, TokenST *st, int *right_buffer) {
-  show_expr(tokens + p, q - p + 1);
-  puts("");
   if (p > q) {
     eval_error_flag = EVAL_ERROR_ILLEGAL_EXPR;
     return -1;
   }
 
   if (p == q) {
-    switch (tokens[p].type) {
+    switch (st->ref[p].type) {
     case TK_NUMBER: {
       errno = 0;
-      long long result = strtoll(tokens[p].str, NULL, 0);
+      long long result = strtoll(st->ref[p].str, NULL, 0);
       if (errno != 0) {
         errno = 0;
         eval_error_flag = EVAL_ERROR_LATGE_CONST;
@@ -241,7 +239,7 @@ long long eval(int p, int q, TokenST *st, int *right_buffer) {
     }
     case TK_REGISTER: {
       bool success = true;
-      word_t ret = isa_reg_str2val(tokens[q].str, &success);
+      word_t ret = isa_reg_str2val(st->ref[q].str, &success);
       if (!success) {
         eval_error_flag = EVAL_ERROR_INVALID_REGISTER;
         return -1;
@@ -253,14 +251,14 @@ long long eval(int p, int q, TokenST *st, int *right_buffer) {
       return -1;
     }
   }
-  if (tokens[p].type == '(' && tokens[q].type == ')' && right_buffer[p] == q)
+  if (st->ref[p].type == '(' && st->ref[q].type == ')' && right_buffer[p] == q)
     return eval(p + 1, q - 1, st, right_buffer);
   else {
     int main_token = find_main_token(p, q, st);
 
     if (main_token == -1) {
       // 处理一元运算符
-      switch (tokens[p].type) {
+      switch (st->ref[p].type) {
       case '+':
         return eval(p + 1, q, st, right_buffer);
       case '-':
@@ -286,7 +284,7 @@ long long eval(int p, int q, TokenST *st, int *right_buffer) {
     // 处理二元运算符
     long long LHS = eval(p, main_token - 1, st, right_buffer);
     long long RHS = eval(main_token + 1, q, st, right_buffer);
-    switch (tokens[main_token].type) {
+    switch (st->ref[main_token].type) {
     case '+':
       return LHS + RHS;
     case '-':
