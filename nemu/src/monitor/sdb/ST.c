@@ -45,7 +45,7 @@ void init_ST(TokenST *st, int n, const Token *ref) {
 
   for (int i = 1; (1 << i) < n; i++) {
     int bulk_sz = (1 << i);
-    for (int j = 0; j + bulk_sz < n; j++) {
+    for (int j = 0; j + bulk_sz <= n; j++) {
       st->table[i][j] =
           cmp(st->table[i - 1][j], st->table[i - 1][j + bulk_sz / 2], ref);
     }
