@@ -20,6 +20,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <sys/types.h>
+#include <time.h>
 
 void init_rand();
 void init_log(const char *log_file);
@@ -146,7 +147,7 @@ void test_eval() {
       exit(-1);
     }
   }
-
+  double time_cost = 0.0;
   FILE *fp = fopen("test.txt", "r");
   if (fp != NULL) {
 
@@ -163,9 +164,9 @@ void test_eval() {
       if (read_sz > 0 && expression[read_sz - 1] == '\n') {
         expression[read_sz - 1] = '\0';
       }
-
+      clock_t begin = clock();
       long long ret = expr(expression, &success);
-
+      time_cost += (double)(clock() - begin) / (CLOCKS_PER_SEC);
       if (!success || result != ret) {
         printf("expr(\"%s\") = %lld, should be %lld\n", expression, ret,
                result);
@@ -179,7 +180,7 @@ void test_eval() {
   } else {
     puts("Failed to open test.txt");
   }
-  puts("Test expr() finished");
+  printf("Test expr() finished, time : %fms\n", time_cost);
 }
 
 void unit_tests() {
