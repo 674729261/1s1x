@@ -13,11 +13,11 @@
  * See the Mulan PSL v2 for more details.
  ***************************************************************************************/
 
+#include "watcher.h"
 #include "ST.h"
 #include "common.h"
 #include "debug.h"
 #include "sdb.h"
-#include "watcher.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -65,7 +65,8 @@ WP *new_wp(const char *expression, long long value, bool is_hex) {
   memcpy(ret->tokens, token_buffer, sizeof(Token) * token_cnt);
   init_ST(&(ret->st), token_cnt, ret->tokens);
   eval_error_flag = NULL;
-  long long result = eval(0, token_cnt, &(ret->st), ret->parentheses_buffer);
+  long long result =
+      eval(0, token_cnt - 1, &(ret->st), ret->parentheses_buffer);
   if (eval_error_flag) {
     puts(eval_error_flag);
     clear_ST(&(ret->st));
