@@ -122,8 +122,8 @@ bool make_token(const char *e, Token *buffer, int *cnt) {
         const char *substr_start = e + position;
         int substr_len = pmatch.rm_eo;
 
-        Log("match rules[%d] = \"%s\" at position %d with len %d: %.*s", i,
-            rules[i].regex, position, substr_len, substr_len, substr_start);
+        // Log("match rules[%d] = \"%s\" at position %d with len %d: %.*s", i,
+        //     rules[i].regex, position, substr_len, substr_len, substr_start);
 
         if (substr_len >= TOKEN_SUBSTR_LEN) {
           printf("Token at position %d with len %d is too long\n", position,
