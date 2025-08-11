@@ -13,6 +13,7 @@
  * See the Mulan PSL v2 for more details.
  ***************************************************************************************/
 
+#include "sdb/ST.h"
 #include "sdb/sdb.h"
 #include <debug.h>
 #include <isa.h>
@@ -180,7 +181,7 @@ void test_eval() {
   } else {
     puts("Failed to open test.txt");
   }
-  printf("Test expr() finished, time : %fms\n", time_cost);
+  printf("Test expr() finished, time : %fms\n", time_cost * 1000.0);
 }
 
 void unit_tests() {
@@ -218,6 +219,8 @@ void init_monitor(int argc, char *argv[]) {
 
   /* Initialize the simple debugger. */
   init_sdb();
+
+  pre_log2();
   unit_tests();
   IFDEF(CONFIG_ITRACE, init_disasm());
 
