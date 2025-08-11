@@ -211,12 +211,8 @@ int find_main_token(int p, int q, TokenST *st) {
   // 非运算符不选
   // 先选优先级低的
   // 先选靠右的
-  for (int i = p; i <= q; i++)
-    printf("%s", tokens[i].str);
-  putchar('\n');
   int ret = query_ST(st, p, q);
   int cur_layer = tokens[p].layer;
-  printf("%d %d\n", ret, cur_layer);
   if (ret == -1 || cur_layer != tokens[ret].layer)
     return -1;
   return ret;
