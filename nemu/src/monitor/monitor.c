@@ -180,7 +180,7 @@ void test_eval() {
   } else {
     puts("Failed to open test.txt");
   }
-  printf("Test expr() finished, time : %fms\n", time_cost);
+  printf("Test expr() finished, time : %fms\n", time_cost / 1000.0);
 }
 
 void unit_tests() {
