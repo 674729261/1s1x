@@ -16,6 +16,7 @@
 #include "ST.h"
 #include "common.h"
 #include "sdb.h"
+#include "watcher.h"
 #include <assert.h>
 #include <errno.h>
 #include <isa.h>
@@ -106,13 +107,12 @@ void init_regex() {
 
 static Token tokens[TOKEN_MAX_COUNT] __attribute__((used)) = {};
 static int nr_token __attribute__((used)) = 0;
-
-static bool make_token(const char *e) {
+bool make_token(const char *e, Token *buffer, int *cnt) {
   int position = 0;
   int i;
   regmatch_t pmatch;
 
-  nr_token = 0;
+  *cnt = 0;
 
   while (e[position] != '\0') {
     /* Try all rules one by one. */
@@ -140,30 +140,30 @@ static bool make_token(const char *e) {
         case '-':
         case '*':
 
-          if (nr_token == 0 || tokens[nr_token - 1].type == '(' ||
-              tokens[nr_token - 1].catagry == TK_CATAGORY_OPERATOR ||
-              tokens[nr_token - 1].catagry == TK_CATAGORY_OPERATOR_SINGLE) {
-            Assert(nr_token != TOKEN_MAX_COUNT, "Too many tokens");
-            tokens[nr_token].type = rules[i].token_type;
-            strncpy(tokens[nr_token].str, substr_start, substr_len);
-            tokens[nr_token].str[substr_len] = '\0';
-            tokens[nr_token].str_sz = substr_len;
-            tokens[nr_token].catagry = TK_CATAGORY_OPERATOR_SINGLE;
-            tokens[nr_token].priority = 114514;
-            nr_token++;
+          if (*cnt == 0 || buffer[*cnt - 1].type == '(' ||
+              buffer[*cnt - 1].catagry == TK_CATAGORY_OPERATOR ||
+              buffer[*cnt - 1].catagry == TK_CATAGORY_OPERATOR_SINGLE) {
+            Assert(*cnt != TOKEN_MAX_COUNT, "Too many tokens");
+            buffer[*cnt].type = rules[i].token_type;
+            strncpy(buffer[*cnt].str, substr_start, substr_len);
+            buffer[*cnt].str[substr_len] = '\0';
+            buffer[*cnt].str_sz = substr_len;
+            buffer[*cnt].catagry = TK_CATAGORY_OPERATOR_SINGLE;
+            buffer[*cnt].priority = 114514;
+            (*cnt)++;
             break;
           }
 
         default:
 
-          Assert(nr_token != TOKEN_MAX_COUNT, "Too many tokens");
-          tokens[nr_token].type = rules[i].token_type;
-          strncpy(tokens[nr_token].str, substr_start, substr_len);
-          tokens[nr_token].str[substr_len] = '\0';
-          tokens[nr_token].str_sz = substr_len;
-          tokens[nr_token].catagry = rules[i].catagry;
-          tokens[nr_token].priority = rules[i].priority;
-          nr_token++;
+          Assert(*cnt != TOKEN_MAX_COUNT, "Too many tokens");
+          buffer[*cnt].type = rules[i].token_type;
+          strncpy(buffer[*cnt].str, substr_start, substr_len);
+          buffer[*cnt].str[substr_len] = '\0';
+          buffer[*cnt].str_sz = substr_len;
+          buffer[*cnt].catagry = rules[i].catagry;
+          buffer[*cnt].priority = rules[i].priority;
+          (*cnt)++;
         }
 
         break;
@@ -181,18 +181,18 @@ static bool make_token(const char *e) {
 
 static int right_parentheses_pos[TOKEN_MAX_COUNT];
 
-bool check_parentheses_legal() {
+bool check_parentheses_legal(Token *obj, int *buffer) {
   int stack_parentheses[TOKEN_MAX_COUNT];
   int cnt_stack = 0;
   for (int i = 0; i < nr_token; i++) {
-    tokens[i].layer = cnt_stack;
-    if (tokens[i].type == '(') {
+    obj[i].layer = cnt_stack;
+    if (obj[i].type == '(') {
       stack_parentheses[cnt_stack++] = i;
-    } else if (tokens[i].type == ')') {
+    } else if (obj[i].type == ')') {
       int pos_left_parentheses = stack_parentheses[--cnt_stack];
       if (cnt_stack < 0)
         return false;
-      right_parentheses_pos[pos_left_parentheses] = i;
+      buffer[pos_left_parentheses] = i;
     }
   }
   return cnt_stack == 0;
@@ -204,7 +204,7 @@ const char *EVAL_ERROR_DIV_BY_ZERO = "Divided by zero";
 const char *EVAL_ERROR_INVALID_ADDRESS = "Invalid address";
 const char *EVAL_ERROR_INVALID_REGISTER = "Invalid register";
 
-static const char *eval_error_flag;
+const char *eval_error_flag;
 
 int find_main_token(int p, int q, TokenST *st) {
   // 括号内的不选
@@ -219,7 +219,7 @@ int find_main_token(int p, int q, TokenST *st) {
 }
 
 TokenST st;
-long long eval(int p, int q, TokenST *st) {
+long long eval(int p, int q, TokenST *st, int *right_buffer) {
   if (p > q) {
     eval_error_flag = EVAL_ERROR_ILLEGAL_EXPR;
     return -1;
@@ -251,9 +251,8 @@ long long eval(int p, int q, TokenST *st) {
       return -1;
     }
   }
-  if (tokens[p].type == '(' && tokens[q].type == ')' &&
-      right_parentheses_pos[p] == q)
-    return eval(p + 1, q - 1, st);
+  if (tokens[p].type == '(' && tokens[q].type == ')' && right_buffer[p] == q)
+    return eval(p + 1, q - 1, st, right_buffer);
   else {
     int main_token = find_main_token(p, q, st);
 
@@ -261,15 +260,15 @@ long long eval(int p, int q, TokenST *st) {
       // 处理一元运算符
       switch (tokens[p].type) {
       case '+':
-        return eval(p + 1, q, st);
+        return eval(p + 1, q, st, right_buffer);
       case '-':
-        return -eval(p + 1, q, st);
+        return -eval(p + 1, q, st, right_buffer);
       case '~':
-        return ~eval(p + 1, q, st);
+        return ~eval(p + 1, q, st, right_buffer);
       case '!':
-        return !eval(p + 1, q, st);
+        return !eval(p + 1, q, st, right_buffer);
       case '*': {
-        long long value = eval(p + 1, q, st);
+        long long value = eval(p + 1, q, st, right_buffer);
         if (value > (long long)UINT32_MAX || value < 0) {
           eval_error_flag = EVAL_ERROR_INVALID_ADDRESS;
           return -1;
@@ -283,8 +282,8 @@ long long eval(int p, int q, TokenST *st) {
       }
     }
     // 处理二元运算符
-    long long LHS = eval(p, main_token - 1, st);
-    long long RHS = eval(main_token + 1, q, st);
+    long long LHS = eval(p, main_token - 1, st, right_buffer);
+    long long RHS = eval(main_token + 1, q, st, right_buffer);
     switch (tokens[main_token].type) {
     case '+':
       return LHS + RHS;
@@ -334,8 +333,13 @@ long long eval(int p, int q, TokenST *st) {
   return 0;
 }
 
+void show_expr(Token *arr, int cnt) {
+  for (int i = 0; i < cnt; i++)
+    printf("%s", arr[i].str);
+}
+
 long long expr(const char *e, bool *success) {
-  if (!make_token(e)) {
+  if (!make_token(e, tokens, &nr_token)) {
     *success = false;
     return 0;
   }
@@ -344,12 +348,12 @@ long long expr(const char *e, bool *success) {
     *success = false;
     return 0;
   }
-  if (check_parentheses_legal()) {
+  if (check_parentheses_legal(tokens, right_parentheses_pos)) {
 
     TokenST st;
     init_ST(&st, nr_token, tokens);
-    long long result = eval(0, nr_token - 1, &st);
-
+    long long result = eval(0, nr_token - 1, &st, right_parentheses_pos);
+    clear_ST(&st);
     if (eval_error_flag) {
       puts(eval_error_flag);
       eval_error_flag = NULL;

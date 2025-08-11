@@ -5,7 +5,7 @@
 
 typedef struct {
   const Token *ref;
-  int table[TOKEN_MAX_COUNT_LOG][TOKEN_MAX_COUNT];
+  int *table[TOKEN_MAX_COUNT_LOG];
   int n;
 } TokenST;
 
@@ -15,5 +15,5 @@ void pre_log2();
 
 void init_ST(TokenST *st, int n, const Token *ref);
 int query_ST(TokenST *st, int from, int to);
-
+void clear_ST(TokenST *st);
 #endif

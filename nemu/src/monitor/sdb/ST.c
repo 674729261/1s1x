@@ -1,4 +1,7 @@
 #include "ST.h"
+#include "debug.h"
+#include "sdb.h"
+#include <stdlib.h>
 
 int ST_Log2[TOKEN_MAX_COUNT];
 
@@ -29,6 +32,9 @@ void init_ST(TokenST *st, int n, const Token *ref) {
   st->ref = ref;
   st->n = n;
 
+  for (int i = 0; i < n; i++)
+    st->table[i] = malloc(sizeof(int) * n);
+
   for (int i = 0; i < n; i++) {
     if (ref[i].catagry == TK_CATAGORY_OPERATOR)
       st->table[0][i] = i;
@@ -36,9 +42,9 @@ void init_ST(TokenST *st, int n, const Token *ref) {
       st->table[0][i] = -1;
   }
 
-  for (int i = 1; i < TOKEN_MAX_COUNT_LOG; i++) {
+  for (int i = 1; (1 << i) < n; i++) {
     int bulk_sz = (1 << i);
-    for (int j = 0; j + bulk_sz < TOKEN_MAX_COUNT; j++) {
+    for (int j = 0; j + bulk_sz < n; j++) {
       st->table[i][j] =
           cmp(st->table[i - 1][j], st->table[i - 1][j + bulk_sz / 2], ref);
     }
@@ -49,4 +55,9 @@ int query_ST(TokenST *st, int from, int to) {
   int layer = ST_Log2[to - from + 1];
   return cmp(st->table[layer][from], st->table[layer][to - (1 << layer) + 1],
              st->ref);
+}
+
+void clear_ST(TokenST *st) {
+  for (int i = 0; i < TOKEN_MAX_COUNT_LOG; i++)
+    free(st->table[i]);
 }
