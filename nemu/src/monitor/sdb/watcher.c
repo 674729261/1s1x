@@ -109,7 +109,8 @@ bool exam_watchers(void) {
       printf("Watcher changed : #%d = ", iter->NO);
       show_expr(iter->tokens, iter->st.n);
       if (iter->is_hex)
-        printf("\nfrom : 0x%llx\nto   : %llx\n", iter->old_value, now_value);
+        printf("\nfrom : 0x%08x\nto   : 0x%08x\n", (word_t)iter->old_value,
+               (word_t)now_value);
       else
         printf("\nfrom : %lld\nto   : %lld\n", iter->old_value, now_value);
       iter->old_value = now_value;
