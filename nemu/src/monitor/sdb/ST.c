@@ -6,8 +6,6 @@
 int ST_Log2[TOKEN_MAX_COUNT];
 
 static int cmp(int a, int b, const Token *ref) {
-  if (a == -1 && b == -1)
-    return -1;
   if (a == -1)
     return b;
   if (b == -1)
