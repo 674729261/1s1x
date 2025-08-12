@@ -106,8 +106,9 @@ bool exam_watchers(void) {
     Assert(success, "Expression evaluation failed while examing watcher #%d",
            iter->NO);
     if (now_value != iter->old_value) {
-      printf("Watcher changed : #%d\nfrom : %lld\nto   : %lld\n", iter->NO,
-             iter->old_value, now_value);
+      printf("Watcher changed : #%d = ", iter->NO);
+      show_expr(iter->tokens, iter->st.n);
+      printf("\nfrom : %lld\nto   : %lld\n", iter->old_value, now_value);
       iter->old_value = now_value;
       ret = true;
     }
