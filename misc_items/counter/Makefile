@@ -1,6 +1,8 @@
 
 all:
+	mkdir -p syn
 	cat run.tcl | yosys counter.v 2> /dev/null
 
 clean:
-	rm netlist.v
+	rm -rf syn
+
