@@ -19,6 +19,8 @@ init:
 	bash -c "$$(wget -O - https://ysyx.oscc.cc/slides/resources/scripts/init-yosys-sta.sh)"
 
 
+all: e2 e3 e4 e6 e7 e8 sCPU
+
 e2: DESIGN=top_e2
 e2: RESULT_DIR=$(O)/$(DESIGN)-$(CLK_FREQ_MHZ)MHz
 e2: RTL_FILES="example/e2/EXP2.v"
