@@ -207,14 +207,15 @@ int main(int argc, char *argv[]) {
     fputs(code_buf, fp);
     fclose(fp);
 
-    int ret = system("gcc /tmp/.code.c -o /tmp/.expr 2> /tmp/.gcclog");
-    if (ret != 0)
-      continue;
-    ret = system("cat /tmp/.gcclog | grep \"div-by-zero\" > /dev/null");
-    if (ret == 0) {
+    int ret = system("gcc -Werror=div-by-zero /tmp/.code.c -o /tmp/.expr");
+    if (ret != 0) {
       i--;
       continue;
-    }
+    } // ret = system("cat /tmp/.gcclog | grep \"div-by-zero\" > /dev/null");
+    // if (ret == 0) {
+    //   i--;
+    //   continue;
+    // }
     fp = popen("/tmp/.expr", "r");
     assert(fp != NULL);
 
