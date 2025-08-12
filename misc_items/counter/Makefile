@@ -4,3 +4,4 @@ all:
 
 clean:
 	rm netlist.v
+
