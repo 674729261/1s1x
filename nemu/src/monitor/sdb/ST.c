@@ -16,7 +16,7 @@ static int cmp(int a, int b, const Token *ref) {
     return b;
   if (ref[a].priority < ref[b].priority)
     return a;
-  return a;
+  return b;
 }
 
 void init_ST(TokenST *st, int n, const Token *ref) {
