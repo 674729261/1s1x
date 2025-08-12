@@ -11,8 +11,6 @@ typedef struct {
 
 extern int ST_Log2[TOKEN_MAX_COUNT];
 
-void pre_log2();
-
 void init_ST(TokenST *st, int n, const Token *ref);
 int query_ST(TokenST *st, int from, int to);
 void clear_ST(TokenST *st);

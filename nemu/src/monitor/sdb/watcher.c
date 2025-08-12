@@ -73,7 +73,10 @@ WP *new_wp(const char *expression, long long value, bool is_hex) {
     free(ret->tokens);
     return NULL;
   }
-  printf("It is now %lld\n", result);
+  if (is_hex)
+    printf("It is now 0x%08x\n", (word_t)result);
+  else
+    printf("It is now %lld\n", result);
 
   ret->old_value = value;
   ret->is_hex = is_hex;
@@ -106,8 +109,13 @@ bool exam_watchers(void) {
     Assert(success, "Expression evaluation failed while examing watcher #%d",
            iter->NO);
     if (now_value != iter->old_value) {
-      printf("Watcher changed : #%d\nfrom : %lld\nto   : %lld\n", iter->NO,
-             iter->old_value, now_value);
+      printf("Watcher changed : #%d = ", iter->NO);
+      show_expr(iter->tokens, iter->st.n);
+      if (iter->is_hex)
+        printf("\nfrom : 0x%08x\nto   : 0x%08x\n", (word_t)iter->old_value,
+               (word_t)now_value);
+      else
+        printf("\nfrom : %lld\nto   : %lld\n", iter->old_value, now_value);
       iter->old_value = now_value;
       ret = true;
     }
