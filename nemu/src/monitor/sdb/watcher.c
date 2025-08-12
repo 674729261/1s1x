@@ -73,7 +73,10 @@ WP *new_wp(const char *expression, long long value, bool is_hex) {
     free(ret->tokens);
     return NULL;
   }
-  printf("It is now %lld\n", result);
+  if (is_hex)
+    printf("It is now 0x%08x\n", (word_t)result);
+  else
+    printf("It is now %lld\n", result);
 
   ret->old_value = value;
   ret->is_hex = is_hex;
