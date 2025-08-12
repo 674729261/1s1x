@@ -221,7 +221,6 @@ void init_monitor(int argc, char *argv[]) {
   /* Initialize the simple debugger. */
   init_sdb();
 
-  pre_log2();
   unit_tests();
   IFDEF(CONFIG_ITRACE, init_disasm());
 

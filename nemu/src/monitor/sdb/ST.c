@@ -5,15 +5,6 @@
 
 int ST_Log2[TOKEN_MAX_COUNT];
 
-void pre_log2() {
-  ST_Log2[1] = 0;
-  ST_Log2[2] = 1;
-  for (int i = 2; i < TOKEN_MAX_COUNT; i++) {
-    ST_Log2[i] = ST_Log2[i / 2] + 1;
-    printf("%d", ST_Log2[i] - (31 - __builtin_clz(i)));
-  }
-}
-
 static int cmp(int a, int b, const Token *ref) {
   if (a == -1 && b == -1)
     return -1;
@@ -55,7 +46,6 @@ void init_ST(TokenST *st, int n, const Token *ref) {
 }
 
 int query_ST(TokenST *st, int from, int to) {
-  // int layer = ST_Log2[to - from + 1];
   int layer = 31 - __builtin_clz(to - from + 1);
   return cmp(st->table[layer][from], st->table[layer][to - (1 << layer) + 1],
              st->ref);
