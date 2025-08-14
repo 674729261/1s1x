@@ -143,5 +143,6 @@ void list_watchers(void) {
     }
     puts("---------------------------------------------------");
   }
-  printf("%d active watchers, %d free watchers.\n", cnt_used, NR_WP - cnt_used);
+  printf("%d active watcher(s), %d free watcher(s).\n", cnt_used,
+         NR_WP - cnt_used);
 }
