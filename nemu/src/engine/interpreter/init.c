@@ -26,6 +26,6 @@ void engine_start() {
   void free_regex();
 
   sdb_mainloop();
-  free_regex();
+  // free_regex();
 #endif
 }
