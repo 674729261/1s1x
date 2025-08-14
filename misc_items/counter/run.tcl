@@ -8,5 +8,5 @@ read_liberty -lib cell.lib
 dfflibmap -liberty cell.lib
 abc -liberty cell.lib
 show
-write_verilog syn/netlist.v
+write_verilog netlist.v
 stat -liberty cell.lib
