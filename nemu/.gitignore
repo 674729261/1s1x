@@ -10,5 +10,7 @@
 !Kconfig
 !**/*.md
 !/count
+!test_wp.sh
+!test_wp.tcl
 include/config
 include/generated
