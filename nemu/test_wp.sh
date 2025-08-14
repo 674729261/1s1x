@@ -1,0 +1,1 @@
+cat ./test/test_wp.tcl | make run
