@@ -18,7 +18,7 @@ typedef struct watchpoint {
   bool is_hex;
 
 } WP;
-WP *new_wp(const char *expression, long long value, bool is_hex);
+WP *new_wp(char *expression, long long value, bool is_hex);
 void free_wp(WP *wp);
 bool exam_watchers(void);
 void list_watchers(void);

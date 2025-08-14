@@ -107,19 +107,18 @@ void init_regex() {
 
 static Token tokens[TOKEN_MAX_COUNT] = {};
 static int nr_token = 0;
-bool make_token(const char *e, Token *buffer, int *cnt) {
+bool make_token(char *e, Token *buffer, int *cnt) {
   int position = 0;
   int i;
   regmatch_t pmatch;
 
   *cnt = 0;
-
   while (e[position] != '\0') {
     /* Try all rules one by one. */
     for (i = 0; i < NR_REGEX; i++) {
       if (regexec(&re[i], e + position, 1, &pmatch, 0) == 0 &&
           pmatch.rm_so == 0) {
-        const char *substr_start = e + position;
+        char *substr_start = e + position;
         int substr_len = pmatch.rm_eo;
 
         // Log("match rules[%d] = \"%s\" at position %d with len %d: %.*s", i,
@@ -136,6 +135,36 @@ bool make_token(const char *e, Token *buffer, int *cnt) {
         switch (rules[i].token_type) {
         case TK_NOTYPE:
           break;
+        case TK_NUMBER: {
+          errno = 0;
+          char original_char = substr_start[substr_len];
+          substr_start[substr_len] = '\0';
+          char *end_ptr;
+          buffer[*cnt].content.value = strtoll(substr_start, &end_ptr, 0);
+          if (errno != 0 || end_ptr != substr_start + substr_len) {
+            printf("Expression contains illegal number : %s\n", substr_start);
+            errno = 0;
+            substr_start[substr_len] = original_char;
+            return false;
+          }
+          substr_start[substr_len] = original_char;
+          strncpy(buffer[*cnt].substr, substr_start, substr_len);
+          buffer[*cnt].substr[substr_len] = '\0';
+        } break;
+        case TK_REGISTER: {
+          bool success = true;
+          char original_char = substr_start[substr_len];
+          substr_start[substr_len] = '\0';
+          buffer[*cnt].content.reg_ptr = isa_reg_str2id(substr_start, &success);
+          if (!success) {
+            printf("Expression contains illegal register : %s\n", substr_start);
+            substr_start[substr_len] = original_char;
+            return -1;
+          }
+          substr_start[substr_len] = original_char;
+          strncpy(buffer[*cnt].substr, substr_start, substr_len);
+          buffer[*cnt].substr[substr_len] = '\0';
+        } break;
         case '+':
         case '-':
         case '*':
@@ -145,8 +174,8 @@ bool make_token(const char *e, Token *buffer, int *cnt) {
               buffer[*cnt - 1].catagry == TK_CATAGORY_OPERATOR_SINGLE) {
             Assert(*cnt != TOKEN_MAX_COUNT, "Too many tokens");
             buffer[*cnt].type = rules[i].token_type;
-            strncpy(buffer[*cnt].str, substr_start, substr_len);
-            buffer[*cnt].str[substr_len] = '\0';
+            strncpy(buffer[*cnt].substr, substr_start, substr_len);
+            buffer[*cnt].substr[substr_len] = '\0';
             buffer[*cnt].str_sz = substr_len;
             buffer[*cnt].catagry = TK_CATAGORY_OPERATOR_SINGLE;
             buffer[*cnt].priority = 114514;
@@ -158,8 +187,8 @@ bool make_token(const char *e, Token *buffer, int *cnt) {
 
           Assert(*cnt != TOKEN_MAX_COUNT, "Too many tokens");
           buffer[*cnt].type = rules[i].token_type;
-          strncpy(buffer[*cnt].str, substr_start, substr_len);
-          buffer[*cnt].str[substr_len] = '\0';
+          strncpy(buffer[*cnt].substr, substr_start, substr_len);
+          buffer[*cnt].substr[substr_len] = '\0';
           buffer[*cnt].str_sz = substr_len;
           buffer[*cnt].catagry = rules[i].catagry;
           buffer[*cnt].priority = rules[i].priority;
@@ -227,24 +256,10 @@ long long eval(int p, int q, TokenST *st, int *right_buffer) {
 
   if (p == q) {
     switch (st->ref[p].type) {
-    case TK_NUMBER: {
-      errno = 0;
-      long long result = strtoll(st->ref[p].str, NULL, 0);
-      if (errno != 0) {
-        errno = 0;
-        eval_error_flag = EVAL_ERROR_LATGE_CONST;
-        return -1;
-      }
-      return result;
-    }
+    case TK_NUMBER:
+      return st->ref[p].content.value;
     case TK_REGISTER: {
-      bool success = true;
-      word_t ret = isa_reg_str2val(st->ref[q].str, &success);
-      if (!success) {
-        eval_error_flag = EVAL_ERROR_INVALID_REGISTER;
-        return -1;
-      }
-      return ret;
+      return *st->ref[p].content.reg_ptr;
     }
     default:
       eval_error_flag = EVAL_ERROR_ILLEGAL_EXPR;
@@ -335,10 +350,10 @@ long long eval(int p, int q, TokenST *st, int *right_buffer) {
 
 void show_expr(Token *arr, int cnt) {
   for (int i = 0; i < cnt; i++)
-    printf("%s", arr[i].str);
+    printf("%s", arr[i].substr);
 }
 
-long long expr(const char *e, bool *success) {
+long long expr(char *e, bool *success) {
   if (!make_token(e, tokens, &nr_token)) {
     *success = false;
     return 0;
