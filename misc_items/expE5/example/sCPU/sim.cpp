@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <nvboard.h>
+#include <random>
 static TOP_NAME dut;
 
 void nvboard_bind_all_pins(TOP_NAME *top);
