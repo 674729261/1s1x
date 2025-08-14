@@ -162,7 +162,7 @@ bool make_token(char *e, Token *buffer, int *cnt) {
           if (!success) {
             printf("Expression contains illegal register : %s\n", substr_start);
             substr_start[substr_len] = original_char;
-            return -1;
+            return false;
           }
           substr_start[substr_len] = original_char;
           strncpy(buffer[*cnt].substr, substr_start, substr_len);
