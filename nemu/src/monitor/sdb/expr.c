@@ -107,7 +107,7 @@ void init_regex() {
 
 void free_regex() {
   for (int i = 0; i < NR_REGEX; i++) {
-    regfree(&re[i]);
+    // regfree(&re[i]);
   }
 }
 
