@@ -22,9 +22,9 @@ void engine_start() {
   cpu_exec(-1);
 #else
   /* Receive commands from user. */
-  void init_regex();
+
   void free_regex();
-  init_regex();
+
   sdb_mainloop();
   free_regex();
 #endif
