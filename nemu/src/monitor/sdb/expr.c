@@ -152,6 +152,7 @@ bool make_token(char *e, Token *buffer, int *cnt) {
           buffer[*cnt].substr[substr_len] = '\0';
           buffer[*cnt].catagry = TK_CATAGORY_OPERAND;
           buffer[*cnt].type = TK_NUMBER;
+          (*cnt)++;
         } break;
         case TK_REGISTER: {
           bool success = true;
@@ -168,6 +169,7 @@ bool make_token(char *e, Token *buffer, int *cnt) {
           buffer[*cnt].substr[substr_len] = '\0';
           buffer[*cnt].catagry = TK_CATAGORY_OPERAND;
           buffer[*cnt].type = TK_REGISTER;
+          (*cnt)++;
         } break;
         case '+':
         case '-':
@@ -262,9 +264,8 @@ long long eval(int p, int q, TokenST *st, int *right_buffer) {
     switch (st->ref[p].type) {
     case TK_NUMBER:
       return st->ref[p].content.value;
-    case TK_REGISTER: {
+    case TK_REGISTER:
       return *st->ref[p].content.reg_ptr;
-    }
     default:
       eval_error_flag = EVAL_ERROR_ILLEGAL_EXPR;
       return -1;
