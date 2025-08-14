@@ -13,7 +13,9 @@
  * See the Mulan PSL v2 for more details.
  ***************************************************************************************/
 
+#include "sdb/ST.h"
 #include "sdb/sdb.h"
+#include "sdb/watcher.h"
 #include <debug.h>
 #include <isa.h>
 #include <memory/paddr.h>
@@ -120,7 +122,7 @@ static int parse_args(int argc, char *argv[]) {
 void test_eval() {
 
   struct {
-    const char *input;
+    char input[128];
     long long result;
   } testcases[] = {{"1 +    2 *  3", 7},
                    {"(1 +    2 ) *  (3+4)", 21},
@@ -150,8 +152,8 @@ void test_eval() {
 
   FILE *fp = fopen("test.txt", "r");
   clock_t begin = clock();
-  if (fp != NULL) {
 
+  if (fp != NULL) {
     while (!feof(fp)) {
       long long result;
       char *expression = NULL;
@@ -219,6 +221,7 @@ void init_monitor(int argc, char *argv[]) {
 
   /* Initialize the simple debugger. */
   init_sdb();
+
   unit_tests();
   IFDEF(CONFIG_ITRACE, init_disasm());
 

@@ -1,10 +1,6 @@
-#include "Vtop_e4___024root.h"
 #include <Vtop_e4.h>
-#include <bitset>
 #include <chrono>
-#include <cstdint>
 #include <cstdio>
-#include <iostream>
 #include <nvboard.h>
 static TOP_NAME dut;
 
