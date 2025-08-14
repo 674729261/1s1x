@@ -138,6 +138,7 @@ bool make_token(char *e, Token *buffer, int *cnt) {
         case TK_NUMBER: {
           errno = 0;
           char original_char = substr_start[substr_len];
+          printf("%d\n", substr_len);
           substr_start[substr_len] = '\0';
           char *end_ptr;
           buffer[*cnt].content.value = strtoll(substr_start, &end_ptr, 0);
