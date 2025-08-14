@@ -31,7 +31,6 @@
 
 static int is_batch_mode = false;
 
-void init_regex();
 void init_wp_pool();
 
 /* We use the `readline' library to provide more flexibility to read from stdin.
@@ -318,8 +317,8 @@ void sdb_mainloop() {
 
 void init_sdb() {
   /* Compile the regular expressions. */
+  void init_regex();
   init_regex();
-
   /* Initialize the watchpoint pool. */
   init_wp_pool();
 }

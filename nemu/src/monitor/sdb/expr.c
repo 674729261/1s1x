@@ -105,6 +105,12 @@ void init_regex() {
   }
 }
 
+void free_regex() {
+  for (int i = 0; i < NR_REGEX; i++) {
+    regfree(&re[i]);
+  }
+}
+
 static Token tokens[TOKEN_MAX_COUNT] = {};
 static int nr_token = 0;
 bool make_token(char *e, Token *buffer, int *cnt) {
@@ -162,7 +168,7 @@ bool make_token(char *e, Token *buffer, int *cnt) {
           if (!success) {
             printf("Expression contains illegal register : %s\n", substr_start);
             substr_start[substr_len] = original_char;
-            return -1;
+            return false;
           }
           substr_start[substr_len] = original_char;
           strncpy(buffer[*cnt].substr, substr_start, substr_len);
