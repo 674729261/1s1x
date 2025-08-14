@@ -32,7 +32,14 @@ enum {
 
 typedef struct token {
   int type;
-  char str[TOKEN_SUBSTR_LEN];
+
+  union {
+    long long value;
+    const word_t *reg_ptr;
+  } content;
+
+  char substr[TOKEN_SUBSTR_LEN];
+
   int str_sz;
   int catagry;
   int priority;
@@ -40,8 +47,8 @@ typedef struct token {
 } Token;
 
 extern const char *eval_error_flag;
-bool make_token(const char *e, Token *buffer, int *cnt);
-long long expr(const char *e, bool *success);
+bool make_token(char *e, Token *buffer, int *cnt);
+long long expr(char *e, bool *success);
 bool check_parentheses_legal(Token *obj, int *buffer);
 void show_expr(Token *arr, int cnt);
 #endif

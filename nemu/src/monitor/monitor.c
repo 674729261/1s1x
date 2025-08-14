@@ -122,7 +122,7 @@ static int parse_args(int argc, char *argv[]) {
 void test_eval() {
 
   struct {
-    const char *input;
+    char input[128];
     long long result;
   } testcases[] = {{"1 +    2 *  3", 7},
                    {"(1 +    2 ) *  (3+4)", 21},

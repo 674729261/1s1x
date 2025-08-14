@@ -38,7 +38,7 @@ void init_wp_pool() {
 
 static Token token_buffer[TOKEN_MAX_COUNT];
 
-WP *new_wp(const char *expression, long long value, bool is_hex) {
+WP *new_wp(char *expression, long long value, bool is_hex) {
   if (free_ == NULL)
     return NULL;
   WP *ret = free_;
