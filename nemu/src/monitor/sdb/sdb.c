@@ -15,7 +15,6 @@
 
 #include "sdb.h"
 #include "common.h"
-#include "watcher.h"
 #include <cpu/cpu.h>
 #include <debug.h>
 #include <errno.h>
