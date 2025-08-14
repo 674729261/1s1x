@@ -15,6 +15,7 @@
 
 #include "sdb.h"
 #include "common.h"
+#include "watcher.h"
 #include <cpu/cpu.h>
 #include <debug.h>
 #include <errno.h>
@@ -31,6 +32,7 @@
 static int is_batch_mode = false;
 
 void init_regex();
+void free_regex();
 void init_wp_pool();
 
 /* We use the `readline' library to provide more flexibility to read from stdin.
@@ -321,4 +323,6 @@ void init_sdb() {
 
   /* Initialize the watchpoint pool. */
   init_wp_pool();
+
+  free_regex();
 }
