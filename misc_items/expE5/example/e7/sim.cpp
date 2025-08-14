@@ -1,7 +1,9 @@
+#include "Vtop_e7___024root.h"
 #include <Vtop_e7.h>
 #include <cmath>
 #include <cstdint>
 #include <nvboard.h>
+#include <random>
 static TOP_NAME dut;
 
 void nvboard_bind_all_pins(TOP_NAME *top);

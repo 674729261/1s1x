@@ -25,7 +25,7 @@ static char buf[65536] = {};
 static char code_buf[65536 + 128] = {}; // a little larger than `buf`
 static char *code_format = "#include <stdio.h>\n"
                            "int main() { "
-                           "  long long result = (long long)%s; "
+                           "  long long result = %s; "
                            "  printf(\"%%lld\", result); "
                            "  return 0; "
                            "}";
@@ -33,7 +33,6 @@ static char *code_format = "#include <stdio.h>\n"
 static void gen_rand_expr(int len) {
   const char choices[] = "nnnn++++----**//^^^&||nnnn++++----**//"
                          "^^^&||(())))r% "; // n代表数字，r代表<><=>===!+
-  const char digits[] = "123456789ABCDEF";
   int cnt_choices = sizeof(choices) - 1;
   char last = '(';
   int cnt_brace = 0;
@@ -106,37 +105,7 @@ static void gen_rand_expr(int len) {
           buf[char_cnt++] = '~';
           break;
         }
-        switch (rand() % 8) {
-        case 0:
-          buf[char_cnt++] = ' ';
-          buf[char_cnt++] = '-';
-          break;
-        case 1:
-          buf[char_cnt++] = ' ';
-          buf[char_cnt++] = '+';
-          break;
-        case 2:
-          buf[char_cnt++] = ' ';
-          buf[char_cnt++] = '~';
-          break;
-        }
-        if (rand() % 9 < 4) { // hex
-          buf[char_cnt++] = '0';
-          buf[char_cnt++] = 'x';
-          buf[char_cnt++] = digits[rand() % 15];
-          if (rand() % 9 < 3)
-            buf[char_cnt++] = digits[rand() % 15];
-          buf[char_cnt++] = ' ';
-        } else if (rand() % 9 < 7) { // decimal
-          buf[char_cnt++] = digits[rand() % 9];
-          if (rand() % 9 < 3)
-            buf[char_cnt++] = digits[rand() % 9];
-        } else { // oct
-          buf[char_cnt++] = '0';
-          buf[char_cnt++] = digits[rand() % 7];
-          if (rand() % 9 < 3)
-            buf[char_cnt++] = digits[rand() % 7];
-        }
+        buf[char_cnt++] = (rand() % 9 + '1');
         last = 'n';
       } else
         i--;
@@ -238,17 +207,14 @@ int main(int argc, char *argv[]) {
     fputs(code_buf, fp);
     fclose(fp);
 
-    int ret = system(
-        "gcc -Werror=overflow -Werror=div-by-zero /tmp/.code.c -o /tmp/.expr");
-    if (ret != 0) {
-      fputs("Skipping", stderr);
+    int ret = system("gcc /tmp/.code.c -o /tmp/.expr 2> /tmp/.gcclog");
+    if (ret != 0)
+      continue;
+    ret = system("cat /tmp/.gcclog | grep \"div-by-zero\" > /dev/null");
+    if (ret == 0) {
       i--;
       continue;
-    } // ret = system("cat /tmp/.gcclog | grep \"div-by-zero\" > /dev/null");
-    // if (ret == 0) {
-    //   i--;
-    //   continue;
-    // }
+    }
     fp = popen("/tmp/.expr", "r");
     assert(fp != NULL);
 
