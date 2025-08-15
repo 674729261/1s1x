@@ -29,6 +29,8 @@ int main() {
   nvboard_init();
   design_init();
 
+  puts("E7 : 键盘");
+
   while (1) {
     dut.clk = dut.clk ^ 1;
     dut.eval();

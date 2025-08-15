@@ -26,6 +26,8 @@ int main() {
   nvboard_init();
   design_init();
 
+  puts("E4 : 钟");
+
   auto last = std::chrono::steady_clock::now();
   while (1) {
     auto now = std::chrono::steady_clock::now();

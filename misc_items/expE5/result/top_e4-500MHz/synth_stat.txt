@@ -1,0 +1,54 @@
+
+17. Printing statistics.
+
+=== top_e4 ===
+
+   Number of wires:                994
+   Number of wire bits:            994
+   Number of public wires:         208
+   Number of public wire bits:     208
+   Number of ports:                 67
+   Number of port bits:             67
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                869
+     AND2_X1                        71
+     AND2_X2                         4
+     AND2_X4                        20
+     AND3_X1                        44
+     AND3_X2                         2
+     AND3_X4                         2
+     AND4_X1                        19
+     AOI211_X1                       9
+     AOI21_X1                       46
+     AOI221_X4                       4
+     AOI22_X1                        4
+     BUF_X2                          3
+     BUF_X4                          5
+     CLKBUF_X2                       1
+     CLKGATE_X1                     14
+     DFF_X1                        113
+     INV_X1                         92
+     MUX2_X1                         1
+     NAND2_X1                       74
+     NAND3_X1                       31
+     NAND4_X1                       23
+     NOR2_X1                        88
+     NOR2_X2                         1
+     NOR3_X1                        41
+     NOR4_X1                        23
+     OAI211_X1                      29
+     OAI21_X1                       49
+     OAI221_X1                       9
+     OAI22_X1                        5
+     OR2_X1                         11
+     OR2_X2                          2
+     OR3_X1                          5
+     OR4_X1                          2
+     XNOR2_X1                       18
+     XOR2_X1                         4
+
+   Chip area for module '\top_e4': 1369.900000
+     of which used for sequential elements: 510.986000 (37.30%)
+
