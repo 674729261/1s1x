@@ -8,4 +8,4 @@ p31:
 	$(CC) $(CFLAGS) ./p31.c -o ./p31
 
 clean:
-	rm p31
+	rm -f p31

@@ -1,37 +1,17 @@
-BUILD_DIR = ./build
+CSRC=csrc/main.cpp
+VSRC=vsrc/example.v
+BIN=./obj_dir/Vexample
 
-PRJ = playground
+all:
+	verilator --cc --exe --build --trace -j 16 -Wall $(CSRC) $(VSRC)
 
-test:
-	mill -i $(PRJ).test
-
-verilog:
-	$(call git_commit, "generate verilog")
-	mkdir -p $(BUILD_DIR)
-	mill -i $(PRJ).runMain Elaborate --target-dir $(BUILD_DIR)
-
-help:
-	mill -i $(PRJ).runMain Elaborate --help
-
-reformat:
-	mill -i __.reformat
-
-checkformat:
-	mill -i __.checkFormat
-
-bsp:
-	mill -i mill.bsp.BSP/install
-
-idea:
-	mill -i mill.idea.GenIdea/idea
+sim: all
+	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
+	$(BIN)
 
 clean:
-	-rm -rf $(BUILD_DIR)
+	rm -rf obj_dir
 
-.PHONY: test verilog help reformat checkformat clean
+.PHONY: all sim clean
 
-sim:
-	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
-	@echo "Write this Makefile by yourself."
-
--include ../Makefile
+include ../Makefile
