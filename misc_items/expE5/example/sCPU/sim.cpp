@@ -37,6 +37,8 @@ int main() {
     auto now = std::chrono::steady_clock::now();
     if (now - last > std::chrono::milliseconds(200)) {
       last = now;
+      puts("sCPU  使能 : SW0  复位 : 中");
+
       printf("PC = %02X ", dut.rootp->sCPU__DOT__pc);
       printf("GPR = %4d %4d %4d %4d\n",
              dut.rootp->sCPU__DOT__sCPU_GPR__DOT__GPRdata[0],
