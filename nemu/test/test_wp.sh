@@ -4,5 +4,5 @@ TIME1=$(cat ./build/nemu-log.txt | grep -o -P "\d+(?= inst/s)")
 echo -e "c\nq" | ./build/riscv32-nemu-interpreter --log=./build/nemu-log.txt ./test/test_img.bin
 TIME2=$(cat ./build/nemu-log.txt | grep -o -P "\d+(?= inst/s)")
 echo "无监视点时速度为${TIME2} inst/s"
-ratio=$(printf "%.3f" `echo -e "scale=5\n$TIME1 / $TIME2" | bc -l`)
+ratio=$(printf "%.4f" `echo -e "scale=6\n$TIME1 / $TIME2" | bc -l`)
 echo "有监视点时速度为${TIME1} inst/s, 是无监视点时的${ratio}倍"
