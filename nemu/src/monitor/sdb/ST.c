@@ -43,7 +43,11 @@ void init_ST(TokenST *st, int n, const Token *ref) {
 }
 
 int query_ST(TokenST *st, int from, int to) {
-  int layer = 31 - __builtin_clz(to - from + 1);
+
+  int layer =
+      31 - __builtin_clz(to - from + 1); // layer = max n that 2**n <= len
+
+  // compare [from, 2**layer + from -1] and [to - (1 << layer) + 1, to]
   return cmp(st->table[layer][from], st->table[layer][to - (1 << layer) + 1],
              st->ref);
 }
