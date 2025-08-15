@@ -1,9 +1,7 @@
-#include "Vtop_e7___024root.h"
 #include <Vtop_e7.h>
 #include <cmath>
 #include <cstdint>
 #include <nvboard.h>
-#include <random>
 static TOP_NAME dut;
 
 void nvboard_bind_all_pins(TOP_NAME *top);
@@ -30,6 +28,8 @@ int main() {
 
   nvboard_init();
   design_init();
+
+  puts("E7 : 键盘");
 
   while (1) {
     dut.clk = dut.clk ^ 1;
