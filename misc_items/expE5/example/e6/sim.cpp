@@ -75,12 +75,6 @@ int main() {
   nvboard_init();
   design_init();
 
-  puts("E6 : 随机数发生器");
-  puts("初值 : SW7-0");
-  puts("clk : 上");
-  puts("rst : SW14");
-  puts("读初值 : SW15");
-
   while (1) {
     dut.eval();
     nvboard_update();
