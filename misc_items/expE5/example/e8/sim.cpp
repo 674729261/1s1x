@@ -1,9 +1,6 @@
 #include <Vtop_e8.h>
-#include <bitset>
 #include <chrono>
-#include <cstdint>
 #include <cstdio>
-#include <iostream>
 #include <nvboard.h>
 static TOP_NAME dut;
 
@@ -29,6 +26,8 @@ int main() {
   nvboard_init();
   design_init();
 
+  puts("E8 : VGA");
+  puts("暂停 : SW0");
   auto last = std::chrono::steady_clock::now();
   while (1) {
     auto now = std::chrono::steady_clock::now();

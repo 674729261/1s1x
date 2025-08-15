@@ -20,25 +20,35 @@
 
 #define TOKEN_SUBSTR_LEN 64
 #define TOKEN_MAX_COUNT 256
+#define TOKEN_MAX_COUNT_LOG 8
 #define NR_WP 32
 
-typedef struct watchpoint {
-  int NO;
-  struct watchpoint *next;
+enum {
+  TK_CATAGORY_OTHER = 0,
+  TK_CATAGORY_OPERATOR,
+  TK_CATAGORY_OPERATOR_SINGLE,
+  TK_CATAGORY_OPERAND
+};
 
-  char expression[TOKEN_SUBSTR_LEN];
+typedef struct token {
+  int type;
 
-  long long old_value;
+  union {
+    long long value;
+    const word_t *reg_ptr;
+  } content;
 
-  bool is_hex;
+  char substr[TOKEN_SUBSTR_LEN];
 
-} WP;
+  int str_sz;
+  int catagry;
+  int priority;
+  int layer;
+} Token;
 
-long long expr(const char *e, bool *success);
-
-WP *new_wp(const char *expression, long long value, bool is_hex);
-void free_wp(WP *wp);
-bool exam_watchers(void);
-void list_watchers(void);
-
+extern const char *eval_error_flag;
+bool make_token(char *e, Token *buffer, int *cnt);
+long long expr(char *e, bool *success);
+bool check_parentheses_legal(Token *obj, int *buffer);
+void show_expr(Token *arr, int cnt);
 #endif
