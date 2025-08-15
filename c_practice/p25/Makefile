@@ -5,4 +5,4 @@ all: p25 myprintf
 	./myprintf
 
 clean:
-	rm p25 myprintf
+	rm -f p25 myprintf
