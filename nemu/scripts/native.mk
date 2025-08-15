@@ -42,7 +42,7 @@ gdb: run-env
 	gdb -s $(BINARY) --args $(NEMU_EXEC)
 
 test_wp:
-	./test/test_wp.sh
+	bash ./test/test_wp.sh
 
 clean-tools = $(dir $(shell find ./tools -maxdepth 2 -mindepth 2 -name "Makefile"))
 $(clean-tools):
