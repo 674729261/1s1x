@@ -185,6 +185,10 @@ int main() {
   uint8_t all_high = 0xff;
   nvboard_bind_pin(&all_high, 7, SEG3A, SEG3B, SEG3C, SEG3D, SEG3E, SEG3F,
                    SEG3G);
+  puts("E3 : ALU");
+  puts("A : SW3-0, LD2");
+  puts("B : SW13-10, LD1");
+  puts("Sel : SW7-5, LD0");
   while (1) {
     nvboard_update();
     dut.eval();

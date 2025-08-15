@@ -52,18 +52,20 @@ places the U-immediate value in the top 20 bits of the destination register rd, 
 
 3.1.6 Machine Status Registers (mstatus and mstatush)
 
-# 4.shell命令
+# 5.shell命令
 完成PA1的内容之后, `nemu/`目录下的所有.c和.h和文件总共有多少行代码? 你是使用什么命令得到这个结果的? 和框架代码相比, 你在PA1中编写了多少行代码? (Hint: 目前`pa0`分支中记录的正好是做PA1之前的状态, 思考一下应该如何回到"过去"?) 你可以把这条命令写入Makefile中, 随着实验进度的推进, 你可以很方便地统计工程的代码行数, 例如敲入`make count`就会自动运行统计代码行数的命令. 再来个难一点的, 除去空行之外, `nemu/`目录下的所有.c和.h文件总共有多少行代码?
 
 ```shell
-files_pa0=$(git ls-tree -r --name-only pa0 | grep '\.[ch]$')
+#!/usr/bin/env bash
+
+files_pa0=$(git ls-tree -r --name-only pa0 src | grep '\.[ch]$')
 lines1=0
 for file in $files_pa0;
 do
     file_lines1=$(git show pa0:nemu/$file | tr -s '\n' | wc -l)
     lines1=$((file_lines1+lines1))
 done
-lines2=$(find . -name "*.[c|h]" | xargs cat | tr -s '\n' | wc -l)
+lines2=$(find ./src -name "*.[ch]" | xargs cat | tr -s '\n' | wc -l)
 
 echo "相比pa0多了$((lines2-lines1))行"
 ```
