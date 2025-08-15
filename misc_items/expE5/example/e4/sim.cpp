@@ -1,6 +1,10 @@
+#include "Vtop_e4___024root.h"
 #include <Vtop_e4.h>
+#include <bitset>
 #include <chrono>
+#include <cstdint>
 #include <cstdio>
+#include <iostream>
 #include <nvboard.h>
 static TOP_NAME dut;
 
@@ -25,8 +29,6 @@ int main() {
   nvboard_bind_all_pins(&dut);
   nvboard_init();
   design_init();
-
-  puts("E4 : 钟");
 
   auto last = std::chrono::steady_clock::now();
   while (1) {

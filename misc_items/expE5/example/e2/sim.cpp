@@ -39,11 +39,7 @@ int main() {
   // 上板测试
   nvboard_bind_all_pins(&dut);
   nvboard_init();
-  puts("E2 : Encoder and Decoder");
-  puts("优先译码器输入 : SW15-8");
-  puts("译码器输入 : SW2-1");
-  puts("编码器输入 : SW7-4");
-  puts("使能 : SW0");
+
   while (1) {
     nvboard_update();
     dut.eval();
