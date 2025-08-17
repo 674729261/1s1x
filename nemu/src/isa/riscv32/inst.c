@@ -29,6 +29,7 @@ enum {
   TYPE_S,
   TYPE_R,
   TYPE_J,
+  TYPE_B,
   TYPE_N, // none
 };
 
@@ -52,10 +53,18 @@ enum {
   do {                                                                         \
     *imm = (SEXT(BITS(i, 31, 25), 7) << 5) | BITS(i, 11, 7);                   \
   } while (0)
+#define immB()                                                                 \
+  do {                                                                         \
+    word_t imm12 = BITS(i, 31, 31), imm10_5 = BITS(i, 30, 25);                 \
+    word_t imm11 = BITS(i, 7, 7), imm4_1 = BITS(i, 11, 8);                     \
+    word_t _13bitimm =                                                         \
+        (imm12 << 12) | (imm11 << 11) | (imm10_5 << 5) | (imm4_1 << 1);        \
+    *imm = SEXT(_13bitimm, 13);                                                \
+  } while (0)
 #define immJ()                                                                 \
   do {                                                                         \
-    word_t imm20 = i >> 31, imm10_1 = BITS(i, 30, 21);                         \
-    word_t imm11 = (i >> 20) & 0x1, imm19_12 = BITS(i, 19, 12);                \
+    word_t imm20 = BITS(i, 31, 31), imm10_1 = BITS(i, 30, 21);                 \
+    word_t imm11 = BITS(i, 20, 20), imm19_12 = BITS(i, 19, 12);                \
     word_t _21bitimm =                                                         \
         (imm20 << 20) | (imm19_12 << 12) | (imm11 << 11) | (imm10_1 << 1);     \
     *imm = SEXT(_21bitimm, 21);                                                \
@@ -86,6 +95,11 @@ static void decode_operand(Decode *s, int *rd, word_t *src1, word_t *src2,
   case TYPE_R:
     src1R();
     src2R();
+    break;
+  case TYPE_B:
+    src1R();
+    src2R();
+    immB();
     break;
   case TYPE_N:
     break;
@@ -122,6 +136,8 @@ static int decode_exec(Decode *s) {
           s->dnpc = s->pc + imm);
   INSTPAT("??????? ????? ????? 000 ????? 11001 11", jalr, I, R(rd) = s->snpc;
           s->dnpc = (src1 + imm) & (~0x1u));
+  INSTPAT("??????? ????? ????? 001 ????? 11000 11", bne, B,
+          if (src1 != src2) s->dnpc = s->pc + imm);
   INSTPAT("??????? ????? ????? 000 ????? 01000 11", sb, S,
           Mw(src1 + imm, 1, src2));
   INSTPAT("??????? ????? ????? 010 ????? 01000 11", sw, S,
