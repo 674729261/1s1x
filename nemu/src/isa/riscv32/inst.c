@@ -141,6 +141,9 @@ static int decode_exec(Decode *s) {
               BITS((int64_t)(sword_t)src1 * (int64_t)(sword_t)src2, 63, 32));
   INSTPAT("0000001 ????? ????? 011 ????? 01100 11", mulhu, R,
           R(rd) = BITS((uint64_t)src1 * (uint64_t)src2, 63, 32));
+  INSTPAT("0000001 ????? ????? 111 ????? 01100 11", remu, R,
+          if (src2 == 0) R(rd) = src1;
+          else R(rd) = src1 % src2);
   INSTPAT("0000001 ????? ????? 110 ????? 01100 11", rem, R,
           if (src2 == 0) R(rd) = src1;
           else if (src2 == -1) R(rd) = 0;
