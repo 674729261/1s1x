@@ -14,6 +14,7 @@
  ***************************************************************************************/
 
 #include "local-include/reg.h"
+#include "macro.h"
 #include <cpu/cpu.h>
 #include <cpu/decode.h>
 #include <cpu/ifetch.h>
@@ -134,7 +135,12 @@ static int decode_exec(Decode *s) {
   INSTPAT("0000000 ????? ????? 111 ????? 01100 11", and, R,
           R(rd) = src1 & src2);
   INSTPAT("0000000 ????? ????? 001 ????? 01100 11", sll, R,
-          R(rd) = src1 << (src2 & 0x1f));
+          word_t shift = src2 & 0x1f;
+          R(rd) = src1 << shift);
+  INSTPAT("0000000 ????? ????? 101 ????? 01100 11", sra, R,
+          word_t shift = src2 & 0x1f;
+          R(rd) =
+              (src1 >> shift) | ~((BITS(src1, 31, 31) << (32 - shift)) - 1u));
   INSTPAT("0000000 ????? ????? 110 ????? 01100 11", or, R, R(rd) = src1 | src2);
   INSTPAT("??????? ????? ????? 100 ????? 00000 11", lbu, I,
           R(rd) = Mr(src1 + imm, 1));
