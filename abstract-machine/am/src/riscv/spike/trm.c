@@ -1,10 +1,10 @@
-#include <am.h>
-#include <klib.h>
-#include <klib-macros.h>
 #include "htif.h"
+#include <am.h>
+#include <klib-macros.h>
+#include <klib.h>
 
 extern char _heap_start;
-int main(const char *args);
+int _main(const char *args);
 
 extern char _pmem_start;
 #define PMEM_SIZE (128 * 1024 * 1024)
@@ -16,19 +16,18 @@ Area heap = RANGE(&_heap_start, PMEM_END);
 #endif
 static const char mainargs[] = MAINARGS;
 
-void putch(char ch) {
-  htif_console_putchar(ch);
-}
+void putch(char ch) { htif_console_putchar(ch); }
 
 void halt(int code) {
   printf("Exit with code = %d\n", code);
   htif_poweroff();
 
   // should not reach here
-  while (1);
+  while (1)
+    ;
 }
 
 void _trm_init() {
-  int ret = main(mainargs);
+  int ret = _main(mainargs);
   halt(ret);
 }
