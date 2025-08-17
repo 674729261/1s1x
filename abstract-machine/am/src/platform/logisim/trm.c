@@ -2,7 +2,7 @@
 #include <nemu.h>
 
 extern char _heap_start;
-int main(const char *args);
+int _main(const char *args);
 
 Area heap = RANGE(&_heap_start, PMEM_END);
 
@@ -14,6 +14,6 @@ __attribute__((noinline)) void halt(int code) {
 }
 
 void _trm_init() {
-  int ret = main("");
+  int ret = _main("");
   halt(ret);
 }
