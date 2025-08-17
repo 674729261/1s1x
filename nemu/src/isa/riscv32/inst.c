@@ -148,6 +148,9 @@ static int decode_exec(Decode *s) {
           if (src2 == 0) R(rd) = src1;
           else if (src2 == -1) R(rd) = 0;
           else R(rd) = (sword_t)src1 % (sword_t)src2);
+  INSTPAT("0000001 ????? ????? 101 ????? 01100 11", divu, R,
+          if (src2 == 0) R(rd) = -1;
+          else R(rd) = src1 / src2);
   INSTPAT("0000001 ????? ????? 100 ????? 01100 11", div, R,
           if (src2 == 0) R(rd) = -1;
           else if (src2 == -1) R(rd) = -R(rd);
