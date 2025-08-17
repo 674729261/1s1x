@@ -137,7 +137,7 @@ static int decode_exec(Decode *s) {
   INSTPAT("0000000 ????? ????? 001 ????? 01100 11", sll, R,
           word_t shift = src2 & 0x1f;
           R(rd) = src1 << shift);
-  INSTPAT("0000000 ????? ????? 101 ????? 01100 11", sra, R,
+  INSTPAT("0100000 ????? ????? 101 ????? 01100 11", sra, R,
           word_t shift = src2 & 0x1f;
           R(rd) =
               (src1 >> shift) | ~((BITS(src1, 31, 31) << (32 - shift)) - 1u));
