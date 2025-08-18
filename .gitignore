@@ -18,6 +18,7 @@
 !/nemu/*
 !/nexus-am/*
 !/nanos-lite/*
+!/am-kernels/**/*
 !/navy-apps/*
 !/npc/*
 !Makefile
