@@ -18,7 +18,6 @@
 !/nemu/*
 !/nexus-am/*
 !/nanos-lite/*
-!/am-kernels/**/*
 !/navy-apps/*
 !/npc/*
 !Makefile
@@ -27,7 +26,6 @@
 !init.sh
 /c_practice/p32_33/build/
 /c_practice/p32_33/bin/
-/am-kernels
 /fceux-am
 
 **/*.log
