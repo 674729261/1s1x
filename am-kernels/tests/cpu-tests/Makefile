@@ -21,6 +21,7 @@ Makefile.%: tests/%.c latest
 	else \
 		printf "[%14s] $(COLOR_RED)***FAIL***$(COLOR_NONE)\n" $* >> $(RESULT); \
 	fi
+	-@rm -f Makefile.$*
 
 
 run: all
@@ -31,6 +32,6 @@ gdb: all
 
 clean:
 	rm -rf Makefile.* build/
-	-@rm -f Makefile.$*
+
 
 latest:
