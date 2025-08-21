@@ -13,8 +13,10 @@ for file in $(find ./tests/ -name "*.c"); do
 		TARGET=$(echo  "$file" | grep -oP "[^/]*(?=\.c)")
 		echo -ne "${TARGET}\t: "
 		echo -e "q" | make ARCH=riscv32-nemu ALL=${TARGET} run > /tmp/.autotest_cputests
-		echo -ne "$COLOR_GREEN" && cat /tmp/.autotest_cputests | grep -oP "HIT GOOD TRAP" && echo -ne "$COLOR_NONE"
-		echo -ne "$COLOR_RED" && cat /tmp/.autotest_cputests | grep -oP "HIT BAD TRAP" && echo -ne "$COLOR_NONE"
+		echo -ne "$COLOR_GREEN" && cat /tmp/.autotest_cputests | grep -oP "HIT GOOD TRAP"
+		echo -ne "$COLOR_NONE"
+		echo -ne "$COLOR_RED" && cat /tmp/.autotest_cputests | grep -oP "HIT BAD TRAP"
+		echo -ne "$COLOR_NONE"
 		cat /tmp/.autotest_cputests | grep -oP "ABORT.+$"
 	fi
 done
