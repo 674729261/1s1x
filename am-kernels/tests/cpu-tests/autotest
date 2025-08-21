@@ -2,6 +2,9 @@
 
 COUNT=0
 PASSED=0
+COLOR_RED="\033[1;31m"
+COLOR_GREEN="\033[1;32m"
+COLOR_NONE="\033[0m"
 
 for file in $(find ./tests/ -name "*.c"); do
 	echo "$file" | grep "str" > /dev/null
@@ -9,8 +12,9 @@ for file in $(find ./tests/ -name "*.c"); do
 		COUNT=$(($COUNT + 1))
 		TARGET=$(echo  "$file" | grep -oP "[^/]*(?=\.c)")
 		echo -ne "${TARGET}\t: "
-		echo -e "c\nq" | make ARCH=riscv32-nemu ALL=${TARGET} run > /tmp/.autotest_cputests
-		cat /tmp/.autotest_cputests | grep -oP "HIT \w* TRAP"
+		echo -e "q" | make ARCH=riscv32-nemu ALL=${TARGET} run > /tmp/.autotest_cputests
+		echo -e "$COLOR_GREEN" && cat /tmp/.autotest_cputests | grep -oP "HIT GOOD TRAP" && echo -e "$COLOR_NONE"
+		echo -e "$COLOR_RED" && cat /tmp/.autotest_cputests | grep -oP "HIT BAD TRAP" && echo -e "$COLOR_NONE"
 		cat /tmp/.autotest_cputests | grep -oP "ABORT.+$"
 	fi
 done
