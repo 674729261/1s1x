@@ -7,7 +7,7 @@ COLOR_GREEN="\033[1;32m"
 COLOR_NONE="\033[0m"
 
 for file in $(find ./tests/ -name "*.c"); do
-	echo "$file" | grep "str" > /dev/null
+	echo "$file" | grep "hello" > /dev/null
 	if [ $? -ne 0 ]; then
 		COUNT=$(($COUNT + 1))
 		TARGET=$(echo  "$file" | grep -oP "[^/]*(?=\.c)")
