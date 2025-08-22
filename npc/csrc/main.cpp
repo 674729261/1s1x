@@ -25,7 +25,7 @@ void design_init() {
 }
 
 extern "C" int pmem_read(int raddr) {
-  // printf("%08x\n", raddr);
+  printf("%08x\n", raddr);
   return M[(uint32_t)raddr >> 2];
 }
 extern "C" void pmem_write(int waddr, int wdata, char wmask) {
