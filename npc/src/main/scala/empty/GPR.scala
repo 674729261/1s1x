@@ -3,7 +3,7 @@ package empty
 import chisel3._
 import chisel3.util._
 
-class GPR extends Module {
+class GPR extends Module with RequireAsyncReset {
   val io = IO(new Bundle {
     val raddr1 = Input(UInt(5.W))
     val raddr2 = Input(UInt(5.W))
@@ -22,7 +22,8 @@ class GPR extends Module {
   val ENs = Wire(Vec(32, Bool()))
 
   for (i <- 1 until 32) {
-    register_bank.regs(i - 1) := RegEnable(io.wdata, io.wen && ENs(i))
+    register_bank
+      .regs(i - 1) := RegEnable(io.wdata, 0.U(32.W), io.wen && ENs(i))
   }
   register_bank.x0 := 0.U(32.W)
 
