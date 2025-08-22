@@ -10,6 +10,7 @@ package empty
 import chisel3._
 import chisel3.util._
 import ujson.Arr
+import upickle.default
 
 class Memory extends BlackBox {
   val io = IO(new Bundle {
@@ -31,9 +32,8 @@ class CPU extends Module with RequireAsyncReset {
     val ebreak = Output(Bool())
   })
 
-  def signExt32(in: UInt): UInt = {
-    val input_width = in.getWidth
-    Cat(Fill(32 - input_width, in(input_width - 1)), in)
+  def signExt32(in: UInt, bits: Int): UInt = {
+    Cat(Fill(32 - bits, in(bits - 1)), in)
   }
   io.ebreak := false.B
   val static_pc_next = Wire(UInt(32.W))
@@ -50,9 +50,9 @@ class CPU extends Module with RequireAsyncReset {
   val r_decoded = io.instr.asTypeOf(new RType)
   val u_decoded = io.instr.asTypeOf(new UType)
   val s_decoded = io.instr.asTypeOf(new SType)
-  val immI = signExt32(i_decoded.imm12)
+  val immI = signExt32(i_decoded.imm12, 12)
   val immU = Cat(u_decoded.imm20, 0.U(12.W))
-  val immS = signExt32(Cat(s_decoded.imm7U, s_decoded.imm5L))
+  val immS = signExt32(Cat(s_decoded.imm7U, s_decoded.imm5L), 12)
   val rs1 = r_decoded.rs1
   val rs2 = r_decoded.rs2
   val rd = r_decoded.rd
