@@ -26,7 +26,7 @@ extern "C" int pmem_read(int raddr) { return M[(uint32_t)raddr >> 2]; }
 extern "C" void pmem_write(int waddr, int wdata, char wmask) {
   for (int i = 0; i < 4; i++) {
     if ((wmask >> i) & 0x1) {
-      uint32_t mask32 = (i << 8) - (1u << (8 * (i - 1)));
+      uint32_t mask32 = (1u << (8 * i)) - (1u << (8 * (i - 1)));
       printf("%08x\n", mask32);
       uint32_t addr = (uint32_t)waddr >> 2;
       M[addr] &= ~mask32;
