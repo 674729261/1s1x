@@ -21,9 +21,6 @@ module Memory (
   always @(*) begin
     if (valid) begin  // 有读写请求时
       rdata = pmem_read(raddr);
-      if (wen) begin  // 有写请求时
-        pmem_write(waddr, wdata, {4'h0, wmask});
-      end
     end else begin
       rdata = 0;
     end
