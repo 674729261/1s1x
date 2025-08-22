@@ -37,8 +37,8 @@ int main(void) {
     uint32_t pc = dut.io_pc;
     dut.io_instr = M[pc / 4];
     dut.clock = 0;
-    printf("PC = %08x, cycle = %d, a0 = %08x\n", pc, cur_cycle,
-           dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_9_r);
+    printf("PC = %08x, cycle = %d, R[3] = %08x\n", pc, cur_cycle,
+           dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_2_r);
     dut.eval();
     dut.clock = 1;
     dut.eval();
