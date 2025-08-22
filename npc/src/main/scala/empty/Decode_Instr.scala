@@ -19,3 +19,9 @@ class RType extends Bundle {
   val rd = UInt(5.W)
   val opcode = UInt(7.W)
 }
+
+class UType extends Bundle {
+  val imm20 = UInt(20.W)
+  val rd = UInt(5.W)
+  val opcode = UInt(7.W)
+}

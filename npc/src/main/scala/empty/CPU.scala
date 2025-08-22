@@ -45,7 +45,9 @@ class CPU extends Module with RequireAsyncReset {
 
   val i_decoded = io.instr.asTypeOf(new IType)
   val r_decoded = io.instr.asTypeOf(new RType)
+  val u_decoded = io.instr.asTypeOf(new UType)
   val immI = signExt32(i_decoded.imm12)
+  val immU = Cat(u_decoded.imm20, 0.U(12.W))
   val rs1 = r_decoded.rs1
   val rs2 = r_decoded.rs2
   val rd = r_decoded.rd
@@ -68,10 +70,12 @@ class CPU extends Module with RequireAsyncReset {
     }
     is("b1100111".U(7.W)) { // jalr
       adder.io.B := immI
-      dynamic_pc_next := adder.io.out
+      dynamic_pc_next := Cat(adder.io.out(31, 1), 0.U(1.W))
       gpr.io.wdata := static_pc_next
     }
-
+    is("b0110111".U(7.W)) { // lui
+      gpr.io.wdata := immU
+    }
   }
 
 }
