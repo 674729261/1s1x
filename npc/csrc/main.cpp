@@ -1,13 +1,16 @@
 #include <VCPU.h>
 #include <VCPU___024root.h>
+#include <cstddef>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 
-uint32_t M[1 << 24] = {0x01400513, 0x010000e7, 0x00c000e7, 0x01800067,
-                       0x00a50513, 0x00008067, 0x555550B7, 0x55500193,
-                       0x001181B3, 0x08302023, 0x06300F23, 0x08002203,
-                       0x08300203, 0x00100073};
+const size_t Memory_Size = 1 << 24;
+
+uint32_t M[Memory_Size] = {0x01400513, 0x010000e7, 0x00c000e7, 0x01800067,
+                           0x00a50513, 0x00008067, 0x555550B7, 0x55500193,
+                           0x001181B3, 0x08302023, 0x06300F23, 0x08002203,
+                           0x08300203, 0x00100073};
 
 static TOP_NAME dut;
 
@@ -23,14 +26,11 @@ void design_init() {
   dut.reset = 0;
   dut.eval();
 }
-bool read_cooldown = false;
 extern "C" int pmem_read(int raddr) {
-  static int last;
-  if (read_cooldown)
-    return last;
-  read_cooldown = true;
-  printf("%08x\n", raddr);
-  return last = M[(uint32_t)raddr >> 2];
+  uint32_t pos = (uint32_t)raddr >> 2;
+  if (pos > Memory_Size)
+    return 0xffffffff;
+  return M[pos];
 }
 extern "C" void pmem_write(int waddr, int wdata, char wmask) {
   for (int i = 0; i < 4; i++) {
@@ -67,7 +67,6 @@ int main(int argc, char **argv) {
     dut.clock = 0;
     printf("%08x %d %08x %d\n", pc, cur_cycle, dut.io_instr,
            dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_3_r);
-    read_cooldown = false;
     dut.eval();
     dut.clock = 1;
 
