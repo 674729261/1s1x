@@ -1,8 +1,9 @@
-CSRC=csrc/*.cpp
-SVSRC=svsrc/*.sv
-VSRC=vsrc/*.v
-TOPNAME=CPU
-BIN=./obj_dir/V$(TOPNAME)
+CSRC = $(wildcard csrc/*.cpp)
+SVSRC = $(wildcard generated_svsrc/*.sv)
+VSRC = $(wildcard vsrc/*.v)
+VSRC += $(wildcard vsrc/*.sv)
+TOPNAME = CPU
+BIN = ./obj_dir/V$(TOPNAME)
 
 CXXFLAGS += -DTOP_NAME="\"V$(TOPNAME)\""
 VERILATORFLAGS += --cc --exe --build --trace -j 16 

@@ -10,7 +10,17 @@ package empty
 import chisel3._
 import chisel3.util._
 
-class Memory extends BlackBox {}
+class Memory extends BlackBox {
+  val io = IO(new Bundle {
+    val valid = Input(Bool())
+    val wen = Input(Bool())
+    val waddr = Input(UInt(32.W))
+    val raddr = Input(UInt(32.W))
+    val wmask = Input(UInt(4.W))
+    val wdata = Input(UInt(32.W))
+    val rdata = Output(UInt(32.W))
+  })
+}
 
 class CPU extends Module with RequireAsyncReset {
   val io = IO(new Bundle {
@@ -64,12 +74,4 @@ class CPU extends Module with RequireAsyncReset {
 
   }
 
-}
-
-object AddMain extends App {
-  println("Generating the CPU RTL")
-  emitVerilog(
-    new CPU,
-    Array("--target-dir", "svsrc")
-  )
 }

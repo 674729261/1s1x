@@ -21,6 +21,14 @@ void design_init() {
   dut.eval();
 }
 
+extern "C" int pmem_read(int raddr) { return M[raddr & ~0x3]; }
+extern "C" void pmem_write(int waddr, int wdata, char wmask) {
+  uint32_t mask32 = (1u << (8 * wmask)) - (1u << (8 * (wmask - 1)));
+  uint32_t addr = waddr & ~0x3;
+  M[addr] &= ~mask32;
+  M[addr] |= wdata & mask32;
+}
+
 int main(void) {
   design_init();
   const int max_cycle = 16;
