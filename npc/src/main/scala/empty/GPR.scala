@@ -33,10 +33,4 @@ class GPR extends Module {
 
   ENs := VecInit(UIntToOH(io.waddr).asBools)
 
-  for (i <- 0 until 4) {
-    for (j <- 0 until 8) {
-      printf("reg%d : %d ", (j + i * 8).U, data(j + i * 8))
-    }
-    printf("\n")
-  }
 }
