@@ -16,3 +16,9 @@ obj_dir/**/*
 obj_dir
 project
 target
+.bloop
+.bsp
+.cache
+.metals
+.vscode
+!svsrc
