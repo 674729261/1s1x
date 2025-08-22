@@ -8,6 +8,10 @@
 !*.cc
 !*.cpp
 !.gitignore
+!build.sbt
 !README.md
 build/
 obj_dir/**/*
+obj_dir
+project
+target
