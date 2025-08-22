@@ -7,6 +7,7 @@
 !*.v
 !*.cc
 !*.cpp
+!*.scala
 !.gitignore
 !build.sbt
 !README.md
