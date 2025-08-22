@@ -25,5 +25,9 @@ int main() {
   for (int cur_cycle = 0; cur_cycle < max_cycle; cur_cycle++) {
     uint32_t pc = dut.io_pc;
     dut.io_instr = M[pc];
+    dut.clock = 0;
+    dut.eval();
+    dut.clock = 1;
+    dut.eval();
   }
 }
