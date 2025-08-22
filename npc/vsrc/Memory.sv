@@ -1,3 +1,9 @@
+import "DPI-C" function int pmem_read(input int raddr);
+import "DPI-C" function void pmem_write(
+  input int  waddr,
+  input int  wdata,
+  input byte wmask
+);
 module Memory (
     valid,
     wen,
@@ -7,12 +13,6 @@ module Memory (
     wdata,
     rdata
 );
-  import "DPI-C" function int pmem_read(input int raddr);
-  import "DPI-C" function void pmem_write(
-    input int  waddr,
-    input int  wdata,
-    input byte wmask
-  );
   input valid, wen;
   input [31:0] waddr, raddr, wdata;
   input [3:0] wmask;

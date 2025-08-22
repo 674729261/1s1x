@@ -24,7 +24,6 @@ void design_init() {
 
 extern "C" int pmem_read(int raddr) { return M[(uint32_t)raddr >> 2]; }
 extern "C" void pmem_write(int waddr, int wdata, char wmask) {
-  puts("!!!");
   uint32_t mask32 = (1u << (8 * wmask)) - (1u << (8 * (wmask - 1)));
   uint32_t addr = (uint32_t)waddr >> 2;
   M[addr] &= ~mask32;
