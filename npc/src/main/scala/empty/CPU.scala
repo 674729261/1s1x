@@ -77,7 +77,7 @@ class CPU extends Module with RequireAsyncReset {
   memory_proxy.io.wmask := "b1111".U(4.W)
 
   switch(io.instr(6, 0)) {
-    is("b1110011".U(7.W)) {
+    is("b1110011".U(7.W)) { // ebreak
       io.ebreak := true.B
     }
     is("b0010011".U(7.W)) { // addi
@@ -115,7 +115,7 @@ class CPU extends Module with RequireAsyncReset {
         is("b010".U(3.W)) { // lw
           gpr.io.wdata := memory_proxy.io.rdata
         }
-        is("b000".U(3.W)) { // lb
+        is("b100".U(3.W)) { // lbu
           val read_data = memory_proxy.io.rdata
           switch(adder.io.out(1, 0)) {
             is("b00".U) { gpr.io.wdata := Cat(0.U(24.W), read_data(7, 0)) }
