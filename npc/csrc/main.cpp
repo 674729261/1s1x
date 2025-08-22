@@ -65,7 +65,7 @@ int main(int argc, char **argv) {
     uint32_t pc = dut.io_pc;
     dut.io_instr = M[pc / 4];
     dut.clock = 0;
-    printf("%d %08x %d\n", cur_cycle, dut.io_instr,
+    printf("%08x %d %08x %d\n", pc, cur_cycle, dut.io_instr,
            dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_3_r);
     dut.eval();
     dut.clock = 1;
