@@ -24,28 +24,43 @@ class CPU extends Module with RequireAsyncReset {
   val static_pc_next = Wire(UInt(32.W))
   val dynamic_pc_next = Wire(UInt(32.W))
   val pc = RegNext(next = dynamic_pc_next, init = 0.U(32.W))
-  val is_addi = (io.instr(6, 0) === "b0010011".U(7.W))
-  val is_jalr = (io.instr(6, 0) === "b1100111".U(7.W))
+
   io.pc := pc
   static_pc_next := pc + 4.U(32.W)
 
   val adder = Module(new Adder(32))
-  dynamic_pc_next := Mux(is_jalr, adder.io.out, static_pc_next)
+  dynamic_pc_next := static_pc_next
 
   val i_decoded = io.instr.asTypeOf(new IType)
-  printf(p"${Hexadecimal(io.instr)}\n")
-  val imm32_I = signExt32(i_decoded.imm12)
+  val r_decoded = io.instr.asTypeOf(new RType)
+  val immI = signExt32(i_decoded.imm12)
+  val rs1 = r_decoded.rs1
+  val rs2 = r_decoded.rs2
+  val rd = r_decoded.rd
 
   val gpr = Module(new GPR)
 
-  gpr.io.waddr := i_decoded.rd
+  gpr.io.waddr := rd
   gpr.io.wen := true.B
-  gpr.io.raddr1 := i_decoded.rs
-  gpr.io.raddr2 := DontCare
-  gpr.io.wdata := Mux(is_addi, adder.io.out, static_pc_next)
-
+  gpr.io.raddr1 := rs1
+  gpr.io.raddr2 := rs2
+  gpr.io.wdata := adder.io.out
   adder.io.A := gpr.io.rdata1
-  adder.io.B := imm32_I
+  adder.io.B := gpr.io.rdata2
+  switch(io.instr(6, 0)) {
+    is("b0010011".U(7.W)) { // addi
+      adder.io.B := immI
+    }
+    is("b0110011".U(7.W)) { // add
+
+    }
+    is("b1100111".U(7.W)) { // jalr
+      adder.io.B := immI
+      dynamic_pc_next := adder.io.out
+      gpr.io.wdata := static_pc_next
+    }
+
+  }
 
 }
 
