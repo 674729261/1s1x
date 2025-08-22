@@ -33,6 +33,7 @@ int main() {
   design_init();
   int error_count = 0;
   const int iters = 256;
+  dut.io_en = 1;
   for (int i = 0; i < iters; i++) {
     uint8_t v = rng() % 255 + 1;
     dut.io_load = 1;
@@ -64,8 +65,4 @@ int main() {
   design_init();
 
   puts("随机数发生器");
-
-  while (1) {
-    dut.eval();
-  }
 }
