@@ -5,7 +5,7 @@
 
 uint32_t M[1 << 24] = {0x01400513, 0x010000e7, 0x00c000e7, 0x01800067,
                        0x00a50513, 0x00008067, 0x555550B7, 0x55500193,
-                       0x001181B3, 0x02400067};
+                       0x001181B3, 0x08181023, 0x07181723, 0x02C00067};
 
 static TOP_NAME dut;
 
@@ -22,10 +22,10 @@ void design_init() {
   dut.eval();
 }
 
-extern "C" int pmem_read(int raddr) { return M[raddr & ~0x3]; }
+extern "C" int pmem_read(int raddr) { return M[(uint32_t)raddr >> 2]; }
 extern "C" void pmem_write(int waddr, int wdata, char wmask) {
   uint32_t mask32 = (1u << (8 * wmask)) - (1u << (8 * (wmask - 1)));
-  uint32_t addr = waddr & ~0x3;
+  uint32_t addr = (uint32_t)waddr >> 2;
   M[addr] &= ~mask32;
   M[addr] |= wdata & mask32;
 }
