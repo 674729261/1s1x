@@ -74,8 +74,12 @@ int main(int argc, char **argv) {
            dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_1_r,
            dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_0_r);
     dut.eval();
+    dut.eval();
+    dut.eval();
     dut.clock = 1;
 
+    dut.eval();
+    dut.eval();
     dut.eval();
     read_cooldown = false;
     if (dut.io_ebreak) {
