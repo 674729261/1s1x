@@ -2,6 +2,7 @@
 #include <VCPU___024root.h>
 #include <cstdint>
 #include <cstdio>
+#include <cstdlib>
 
 uint32_t M[1 << 24] = {0x01400513, 0x010000e7, 0x00c000e7, 0x01800067,
                        0x00a50513, 0x00008067, 0x555550B7, 0x55500193,
@@ -36,10 +37,24 @@ extern "C" void pmem_write(int waddr, int wdata, char wmask) {
   }
 }
 
-int main(void) {
+int main(int argc, char **argv) {
+  if (argc < 3) {
+    printf("Useage: %s [prog] [num of max cycles]\n", argv[0]);
+    exit(0);
+  }
+  FILE *fp = fopen(argv[1], "rb");
+  if (!fp) {
+    perror("Failed to open program file");
+    return 1;
+  }
+  uint32_t curpos = 0;
+  while (fscanf(fp, "%x", &M[curpos++]) != EOF)
+    ;
+  fclose(fp);
   design_init();
-  const int max_cycle = 16;
-  for (int cur_cycle = 0; cur_cycle < max_cycle; cur_cycle++) {
+  const int max_cycle = atoi(argv[2]);
+  int cur_cycle;
+  for (cur_cycle = 0; cur_cycle < max_cycle; cur_cycle++) {
     uint32_t pc = dut.io_pc;
     dut.io_instr = M[pc / 4];
     dut.clock = 0;
@@ -49,6 +64,10 @@ int main(void) {
     if (dut.io_ebreak) {
       printf("EBREAK, a0 = %08x\n",
              dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_9_r);
+      break;
     }
+  }
+  if (cur_cycle == max_cycle) {
+    puts("Fail to halt");
   }
 }
