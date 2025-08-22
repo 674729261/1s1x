@@ -1,10 +1,8 @@
 #include <VRNG.h>
-#include <bitset>
-#include <chrono>
 #include <cmath>
 #include <cstdint>
 #include <random>
-#include <set>
+
 static TOP_NAME dut;
 
 void design_init() {
