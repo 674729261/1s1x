@@ -67,9 +67,10 @@ int main(int argc, char **argv) {
     dut.clock = 0;
     printf("%08x %d %08x %d\n", pc, cur_cycle, dut.io_instr,
            dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_3_r);
+    read_cooldown = false;
     dut.eval();
     dut.clock = 1;
-    read_cooldown = false;
+
     dut.eval();
 
     if (dut.io_ebreak) {
