@@ -50,7 +50,6 @@ int main(int argc, char **argv) {
   uint32_t curpos = 0;
   while (fscanf(fp, "%x", &M[curpos++]) != EOF)
     ;
-  printf("%d\n", curpos);
   fclose(fp);
   design_init();
   const int max_cycle = atoi(argv[2]);
@@ -62,6 +61,7 @@ int main(int argc, char **argv) {
     dut.eval();
     dut.clock = 1;
     dut.eval();
+    printf("%d\n", cur_cycle);
     if (dut.io_ebreak) {
       printf("EBREAK, a0 = %08x\n",
              dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_9_r);
