@@ -26,14 +26,9 @@ void design_init() {
   dut.reset = 0;
   dut.eval();
 }
-bool read_cooldown = false;
 extern "C" int pmem_read(int raddr) {
-  static uint32_t last;
-  if (read_cooldown)
-    return last;
-  read_cooldown = true;
   uint32_t pos = (uint32_t)raddr >> 2;
-  return last = M[pos];
+  return M[pos];
 }
 extern "C" void pmem_write(int waddr, int wdata, char wmask) {
   for (int i = 0; i < 4; i++) {
@@ -77,7 +72,6 @@ int main(int argc, char **argv) {
     dut.clock = 1;
 
     dut.eval();
-    read_cooldown = false;
     if (pc == 0x121c || dut.io_ebreak) {
       printf("EBREAK, a0 = %08x, pc = %08x\n",
              dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_9_r, pc);
