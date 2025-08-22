@@ -43,6 +43,7 @@ extern "C" void pmem_write(int waddr, int wdata, char wmask) {
       M[addr] |= wdata & mask32;
     }
   }
+  printf("%d\n", M[(uint32_t)waddr >> 2]);
 }
 
 int main(int argc, char **argv) {
