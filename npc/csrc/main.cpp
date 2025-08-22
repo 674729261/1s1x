@@ -1,5 +1,6 @@
 #include <VCPU.h>
 #include <VCPU___024root.h>
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
@@ -27,6 +28,7 @@ void design_init() {
   dut.eval();
 }
 extern "C" int pmem_read(int raddr) {
+
   uint32_t pos = (uint32_t)raddr >> 2;
   return M[pos];
 }
@@ -55,6 +57,7 @@ int main(int argc, char **argv) {
   uint32_t curpos = 0;
   while (fscanf(fp, "%x", &M[curpos++]) != EOF)
     ;
+  printf("Loaded %d words\n", curpos);
   fclose(fp);
   design_init();
   const int max_cycle = atoi(argv[2]);
@@ -63,10 +66,10 @@ int main(int argc, char **argv) {
     uint32_t pc = dut.io_pc;
     dut.io_instr = M[pc / 4];
     dut.clock = 0;
-    printf("%08x %d sp%d ra%d a0=%d\n", pc, cur_cycle,
-           dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_1_r,
-           dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_0_r,
-           dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_9_r);
+    // printf("%08x %d sp%d ra%d a0=%d\n", pc, cur_cycle,
+    //        dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_1_r,
+    //        dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_0_r,
+    //        dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_9_r);
     dut.eval();
 
     dut.clock = 1;
