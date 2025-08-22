@@ -19,7 +19,7 @@ all: $(SVSRC)
 
 sim: all
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
-	$(BIN)
+	$(BIN) $(PROG) 65536
 
 clean:
 	rm -rf obj_dir

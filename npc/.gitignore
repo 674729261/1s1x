@@ -23,4 +23,4 @@ target
 .metals
 .vscode
 generated_svsrc/
-
+!prog/*.data

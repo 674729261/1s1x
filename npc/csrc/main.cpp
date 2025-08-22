@@ -39,7 +39,7 @@ extern "C" void pmem_write(int waddr, int wdata, char wmask) {
 
 int main(int argc, char **argv) {
   if (argc < 3) {
-    printf("Useage: %s [prog] [num of max cycles]\n", argv[0]);
+    printf("Usage: %s [prog] [num of max cycles]\n", argv[0]);
     exit(0);
   }
   FILE *fp = fopen(argv[1], "rb");
