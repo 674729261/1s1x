@@ -26,7 +26,7 @@ int main(void) {
   const int max_cycle = 16;
   for (int cur_cycle = 0; cur_cycle < max_cycle; cur_cycle++) {
     uint32_t pc = dut.io_pc;
-    dut.io_instr = M[pc];
+    dut.io_instr = M[pc / 4];
     dut.clock = 0;
     printf("PC = %08x, cycle = %d, a0 = %08x\n", pc, cur_cycle,
            dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_9_r);
