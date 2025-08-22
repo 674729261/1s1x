@@ -1,9 +1,18 @@
-CSRC=csrc/main.cpp
-VSRC=vsrc/example.v
-BIN=./obj_dir/Vexample
+CSRC=csrc/*.cpp
+SVSRC=svsrc/*.sv
+TOPNAME=RNG
+BIN=./obj_dir/V$(TOPNAME)
 
-all:
-	verilator --cc --exe --build --trace -j 16 -Wall $(CSRC) $(VSRC)
+CXXFLAGS += -DTOP_NAME="\"V$(TOPNAME)\""
+VERILATORFLAGS += --cc --exe --build --trace -j 16
+
+compile_chisel:
+	sbt run
+
+all: 
+	verilator $(VERILATORFLAGS) \
+	--top-module $(TOPNAME) \
+	-CFLAGS $(CXXFLAGS) -Wall $(CSRC) $(SVSRC) -Wno-UNUSEDSIGNAL
 
 sim: all
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
@@ -11,6 +20,8 @@ sim: all
 
 clean:
 	rm -rf obj_dir
+	sbt clean
+	rm -f svsrc/*
 
 .PHONY: all sim clean
 
