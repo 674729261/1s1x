@@ -24,12 +24,12 @@ void design_init() {
 
 extern "C" int pmem_read(int raddr) { return M[(uint32_t)raddr >> 2]; }
 extern "C" void pmem_write(int waddr, int wdata, char wmask) {
-
-  uint32_t mask32 = (1u << (8 * wmask)) - (1u << (8 * (wmask - 1)));
-  printf("%d %x\n", waddr >> 2, mask32);
-  uint32_t addr = (uint32_t)waddr >> 2;
-  M[addr] &= ~mask32;
-  M[addr] |= wdata & mask32;
+  for (int i = 0; ((wmask >> i) & 0x1); i++) {
+    uint32_t mask32 = (i << 8) - (1u << (8 * (i - 1)));
+    uint32_t addr = (uint32_t)waddr >> 2;
+    M[addr] &= ~mask32;
+    M[addr] |= wdata & mask32;
+  }
 }
 
 int main(void) {
