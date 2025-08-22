@@ -1,5 +1,6 @@
 CSRC=csrc/*.cpp
 SVSRC=svsrc/*.sv
+VSRC=vsrc/*.v
 TOPNAME=CPU
 BIN=./obj_dir/V$(TOPNAME)
 
@@ -13,7 +14,7 @@ $(SVSRC):
 all: $(SVSRC)
 	verilator $(VERILATORFLAGS) \
 	--top-module $(TOPNAME) \
-	-CFLAGS $(CXXFLAGS) -Wall $(CSRC) $(SVSRC) $(VERILATOR_DISABLE_WARNINGS)
+	-CFLAGS $(CXXFLAGS) -Wall $(CSRC) $(SVSRC) $(VSRC) $(VERILATOR_DISABLE_WARNINGS)
 
 sim: all
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!

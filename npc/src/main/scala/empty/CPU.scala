@@ -10,6 +10,8 @@ package empty
 import chisel3._
 import chisel3.util._
 
+class Memory extends BlackBox {}
+
 class CPU extends Module with RequireAsyncReset {
   val io = IO(new Bundle {
     val instr = Input(UInt(32.W))
