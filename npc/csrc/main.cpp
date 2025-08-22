@@ -6,7 +6,7 @@
 uint32_t M[1 << 24] = {0x01400513, 0x010000e7, 0x00c000e7, 0x01800067,
                        0x00a50513, 0x00008067, 0x555550B7, 0x55500193,
                        0x001181B3, 0x08302023, 0x06300F23, 0x08002203,
-                       0x08300203, 0x02C00067};
+                       0x08300203, 0x00100073};
 
 static TOP_NAME dut;
 
@@ -43,11 +43,11 @@ int main(void) {
     uint32_t pc = dut.io_pc;
     dut.io_instr = M[pc / 4];
     dut.clock = 0;
-    printf("PC = %08x, cycle = %d, R[4] = %08x, M[32] = %08x, M[31] = %08x\n",
-           pc, cur_cycle, dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_3_r,
-           M[32], M[31]);
     dut.eval();
     dut.clock = 1;
     dut.eval();
+    if (dut.io_ebreak) {
+      printf("EBREAK\n");
+    }
   }
 }

@@ -28,13 +28,14 @@ class CPU extends Module with RequireAsyncReset {
   val io = IO(new Bundle {
     val instr = Input(UInt(32.W))
     val pc = Output(UInt(32.W))
+    val ebreak = Output(Bool())
   })
 
   def signExt32(in: UInt): UInt = {
     val input_width = in.getWidth
     Cat(Fill(32 - input_width, in(input_width - 1)), in)
   }
-
+  io.ebreak := false.B
   val static_pc_next = Wire(UInt(32.W))
   val dynamic_pc_next = Wire(UInt(32.W))
   val pc = RegNext(next = dynamic_pc_next, init = 0.U(32.W))
@@ -76,6 +77,9 @@ class CPU extends Module with RequireAsyncReset {
   memory_proxy.io.wmask := "b1111".U(4.W)
 
   switch(io.instr(6, 0)) {
+    is("b1110011".U(7.W)) {
+      io.ebreak := true.B
+    }
     is("b0010011".U(7.W)) { // addi
       adder.io.B := immI
     }
@@ -122,6 +126,7 @@ class CPU extends Module with RequireAsyncReset {
         }
       }
     }
+
   }
 
 }
