@@ -42,7 +42,7 @@ int main(int argc, char **argv) {
     printf("Usage: %s [prog] [num of max cycles]\n", argv[0]);
     exit(0);
   }
-  FILE *fp = fopen(argv[1], "rb");
+  FILE *fp = fopen(argv[1], "r");
   if (!fp) {
     perror("Failed to open program file");
     return 1;
@@ -50,6 +50,7 @@ int main(int argc, char **argv) {
   uint32_t curpos = 0;
   while (fscanf(fp, "%x", &M[curpos++]) != EOF)
     ;
+  printf("%d\n", curpos);
   fclose(fp);
   design_init();
   const int max_cycle = atoi(argv[2]);
