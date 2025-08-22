@@ -5,7 +5,8 @@
 
 uint32_t M[1 << 24] = {0x01400513, 0x010000e7, 0x00c000e7, 0x01800067,
                        0x00a50513, 0x00008067, 0x555550B7, 0x55500193,
-                       0x001181B3, 0x08302023, 0x06300F23, 0x02C00067};
+                       0x001181B3, 0x08302023, 0x06300F23, 0x08002203,
+                       0x08300203, 0x02C00067};
 
 static TOP_NAME dut;
 
@@ -30,7 +31,6 @@ extern "C" void pmem_write(int waddr, int wdata, char wmask) {
           (uint32_t)((1ull << (8ull * (i + 1))) - (1ull << (8ull * i)));
       uint32_t addr = (uint32_t)waddr >> 2;
       M[addr] &= ~mask32;
-      printf("%08x\n", wdata);
       M[addr] |= wdata & mask32;
     }
   }
