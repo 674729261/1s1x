@@ -47,7 +47,8 @@ int main(void) {
     dut.clock = 1;
     dut.eval();
     if (dut.io_ebreak) {
-      printf("EBREAK\n");
+      printf("EBREAK, a0 = %08x\n",
+             dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_9_r);
     }
   }
 }
