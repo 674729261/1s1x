@@ -1,5 +1,6 @@
 *.*
 *
+*.sv
 !*/
 !Makefile
 !*.mk
@@ -9,6 +10,16 @@
 !*.cpp
 !*.scala
 !.gitignore
+!build.sbt
 !README.md
 build/
 obj_dir/**/*
+obj_dir
+project
+target
+.bloop
+.bsp
+.cache
+.metals
+.vscode
+!svsrc
