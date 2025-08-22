@@ -24,6 +24,7 @@ void design_init() {
 
 extern "C" int pmem_read(int raddr) { return M[(uint32_t)raddr >> 2]; }
 extern "C" void pmem_write(int waddr, int wdata, char wmask) {
+  puts("!!!");
   uint32_t mask32 = (1u << (8 * wmask)) - (1u << (8 * (wmask - 1)));
   uint32_t addr = (uint32_t)waddr >> 2;
   M[addr] &= ~mask32;
@@ -37,7 +38,7 @@ int main(void) {
     uint32_t pc = dut.io_pc;
     dut.io_instr = M[pc / 4];
     dut.clock = 0;
-    printf("PC = %08x, cycle = %d, R[3] = %08x, M[32] = %08x, M[32] = %08x\n",
+    printf("PC = %08x, cycle = %d, R[3] = %08x, M[32] = %08x, M[31] = %08x\n",
            pc, cur_cycle, dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_2_r,
            M[32], M[31]);
     dut.eval();
