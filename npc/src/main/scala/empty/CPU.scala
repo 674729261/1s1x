@@ -89,6 +89,7 @@ class CPU extends Module with RequireAsyncReset {
       gpr.io.wdata := immU
     }
     is("b0100011".U(7.W)) { // save
+      memory_proxy.io.valid := true.B
       memory_proxy.io.wen := true.B
       adder.io.B := immS
       gpr.io.wen := false.B
