@@ -5,6 +5,7 @@ import "DPI-C" function void pmem_write(
   input byte wmask
 );
 module Memory (
+    clk,
     valid,
     wen,
     waddr,
@@ -13,7 +14,7 @@ module Memory (
     wdata,
     rdata
 );
-  input valid, wen;
+  input valid, wen, clk;
   input [31:0] waddr, raddr, wdata;
   input [3:0] wmask;
   output reg [31:0] rdata;
@@ -26,5 +27,11 @@ module Memory (
     end else begin
       rdata = 0;
     end
+  end
+
+    always @(posedge clk) begin
+    if (valid & wen) begin
+        pmem_write(waddr, wdata, {4'h0, wmask});
+      end
   end
 endmodule

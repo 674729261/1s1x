@@ -13,6 +13,7 @@ import ujson.Arr
 
 class Memory extends BlackBox {
   val io = IO(new Bundle {
+    val clk = Input(Bool())
     val valid = Input(Bool())
     val wen = Input(Bool())
     val waddr = Input(UInt(32.W))
@@ -66,6 +67,7 @@ class CPU extends Module with RequireAsyncReset {
   adder.io.B := gpr.io.rdata2
 
   val memory_proxy = Module(new Memory)
+  memory_proxy.io.clk := clock.asBool
   memory_proxy.io.raddr := adder.io.out
   memory_proxy.io.valid := false.B
   memory_proxy.io.wen := false.B
