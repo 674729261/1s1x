@@ -31,7 +31,7 @@ class RNG(WIDTH: Width = 8.W, XORWIDTH: Int = 4)
 }
 
 object AddMain extends App {
-  println("Generating the RNG hardware")
+  println("Generating the RNG RTL")
   emitVerilog(
     new RNG(8.W, 4),
     Array("--target-dir", "svsrc")

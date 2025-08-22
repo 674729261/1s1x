@@ -14,7 +14,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 class AddTester extends AnyFlatSpec with ChiselScalatestTester {
 
   "Add" should "work" in {
-    test(new rng) { dut =>
+    test(new RNG) { dut =>
       dut.io.load_data.poke("hff".U(8.W))
       dut.io.load.poke(1.U)
       dut.io.en.poke(1.U)
