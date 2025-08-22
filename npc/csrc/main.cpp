@@ -23,10 +23,14 @@ void design_init() {
   dut.reset = 0;
   dut.eval();
 }
-
+bool read_cooldown = false;
 extern "C" int pmem_read(int raddr) {
+  static int last;
+  if (read_cooldown)
+    return last;
+  read_cooldown = true;
   printf("%08x\n", raddr);
-  return M[(uint32_t)raddr >> 2];
+  return last = M[(uint32_t)raddr >> 2];
 }
 extern "C" void pmem_write(int waddr, int wdata, char wmask) {
   for (int i = 0; i < 4; i++) {
@@ -65,6 +69,7 @@ int main(int argc, char **argv) {
            dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_3_r);
     dut.eval();
     dut.clock = 1;
+    read_cooldown = false;
     dut.eval();
 
     if (dut.io_ebreak) {
