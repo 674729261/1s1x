@@ -24,7 +24,10 @@ void design_init() {
   dut.eval();
 }
 
-extern "C" int pmem_read(int raddr) { return M[(uint32_t)raddr >> 2]; }
+extern "C" int pmem_read(int raddr) {
+  printf("%08x\n", raddr);
+  return M[(uint32_t)raddr >> 2];
+}
 extern "C" void pmem_write(int waddr, int wdata, char wmask) {
   for (int i = 0; i < 4; i++) {
     if ((wmask >> i) & 0x1) {
