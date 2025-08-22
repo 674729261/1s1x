@@ -33,6 +33,7 @@ class CPU extends Module with RequireAsyncReset {
   dynamic_pc_next := Mux(is_jalr, adder.io.out, static_pc_next)
 
   val i_decoded = io.instr.asTypeOf(new IType)
+  printf(p"${i_decoded.opcode} ${i_decoded.imm12}\n")
   val imm32_I = signExt32(i_decoded.imm12)
 
   val gpr = Module(new GPR)
