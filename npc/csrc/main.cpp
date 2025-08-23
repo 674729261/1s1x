@@ -27,6 +27,8 @@ void design_init() {
   dut.reset = 0;
   dut.eval();
 }
+int trapped;
+extern "C" void trap(int signal) { trapped = signal; }
 extern "C" int pmem_read(int raddr) {
   uint32_t pos = (uint32_t)(raddr - 0x80000000u) >> 2;
   if (pos > Memory_Size)
@@ -85,7 +87,7 @@ int main(int argc, char **argv) {
     dut.clock = 1;
     dut.eval();
 
-    if (dut.io_ebreak) {
+    if (trapped) {
       printf("EBREAK, a0 = %08x, pc = %08x, cycle = %d\n",
              dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_9_r, pc,
              cur_cycle);
