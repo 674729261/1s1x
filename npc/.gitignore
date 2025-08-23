@@ -5,6 +5,7 @@
 !*.mk
 !*.[cSh]
 !*.v
+!*.sv
 !*.cc
 !*.cpp
 !*.scala
@@ -21,4 +22,6 @@ target
 .cache
 .metals
 .vscode
-!svsrc
+generated_svsrc/
+!prog/*.data
+!csrc/*.*
