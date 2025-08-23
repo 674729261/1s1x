@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
     dut.clock = 1;
 
     dut.eval();
-    if (dut.io_ebreak) {
+    if (pc == 0x224 || dut.io_ebreak) {
       printf("EBREAK, a0 = %08x, pc = %08x, cycle = %d\n",
              dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_9_r, pc,
              cur_cycle);
