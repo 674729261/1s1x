@@ -41,6 +41,7 @@ class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
   def signExt32(in: UInt, bits: Int): UInt = {
     Cat(Fill(32 - bits, in(bits - 1)), in)
   }
+
   val Trapper = Module(new Trap)
   Trapper.io.clk := clock.asBool
   Trapper.io.ebreak := false.B
