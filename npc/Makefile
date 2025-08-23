@@ -23,7 +23,7 @@ sim: all
 clean:
 	rm -rf obj_dir
 	sbt clean
-	rm -f svsrc/*
+	rm -f generated_svsrc/*
 
 .PHONY: all sim clean
 
