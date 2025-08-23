@@ -69,6 +69,10 @@ int main(int argc, char **argv) {
   unsigned int cur_cycle;
   for (cur_cycle = 0; cur_cycle < max_cycle; cur_cycle++) {
     uint32_t pc = dut.io_pc;
+    if (pc < 0x80000000u) {
+      printf("pc : %08x out of range\n", pc);
+      exit(-1);
+    }
     dut.io_instr = M[(pc - 0x80000000u) / 4];
     dut.clock = 0;
     dut.eval();
