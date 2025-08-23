@@ -19,7 +19,7 @@ for file in $(find ./tests/ -name "*.c"); do
 		COUNT=$(($COUNT + 1))
 		TARGET=$(echo  "$file" | grep -oP "[^/]*(?=\.c)")
 		echo -ne "${TARGET}\t: "
-		echo -e "c\nq" | make ARCH=riscv32-nemu ALL=${TARGET} run > /tmp/.autotest_cputests
+		echo -e "c\nq" | make ARCH=minirv-nemu ALL=${TARGET} run > /tmp/.autotest_cputests
 
 		# cat /tmp/.autotest_cputests | grep -oP "HIT \w* TRAP"
 

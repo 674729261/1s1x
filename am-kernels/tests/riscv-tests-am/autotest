@@ -7,7 +7,8 @@ COLOR_GREEN="\033[1;32m"
 COLOR_NONE="\033[0m"
 
 for file in $(find ./isa/rv32ui/ -name "*.S"); do
-	if [ 1 -ne 0 ]; then
+	echo "${file}" | grep -P "(fence_i|ma_data)" > /dev/null
+	if [ $? -ne 0 ]; then
 		COUNT=$(($COUNT + 1))
 		TARGET=$(echo  "$file" | grep -oP "[^/]*(?=\.S)")
 		echo -ne "${TARGET}\t: "
@@ -17,5 +18,23 @@ for file in $(find ./isa/rv32ui/ -name "*.S"); do
 		echo -ne "$COLOR_RED" && cat /tmp/.autotest_cputests | grep -oP "HIT BAD TRAP"
 		echo -ne "$COLOR_NONE"
 		cat /tmp/.autotest_cputests | grep -oP "ABORT.+$"
+		make clean
+	fi
+done
+
+
+for file in $(find ./isa/rv32um/ -name "*.S"); do
+	echo "${file}" | grep -P "(fence_i|ma_data)" > /dev/null
+	if [ $? -ne 0 ]; then
+		COUNT=$(($COUNT + 1))
+		TARGET=$(echo  "$file" | grep -oP "[^/]*(?=\.S)")
+		echo -ne "${TARGET}\t: "
+		echo -e "c\nq" | make ARCH=riscv32-nemu ALL=${TARGET} run > /tmp/.autotest_cputests
+		echo -ne "$COLOR_GREEN" && cat /tmp/.autotest_cputests | grep -oP "HIT GOOD TRAP"
+		echo -ne "$COLOR_NONE"
+		echo -ne "$COLOR_RED" && cat /tmp/.autotest_cputests | grep -oP "HIT BAD TRAP"
+		echo -ne "$COLOR_NONE"
+		cat /tmp/.autotest_cputests | grep -oP "ABORT.+$"
+		make clean
 	fi
 done

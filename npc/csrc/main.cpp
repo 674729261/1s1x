@@ -27,18 +27,24 @@ void design_init() {
   dut.reset = 0;
   dut.eval();
 }
+int trapped;
+extern "C" void trap(int signal) { trapped = signal; }
 extern "C" int pmem_read(int raddr) {
-  uint32_t pos = (uint32_t)raddr >> 2;
+  uint32_t pos = (uint32_t)(raddr - 0x80000000u) >> 2;
   if (pos > Memory_Size)
     return 0xdeadbeef;
   return M[pos];
 }
 extern "C" void pmem_write(int waddr, int wdata, char wmask) {
+  if (waddr < 0x80000000u) {
+    printf("waddr : %08x out of range\n", waddr);
+    exit(-1);
+  }
   for (int i = 0; i < 4; i++) {
     if ((wmask >> i) & 0x1) {
       uint32_t mask32 =
           (uint32_t)((1ull << (8ull * (i + 1))) - (1ull << (8ull * i)));
-      uint32_t addr = (uint32_t)waddr >> 2;
+      uint32_t addr = (uint32_t)(waddr - 0x80000000u) >> 2;
       M[addr] &= ~mask32;
       M[addr] |= wdata & mask32;
     }
@@ -47,43 +53,56 @@ extern "C" void pmem_write(int waddr, int wdata, char wmask) {
 
 int main(int argc, char **argv) {
   if (argc < 3) {
-    printf("Usage: %s [prog] [num of max cycles]\n", argv[0]);
+    printf("Usage: %s [prog] [a/b] (num of max cycles)\n", argv[0]);
     exit(0);
   }
-  FILE *fp = fopen(argv[1], "r");
+  FILE *fp = fopen(argv[1], argv[2][0] == 'a' ? "r" : "rb");
   if (!fp) {
     perror("Failed to open program file");
     return 1;
   }
   uint32_t curpos = 0;
-  while (fscanf(fp, "%x", &M[curpos++]) != EOF)
-    ;
+  if (argv[2][0] == 'a')
+    while (fscanf(fp, "%x", &M[curpos++]) != EOF)
+      ;
+  else
+    while (!feof(fp)) {
+      fread(M + curpos, sizeof(uint32_t), 1, fp);
+      curpos++;
+    }
   printf("Loaded %d words\n", curpos);
   fclose(fp);
   design_init();
-  const int max_cycle = atoi(argv[2]);
-  int cur_cycle;
+  const unsigned int max_cycle = argc >= 4 ? atoi(argv[3]) : UINT32_MAX;
+  unsigned int cur_cycle;
   for (cur_cycle = 0; cur_cycle < max_cycle; cur_cycle++) {
     uint32_t pc = dut.io_pc;
-    dut.io_instr = M[pc / 4];
+    if (pc < 0x80000000u) {
+      printf("pc : %08x out of range\n", pc);
+      exit(-1);
+    }
+    dut.io_instr = M[(pc - 0x80000000u) / 4];
     dut.clock = 0;
-    // printf("%08x %d sp%d ra%d a0=%d\n", pc, cur_cycle,
-    //        dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_1_r,
-    //        dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_0_r,
-    //        dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_9_r);
     dut.eval();
-
     dut.clock = 1;
-
     dut.eval();
-    if (dut.io_ebreak) {
+
+    if (trapped) {
       printf("EBREAK, a0 = %08x, pc = %08x, cycle = %d\n",
              dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_9_r, pc,
              cur_cycle);
+      if (dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_9_r == 0) {
+        puts("HIT GOOD TRAP");
+        return 0;
+      } else {
+        puts("HIT BAD TRAP");
+        return -1;
+      }
       break;
     }
   }
   if (cur_cycle == max_cycle) {
-    puts("Fail to halt");
+    printf("Fail to halt, Abort at pc = %08x\n", dut.io_pc);
+    return -1;
   }
 }

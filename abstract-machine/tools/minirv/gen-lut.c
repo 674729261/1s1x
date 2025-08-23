@@ -3,7 +3,7 @@
 
 #define LUT_BIN "lut.bin"
 
-int _main() {
+int main() {
   FILE *fp = fopen(LUT_BIN, "w");
   assert(fp != NULL);
 

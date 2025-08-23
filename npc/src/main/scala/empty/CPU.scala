@@ -25,20 +25,28 @@ class Memory extends BlackBox {
   })
 }
 
-class CPU extends Module with RequireAsyncReset {
+class Trap extends BlackBox {
+  val io = IO(new Bundle {
+    val clk = Input(Bool())
+    val ebreak = Input(Bool())
+  })
+}
+
+class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
   val io = IO(new Bundle {
     val instr = Input(UInt(32.W))
     val pc = Output(UInt(32.W))
-    val ebreak = Output(Bool())
   })
 
   def signExt32(in: UInt, bits: Int): UInt = {
     Cat(Fill(32 - bits, in(bits - 1)), in)
   }
-  io.ebreak := false.B
+  val Trapper = Module(new Trap)
+  Trapper.io.clk := clock.asBool
+  Trapper.io.ebreak := false.B
   val static_pc_next = Wire(UInt(32.W))
   val dynamic_pc_next = Wire(UInt(32.W))
-  val pc = RegNext(next = dynamic_pc_next, init = 0.U(32.W))
+  val pc = RegNext(next = dynamic_pc_next, init = init_pc)
 
   io.pc := pc
   static_pc_next := pc + 4.U(32.W)
@@ -78,7 +86,7 @@ class CPU extends Module with RequireAsyncReset {
 
   switch(io.instr(6, 0)) {
     is("b1110011".U(7.W)) { // ebreak
-      io.ebreak := true.B
+      Trapper.io.ebreak := true.B
     }
     is("b0010011".U(7.W)) { // addi
       adder.io.B := immI
