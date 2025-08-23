@@ -28,8 +28,9 @@ void design_init() {
   dut.eval();
 }
 extern "C" int pmem_read(int raddr) {
-
   uint32_t pos = (uint32_t)raddr >> 2;
+  if (pos > Memory_Size)
+    return 0xdeadbeef;
   return M[pos];
 }
 extern "C" void pmem_write(int waddr, int wdata, char wmask) {
