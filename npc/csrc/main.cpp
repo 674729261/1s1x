@@ -71,7 +71,7 @@ int main(int argc, char **argv) {
   printf("Loaded %d words\n", curpos);
   fclose(fp);
   design_init();
-  const unsigned int max_cycle = argc >= 3 ? atoi(argv[3]) : UINT32_MAX;
+  const unsigned int max_cycle = argc >= 4 ? atoi(argv[3]) : UINT32_MAX;
   unsigned int cur_cycle;
   for (cur_cycle = 0; cur_cycle < max_cycle; cur_cycle++) {
     uint32_t pc = dut.io_pc;
