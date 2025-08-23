@@ -1,5 +1,5 @@
 CSRC = $(wildcard csrc/*.cpp)
-SVSRC = $(wildcard generated_svsrc/*.sv)
+SVSRC = generated_svsrc/CPU.sv
 VSRC = $(wildcard vsrc/*.v)
 VSRC += $(wildcard vsrc/*.sv)
 TOPNAME = CPU
