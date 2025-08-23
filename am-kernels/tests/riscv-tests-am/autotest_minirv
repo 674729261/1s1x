@@ -7,7 +7,8 @@ COLOR_GREEN="\033[1;32m"
 COLOR_NONE="\033[0m"
 
 for file in $(find ./isa/rv32ui/ -name "*.S"); do
-	if [ 1 -ne 0 ]; then
+	echo "${file}" | grep -P "(fence_i|ma_data)" > /dev/null
+	if [ $? -ne 0 ]; then
 		COUNT=$(($COUNT + 1))
 		TARGET=$(echo  "$file" | grep -oP "[^/]*(?=\.S)")
 		echo -ne "${TARGET}\t: "
