@@ -77,8 +77,9 @@ int main(int argc, char **argv) {
 
     dut.eval();
     if (pc == 0x121c || dut.io_ebreak) {
-      printf("EBREAK, a0 = %08x, pc = %08x\n",
-             dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_9_r, pc);
+      printf("EBREAK, a0 = %08x, pc = %08xm cycle - %d\n",
+             dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_9_r, pc,
+             cur_cycle);
       break;
     }
   }
