@@ -31,7 +31,6 @@ int trapped;
 extern "C" void trap(int signal) { trapped = signal; }
 extern "C" int pmem_read(int raddr) {
   uint32_t pos = (uint32_t)(raddr - 0x80000000u) >> 2;
-  printf("%08x\n", pos);
   if (pos > Memory_Size)
     return 0xdeadbeef;
   return M[pos];
