@@ -34,6 +34,10 @@ extern "C" int pmem_read(int raddr) {
   return M[pos];
 }
 extern "C" void pmem_write(int waddr, int wdata, char wmask) {
+  if (waddr < 0x80000000u) {
+    printf("waddr : %08x out of range\n", waddr);
+    exit(-1);
+  }
   for (int i = 0; i < 4; i++) {
     if ((wmask >> i) & 0x1) {
       uint32_t mask32 =
