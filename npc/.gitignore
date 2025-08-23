@@ -24,3 +24,4 @@ target
 .vscode
 generated_svsrc/
 !prog/*.data
+!csrc/*.*
