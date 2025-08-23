@@ -82,7 +82,7 @@ int main(int argc, char **argv) {
     //   printf("pc : %08x out of range\n", pc);
     //   exit(-1);
     // }
-    dut.io_instr = M[(pc - 0x80000000u) / 4];
+    dut.io_instr = M[(pc - 0x00000000u) / 4];
     dut.clock = 0;
     dut.eval();
     dut.clock = 1;
