@@ -46,8 +46,8 @@ extern "C" void pmem_write(int waddr, int wdata, char wmask) {
 }
 
 int main(int argc, char **argv) {
-  if (argc < 3) {
-    printf("Usage: %s [prog] [num of max cycles]\n", argv[0]);
+  if (argc < 2) {
+    printf("Usage: %s [prog] (num of max cycles)\n", argv[0]);
     exit(0);
   }
   FILE *fp = fopen(argv[1], "r");
@@ -61,8 +61,8 @@ int main(int argc, char **argv) {
   printf("Loaded %d words\n", curpos);
   fclose(fp);
   design_init();
-  const int max_cycle = atoi(argv[2]);
-  int cur_cycle;
+  const unsigned int max_cycle = argc >= 2 ? atoi(argv[2]) : UINT32_MAX;
+  unsigned int cur_cycle;
   for (cur_cycle = 0; cur_cycle < max_cycle; cur_cycle++) {
     uint32_t pc = dut.io_pc;
     dut.io_instr = M[pc / 4];
