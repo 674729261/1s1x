@@ -103,6 +103,16 @@ class CPU extends Module with RequireAsyncReset {
         is("b010".U(3.W)) { // sw
         }
         is("b000".U(3.W)) { // sb
+
+          val write_data = memory_proxy.io.wdata
+          val word = gpr.io.rdata2
+          switch(adder.io.out(1, 0)) {
+            is("b00".U) { write_data := Cat(0.U(24.W), word(7, 0)) }
+            is("b01".U) { write_data := Cat(0.U(24.W), word(15, 8)) }
+            is("b10".U) { write_data := Cat(0.U(24.W), word(23, 16)) }
+            is("b11".U) { write_data := Cat(0.U(24.W), word(31, 24)) }
+          }
+
           memory_proxy.io.wmask := UIntToOH(adder.io.out(1, 0))
         }
       }
