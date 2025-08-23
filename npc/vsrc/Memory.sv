@@ -17,15 +17,15 @@ module Memory (
   input valid, wen, clk;
   input [31:0] waddr, raddr, wdata;
   input [3:0] wmask;
-  output reg [31:0] rdata;
-  always @(clk, raddr) begin
-    if (valid) begin  // 有读写请求时
-      rdata = pmem_read(raddr);
-    end else begin
-      rdata = 0;
-    end
-  end
-
+  output [31:0] rdata;
+  // always @(clk, raddr) begin
+  //   if (valid) begin  // 有读写请求时
+  //     rdata = pmem_read(raddr);
+  //   end else begin
+  //     rdata = 0;
+  //   end
+  // end
+  assign rdata = valid ? pmem_read(raddr) : 32'h0;
   always @(posedge clk) begin
     if (valid & wen) begin
       pmem_write(waddr, wdata, {4'h0, wmask});
