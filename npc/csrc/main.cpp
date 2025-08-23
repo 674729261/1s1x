@@ -50,22 +50,28 @@ extern "C" void pmem_write(int waddr, int wdata, char wmask) {
 }
 
 int main(int argc, char **argv) {
-  if (argc < 2) {
-    printf("Usage: %s [prog] (num of max cycles)\n", argv[0]);
+  if (argc < 3) {
+    printf("Usage: %s [prog] [a/b] (num of max cycles)\n", argv[0]);
     exit(0);
   }
-  FILE *fp = fopen(argv[1], "r");
+  FILE *fp = fopen(argv[1], argv[2][0] == 'a' ? "r" : "rb");
   if (!fp) {
     perror("Failed to open program file");
     return 1;
   }
   uint32_t curpos = 0;
-  while (fscanf(fp, "%x", &M[curpos++]) != EOF)
-    ;
+  if (argv[2][0] == 'a')
+    while (fscanf(fp, "%x", &M[curpos++]) != EOF)
+      ;
+  else
+    while (!feof(fp)) {
+      fread(M + curpos, sizeof(uint32_t), 1, fp);
+      curpos++;
+    }
   printf("Loaded %d words\n", curpos);
   fclose(fp);
   design_init();
-  const unsigned int max_cycle = argc >= 2 ? atoi(argv[2]) : UINT32_MAX;
+  const unsigned int max_cycle = argc >= 3 ? atoi(argv[3]) : UINT32_MAX;
   unsigned int cur_cycle;
   for (cur_cycle = 0; cur_cycle < max_cycle; cur_cycle++) {
     uint32_t pc = dut.io_pc;

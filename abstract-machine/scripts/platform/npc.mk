@@ -26,6 +26,6 @@ image: image-dep
 	@$(OBJCOPY) -S --set-section-flags .bss=alloc,contents -O binary $(IMAGE).elf $(IMAGE).bin
 
 run: insert-arg
-	make -C $(NPC_HOME) sim PROG=$(IMAGE).bin 1000
+	make -C $(NPC_HOME) sim PROG=$(IMAGE).bin TYPE=b 1000
 
 .PHONY: insert-arg
