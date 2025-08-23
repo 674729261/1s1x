@@ -32,7 +32,7 @@ class Trap extends BlackBox {
   })
 }
 
-class CPU extends Module with RequireAsyncReset {
+class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
   val io = IO(new Bundle {
     val instr = Input(UInt(32.W))
     val pc = Output(UInt(32.W))
@@ -46,7 +46,7 @@ class CPU extends Module with RequireAsyncReset {
   Trapper.io.ebreak := false.B
   val static_pc_next = Wire(UInt(32.W))
   val dynamic_pc_next = Wire(UInt(32.W))
-  val pc = RegNext(next = dynamic_pc_next, init = "h80000000".U(32.W))
+  val pc = RegNext(next = dynamic_pc_next, init = init_pc)
 
   io.pc := pc
   static_pc_next := pc + 4.U(32.W)
