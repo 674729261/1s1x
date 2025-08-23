@@ -17,5 +17,6 @@ for file in $(find ./isa/rv32ui/ -name "*.S"); do
 		echo -ne "$COLOR_RED" && cat /tmp/.autotest_cputests | grep -oP "HIT BAD TRAP"
 		echo -ne "$COLOR_NONE"
 		cat /tmp/.autotest_cputests | grep -oP "ABORT.+$"
+		make clean
 	fi
 done
