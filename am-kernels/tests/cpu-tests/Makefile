@@ -23,10 +23,6 @@ Makefile.%: tests/%.c latest
 	fi
 	-@rm -f Makefile.$*
 
-<<<<<<< HEAD
-=======
-
->>>>>>> tracer-ysyx
 run: all
 	@cat $(RESULT)
 	@rm $(RESULT)
@@ -36,8 +32,5 @@ gdb: all
 clean:
 	rm -rf Makefile.* build/
 
-<<<<<<< HEAD
-=======
 
->>>>>>> tracer-ysyx
 latest:
