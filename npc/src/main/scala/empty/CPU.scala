@@ -38,7 +38,7 @@ class CPU extends Module with RequireAsyncReset {
   io.ebreak := false.B
   val static_pc_next = Wire(UInt(32.W))
   val dynamic_pc_next = Wire(UInt(32.W))
-  val pc = RegNext(next = dynamic_pc_next, init = 0.U(32.W))
+  val pc = RegNext(next = dynamic_pc_next, init = "h80000000".U(32.W))
 
   io.pc := pc
   static_pc_next := pc + 4.U(32.W)
