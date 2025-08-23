@@ -91,14 +91,18 @@ int main(int argc, char **argv) {
       printf("EBREAK, a0 = %08x, pc = %08x, cycle = %d\n",
              dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_9_r, pc,
              cur_cycle);
-      if (dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_9_r == 0)
+      if (dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_9_r == 0) {
         puts("HIT GOOD TRAP");
-      else
+        return 0;
+      } else {
         puts("HIT BAD TRAP");
+        return -1;
+      }
       break;
     }
   }
   if (cur_cycle == max_cycle) {
     printf("Fail to halt, Abort at pc = %08x\n", dut.io_pc);
+    return -1;
   }
 }
