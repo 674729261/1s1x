@@ -2,19 +2,23 @@ CSRC = $(wildcard csrc/*.cpp)
 SVSRC = generated_svsrc/CPU.sv
 VSRC = $(wildcard vsrc/*.v)
 VSRC += $(wildcard vsrc/*.sv)
+CHISELSRC += $(wildcard src/main/scala/empty/*.scala)
 TOPNAME = CPU
 BIN = ./obj_dir/V$(TOPNAME)
+
+VERILATOR = verilator
 
 CXXFLAGS += -DTOP_NAME="\"V$(TOPNAME)\""
 VERILATORFLAGS += --cc --exe --build --trace -j 16 
 VERILATOR_DISABLE_WARNINGS += -Wno-UNUSEDSIGNAL -Wno-DECLFILENAME -Wno-SYNCASYNCNET
-$(SVSRC):
+$(SVSRC): $(CHISELSRC)
 	sbt run
 
 all: $(SVSRC)
-	verilator $(VERILATORFLAGS) \
+	$(VERILATOR) $(VERILATORFLAGS) \
 	--top-module $(TOPNAME) \
-	-CFLAGS $(CXXFLAGS) -Wall $(CSRC) $(SVSRC) $(VSRC) $(VERILATOR_DISABLE_WARNINGS)
+	-CFLAGS $(CXXFLAGS) -Wall $(CSRC) $(SVSRC) $(VSRC) \
+	$(VERILATOR_DISABLE_WARNINGS)
 
 sim: all
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!

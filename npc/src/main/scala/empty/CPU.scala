@@ -76,13 +76,15 @@ class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
   adder.io.A := gpr.io.rdata1
   adder.io.B := gpr.io.rdata2
 
+  val mem_wdata = Wire(Vec(4, UInt(8.W)))
+  mem_wdata := gpr.io.rdata2.asTypeOf(Vec(4, UInt(8.W)))
   val memory_proxy = Module(new Memory)
   memory_proxy.io.clk := clock.asBool
   memory_proxy.io.raddr := adder.io.out
   memory_proxy.io.valid := false.B
   memory_proxy.io.wen := false.B
   memory_proxy.io.waddr := adder.io.out
-  memory_proxy.io.wdata := gpr.io.rdata2
+  memory_proxy.io.wdata := mem_wdata.asUInt
   memory_proxy.io.wmask := "b1111".U(4.W)
 
   switch(io.instr(6, 0)) {
@@ -112,13 +114,16 @@ class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
         is("b010".U(3.W)) { // sw
         }
         is("b000".U(3.W)) { // sb
-          val write_data = memory_proxy.io.wdata
           val byte = gpr.io.rdata2(7, 0)
           switch(adder.io.out(1, 0)) {
-            is("b00".U) { write_data := Cat(0.U(24.W), byte) }
-            is("b01".U) { write_data := Cat(0.U(16.W), byte, 0.U(8.W)) }
-            is("b10".U) { write_data := Cat(0.U(8.W), byte, 0.U(16.W)) }
-            is("b11".U) { write_data := Cat(byte, 0.U(24.W)) }
+            // is("b00".U) { write_data := Cat(0.U(24.W), byte) }
+            // is("b01".U) { write_data := Cat(0.U(16.W), byte, 0.U(8.W)) }
+            // is("b10".U) { write_data := Cat(0.U(8.W), byte, 0.U(16.W)) }
+            // is("b11".U) { write_data := Cat(byte, 0.U(24.W)) }
+            is("b00".U) { mem_wdata(0) := byte }
+            is("b01".U) { mem_wdata(1) := byte }
+            is("b10".U) { mem_wdata(2) := byte }
+            is("b11".U) { mem_wdata(3) := byte }
           }
           memory_proxy.io.wmask := UIntToOH(adder.io.out(1, 0))
         }
