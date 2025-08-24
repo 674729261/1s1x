@@ -13,6 +13,8 @@ uint32_t M[Memory_Size] = {0x01400513, 0x010000e7, 0x00c000e7, 0x01800067,
                            0x001181B3, 0x08302023, 0x06300F23, 0x08002203,
                            0x08300203, 0x00100073};
 
+const uint32_t PC_Init = 0x80000000u;
+
 static TOP_NAME dut;
 
 void design_init() {
@@ -30,13 +32,13 @@ void design_init() {
 int trapped;
 extern "C" void trap(int signal) { trapped = signal; }
 extern "C" int pmem_read(int raddr) {
-  uint32_t pos = (uint32_t)(raddr - 0x00000000u) >> 2;
+  uint32_t pos = (uint32_t)(raddr - PC_Init) >> 2;
   if (pos > Memory_Size)
     return 0xdeadbeef;
   return M[pos];
 }
 extern "C" void pmem_write(int waddr, int wdata, char wmask) {
-  if (waddr < 0x00000000u) {
+  if (waddr < PC_Init) {
     printf("waddr : %08x out of range\n", waddr);
     exit(-1);
   }
@@ -44,7 +46,7 @@ extern "C" void pmem_write(int waddr, int wdata, char wmask) {
     if ((wmask >> i) & 0x1) {
       uint32_t mask32 =
           (uint32_t)((1ull << (8ull * (i + 1))) - (1ull << (8ull * i)));
-      uint32_t addr = (uint32_t)(waddr - 0x00000000u) >> 2;
+      uint32_t addr = (uint32_t)(waddr - PC_Init) >> 2;
       M[addr] &= ~mask32;
       M[addr] |= wdata & mask32;
     }
@@ -77,11 +79,11 @@ int main(int argc, char **argv) {
   unsigned int cur_cycle;
   for (cur_cycle = 0; cur_cycle < max_cycle; cur_cycle++) {
     uint32_t pc = dut.io_pc;
-    if (pc < 0x00000000u) {
+    if (pc < PC_Init) {
       printf("pc : %08x out of range\n", pc);
       exit(-1);
     }
-    dut.io_instr = M[(pc - 0x00000000u) / 4];
+    dut.io_instr = M[(pc - PC_Init) / 4];
     dut.clock = 0;
     dut.eval();
     dut.clock = 1;
