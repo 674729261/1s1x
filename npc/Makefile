@@ -2,13 +2,14 @@ CSRC = $(wildcard csrc/*.cpp)
 SVSRC = generated_svsrc/CPU.sv
 VSRC = $(wildcard vsrc/*.v)
 VSRC += $(wildcard vsrc/*.sv)
+CHISELSRC += $(wildcard src/main/scala/empty/*.scala)
 TOPNAME = CPU
 BIN = ./obj_dir/V$(TOPNAME)
 
 CXXFLAGS += -DTOP_NAME="\"V$(TOPNAME)\""
 VERILATORFLAGS += --cc --exe --build --trace -j 16 
 VERILATOR_DISABLE_WARNINGS += -Wno-UNUSEDSIGNAL -Wno-DECLFILENAME -Wno-SYNCASYNCNET
-$(SVSRC):
+$(SVSRC): $(CHISELSRC)
 	sbt run
 
 all: $(SVSRC)
