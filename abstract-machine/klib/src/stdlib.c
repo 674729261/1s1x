@@ -33,15 +33,23 @@ void *malloc(size_t size) {
   // Therefore do not call panic() here, else it will yield a dead recursion:
   //   panic() -> putchar() -> (glibc) -> malloc() -> panic()
 #if !(defined(__ISA_NATIVE__) && defined(__NATIVE_USE_KLIB__))
-  static uintptr_t last = 0;
-  if (last == 0)
-    last = ((uintptr_t)heap.start + 7) & ~0x7;
-  printf("%p \n", heap.start);
-  size = (size + 7) & ~0x7;
-  void *ret = (void *)last;
-  last += size;
+  // static uintptr_t last = 0;
+  // if (last == 0)
+  //   last = ((uintptr_t)heap.start + 7) & ~0x7;
+  // printf("%p \n", heap.start);
+  // size = (size + 7) & ~0x7;
+  // void *ret = (void *)last;
+  // last += size;
 
-  return ret;
+  // return ret;
+
+  static size_t offset = 0;
+  if (size % 4 != 0) { // 地址对齐
+    size += 4 - size % 4;
+  }
+  void *tmp = (void *)((size_t)heap.start + offset);
+  offset += size;
+  return tmp;
 #endif
   return NULL;
 }
