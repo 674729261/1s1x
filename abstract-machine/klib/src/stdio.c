@@ -370,6 +370,7 @@ int __vasprintf(out_ch_func out, char *buffer, const char *format, va_list va) {
       break;
     }
   }
+  buffer = out(buffer, '\0');
   return ret_idx;
 }
 static char *update_to_str(char *addr, char c) {
