@@ -4,6 +4,7 @@ char buf[128];
 
 int _main() {
 	sprintf(buf, "%s", "Hello world!\n");
+	printf("%s", "Hello world!\n");
 	check(strcmp(buf, "Hello world!\n") == 0);
 
 	sprintf(buf, "%d + %d = %d\n", 1, 1, 2);
