@@ -29,8 +29,6 @@ int main(int argc, char *argv[]) {
 #endif
   /* Start engine. */
   engine_start();
-#ifdef CONFIG_WATCHERS
-  puts("!!!");
-#endif
+
   return is_exit_status_bad();
 }
