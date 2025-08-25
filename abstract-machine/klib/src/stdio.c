@@ -397,11 +397,18 @@ int sprintf(char *out, const char *fmt, ...) {
 }
 
 int snprintf(char *out, size_t n, const char *fmt, ...) {
-  panic("Not implemented");
+  if (n == 0)
+    return 0;
+  va_list argp;
+  va_start(argp, fmt);
+  return __vasprintf(update_to_str, out, fmt, argp, n - 1);
+  va_end(argp);
 }
 
 int vsnprintf(char *out, size_t n, const char *fmt, va_list ap) {
-  panic("Not implemented");
+  if (n == 0)
+    return 0;
+  return __vasprintf(update_to_str, out, fmt, ap, n - 1);
 }
 
 #if defined(__ARCH_X86_NEMU)
@@ -426,7 +433,7 @@ int printf(const char *fmt, ...) {
 }
 
 int vsprintf(char *out, const char *fmt, va_list ap) {
-  panic("Not implemented");
+  return __vasprintf(update_to_str, out, fmt, ap, -1);
 }
 
 #endif
