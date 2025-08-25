@@ -39,6 +39,7 @@ void *malloc(size_t size) {
   size = (size + 3) & ~0x3;
   void *ret = (void *)last;
   last += size;
+  printf("%p \n", ret);
   return ret;
 #endif
   return NULL;
