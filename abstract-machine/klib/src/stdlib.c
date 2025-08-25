@@ -35,7 +35,7 @@ void *malloc(size_t size) {
 #if !(defined(__ISA_NATIVE__) && defined(__NATIVE_USE_KLIB__))
   static uintptr_t last = 0;
   if (last == 0)
-    last = ((uintptr_t)heap.start + 7) & ~0x7;
+    last = 0x160000 + (((uintptr_t)heap.start + 7) & ~0x7);
   printf("%p \n", heap.start);
   size = (size + 7) & ~0x7;
   void *ret = (void *)last;
