@@ -1,6 +1,7 @@
 #ifndef AM_H__
 #define AM_H__
 
+#include "area.h"
 #include <stdatomic.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -12,11 +13,6 @@
 #define MMAP_NONE 0x00000000  // no access
 #define MMAP_READ 0x00000001  // can read
 #define MMAP_WRITE 0x00000002 // can write
-
-// Memory area for [@start, @end)
-typedef struct {
-  void *start, *end;
-} Area;
 
 // Arch-dependent processor context
 typedef struct Context Context;
