@@ -372,13 +372,16 @@ int __vasprintf(out_ch_func out, char *buffer, const char *format, va_list va) {
   }
   return ret_idx;
 }
-// static char *update_to_str(char *addr, char c) {
-//   *addr = c;
-//   return addr + 1;
-// }
-static char *update_to_serial(char *addr, char c) {
-  *(volatile char *)addr = c;
-  return addr;
+static char *update_to_str(char *addr, char c) {
+  *addr = c;
+  return addr + 1;
+}
+
+int sprintf(char *out, const char *fmt, ...) {
+  va_list argp;
+  va_start(argp, fmt);
+  return __vasprintf(update_to_str, out, fmt, argp);
+  va_end(argp);
 }
 
 int snprintf(char *out, size_t n, const char *fmt, ...) {
@@ -387,6 +390,11 @@ int snprintf(char *out, size_t n, const char *fmt, ...) {
 
 int vsnprintf(char *out, size_t n, const char *fmt, va_list ap) {
   panic("Not implemented");
+}
+
+static char *update_to_serial(char *addr, char c) {
+  *(volatile char *)addr = c;
+  return addr;
 }
 
 #if defined(__ARCH_X86_NEMU)
@@ -398,12 +406,6 @@ int vsnprintf(char *out, size_t n, const char *fmt, va_list ap) {
 #define MMIO_BASE 0xa0000000
 
 #define SERIAL_PORT (DEVICE_BASE + 0x00003f8)
-int sprintf(char *out, const char *fmt, ...) {
-  va_list argp;
-  va_start(argp, fmt);
-  return __vasprintf(update_to_serial, (char *)SERIAL_PORT, fmt, argp);
-  va_end(argp);
-}
 
 int printf(const char *fmt, ...) {
   va_list argp;
