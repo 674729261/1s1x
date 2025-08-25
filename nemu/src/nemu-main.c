@@ -14,7 +14,7 @@
  ***************************************************************************************/
 
 #include <common.h>
-
+#include <stdio.h>
 void init_monitor(int, char *[]);
 void am_init_monitor();
 void engine_start();
@@ -29,6 +29,8 @@ int main(int argc, char *argv[]) {
 #endif
   /* Start engine. */
   engine_start();
-
+#ifdef CONFIG_WATCHERS
+  puts("!!!");
+#endif
   return is_exit_status_bad();
 }

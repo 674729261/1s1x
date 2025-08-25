@@ -13,6 +13,10 @@ config ISA_loongarch32r
   bool "loongarch32r"
 endchoice
 
+config WATCHERS
+  bool "Watchers"
+
+
 config ISA
   string
   default "x86" if ISA_x86
@@ -57,6 +61,8 @@ config MODE_SYSTEM
     Support full-system functionality, including privileged instructions, MMU and devices.
 endchoice
 
+
+
 choice
   prompt "Build target"
   default TARGET_NATIVE_ELF
@@ -80,6 +86,8 @@ config CC_CLANG
   depends on !TARGET_AM
   bool "clang"
 endchoice
+
+
 
 config CC
   string
