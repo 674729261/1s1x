@@ -26,7 +26,7 @@
 !init.sh
 /c_practice/p32_33/build/
 /c_practice/p32_33/bin/
-/fceux-am
+!/fceux-am
 
 **/*.log
 **/build/

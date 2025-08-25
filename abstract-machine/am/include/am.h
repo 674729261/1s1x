@@ -74,7 +74,7 @@ bool mpe_init(void (*entry)());
 int cpu_count(void);
 int cpu_current(void);
 
-int atomic_xchg(atomic_int *addr, atomic_int newval);
+int atomic_xchg(int *addr, int newval);
 
 #ifdef __cplusplus
 }
