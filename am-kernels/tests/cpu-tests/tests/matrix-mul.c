@@ -40,7 +40,7 @@ int ans[N][N] = {
 
 int c[N][N];
 
-int _main() {
+int main() {
 	int i, j, k;
 	for(i = 0; i < N; i ++) {
 		for(j = 0; j < N; j ++) {

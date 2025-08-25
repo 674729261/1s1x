@@ -8,7 +8,7 @@ int fact(int n) {
 	else return fact(n - 1) * n;
 }
 
-int _main() {
+int main() {
 	int i;
 	for(i = 0; i < 13; i ++) {
 		f[i] = fact(i);

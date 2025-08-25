@@ -2,7 +2,7 @@
 
 int ans[] = {6, 28};
 
-int _main() {
+int main() {
 	int n, sum, i, k = 0;
 	for(n = 1; n < 30; n ++) {
 		sum = 0;

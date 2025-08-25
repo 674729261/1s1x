@@ -2,7 +2,7 @@
 #include <klib-macros.h>
 
 extern char _heap_start;
-int _main(const char *args);
+int main(const char *args);
 
 extern char _pmem_start;
 #define PMEM_SIZE (128 * 1024 * 1024)
@@ -21,6 +21,6 @@ void halt(int code) {
 }
 
 void _trm_init() {
-  int ret = _main(mainargs);
+  int ret = main(mainargs);
   halt(ret);
 }

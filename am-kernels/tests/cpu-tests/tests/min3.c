@@ -13,7 +13,7 @@ int ans [] = {0, 0, -2147483648, -1, 0, 0, -2147483648, -1, -2147483648, -214748
 
 #define NR_DATA LENGTH(test_data)
 
-int _main() {
+int main() {
 	int i, j, k, ans_idx = 0;
 	for(i = 0; i < NR_DATA; i ++) {
 		for(j = 0; j < NR_DATA; j ++) {

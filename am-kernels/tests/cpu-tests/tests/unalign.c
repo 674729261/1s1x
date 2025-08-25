@@ -3,7 +3,7 @@
 volatile unsigned x = 0xffffffff;
 volatile unsigned char buf[16];
 
-int _main() {
+int main() {
 
 	for(int i = 0; i < 4; i++) {
 		*((volatile unsigned*)(buf + 3)) = 0xaabbccdd;

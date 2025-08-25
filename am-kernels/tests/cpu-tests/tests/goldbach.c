@@ -24,7 +24,7 @@ int goldbach(int n) {
 	return 0;
 }
 
-int _main() {
+int main() {
 	int n;
 	for(n = 4; n <= 30; n += 2) {
 		check(goldbach(n) == 1);

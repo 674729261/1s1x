@@ -3,7 +3,7 @@
 #define N 10
 int a[N];
 
-int _main() {
+int main() {
   int i, j;
   for(i = 0; i < N; i ++)
     a[i] = i;

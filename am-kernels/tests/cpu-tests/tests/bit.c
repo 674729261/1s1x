@@ -18,7 +18,7 @@ void setbit(void *buf, int offset, bool bit){
 	*p = (bit == 0 ? (*p & ~mask) : (*p | mask));
 }
 
-int _main() {
+int main() {
 	uint8_t buf[2];
 
 	buf[0] = 0xaa;

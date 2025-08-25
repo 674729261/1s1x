@@ -15,7 +15,7 @@ static const char *tests[256] = {
   ['p'] = "x86 virtual memory test",
 };
 
-int _main(const char *args) {
+int main(const char *args) {
   switch (args[0]) {
     CASE('h', hello);
     CASE('i', hello_intr, IOE, CTE(simple_trap));

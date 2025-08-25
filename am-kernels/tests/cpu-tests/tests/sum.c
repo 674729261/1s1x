@@ -1,6 +1,6 @@
 #include "trap.h"
 
-int _main() {
+int main() {
 	int i = 1;
 	volatile int sum = 0;
 	while(i <= 100) {

@@ -2,7 +2,7 @@
 
 int ans[] = {101, 103, 107, 109, 113, 127, 131, 137, 139, 149};
 
-int _main() {
+int main() {
 	int m, i, n = 0;
 	int prime;
 	for(m = 101; m <= 150; m += 2) {

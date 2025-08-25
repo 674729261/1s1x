@@ -14,7 +14,7 @@ int isPrime(int n) {
   return 1;
 }
 
-int _main() {
+int main() {
   int i, d, p, r, q = 929;
   if (!isPrime(q)) return 1; 
   r = q;

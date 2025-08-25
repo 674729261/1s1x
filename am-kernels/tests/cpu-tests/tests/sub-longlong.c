@@ -10,7 +10,7 @@ long long ans[] = {0LL, 0xffffffffffffffffLL, 0xfffffffffffffffeLL, 0x8000000000
 
 #define NR_DATA LENGTH(test_data)
 
-int _main() {
+int main() {
 	int i, j, ans_idx = 0;
 	for(i = 0; i < NR_DATA; i ++) {
 		for(j = 0; j < NR_DATA; j ++) {

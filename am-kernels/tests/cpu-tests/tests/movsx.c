@@ -3,7 +3,7 @@
 volatile int A[10];
 volatile int b;
 volatile signed char C[10];
-int _main() {
+int main() {
 	A[0] = 0;
 	A[1] = 1;
 	A[2] = 2;
