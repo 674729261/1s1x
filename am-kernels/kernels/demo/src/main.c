@@ -11,7 +11,7 @@ void cmatrix();
 void donut();
 void bf();
 
-int main(const char *args) {
+int _main(const char *args) {
   ioe_init();
 
   switch (args[0]) {
