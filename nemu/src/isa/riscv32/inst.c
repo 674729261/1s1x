@@ -122,7 +122,7 @@ static int decode_exec(Decode *s) {
     decode_operand(s, &rd, &src1, &src2, &imm, concat(TYPE_, type));           \
     __VA_ARGS__;                                                               \
   }
-  printf("%08x\n", s->isa.inst);
+  printf("%08x %08x\n", s->pc, s->isa.inst);
   INSTPAT_START();
   INSTPAT("??????? ????? ????? ??? ????? 00101 11", auipc, U,
           R(rd) = s->pc + imm);
