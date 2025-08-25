@@ -3,9 +3,9 @@
 Area heap = {};
 int __am_ncpu = 0;
 
-int _main(const char *args);
+int main(const char *args);
 
-static void call_main(const char *args) { halt(main(args)); }
+static void callmain(const char *args) { halt(main(args)); }
 
 void _start_c(char *args) {
   if (boot_record()->is_ap) {

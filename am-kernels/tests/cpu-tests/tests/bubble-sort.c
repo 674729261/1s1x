@@ -17,7 +17,7 @@ void bubble_sort() {
 	}
 }
 
-int _main() {
+int main() {
 	bubble_sort();
 
 	int i;

@@ -20,7 +20,7 @@ unsigned  lwlr_ans[] = {
 	0xbc025800, 0x7fff4a, 0xcd810080, 0xffffab
 };
 
-int _main() {
+int main() {
 	unsigned i;
 
 	for(i = 0; i < LENGTH(mem); i ++) {

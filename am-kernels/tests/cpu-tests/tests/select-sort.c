@@ -20,7 +20,7 @@ void select_sort() {
 	}
 }
 
-int _main() {
+int main() {
 	select_sort();
 
 	int i;

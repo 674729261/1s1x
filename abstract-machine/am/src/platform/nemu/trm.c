@@ -2,7 +2,7 @@
 #include <nemu.h>
 
 extern char _heap_start;
-int _main(const char *args);
+int main(const char *args);
 
 Area heap = RANGE(&_heap_start, PMEM_END);
 static const char mainargs[MAINARGS_MAX_LEN] =
@@ -19,6 +19,6 @@ void halt(int code) {
 }
 
 void _trm_init() {
-  int ret = _main(mainargs);
+  int ret = main(mainargs);
   halt(ret);
 }

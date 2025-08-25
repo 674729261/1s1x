@@ -56,7 +56,7 @@ static void setup_sigaltstack() {
   assert(ret == 0);
 }
 
-int _main(const char *args);
+int main(const char *args);
 
 static void init_platform() __attribute__((constructor));
 static void init_platform() {
@@ -177,7 +177,7 @@ static void init_platform() {
   setbuf(stdout, NULL);
 
   const char *args = getenv("mainargs");
-  halt(_main(args ? args : "")); // call main here!
+  halt(main(args ? args : "")); // call main here!
 }
 
 void __am_exit_platform(int code) {

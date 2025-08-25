@@ -15,6 +15,7 @@
 
 #include <device/alarm.h>
 #include <device/map.h>
+#include <stdio.h>
 #include <utils.h>
 
 static uint32_t *rtc_port_base = NULL;

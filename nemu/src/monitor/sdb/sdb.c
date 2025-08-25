@@ -161,6 +161,7 @@ static int cmd_ph(char *args) {
 
   return 0;
 }
+#ifdef CONFIG_WATCHERS
 static int cmd_w(char *args) {
   bool success = true;
   long long value = expr(args, &success);
@@ -178,6 +179,7 @@ static int cmd_w(char *args) {
     printf("Failed to allocate a new watcher : No more free watchers.\n");
   return 0;
 }
+
 static int cmd_wh(char *args) {
   bool success = true;
   long long value = expr(args, &success);
@@ -196,6 +198,7 @@ static int cmd_wh(char *args) {
 
   return 0;
 }
+#endif
 static int cmd_d(char *args) {
   char *parameter = strtok(NULL, " ");
   long id_watcher;
@@ -237,8 +240,10 @@ static struct {
     {"x", "Scan memory", cmd_x},
     {"p", "Evaluate expression", cmd_p},
     {"ph", "Evaluate hexdecimal expression", cmd_ph},
+#ifdef CONFIG_WATCHERS
     {"w", "Setup a watcher", cmd_w},
     {"wh", "Setup a hexdecimal watcher", cmd_wh},
+#endif
     {"d", "Remove a watcher", cmd_d}
 
     /* TODO: Add more commands */

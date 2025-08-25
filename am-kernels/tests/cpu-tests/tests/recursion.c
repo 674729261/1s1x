@@ -37,7 +37,7 @@ int f3(int n, int l) {
 
 int ans[] = {38270, 218, 20};
 
-int _main() {
+int main() {
   int x = func[0](14371, 0);
   check(x == ans[0]);   // answer
   check(rec == ans[1]); // # recursions

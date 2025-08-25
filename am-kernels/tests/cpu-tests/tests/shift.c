@@ -17,7 +17,7 @@ unsigned srav_ans[] = {
 };
 
 
-int _main() {
+int main() {
 	unsigned i;
 
 	for(i = 0; i < LENGTH(test); i ++) {

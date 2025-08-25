@@ -27,7 +27,7 @@ void quick_sort(int *a, int p, int q) {
 	quick_sort(a, m + 1, q);
 }
 
-int _main() {
+int main() {
 	quick_sort(a, 0, N - 1);
 
 	int i;

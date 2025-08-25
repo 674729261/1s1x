@@ -17,7 +17,7 @@ int switch_case(int n) {
 
 int ans[] = {-1, 0, 2, 5, 5, 8, 8, 8, 8, 10, 10, 10, 10, 15, -1};
 
-int _main() {
+int main() {
 	int i;
 	for(i = 0; i < 15; i ++) {
 		check(switch_case(i - 1) == ans[i]);
