@@ -36,10 +36,11 @@ void *malloc(size_t size) {
   static uintptr_t last = 0;
   if (last == 0)
     last = ((uintptr_t)heap.start + 7) & ~0x7;
+  printf("%p \n", heap.start);
   size = (size + 7) & ~0x7;
   void *ret = (void *)last;
   last += size;
-  printf("%p \n", ret);
+
   return ret;
 #endif
   return NULL;
