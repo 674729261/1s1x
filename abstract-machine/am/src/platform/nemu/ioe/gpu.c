@@ -28,9 +28,12 @@ void __am_gpu_config(AM_GPU_CONFIG_T *cfg) {
 }
 
 void __am_gpu_fbdraw(AM_GPU_FBDRAW_T *ctl) {
-  printf("!!%d\n", ctl->w * ctl->h);
-  for (int i = 0; i < ctl->w * ctl->h; i++) {
-    outl(FB_ADDR, ((uint32_t *)ctl->pixels)[i]);
+  uint32_t ctl_lower = inl(VGACTL_ADDR);
+  int w = ctl_lower >> 16;
+  uint32_t *fb = (uint32_t *)(uintptr_t)FB_ADDR;
+  for (int i = 0; i < ctl->h; i++) {
+    for (int j = 0; j < ctl->w; j++)
+      outl(FB_ADDR, fb[(ctl->y + i) * w + ctl->x + j]);
   }
   if (ctl->sync) {
     outl(SYNC_ADDR, 1);
