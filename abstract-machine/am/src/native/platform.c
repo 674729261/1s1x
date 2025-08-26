@@ -1,9 +1,14 @@
 #define _GNU_SOURCE
+
 #include "platform.h"
+
 #include <dlfcn.h>
 #include <elf.h>
 #include <stdio.h>
 #include <stdlib.h>
+#ifndef __USE_GNU
+#define __USE_GNU
+#endif
 #include <sys/auxv.h>
 #include <sys/mman.h>
 
