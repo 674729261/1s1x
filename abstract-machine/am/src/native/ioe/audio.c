@@ -1,8 +1,11 @@
 #define _GNU_SOURCE
-#include <fcntl.h>
-#include <unistd.h>
-#include <klib.h>
 #include <SDL.h>
+#include <fcntl.h>
+#include <klib.h>
+#ifndef __USE_GNU
+#define __USE_GNU
+#endif
+#include <unistd.h>
 
 static int rfd = -1, wfd = -1;
 static volatile int count = 0;
@@ -17,11 +20,13 @@ void __am_audio_init() {
 
 static void audio_play(void *userdata, uint8_t *stream, int len) {
   int nread = len;
-  if (count < len) nread = count;
+  if (count < len)
+    nread = count;
   int b = 0;
   while (b < nread) {
     int n = read(rfd, stream, nread);
-    if (n > 0) b += n;
+    if (n > 0)
+      b += n;
   }
 
   count -= nread;
@@ -34,7 +39,8 @@ static void audio_write(uint8_t *buf, int len) {
   int nwrite = 0;
   while (nwrite < len) {
     int n = write(wfd, buf, len);
-    if (n == -1) n = 0;
+    if (n == -1)
+      n = 0;
     count += n;
     nwrite += n;
   }
@@ -57,9 +63,7 @@ void __am_audio_ctrl(AM_AUDIO_CTRL_T *ctrl) {
   }
 }
 
-void __am_audio_status(AM_AUDIO_STATUS_T *stat) {
-  stat->count = count;
-}
+void __am_audio_status(AM_AUDIO_STATUS_T *stat) { stat->count = count; }
 
 void __am_audio_play(AM_AUDIO_PLAY_T *ctl) {
   int len = ctl->buf.end - ctl->buf.start;
