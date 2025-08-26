@@ -1,4 +1,5 @@
 #include <am.h>
+#include <klib.h>
 #include <nemu.h>
 #include <stdint.h>
 
@@ -27,6 +28,7 @@ void __am_gpu_config(AM_GPU_CONFIG_T *cfg) {
 }
 
 void __am_gpu_fbdraw(AM_GPU_FBDRAW_T *ctl) {
+  printf("!!%d\n", ctl->w * ctl->h);
   for (int i = 0; i < ctl->w * ctl->h; i++) {
     outl(FB_ADDR, ((uint32_t *)ctl->pixels)[i]);
   }
