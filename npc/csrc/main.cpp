@@ -10,7 +10,7 @@
 #include "ports.h"
 
 const size_t Memory_Size = 1 << 24;
-
+uint32_t pc;
 uint32_t M[Memory_Size] = {0x01400513, 0x010000e7, 0x00c000e7, 0x01800067,
                            0x00a50513, 0x00008067, 0x555550B7, 0x55500193,
                            0x001181B3, 0x08302023, 0x06300F23, 0x08002203,
@@ -42,6 +42,7 @@ extern "C" int pmem_read(int raddr) {
     auto ret = read_mmio(raddr);
     if (!ret.has_value()) {
       printf("raddr : %08x invalid device\n", raddr);
+      printf("PC = %08x\n", pc);
       exit(-1);
     }
     return ret.value();
@@ -96,7 +97,7 @@ int main(int argc, char **argv) {
   const unsigned int max_cycle = argc >= 4 ? atoi(argv[3]) : UINT32_MAX;
   unsigned int cur_cycle;
   for (cur_cycle = 0; cur_cycle < max_cycle; cur_cycle++) {
-    uint32_t pc = dut.io_pc;
+    pc = dut.io_pc;
     if (pc < PC_Init) {
       printf("pc : %08x out of range\n", pc);
       exit(-1);
