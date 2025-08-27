@@ -41,9 +41,7 @@ extern "C" int pmem_read(int raddr) {
   if (raddr >= DEVICE_BASE) {
     auto ret = read_mmio(raddr);
     if (!ret.has_value()) {
-      printf("raddr : %08x invalid device\n", raddr);
-      printf("PC = %08x\n", pc);
-      exit(-1);
+      return 0xdeafbeef;
     }
     return ret.value();
   }
