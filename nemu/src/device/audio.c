@@ -51,7 +51,7 @@ static void audio_io_handler(uint32_t offset, int len, bool is_write) {
       fprintf(stderr, "Could not initialize SDL - %s\n", SDL_GetError());
       exit(-1);
     }
-    SDL_CloseAudio();
+    // SDL_CloseAudio();
     SDL_AudioSpec sdlAudioSpec = {.freq = audio_base[reg_freq],
                                   .format = AUDIO_S16SYS,
                                   .channels = audio_base[reg_channels],
