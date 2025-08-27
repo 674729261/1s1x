@@ -34,7 +34,7 @@ void design_init() {
 int trapped;
 extern "C" void trap(int signal) { trapped = signal; }
 extern "C" int pmem_read(int raddr) {
-  assert((raddr & 0x3) == 0);
+  raddr &= ~0x3;
   uint32_t addr = (uint32_t)(raddr - PC_Init) >> 2;
   if (addr < Memory_Size && raddr >= PC_Init)
     return M[addr];
