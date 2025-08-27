@@ -1,3 +1,4 @@
+#include <SDL2/SDL.h>
 #include <VCPU.h>
 #include <VCPU___024root.h>
 #include <cassert>
@@ -5,6 +6,8 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
+
+#include "ports.h"
 
 const size_t Memory_Size = 1 << 24;
 
@@ -20,7 +23,6 @@ static TOP_NAME dut;
 void design_init() {
   dut.reset = 1;
   for (int i = 0; i < 4; ++i) {
-
     dut.clock = 0;
     dut.eval();
     dut.clock = 1;
@@ -32,23 +34,39 @@ void design_init() {
 int trapped;
 extern "C" void trap(int signal) { trapped = signal; }
 extern "C" int pmem_read(int raddr) {
-  uint32_t pos = (uint32_t)(raddr - PC_Init) >> 2;
-  if (pos > Memory_Size)
-    return 0xdeadbeef;
-  return M[pos];
+  assert((raddr & 0x3) == 0);
+  uint32_t addr = (uint32_t)(raddr - PC_Init) >> 2;
+  if (addr < Memory_Size && raddr >= PC_Init)
+    return M[addr];
+  if (raddr >= DEVICE_BASE) {
+    auto ret = read_mmio(raddr);
+    if (!ret.has_value()) {
+      printf("raddr : %08x invalid device\n", raddr);
+      exit(-1);
+    }
+    return ret.value();
+  }
+
+  return 0xdeafbeef;
 }
 extern "C" void pmem_write(int waddr, int wdata, char wmask) {
-  if (waddr < PC_Init) {
-    printf("waddr : %08x out of range\n", waddr);
-    exit(-1);
-  }
   for (int i = 0; i < 4; i++) {
     if ((wmask >> i) & 0x1) {
       uint32_t mask32 =
           (uint32_t)((1ull << (8ull * (i + 1))) - (1ull << (8ull * i)));
       uint32_t addr = (uint32_t)(waddr - PC_Init) >> 2;
-      M[addr] &= ~mask32;
-      M[addr] |= wdata & mask32;
+      if (addr < Memory_Size && waddr >= PC_Init) {
+        M[addr] &= ~mask32;
+        M[addr] |= wdata & mask32;
+      } else if (waddr >= DEVICE_BASE) {
+        if (write_mmio(waddr & ~0x3, mask32, wdata) < 0) {
+          printf("waddr : %08x invalid device\n", waddr);
+          exit(-1);
+        }
+      } else {
+        printf("waddr : %08x invalid address\n", waddr);
+        exit(-1);
+      }
     }
   }
 }
