@@ -48,6 +48,5 @@ void __am_audio_play(AM_AUDIO_PLAY_T *ctl) {
     cur_addr++;
     offset++;
   }
-  printf("!!!\n");
   outl(AUDIO_COUNT_ADDR, offset);
 }
