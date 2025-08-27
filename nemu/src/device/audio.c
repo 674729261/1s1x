@@ -47,6 +47,10 @@ static void fill_audio_callback(void *udata, Uint8 *stream, int len) {
 
 static void audio_io_handler(uint32_t offset, int len, bool is_write) {
   if (audio_base[reg_init] && is_write) {
+    if (SDL_InitSubSystem(SDL_INIT_AUDIO)) {
+      fprintf(stderr, "Could not initialize SDL - %s\n", SDL_GetError());
+      exit(-1);
+    }
     SDL_CloseAudio();
     SDL_AudioSpec sdlAudioSpec = {.freq = audio_base[reg_freq],
                                   .format = AUDIO_S16SYS,
@@ -65,10 +69,7 @@ static void audio_io_handler(uint32_t offset, int len, bool is_write) {
 }
 
 void init_audio() {
-  if (SDL_Init(SDL_INIT_AUDIO)) {
-    fprintf(stderr, "Could not initialize SDL - %s\n", SDL_GetError());
-    exit(-1);
-  }
+
   uint32_t space_size = sizeof(uint32_t) * nr_reg;
   audio_base = (uint32_t *)new_space(space_size);
 
