@@ -46,7 +46,6 @@ int write_mmio(uint32_t addr, uint32_t mask32, uint32_t wdata) {
 }
 
 std::optional<uint32_t> read_mmio(uint32_t raddr) {
-  printf("%08x\n", raddr);
   if (raddr >= RTC_ADDR && raddr < RTC_ADDR_END) {
     update_RTC();
 
