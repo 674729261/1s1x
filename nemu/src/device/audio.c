@@ -48,6 +48,7 @@ static void fill_audio_callback(void *udata, Uint8 *stream, int len) {
   printf("??????%d %d %d\n", len, last_pos, next_pos);
   last_pos = next_pos;
   SDL_UnlockAudio();
+  puts("XXXXXX");
   if (last_pos == audio_base[reg_count])
     audio_base[reg_count] = 0;
 }
