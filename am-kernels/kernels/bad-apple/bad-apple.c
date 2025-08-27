@@ -64,7 +64,6 @@ int main() {
         int len = (should_play > 4096 ? 4096 : should_play);
         sbuf.end = sbuf.start + len;
         io_write(AM_AUDIO_PLAY, sbuf);
-        printf("%d\n", audio_left);
         sbuf.start += len;
         should_play -= len;
       }
