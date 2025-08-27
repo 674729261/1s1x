@@ -411,6 +411,7 @@ int vsnprintf(char *out, size_t n, const char *fmt, va_list ap) {
   return __vasprintf(update_to_str, out, fmt, ap, n - 1);
 }
 
+#ifndef __ISA_NATIVE__
 #if defined(__ARCH_X86_NEMU)
 #define DEVICE_BASE 0x0
 #else
@@ -431,6 +432,7 @@ int printf(const char *fmt, ...) {
   return __vasprintf(update_to_serial, (char *)SERIAL_PORT, fmt, argp, -1);
   va_end(argp);
 }
+#endif
 
 int vsprintf(char *out, const char *fmt, va_list ap) {
   return __vasprintf(update_to_str, out, fmt, ap, -1);
