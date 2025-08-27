@@ -43,8 +43,7 @@ static void fill_audio_callback(void *udata, Uint8 *stream, int len) {
                                                          : last_pos + len);
   SDL_LockAudio();
   printf("!!!!!!%d %d %d\n", len, last_pos, next_pos);
-  SDL_MixAudio(stream, udata + last_pos, next_pos - last_pos,
-               SDL_MIX_MAXVOLUME);
+  SDL_MixAudio(stream, sbuf + last_pos, next_pos - last_pos, SDL_MIX_MAXVOLUME);
   last_pos = next_pos;
   SDL_UnlockAudio();
   puts("XXXXXX");
@@ -65,7 +64,7 @@ static void audio_io_handler(uint32_t offset, int len, bool is_write) {
                                   .silence = 0,
                                   .samples = audio_base[reg_samples],
                                   .callback = fill_audio_callback,
-                                  .userdata = sbuf};
+                                  .userdata = NULL};
     if (SDL_OpenAudio(&sdlAudioSpec, NULL) < 0) {
       fprintf(stderr, "Can't open audio.\n");
       exit(-1);
