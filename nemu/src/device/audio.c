@@ -42,7 +42,7 @@ static void fill_audio_callback(void *udata, Uint8 *stream, int len) {
   int next_pos = (last_pos + len > audio_base[reg_count] ? audio_base[reg_count]
                                                          : last_pos + len);
   SDL_LockAudio();
-  printf("!!!!!!%d %d\n", len, last_pos);
+  printf("!!!!!!%d %d %d\n", len, last_pos, next_pos);
   SDL_MixAudio(stream, udata + last_pos, next_pos - last_pos,
                SDL_MIX_MAXVOLUME);
   last_pos = next_pos;
