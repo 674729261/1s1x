@@ -1,17 +1,23 @@
+#include "riscv/riscv.h"
 #include <am.h>
-
+#define RTC_ADDR (DEVICE_BASE + 0x0000048)
+#define DEVICE_BASE 0xa0000000
 void __am_timer_init() {
+  outl(RTC_ADDR, 0);
+  outl(RTC_ADDR + 4, 0);
 }
 
 void __am_timer_uptime(AM_TIMER_UPTIME_T *uptime) {
-  uptime->us = 0;
+  uint32_t lower = inl(RTC_ADDR);
+  uint32_t upper = inl(RTC_ADDR + 0x4);
+  uptime->us = ((uint64_t)upper << 32ull) | (uint64_t)lower;
 }
 
 void __am_timer_rtc(AM_TIMER_RTC_T *rtc) {
   rtc->second = 0;
   rtc->minute = 0;
-  rtc->hour   = 0;
-  rtc->day    = 0;
-  rtc->month  = 0;
-  rtc->year   = 1900;
+  rtc->hour = 0;
+  rtc->day = 0;
+  rtc->month = 0;
+  rtc->year = 1900;
 }
