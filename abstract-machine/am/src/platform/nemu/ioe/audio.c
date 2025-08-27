@@ -42,11 +42,12 @@ void __am_audio_play(AM_AUDIO_PLAY_T *ctl) {
     cur_addr += 4;
     offset += 4;
   }
-  printf("!!!\n");
+
   while ((uint8_t *)ctl->buf.end - cur_addr >= 1) {
     outb(AUDIO_SBUF_ADDR + offset, *(uint8_t *)cur_addr);
     cur_addr++;
     offset++;
   }
+  printf("!!!\n");
   outl(AUDIO_COUNT_ADDR, offset);
 }
