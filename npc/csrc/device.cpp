@@ -2,7 +2,6 @@
 #include <chrono>
 #include <cstdint>
 #include <cstdio>
-#include <iostream>
 #include <optional>
 
 using namespace std::chrono;
@@ -47,7 +46,6 @@ int write_mmio(uint32_t addr, uint32_t mask32, uint32_t wdata) {
 }
 
 std::optional<uint32_t> read_mmio(uint32_t raddr) {
-  std::cout << std::hex << raddr << std::endl;
   if (raddr >= RTC_ADDR && raddr < RTC_ADDR_END) {
     update_RTC();
     if (raddr == RTC_ADDR)
