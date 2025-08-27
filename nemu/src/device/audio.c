@@ -17,6 +17,7 @@
 #include <SDL2/SDL_audio.h>
 #include <common.h>
 #include <device/map.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 enum {
@@ -41,7 +42,9 @@ static void fill_audio_callback(void *udata, Uint8 *stream, int len) {
   int next_pos = (last_pos + len > audio_base[reg_count] ? audio_base[reg_count]
                                                          : last_pos + len);
   SDL_LockAudio();
-  SDL_MixAudio(stream, sbuf + last_pos, next_pos - last_pos, SDL_MIX_MAXVOLUME);
+  printf("!!!!\n");
+  SDL_MixAudio(stream, udata + last_pos, next_pos - last_pos,
+               SDL_MIX_MAXVOLUME);
   last_pos = next_pos;
   SDL_UnlockAudio();
   if (last_pos == audio_base[reg_count])
@@ -61,7 +64,7 @@ static void audio_io_handler(uint32_t offset, int len, bool is_write) {
                                   .silence = 0,
                                   .samples = audio_base[reg_samples],
                                   .callback = fill_audio_callback,
-                                  .userdata = NULL};
+                                  .userdata = sbuf};
     if (SDL_OpenAudio(&sdlAudioSpec, NULL) < 0) {
       fprintf(stderr, "Can't open audio.\n");
       exit(-1);
