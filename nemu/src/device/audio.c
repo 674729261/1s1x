@@ -33,36 +33,18 @@ static uint8_t *sbuf = NULL;
 static uint32_t *audio_base = NULL;
 
 static void fill_audio_callback(void *udata, Uint8 *stream, int len) {
-  // SDL_memset(stream, 0, len);
-  // if (len == 0) {
-  //   return;
-  // }
-  // len = (len > audio_base[reg_count] ? audio_base[reg_count] : len);
-  // SDL_LockAudio();
-  // SDL_MixAudio(stream, sbuf, len, SDL_MIX_MAXVOLUME);
-  // SDL_UnlockAudio();
-  // sbuf += len;
-  // audio_base[reg_count] -= len;
-  static int audio_sbuf_flag = 0;
-  int len_ctrl = len;
-  if (audio_base[reg_count] < len) {
-    len_ctrl = audio_base[reg_count];
+  SDL_memset(stream, 0, len);
+  static int last_pos = 0;
+  if (len == 0) {
+    return;
   }
+  len = (len > audio_base[reg_count] ? audio_base[reg_count] : len);
   SDL_LockAudio();
-  if (len_ctrl < len) {
-    memset(stream + len_ctrl, 0, len - len_ctrl);
-  }
-  if (len_ctrl + audio_sbuf_flag < CONFIG_SB_SIZE) {
-    memcpy(stream, sbuf + audio_sbuf_flag, len_ctrl);
-    audio_sbuf_flag += len_ctrl;
-  } else {
-    memcpy(stream, sbuf + audio_sbuf_flag, CONFIG_SB_SIZE - audio_sbuf_flag);
-    memcpy(stream + CONFIG_SB_SIZE - audio_sbuf_flag, sbuf,
-           len_ctrl - (CONFIG_SB_SIZE - audio_sbuf_flag));
-    audio_sbuf_flag = len_ctrl - (CONFIG_SB_SIZE - audio_sbuf_flag);
-  }
+  SDL_MixAudio(stream, udata + last_pos, len, SDL_MIX_MAXVOLUME);
+  last_pos += len;
   SDL_UnlockAudio();
-  audio_base[reg_count] -= len_ctrl;
+  if (last_pos == audio_base[reg_count])
+    audio_base[reg_count] = 0;
 }
 
 static void audio_io_handler(uint32_t offset, int len, bool is_write) {
@@ -78,7 +60,7 @@ static void audio_io_handler(uint32_t offset, int len, bool is_write) {
                                   .silence = 0,
                                   .samples = audio_base[reg_samples],
                                   .callback = fill_audio_callback,
-                                  .userdata = NULL};
+                                  .userdata = sbuf};
     if (SDL_OpenAudio(&sdlAudioSpec, NULL) < 0) {
       fprintf(stderr, "Can't open audio.\n");
       exit(-1);
