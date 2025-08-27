@@ -23,6 +23,7 @@ void __am_audio_ctrl(AM_AUDIO_CTRL_T *ctrl) {
   outl(AUDIO_CHANNELS_ADDR, ctrl->channels);
   outl(AUDIO_SAMPLES_ADDR, ctrl->samples);
   outl(AUDIO_INIT_ADDR, 1);
+  printf("%d %d %d\n", ctrl->samples, ctrl->channels, ctrl->freq);
 }
 
 void __am_audio_status(AM_AUDIO_STATUS_T *stat) {
@@ -32,8 +33,6 @@ void __am_audio_status(AM_AUDIO_STATUS_T *stat) {
 void __am_audio_play(AM_AUDIO_PLAY_T *ctl) {
   uint8_t *cur_addr = ctl->buf.start;
   uint32_t len = ctl->buf.end - ctl->buf.end;
-  printf("%p %p %08x\n", ctl->buf.end, ctl->buf.start,
-         inl(AUDIO_SBUF_SIZE_ADDR));
   while (inl(AUDIO_SBUF_SIZE_ADDR) - inl(AUDIO_COUNT_ADDR) < len)
     ;
   uint32_t offset = inl(AUDIO_COUNT_ADDR);
