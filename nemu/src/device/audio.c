@@ -63,7 +63,7 @@ static void audio_io_handler(uint32_t offset, int len, bool is_write) {
                                   .silence = 0,
                                   .samples = audio_base[reg_samples],
                                   .callback = fill_audio_callback,
-                                  .userdata = NULL};
+                                  .userdata = sbuf};
     if (SDL_OpenAudio(&sdlAudioSpec, NULL) < 0) {
       fprintf(stderr, "Can't open audio.\n");
       exit(-1);
