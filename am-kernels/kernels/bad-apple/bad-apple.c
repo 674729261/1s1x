@@ -67,6 +67,8 @@ int main() {
         sbuf.start += len;
         should_play -= len;
       }
+      while (io_read(AM_AUDIO_STATUS).count > 0)
+        ;
     }
 
     uint64_t next = now + (1000 * 1000 / FPS);
