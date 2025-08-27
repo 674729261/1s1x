@@ -33,7 +33,6 @@ static uint8_t *sbuf = NULL;
 static uint32_t *audio_base = NULL;
 
 static void fill_audio_callback(void *udata, Uint8 *stream, int len) {
-  printf("%d\n", len);
   SDL_memset(stream, 0, len);
   if (len == 0) {
     return;
