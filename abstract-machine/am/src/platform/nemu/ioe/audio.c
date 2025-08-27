@@ -2,6 +2,7 @@
 #include <am.h>
 #include <nemu.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #define AUDIO_FREQ_ADDR (AUDIO_ADDR + 0x00)
 #define AUDIO_CHANNELS_ADDR (AUDIO_ADDR + 0x04)
@@ -32,7 +33,7 @@ void __am_audio_play(AM_AUDIO_PLAY_T *ctl) {
   uint8_t *cur_addr = ctl->buf.start;
   uint32_t len = ctl->buf.end - ctl->buf.end;
   while (inl(AUDIO_SBUF_SIZE_ADDR) - inl(AUDIO_COUNT_ADDR) < len)
-    ;
+    printf("%08x %08x\n", inl(AUDIO_SBUF_SIZE_ADDR), inl(AUDIO_COUNT_ADDR));
   uint32_t offset = inl(AUDIO_COUNT_ADDR);
   while ((uint8_t *)ctl->buf.end - cur_addr >= 4) {
     outl(AUDIO_SBUF_ADDR + offset, *(uint32_t *)cur_addr);
