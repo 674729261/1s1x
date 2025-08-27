@@ -32,7 +32,6 @@ void __am_audio_status(AM_AUDIO_STATUS_T *stat) {
 void __am_audio_play(AM_AUDIO_PLAY_T *ctl) {
   uint8_t *cur_addr = ctl->buf.start;
   int len = ctl->buf.end - ctl->buf.start;
-  printf("%d %d %d\n", inl(AUDIO_SBUF_SIZE_ADDR), inl(AUDIO_COUNT_ADDR), len);
   while (inl(AUDIO_SBUF_SIZE_ADDR) - inl(AUDIO_COUNT_ADDR) < len)
     ;
 
