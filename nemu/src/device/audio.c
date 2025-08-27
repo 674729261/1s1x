@@ -38,10 +38,12 @@ static void fill_audio_callback(void *udata, Uint8 *stream, int len) {
   if (len == 0) {
     return;
   }
-  len = (len > audio_base[reg_count] ? audio_base[reg_count] : len);
+  int next_pos = (last_pos + len > audio_base[reg_count] ? audio_base[reg_count]
+                                                         : last_pos + len);
   SDL_LockAudio();
-  SDL_MixAudio(stream, udata + last_pos, len, SDL_MIX_MAXVOLUME);
-  last_pos += len;
+  SDL_MixAudio(stream, udata + last_pos, next_pos - last_pos,
+               SDL_MIX_MAXVOLUME);
+  last_pos = next_pos;
   SDL_UnlockAudio();
   if (last_pos == audio_base[reg_count])
     audio_base[reg_count] = 0;
