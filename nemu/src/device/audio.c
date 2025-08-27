@@ -45,6 +45,7 @@ static void fill_audio_callback(void *udata, Uint8 *stream, int len) {
   printf("!!!!!!%d %d %d\n", len, last_pos, next_pos);
   SDL_MixAudio(stream, udata + last_pos, next_pos - last_pos,
                SDL_MIX_MAXVOLUME);
+  printf("??????%d %d %d\n", len, last_pos, next_pos);
   last_pos = next_pos;
   SDL_UnlockAudio();
   if (last_pos == audio_base[reg_count])
