@@ -39,6 +39,7 @@ extern "C" int pmem_read(int raddr) {
   if (addr < Memory_Size && raddr >= PC_Init)
     return M[addr];
   if (raddr >= DEVICE_BASE) {
+    printf("PC = %08x\n", pc);
     auto ret = read_mmio(raddr);
     if (!ret.has_value()) {
       return 0xdeafbeef;
