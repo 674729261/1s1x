@@ -30,7 +30,7 @@ void __am_audio_status(AM_AUDIO_STATUS_T *stat) {
 }
 
 void __am_audio_play(AM_AUDIO_PLAY_T *ctl) {
-  void *cur_addr = ctl->buf.start;
+  // void *cur_addr = ctl->buf.start;
   int len = ctl->buf.end - ctl->buf.start;
   int bsize = inl(AUDIO_SBUF_SIZE_ADDR);
   while (bsize - inl(AUDIO_COUNT_ADDR) < len)
@@ -43,10 +43,11 @@ void __am_audio_play(AM_AUDIO_PLAY_T *ctl) {
   //   offset += 4;
   // }
 
-  while (ctl->buf.end - cur_addr >= 1) {
-    outb(AUDIO_SBUF_ADDR + offset, *(uint8_t *)cur_addr);
-    cur_addr++;
-    offset++;
-  }
-  outl(AUDIO_COUNT_ADDR, offset);
+  // while (ctl->buf.end - cur_addr >= 1) {
+  //   outb(AUDIO_SBUF_ADDR + offset, *(uint8_t *)cur_addr);
+  //   cur_addr++;
+  //   offset++;
+  // }
+  memcpy((void *)AUDIO_SBUF_ADDR, ctl->buf.start, len);
+  outl(AUDIO_COUNT_ADDR, offset + len);
 }
