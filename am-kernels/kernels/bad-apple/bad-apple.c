@@ -56,7 +56,8 @@ int main() {
     }
 
     if (has_audio) {
-      int should_play = (AUDIO_FREQ / FPS) * sizeof(int16_t) * AUDIO_CHANNEL;
+      int should_play = 999999999; //(AUDIO_FREQ / FPS) * sizeof(int16_t)
+                                   //* AUDIO_CHANNEL;
       if (should_play > audio_left)
         should_play = audio_left;
       audio_left -= should_play;
@@ -67,8 +68,6 @@ int main() {
         sbuf.start += len;
         should_play -= len;
       }
-      while (io_read(AM_AUDIO_STATUS).count > 0)
-        ;
     }
 
     uint64_t next = now + (1000 * 1000 / FPS);
