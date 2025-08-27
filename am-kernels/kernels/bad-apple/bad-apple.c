@@ -56,8 +56,8 @@ int main() {
     }
 
     if (has_audio) {
-      int should_play = 0xFFFF; //(AUDIO_FREQ / FPS) * sizeof(int16_t)
-                                //* AUDIO_CHANNEL;
+      int should_play = 0xFFF; //(AUDIO_FREQ / FPS) * sizeof(int16_t)
+                               //* AUDIO_CHANNEL;
       if (should_play > audio_left)
         should_play = audio_left;
       audio_left -= should_play;
