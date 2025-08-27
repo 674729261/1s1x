@@ -39,15 +39,22 @@ static void fill_audio_callback(void *udata, Uint8 *stream, int len) {
   if (len == 0) {
     return;
   }
-  int next_pos = (last_pos + len > audio_base[reg_count] ? audio_base[reg_count]
-                                                         : last_pos + len);
+  if (len > audio_base[reg_count])
+    len = audio_base[reg_count];
   SDL_LockAudio();
-  SDL_MixAudio(stream, udata + last_pos, next_pos - last_pos,
-               SDL_MIX_MAXVOLUME);
+  if (last_pos + len <= CONFIG_SB_SIZE) {
+    SDL_MixAudio(stream, udata + last_pos, len, SDL_MIX_MAXVOLUME);
+    last_pos += len;
+  } else {
+    SDL_MixAudio(stream, udata + last_pos, CONFIG_SB_SIZE - last_pos,
+                 SDL_MIX_MAXVOLUME);
+    SDL_MixAudio(stream + CONFIG_SB_SIZE - last_pos, udata,
+                 len - CONFIG_SB_SIZE + last_pos, SDL_MIX_MAXVOLUME);
+    last_pos = len - CONFIG_SB_SIZE + last_pos;
+  }
   SDL_UnlockAudio();
-  last_pos = next_pos;
-  if (last_pos == audio_base[reg_count])
-    audio_base[reg_count] = last_pos = 0;
+
+  audio_base[reg_count] -= len;
 }
 
 static void audio_io_handler(uint32_t offset, int len, bool is_write) {
