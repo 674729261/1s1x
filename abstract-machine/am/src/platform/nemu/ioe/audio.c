@@ -48,6 +48,6 @@ void __am_audio_play(AM_AUDIO_PLAY_T *ctl) {
   //   cur_addr++;
   //   offset++;
   // }
-  memcpy((void *)AUDIO_SBUF_ADDR, ctl->buf.start, len);
+  memcpy((void *)(AUDIO_SBUF_ADDR + offset), ctl->buf.start, len);
   outl(AUDIO_COUNT_ADDR, offset + len);
 }
