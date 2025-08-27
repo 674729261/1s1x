@@ -14,8 +14,10 @@
  ***************************************************************************************/
 
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_audio.h>
 #include <common.h>
 #include <device/map.h>
+#include <stdlib.h>
 
 enum {
   reg_freq,
@@ -30,11 +32,45 @@ enum {
 static uint8_t *sbuf = NULL;
 static uint32_t *audio_base = NULL;
 
-static void audio_io_handler(uint32_t offset, int len, bool is_write) {}
+static void fill_audio_callback(void *udata, Uint8 *stream, int len) {
+  SDL_memset(stream, 0, len);
+  if (len == 0) {
+    return;
+  }
+  len = (len > audio_base[reg_count] ? audio_base[reg_count] : len);
+
+  SDL_MixAudio(stream, sbuf, len, SDL_MIX_MAXVOLUME);
+
+  sbuf += len;
+  audio_base[reg_count] -= len;
+}
+
+static void audio_io_handler(uint32_t offset, int len, bool is_write) {
+  if (audio_base[reg_init] && is_write) {
+    SDL_CloseAudio();
+    SDL_AudioSpec sdlAudioSpec = {.freq = audio_base[reg_freq],
+                                  .format = AUDIO_S16SYS,
+                                  .channels = audio_base[reg_channels],
+                                  .silence = 0,
+                                  .samples = audio_base[reg_samples],
+                                  .callback = fill_audio_callback,
+                                  .userdata = NULL};
+    if (SDL_OpenAudio(&sdlAudioSpec, NULL) < 0) {
+      fprintf(stderr, "Can't open audio.\n");
+      exit(-1);
+    }
+    audio_base[reg_init] = 0;
+  }
+}
 
 void init_audio() {
+  if (SDL_Init(SDL_INIT_AUDIO)) {
+    fprintf(stderr, "Could not initialize SDL - %s\n", SDL_GetError());
+    exit(-1);
+  }
   uint32_t space_size = sizeof(uint32_t) * nr_reg;
   audio_base = (uint32_t *)new_space(space_size);
+
 #ifdef CONFIG_HAS_PORT_IO
   add_pio_map("audio", CONFIG_AUDIO_CTL_PORT, audio_base, space_size,
               audio_io_handler);
