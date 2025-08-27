@@ -33,16 +33,36 @@ static uint8_t *sbuf = NULL;
 static uint32_t *audio_base = NULL;
 
 static void fill_audio_callback(void *udata, Uint8 *stream, int len) {
-  SDL_memset(stream, 0, len);
-  if (len == 0) {
-    return;
+  // SDL_memset(stream, 0, len);
+  // if (len == 0) {
+  //   return;
+  // }
+  // len = (len > audio_base[reg_count] ? audio_base[reg_count] : len);
+  // SDL_LockAudio();
+  // SDL_MixAudio(stream, sbuf, len, SDL_MIX_MAXVOLUME);
+  // SDL_UnlockAudio();
+  // sbuf += len;
+  // audio_base[reg_count] -= len;
+  static int audio_sbuf_flag = 0;
+  int len_ctrl = len;
+  if (audio_base[reg_count] < len) {
+    len_ctrl = audio_base[reg_count];
   }
-  len = (len > audio_base[reg_count] ? audio_base[reg_count] : len);
   SDL_LockAudio();
-  SDL_MixAudio(stream, sbuf, len, SDL_MIX_MAXVOLUME);
+  if (len_ctrl < len) {
+    memset(stream + len_ctrl, 0, len - len_ctrl);
+  }
+  if (len_ctrl + audio_sbuf_flag < CONFIG_SB_SIZE) {
+    memcpy(stream, sbuf + audio_sbuf_flag, len_ctrl);
+    audio_sbuf_flag += len_ctrl;
+  } else {
+    memcpy(stream, sbuf + audio_sbuf_flag, CONFIG_SB_SIZE - audio_sbuf_flag);
+    memcpy(stream + CONFIG_SB_SIZE - audio_sbuf_flag, sbuf,
+           len_ctrl - (CONFIG_SB_SIZE - audio_sbuf_flag));
+    audio_sbuf_flag = len_ctrl - (CONFIG_SB_SIZE - audio_sbuf_flag);
+  }
   SDL_UnlockAudio();
-  sbuf += len;
-  audio_base[reg_count] -= len;
+  audio_base[reg_count] -= len_ctrl;
 }
 
 static void audio_io_handler(uint32_t offset, int len, bool is_write) {
