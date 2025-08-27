@@ -15,7 +15,8 @@ void __am_audio_init() {}
 
 void __am_audio_config(AM_AUDIO_CONFIG_T *cfg) {
   cfg->bufsize = inl(AUDIO_SBUF_SIZE_ADDR);
-  cfg->present = cfg->bufsize > 0;
+  // cfg->present = cfg->bufsize > 0;
+  cfg->present = 0;
 }
 
 void __am_audio_ctrl(AM_AUDIO_CTRL_T *ctrl) {
@@ -33,8 +34,8 @@ void __am_audio_play(AM_AUDIO_PLAY_T *ctl) {
   static int last_pos = 0;
   int len = ctl->buf.end - ctl->buf.start;
   int bsize = inl(AUDIO_SBUF_SIZE_ADDR);
-  // while (bsize - inl(AUDIO_COUNT_ADDR) < len)
-  //   ;
+  while (bsize - inl(AUDIO_COUNT_ADDR) < len)
+    ;
   void *cur_addr = ctl->buf.start;
   while (ctl->buf.end - cur_addr >= 4) {
     outl(AUDIO_SBUF_ADDR + last_pos, *(uint32_t *)cur_addr);
