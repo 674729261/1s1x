@@ -16,6 +16,8 @@
 #include "common.h"
 #include "local-include/reg.h"
 #include "macro.h"
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_audio.h>
 #include <cpu/cpu.h>
 #include <cpu/decode.h>
 #include <cpu/ifetch.h>
@@ -238,5 +240,8 @@ static int decode_exec(Decode *s) {
 
 int isa_exec_once(Decode *s) {
   s->isa.inst = inst_fetch(&s->snpc, 4);
-  return decode_exec(s);
+  SDL_LockAudio();
+  int ret = decode_exec(s);
+  SDL_UnlockAudio();
+  return ret;
 }
