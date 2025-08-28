@@ -13,6 +13,7 @@
  * See the Mulan PSL v2 for more details.
  ***************************************************************************************/
 
+#include <SDL2/SDL_audio.h>
 #include <device/map.h>
 #include <isa.h>
 #include <memory/host.h>
@@ -71,6 +72,8 @@ void map_write(paddr_t addr, int len, word_t data, IOMap *map) {
   assert(len >= 1 && len <= 8);
   check_bound(map, addr);
   paddr_t offset = addr - map->low;
+  SDL_LockAudio();
   host_write(map->space + offset, len, data);
+  SDL_UnlockAudio();
   invoke_callback(map->callback, offset, len, true);
 }
