@@ -41,7 +41,6 @@ static void fill_audio_callback(void *udata, Uint8 *stream, int len) {
   }
   if (len > audio_base[reg_count])
     len = audio_base[reg_count];
-  SDL_LockAudio();
   if (last_pos + len <= CONFIG_SB_SIZE) {
     SDL_MixAudio(stream, udata + last_pos, len, SDL_MIX_MAXVOLUME);
     last_pos += len;
@@ -52,7 +51,6 @@ static void fill_audio_callback(void *udata, Uint8 *stream, int len) {
                  len - CONFIG_SB_SIZE + last_pos, SDL_MIX_MAXVOLUME);
     last_pos = len - CONFIG_SB_SIZE + last_pos;
   }
-  SDL_UnlockAudio();
 
   audio_base[reg_count] -= len;
 }
