@@ -239,8 +239,10 @@ void init_monitor(int argc, char *argv[]) {
   init_sdb();
 
   unit_tests();
-  IFDEF(CONFIG_ITRACE, init_disasm());
 
+#if defined(CONFIG_ITRACE) || defined(CONFIG_INST_RINGBUFFER)
+  init_disasm();
+#endif
   /* Display welcome message. */
   welcome();
 }
