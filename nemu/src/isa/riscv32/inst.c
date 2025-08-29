@@ -119,6 +119,7 @@ void check_jal(vaddr_t from_pc, vaddr_t to_pc, uint32_t rd) {
     printf("call %s at 0x%08x\n", find_symbol_name(to_symbol), from_pc);
   } else if (rd == 1) {
     int to_symbol = find_symbol(from_pc);
+    pop_stack_ftrace();
     printf("ret %s\n", find_symbol_name(to_symbol));
   }
 }
