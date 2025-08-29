@@ -93,3 +93,18 @@ void free_symbols() {
     if (symbols_table.symbol_strings[i])
       free(symbols_table.symbol_strings[i]);
 }
+
+Call stack_ftrace[MAX_STACK_FTRACE];
+int cnt_stack_ftrace = 0;
+
+void push_stack_ftrace(vaddr_t pc, int symbol) {
+  Assert(cnt_stack_ftrace < MAX_STACK_FTRACE, "Stack FTrace is full.");
+  stack_ftrace[cnt_stack_ftrace].symbol = symbol;
+  stack_ftrace[cnt_stack_ftrace].pc = pc;
+  cnt_stack_ftrace++;
+}
+Call pop_stack_ftrace(void) {
+  Assert(cnt_stack_ftrace >= 0, "Stack FTrace is empty.");
+  cnt_stack_ftrace--;
+  return stack_ftrace[cnt_stack_ftrace];
+}

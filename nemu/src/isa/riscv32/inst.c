@@ -112,6 +112,8 @@ static void decode_operand(Decode *s, int *rd, word_t *src1, word_t *src2,
   }
 }
 
+void check_jal(vaddr_t from_pc, vaddr_t to_pc, uint32_t rd) {}
+
 static int decode_exec(Decode *s) {
   s->dnpc = s->snpc;
   pushRingBuffer(&inst_buffer, s->pc, s->isa.inst);
@@ -123,7 +125,6 @@ static int decode_exec(Decode *s) {
     decode_operand(s, &rd, &src1, &src2, &imm, concat(TYPE_, type));           \
     __VA_ARGS__;                                                               \
   }
-  printf("At %s\n", find_symbol_name(find_symbol(s->pc)));
   //   printf("%08x %08x\n", s->pc, s->isa.inst);
   INSTPAT_START();
   INSTPAT("??????? ????? ????? ??? ????? 00101 11", auipc, U,
@@ -207,7 +208,8 @@ static int decode_exec(Decode *s) {
           R(rd) = Mr(src1 + imm, 4));
 
   INSTPAT("??????? ????? ????? ??? ????? 11011 11", jal, J, R(rd) = s->snpc;
-          s->dnpc = s->pc + imm);
+          s->dnpc = s->pc + imm;
+          IFDEF(CONFIG_CONFIG_FTRACER, check_jal(s->pc, s->dnpc, rd)));
   INSTPAT("??????? ????? ????? 000 ????? 11001 11", jalr, I, R(rd) = s->snpc;
           s->dnpc = (src1 + imm) & (~0x1u));
   INSTPAT("??????? ????? ????? 001 ????? 11000 11", bne, B,
