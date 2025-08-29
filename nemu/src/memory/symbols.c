@@ -42,7 +42,6 @@ long load_symbols(char *elf) {
   Elf32_Ehdr *elf_header = (Elf32_Ehdr *)elf_data;
   int num_funcs = parse_symbols(elf_header);
   free(elf_data);
-  exit(-1);
   return num_funcs;
 }
 int find_symbol(vaddr_t addr) {
