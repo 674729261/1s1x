@@ -1,10 +1,17 @@
 #ifndef __SYMBOLS_H__
 #define __SYMBOLS_H__
 #include "common.h"
+#include "macro.h"
 #define MAX_STACK_FTRACE 4096
+
+typedef struct {
+  char *name;
+  vaddr_t start;
+} SymbolItem;
+
 struct SymbolsTable {
   int symbol_count;
-  char **symbol_strings;
+  SymbolItem *symbol_items;
   int symbol_map[CONFIG_MSIZE];
 };
 extern struct SymbolsTable symbols_table;

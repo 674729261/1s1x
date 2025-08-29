@@ -5,6 +5,7 @@
 #include <elf.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 struct SymbolsTable symbols_table = {};
@@ -25,8 +26,8 @@ static int parse_symbols(const Elf32_Ehdr *elf_header) {
       }
     }
   }
-  symbols_table.symbol_strings = malloc(sizeof(char *) * cnt_func);
-  memset(symbols_table.symbol_strings, 0, sizeof(char *) * cnt_func);
+  symbols_table.symbol_items = malloc(sizeof(SymbolItem) * cnt_func);
+  memset(symbols_table.symbol_items, 0, sizeof(SymbolItem) * cnt_func);
   cnt_func = 0;
   for (int i = 0; i < elf_header->e_shnum; i++) {
     if (sections[i].sh_type == SHT_SYMTAB) {
@@ -44,12 +45,12 @@ static int parse_symbols(const Elf32_Ehdr *elf_header) {
         fprintf(stderr, "%08x %d %s\n", symbols[i].st_value, symbols[i].st_size,
                 &symstrtab[symbols[i].st_name]);
         int name_len = strlen(&symstrtab[symbols[i].st_name]);
-        symbols_table.symbol_strings[cnt_func] = malloc(name_len + 1);
-        Assert(symbols_table.symbol_strings[cnt_func],
+        symbols_table.symbol_items[cnt_func].name = malloc(name_len + 1);
+        Assert(symbols_table.symbol_items[cnt_func].name,
                "Failed to allocate memory for symbol name");
-        strncpy(symbols_table.symbol_strings[cnt_func],
+        strncpy(symbols_table.symbol_items[cnt_func].name,
                 &symstrtab[symbols[i].st_name], name_len);
-        symbols_table.symbol_strings[cnt_func][name_len] = '\0';
+        symbols_table.symbol_items[cnt_func].name[name_len] = '\0';
         for (vaddr_t addr = symbols[i].st_value;
              addr < symbols[i].st_value + symbols[i].st_size; addr++) {
           Assert(in_pmem(addr), "Invalid symbol addr 0x%08x\n", addr);
@@ -85,13 +86,15 @@ int find_symbol(vaddr_t addr) {
 const char *find_symbol_name(int idx) {
   Assert(idx >= 0 && idx < symbols_table.symbol_count, "Invalid symbol id %d\n",
          idx);
-  return symbols_table.symbol_strings[idx];
+  return symbols_table.symbol_items[idx].name;
 }
 
 void free_symbols() {
   for (int i = 0; i < symbols_table.symbol_count; i++)
-    if (symbols_table.symbol_strings[i])
-      free(symbols_table.symbol_strings[i]);
+    if (symbols_table.symbol_items[i].name)
+      free(symbols_table.symbol_items[i].name);
+  if (symbols_table.symbol_items)
+    free(symbols_table.symbol_items);
 }
 
 Call stack_ftrace[MAX_STACK_FTRACE];
