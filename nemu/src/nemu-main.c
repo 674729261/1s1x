@@ -29,6 +29,7 @@ int main(int argc, char *argv[]) {
 #endif
   /* Start engine. */
   engine_start();
-
+  extern void free_symbols();
+  free_symbols();
   return is_exit_status_bad();
 }

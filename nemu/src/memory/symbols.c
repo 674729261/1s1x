@@ -1,10 +1,13 @@
 #include "memory/symbols.h"
+#include "common.h"
 #include "debug.h"
 #include "memory/paddr.h"
 #include <elf.h>
+#include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
-struct SymbolsTable symbols_table;
+struct SymbolsTable symbols_table = {};
 
 static int parse_symbols(const Elf32_Ehdr *elf_header) {
   Elf32_Shdr *sections =
@@ -21,9 +24,21 @@ static int parse_symbols(const Elf32_Ehdr *elf_header) {
       for (int i = 0; i < count; i++) {
         if (ELF32_ST_TYPE(symbols[i].st_info) != STT_FUNC)
           continue;
-        cnt_func++;
+
         fprintf(stderr, "%08x %d %s\n", symbols[i].st_value, symbols[i].st_size,
                 &symstrtab[symbols[i].st_name]);
+        int name_len = strlen(&symstrtab[symbols[i].st_name]);
+        symbols_table.symbol_strings[cnt_func] = malloc(name_len + 1);
+        Assert(symbols_table.symbol_strings[cnt_func],
+               "Failed to allocate memory for symbol name");
+        strncpy(symbols_table.symbol_strings[cnt_func],
+                &symstrtab[symbols[i].st_name], name_len);
+        for (vaddr_t addr = symbols[i].st_value;
+             addr < symbols[i].st_value + symbols[i].st_size; addr++) {
+          Assert(in_pmem(addr), "Invalid symbol addr 0x%08x\n", addr);
+          symbols_table.symbol_map[addr - CONFIG_MBASE] = cnt_func;
+        }
+        cnt_func++;
       }
     }
   }
@@ -40,6 +55,7 @@ long load_symbols(char *elf) {
   fread(elf_data, size_file, 1, fp);
   fclose(fp);
   Elf32_Ehdr *elf_header = (Elf32_Ehdr *)elf_data;
+  memset(symbols_table.symbol_map, -1, sizeof(symbols_table.symbol_map));
   int num_funcs = parse_symbols(elf_header);
   free(elf_data);
   return num_funcs;
@@ -52,4 +68,10 @@ const char *find_symbol_name(int idx) {
   Assert(idx >= 0 && idx < symbols_table.symbol_count, "Invalid symbol id %d\n",
          idx);
   return symbols_table.symbol_strings[idx];
+}
+
+void free_symbols() {
+  for (int i = 0; i < SZ_SYMBOL_MAP; i++)
+    if (symbols_table.symbol_strings[i])
+      free(symbols_table.symbol_strings[i]);
 }
