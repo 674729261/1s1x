@@ -21,7 +21,7 @@ word_t vaddr_ifetch(vaddr_t addr, int len) { return paddr_read(addr, len); }
 word_t vaddr_read(vaddr_t addr, int len) {
   word_t ret = paddr_read(addr, len);
 #ifdef CONFIG_MTRACER
-  fprintf(stderr, "Read addr %08x, %d bytes, get %08x\n", addr, len, ret);
+  fprintf(stderr, "Read addr  %08x, %d bytes, get  %08x\n", addr, len, ret);
 #endif
   return ret;
 }
