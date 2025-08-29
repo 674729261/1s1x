@@ -85,11 +85,14 @@ static int parse_args(int argc, char *argv[]) {
       {"log", required_argument, NULL, 'l'},
       {"diff", required_argument, NULL, 'd'},
       {"port", required_argument, NULL, 'p'},
+#ifdef CONFIG_FTRACER
+      {"elf", required_argument, NULL, 'e'},
+#endif
       {"help", no_argument, NULL, 'h'},
       {0, 0, NULL, 0},
   };
   int o;
-  while ((o = getopt_long(argc, argv, "-bhl:d:p:t", table, NULL)) != -1) {
+  while ((o = getopt_long(argc, argv, "-bhl:d:p:e:t", table, NULL)) != -1) {
     switch (o) {
     case 'b':
       sdb_set_batch_mode();
@@ -98,6 +101,9 @@ static int parse_args(int argc, char *argv[]) {
       sscanf(optarg, "%d", &difftest_port);
       break;
     case 'l':
+      log_file = optarg;
+      break;
+    case 'e':
       log_file = optarg;
       break;
     case 'd':
