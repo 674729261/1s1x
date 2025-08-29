@@ -22,6 +22,16 @@ static int parse_symbols(const Elf32_Ehdr *elf_header) {
       const char *symstrtab =
           (char *)elf_header + sections[symtab->sh_link].sh_offset;
       for (int i = 0; i < count; i++) {
+        if (ELF32_ST_TYPE(symbols[i].st_info) == STT_FUNC)
+          cnt_func++;
+      }
+      symbols_table.symbol_map = malloc(sizeof(int) * cnt_func);
+      symbols_table.symbol_strings = malloc(sizeof(char *) * cnt_func);
+      memset(symbols_table.symbol_map, -1, sizeof(int) * cnt_func);
+      memset(symbols_table.symbol_strings, 0, sizeof(char *) * cnt_func);
+
+      cnt_func = 0;
+      for (int i = 0; i < count; i++) {
         if (ELF32_ST_TYPE(symbols[i].st_info) != STT_FUNC)
           continue;
 
@@ -56,7 +66,7 @@ long load_symbols(char *elf) {
   fread(elf_data, size_file, 1, fp);
   fclose(fp);
   Elf32_Ehdr *elf_header = (Elf32_Ehdr *)elf_data;
-  memset(symbols_table.symbol_map, -1, sizeof(symbols_table.symbol_map));
+
   int num_funcs = parse_symbols(elf_header);
   free(elf_data);
   symbols_table.symbol_count = num_funcs;
@@ -73,7 +83,9 @@ const char *find_symbol_name(int idx) {
 }
 
 void free_symbols() {
-  for (int i = 0; i < SZ_SYMBOL_MAP; i++)
+  if (symbols_table.symbol_map)
+    free(symbols_table.symbol_map);
+  for (int i = 0; i < symbols_table.symbol_count; i++)
     if (symbols_table.symbol_strings[i])
       free(symbols_table.symbol_strings[i]);
 }
