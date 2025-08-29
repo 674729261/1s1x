@@ -22,8 +22,8 @@ static int parse_symbols(const Elf32_Ehdr *elf_header) {
         if (ELF32_ST_TYPE(symbols[i].st_info) != STT_FUNC)
           continue;
         cnt_func++;
-        fprintf(stderr, "%08x %d %s\n", symbols[i].st_value,
-                symbols[i].st_value, &symstrtab[symbols[i].st_name]);
+        fprintf(stderr, "%08x %d %s\n", symbols[i].st_value, symbols[i].st_size,
+                &symstrtab[symbols[i].st_name]);
       }
     }
   }
