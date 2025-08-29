@@ -126,7 +126,8 @@ void check_jal(vaddr_t from_pc, vaddr_t to_pc, uint32_t rd) {
 
 static int decode_exec(Decode *s) {
   s->dnpc = s->snpc;
-  pushRingBuffer(&inst_buffer, s->pc, s->isa.inst);
+  IFDEF(CONFIG_INST_RINGBUFFER,
+        pushRingBuffer(&inst_buffer, s->pc, s->isa.inst));
 #define INSTPAT_INST(s) ((s)->isa.inst)
 #define INSTPAT_MATCH(s, name, type, ... /* execute body */)                   \
   {                                                                            \
