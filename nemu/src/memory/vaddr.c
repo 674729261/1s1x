@@ -15,11 +15,20 @@
 
 #include <isa.h>
 #include <memory/paddr.h>
-
+#include <stdio.h>
 word_t vaddr_ifetch(vaddr_t addr, int len) { return paddr_read(addr, len); }
 
-word_t vaddr_read(vaddr_t addr, int len) { return paddr_read(addr, len); }
+word_t vaddr_read(vaddr_t addr, int len) {
+  word_t ret = paddr_read(addr, len);
+#ifdef CONFIG_MTRACER
+  fprintf(stderr, "Read  addr  %08x, %d bytes, get   %08x\n", addr, len, ret);
+#endif
+  return ret;
+}
 
 void vaddr_write(vaddr_t addr, int len, word_t data) {
+#ifdef CONFIG_MTRACER
+  fprintf(stderr, "Write addr %08x, %d bytes, data : %08x\n", addr, len, data);
+#endif
   paddr_write(addr, len, data);
 }

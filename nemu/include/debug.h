@@ -16,6 +16,7 @@
 #ifndef __DEBUG_H__
 #define __DEBUG_H__
 
+#include "ringbuffer.h"
 #include <common.h>
 #include <stdio.h>
 #include <utils.h>
@@ -35,11 +36,13 @@
       IFNDEF(CONFIG_TARGET_AM, extern FILE *log_fp; fflush(log_fp));           \
       extern void assert_fail_msg();                                           \
       assert_fail_msg();                                                       \
+      fprintf(stderr, "Last %d instructions :\n", inst_buffer.count);          \
+      showRingBuffer(&inst_buffer);                                            \
       assert(cond);                                                            \
     }                                                                          \
   } while (0)
 
-#define panic(format, ...) Assert(0, format, ##__VA_ARGS__)
+#define panic(format, ...) Assert(0, format, ##__VA_ARGS__);
 
 #define TODO() panic("please implement me")
 

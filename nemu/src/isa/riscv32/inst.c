@@ -12,10 +12,10 @@
  *
  * See the Mulan PSL v2 for more details.
  ***************************************************************************************/
-
 #include "common.h"
 #include "local-include/reg.h"
 #include "macro.h"
+#include "ringbuffer.h"
 #include <cpu/cpu.h>
 #include <cpu/decode.h>
 #include <cpu/ifetch.h>
@@ -113,7 +113,7 @@ static void decode_operand(Decode *s, int *rd, word_t *src1, word_t *src2,
 
 static int decode_exec(Decode *s) {
   s->dnpc = s->snpc;
-
+  pushRingBuffer(&inst_buffer, s->pc, s->isa.inst);
 #define INSTPAT_INST(s) ((s)->isa.inst)
 #define INSTPAT_MATCH(s, name, type, ... /* execute body */)                   \
   {                                                                            \
