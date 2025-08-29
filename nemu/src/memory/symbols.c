@@ -19,18 +19,26 @@ static int parse_symbols(const Elf32_Ehdr *elf_header) {
       Elf32_Sym *symbols =
           (Elf32_Sym *)((char *)elf_header + symtab->sh_offset);
       int count = symtab->sh_size / symtab->sh_entsize;
-      const char *symstrtab =
-          (char *)elf_header + sections[symtab->sh_link].sh_offset;
       for (int i = 0; i < count; i++) {
         if (ELF32_ST_TYPE(symbols[i].st_info) == STT_FUNC)
           cnt_func++;
       }
-      symbols_table.symbol_map = malloc(sizeof(int) * cnt_func);
-      symbols_table.symbol_strings = malloc(sizeof(char *) * cnt_func);
-      memset(symbols_table.symbol_map, -1, sizeof(int) * cnt_func);
-      memset(symbols_table.symbol_strings, 0, sizeof(char *) * cnt_func);
+    }
+  }
+  symbols_table.symbol_map = malloc(sizeof(int) * cnt_func);
+  symbols_table.symbol_strings = malloc(sizeof(char *) * cnt_func);
+  memset(symbols_table.symbol_map, -1, sizeof(int) * cnt_func);
+  memset(symbols_table.symbol_strings, 0, sizeof(char *) * cnt_func);
+  cnt_func = 0;
+  for (int i = 0; i < elf_header->e_shnum; i++) {
+    if (sections[i].sh_type == SHT_SYMTAB) {
+      Elf32_Shdr *symtab = &sections[i];
+      Elf32_Sym *symbols =
+          (Elf32_Sym *)((char *)elf_header + symtab->sh_offset);
+      int count = symtab->sh_size / symtab->sh_entsize;
+      const char *symstrtab =
+          (char *)elf_header + sections[symtab->sh_link].sh_offset;
 
-      cnt_func = 0;
       for (int i = 0; i < count; i++) {
         if (ELF32_ST_TYPE(symbols[i].st_info) != STT_FUNC)
           continue;
