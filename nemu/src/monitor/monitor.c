@@ -13,9 +13,11 @@
  * See the Mulan PSL v2 for more details.
  ***************************************************************************************/
 
+#include "memory/symbols.h"
 #include "sdb/ST.h"
 #include "sdb/sdb.h"
 #include "sdb/watcher.h"
+#include <bits/getopt_core.h>
 #include <debug.h>
 #include <isa.h>
 #include <memory/paddr.h>
@@ -54,6 +56,7 @@ void sdb_set_batch_mode();
 
 static char *log_file = NULL;
 static char *diff_so_file = NULL;
+static char *elf_file = NULL;
 static char *img_file = NULL;
 static int difftest_port = 1234;
 
@@ -78,6 +81,12 @@ static long load_img() {
   fclose(fp);
   return size;
 }
+#ifdef CONFIG_FTRACER
+#define LOAD_ELF(E) load_symbols(E)
+#else
+#define LOAD_ELF(E)                                                            \
+  fprintf(stderr, "Function tracer is disabled. Ignoring elf option.")
+#endif
 
 static int parse_args(int argc, char *argv[]) {
   const struct option table[] = {
@@ -85,9 +94,7 @@ static int parse_args(int argc, char *argv[]) {
       {"log", required_argument, NULL, 'l'},
       {"diff", required_argument, NULL, 'd'},
       {"port", required_argument, NULL, 'p'},
-#ifdef CONFIG_FTRACER
       {"elf", required_argument, NULL, 'e'},
-#endif
       {"help", no_argument, NULL, 'h'},
       {0, 0, NULL, 0},
   };
@@ -104,7 +111,7 @@ static int parse_args(int argc, char *argv[]) {
       log_file = optarg;
       break;
     case 'e':
-      log_file = optarg;
+      elf_file = optarg;
       break;
     case 'd':
       diff_so_file = optarg;
@@ -118,6 +125,7 @@ static int parse_args(int argc, char *argv[]) {
       printf("\t-l,--log=FILE           output log to FILE\n");
       printf("\t-d,--diff=REF_SO        run DiffTest with reference REF_SO\n");
       printf("\t-p,--port=PORT          run DiffTest with port PORT\n");
+      printf("\t-e,--elf=ELF            load elf file\n");
       printf("\n");
       exit(0);
     }
@@ -221,6 +229,7 @@ void init_monitor(int argc, char *argv[]) {
 
   /* Load the image to memory. This will overwrite the built-in image. */
   long img_size = load_img();
+  LOAD_ELF(elf_file);
 
   /* Initialize differential testing. */
   init_difftest(diff_so_file, img_size, difftest_port);

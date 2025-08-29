@@ -1,0 +1,56 @@
+#include "memory/symbols.h"
+#include "debug.h"
+#include "memory/paddr.h"
+#include <elf.h>
+#include <stdio.h>
+
+struct SymbolsTable symbols_table;
+
+static int parse_symbols(const Elf32_Ehdr *elf_header) {
+  Elf32_Shdr *sections =
+      (Elf32_Shdr *)((char *)elf_header + elf_header->e_shoff);
+  int cnt_func = 0;
+  for (int i = 0; i < elf_header->e_shnum; i++) {
+    if (sections[i].sh_type == SHT_SYMTAB) {
+      Elf32_Shdr *symtab = &sections[i];
+      Elf32_Sym *symbols =
+          (Elf32_Sym *)((char *)elf_header + symtab->sh_offset);
+      int count = symtab->sh_size / symtab->sh_entsize;
+      const char *symstrtab =
+          (char *)elf_header + sections[symtab->sh_link].sh_offset;
+      for (int i = 0; i < count; i++) {
+        if (ELF32_ST_TYPE(symbols[i].st_info) != STT_FUNC)
+          continue;
+        cnt_func++;
+        fprintf(stderr, "%08x %d %s\n", symbols[i].st_value,
+                symbols[i].st_value, &symstrtab[symbols[i].st_name]);
+      }
+    }
+  }
+  return cnt_func;
+}
+
+long load_symbols(char *elf) {
+  FILE *fp = fopen(elf, "rb");
+  Assert(fp, "Failed to load elf : %s.", elf);
+  fseek(fp, 0, SEEK_END);
+  size_t size_file = ftell(fp);
+  fseek(fp, 0, SEEK_SET);
+  char *elf_data = malloc(size_file);
+  fread(elf_data, size_file, 1, fp);
+  fclose(fp);
+  Elf32_Ehdr *elf_header = (Elf32_Ehdr *)elf_data;
+  int num_funcs = parse_symbols(elf_header);
+  free(elf_data);
+  exit(-1);
+  return num_funcs;
+}
+int find_symbol(vaddr_t addr) {
+  Assert(in_pmem(addr), "Invalid addr 0x%08x\n", addr);
+  return symbols_table.symbol_map[addr - CONFIG_MBASE];
+}
+const char *find_symbol_name(int idx) {
+  Assert(idx >= 0 && idx < symbols_table.symbol_count, "Invalid symbol id %d\n",
+         idx);
+  return symbols_table.symbol_strings[idx];
+}
