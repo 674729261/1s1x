@@ -58,6 +58,7 @@ long load_symbols(char *elf) {
   memset(symbols_table.symbol_map, -1, sizeof(symbols_table.symbol_map));
   int num_funcs = parse_symbols(elf_header);
   free(elf_data);
+  symbols_table.symbol_count = num_funcs;
   return num_funcs;
 }
 int find_symbol(vaddr_t addr) {

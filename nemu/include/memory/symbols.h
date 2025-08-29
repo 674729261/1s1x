@@ -5,7 +5,6 @@
 
 struct SymbolsTable {
   int symbol_count;
-  int memory_count;
   char *symbol_strings[SZ_SYMBOL_MAP];
   int symbol_map[SZ_SYMBOL_MAP];
 };
