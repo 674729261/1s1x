@@ -19,7 +19,7 @@ config WATCHERS
 config INST_RINGBUFFER
   bool "Instruction Ring Buffer"
 
-config TRACE_START
+config RINGBUFFER_SIZE
   depends on INST_RINGBUFFER
   int "Ring Buffer Size"
   default 16
