@@ -115,11 +115,11 @@ static void decode_operand(Decode *s, int *rd, word_t *src1, word_t *src2,
 void check_jal(vaddr_t from_pc, vaddr_t to_pc, uint32_t inst) {
   uint32_t rd = BITS(inst, 11, 7);
   uint32_t rs1 = BITS(inst, 19, 15);
-  if (rd == 0 && (inst & 0x7f) == 0x67 && rs1 == 1) {
+  if (rd == 1) {
     int to_symbol = find_symbol(to_pc);
     push_stack_ftrace(from_pc, to_symbol);
     printf("call %s at 0x%08x\n", find_symbol_name(to_symbol), from_pc);
-  } else if (rd == 1) {
+  } else if (rd == 0 && (inst & 0x7f) == 0x67 && rs1 == 1) {
     int to_symbol = find_symbol(from_pc);
     pop_stack_ftrace();
     printf("ret %s\n", find_symbol_name(to_symbol));
