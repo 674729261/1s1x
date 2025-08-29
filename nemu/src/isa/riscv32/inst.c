@@ -112,7 +112,16 @@ static void decode_operand(Decode *s, int *rd, word_t *src1, word_t *src2,
   }
 }
 
-void check_jal(vaddr_t from_pc, vaddr_t to_pc, uint32_t rd) {}
+void check_jal(vaddr_t from_pc, vaddr_t to_pc, uint32_t rd) {
+  if (rd == 0) {
+    int to_symbol = find_symbol(to_pc);
+    push_stack_ftrace(from_pc, to_symbol);
+    printf("call %s at 0x%08x\n", find_symbol_name(to_symbol), from_pc);
+  } else if (rd == 1) {
+    int to_symbol = find_symbol(from_pc);
+    printf("ret %s\n", find_symbol_name(to_symbol));
+  }
+}
 
 static int decode_exec(Decode *s) {
   s->dnpc = s->snpc;
@@ -210,7 +219,8 @@ static int decode_exec(Decode *s) {
           s->dnpc = s->pc + imm;
           IFDEF(CONFIG_CONFIG_FTRACER, check_jal(s->pc, s->dnpc, rd)));
   INSTPAT("??????? ????? ????? 000 ????? 11001 11", jalr, I, R(rd) = s->snpc;
-          s->dnpc = (src1 + imm) & (~0x1u));
+          s->dnpc = (src1 + imm) & (~0x1u);
+          IFDEF(CONFIG_CONFIG_FTRACER, check_jal(s->pc, s->dnpc, rd)));
   INSTPAT("??????? ????? ????? 001 ????? 11000 11", bne, B,
           if (src1 != src2) s->dnpc = s->pc + imm);
   INSTPAT("??????? ????? ????? 000 ????? 11000 11", beq, B,
