@@ -3,11 +3,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifdef CONFIG_RINGBUFFER
-static InstrInfo instbuffer_data[CONFIG_RINGBUFFER];
+#ifdef CONFIG_INST_RINGBUFFER
+static InstrInfo instbuffer_data[CONFIG_RINGBUFFER_SIZE];
+RingBuffer inst_buffer = {.sz = CONFIG_RINGBUFFER_SIZE,
+                          .begin = 0,
+                          .end = 0,
+                          .count = 0,
+                          .data = instbuffer_data};
 #endif
 
-RingBuffer *inst_buffer = NULL;
 RingBuffer *createRingbuffer(int size) {
   RingBuffer *rb = malloc(sizeof(RingBuffer));
   rb->data = calloc(sizeof(InstrInfo), size);

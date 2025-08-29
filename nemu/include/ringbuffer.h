@@ -15,7 +15,9 @@ typedef struct {
   InstrInfo *data;
 } RingBuffer;
 
-extern RingBuffer *inst_buffer;
+#ifdef CONFIG_INST_RINGBUFFER
+extern RingBuffer inst_buffer;
+#endif
 
 RingBuffer *createRingbuffer(int size);
 void pushRingBuffer(RingBuffer *rb, vaddr_t pc, uint32_t inst);
