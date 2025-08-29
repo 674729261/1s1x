@@ -38,6 +38,10 @@ void freeRingbuffer(RingBuffer *rb) {
 void showRingBuffer(const RingBuffer *rb) {
   for (int i = 0, pos = rb->begin; i < rb->count;
        i++, pos = (pos + 1) % rb->sz) {
+    if (i == rb->count - 1)
+      fprintf(stderr, "%s", "to be executed --> ");
+    else
+      fprintf(stderr, "%s", "                   ");
     void fdisassemble(FILE * fp, uint64_t pc, uint8_t *code, int nbyte);
     fdisassemble(stderr, rb->data[pos].pc, (uint8_t *)&(rb->data[pos].inst), 4);
     fputc('\n', stderr);
