@@ -23,7 +23,7 @@ static const uint32_t img[] = {
     0x00000313, // li t1,zero
     0x01400393, // li t2,20
     0x02028223, // sb  zero,36(t0)
-    0x0102c503, // lbu a0,16(t0)
+    0x0242c503, // lbu a0,36(t0)
     0x00130313, // addi t1,t1,1
     0xfe639ae3, // bne t2,t1,-12
     // 0x01004503, // lbu a0,0(zero) : error
