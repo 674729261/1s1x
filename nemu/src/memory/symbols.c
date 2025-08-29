@@ -25,9 +25,7 @@ static int parse_symbols(const Elf32_Ehdr *elf_header) {
       }
     }
   }
-  symbols_table.symbol_map = malloc(sizeof(int) * cnt_func);
   symbols_table.symbol_strings = malloc(sizeof(char *) * cnt_func);
-  memset(symbols_table.symbol_map, -1, sizeof(int) * cnt_func);
   memset(symbols_table.symbol_strings, 0, sizeof(char *) * cnt_func);
   cnt_func = 0;
   for (int i = 0; i < elf_header->e_shnum; i++) {
@@ -91,8 +89,6 @@ const char *find_symbol_name(int idx) {
 }
 
 void free_symbols() {
-  if (symbols_table.symbol_map)
-    free(symbols_table.symbol_map);
   for (int i = 0; i < symbols_table.symbol_count; i++)
     if (symbols_table.symbol_strings[i])
       free(symbols_table.symbol_strings[i]);

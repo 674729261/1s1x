@@ -5,7 +5,7 @@
 struct SymbolsTable {
   int symbol_count;
   char **symbol_strings;
-  int *symbol_map;
+  int symbol_map[CONFIG_MSIZE];
 };
 extern struct SymbolsTable symbols_table;
 
