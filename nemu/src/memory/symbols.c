@@ -33,6 +33,7 @@ static int parse_symbols(const Elf32_Ehdr *elf_header) {
                "Failed to allocate memory for symbol name");
         strncpy(symbols_table.symbol_strings[cnt_func],
                 &symstrtab[symbols[i].st_name], name_len);
+        symbols_table.symbol_strings[cnt_func][name_len] = '\0';
         for (vaddr_t addr = symbols[i].st_value;
              addr < symbols[i].st_value + symbols[i].st_size; addr++) {
           Assert(in_pmem(addr), "Invalid symbol addr 0x%08x\n", addr);
