@@ -124,6 +124,7 @@ static int decode_exec(Decode *s) {
     __VA_ARGS__;                                                               \
   }
   printf("At %d\n", find_symbol(s->pc));
+  exit(-1);
   //   printf("%08x %08x\n", s->pc, s->isa.inst);
   INSTPAT_START();
   INSTPAT("??????? ????? ????? ??? ????? 00101 11", auipc, U,
