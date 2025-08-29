@@ -13,16 +13,7 @@ config ISA_loongarch32r
   bool "loongarch32r"
 endchoice
 
-config WATCHERS
-  bool "Watchers"
 
-config INST_RINGBUFFER
-  bool "Instruction Ring Buffer"
-
-config RINGBUFFER_SIZE
-  depends on INST_RINGBUFFER
-  int "Ring Buffer Size"
-  default 16
 
 
 config ISA
@@ -142,6 +133,20 @@ endmenu
 
 menu "Testing and Debugging"
 
+config WATCHERS
+  bool "Watchers"
+
+config MTRACER
+  bool "Memory Tracer"
+  default n
+
+config INST_RINGBUFFER
+  bool "Instruction Ring Buffer"
+
+config RINGBUFFER_SIZE
+  depends on INST_RINGBUFFER
+  int "Ring Buffer Size"
+  default 16
 
 config TRACE
   bool "Enable tracer"
