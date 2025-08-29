@@ -13,6 +13,7 @@
  * See the Mulan PSL v2 for more details.
  ***************************************************************************************/
 
+#include <SDL2/SDL_audio.h>
 #include <common.h>
 #include <stdio.h>
 void init_monitor(int, char *[]);
@@ -31,5 +32,6 @@ int main(int argc, char *argv[]) {
   engine_start();
   extern void free_symbols();
   free_symbols();
+  SDL_CloseAudio();
   return is_exit_status_bad();
 }
