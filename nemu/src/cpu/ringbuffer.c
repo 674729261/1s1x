@@ -42,6 +42,7 @@ void showRingBuffer(const RingBuffer *rb) {
       fprintf(stderr, "%s\033[1;31m", "to be executed --> ");
     else
       fprintf(stderr, "%s", "                   ");
+    fprintf(stderr, "%08x : %08x  ;", rb->data[pos].pc, rb->data[pos].inst);
     void fdisassemble(FILE * fp, uint64_t pc, uint8_t *code, int nbyte);
     fdisassemble(stderr, rb->data[pos].pc, (uint8_t *)&(rb->data[pos].inst), 4);
     if (i == rb->count - 1)
