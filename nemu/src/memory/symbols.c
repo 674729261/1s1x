@@ -28,7 +28,7 @@ static void parse_symbols(const Elf32_Ehdr *elf_header) {
   // }
   // symbols_table.symbol_items = malloc(sizeof(SymbolItem) * cnt_func);
   // memset(symbols_table.symbol_items, 0, sizeof(SymbolItem) * cnt_func);
-  int allocated_size = 0;
+  int allocated_size = 4;
   symbols_table.symbol_items = malloc(sizeof(SymbolItem) * 4);
   symbols_table.symbol_count = 0;
   for (int i = 0; i < elf_header->e_shnum; i++) {
