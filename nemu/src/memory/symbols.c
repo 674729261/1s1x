@@ -10,25 +10,27 @@
 
 struct SymbolsTable symbols_table = {};
 
-static int parse_symbols(const Elf32_Ehdr *elf_header) {
+static void parse_symbols(const Elf32_Ehdr *elf_header) {
   Elf32_Shdr *sections =
       (Elf32_Shdr *)((char *)elf_header + elf_header->e_shoff);
-  int cnt_func = 0;
-  for (int i = 0; i < elf_header->e_shnum; i++) {
-    if (sections[i].sh_type == SHT_SYMTAB) {
-      Elf32_Shdr *symtab = &sections[i];
-      Elf32_Sym *symbols =
-          (Elf32_Sym *)((char *)elf_header + symtab->sh_offset);
-      int count = symtab->sh_size / symtab->sh_entsize;
-      for (int i = 0; i < count; i++) {
-        if (ELF32_ST_TYPE(symbols[i].st_info) == STT_FUNC)
-          cnt_func++;
-      }
-    }
-  }
-  symbols_table.symbol_items = malloc(sizeof(SymbolItem) * cnt_func);
-  memset(symbols_table.symbol_items, 0, sizeof(SymbolItem) * cnt_func);
-  cnt_func = 0;
+  // int cnt_func = 0;
+  // for (int i = 0; i < elf_header->e_shnum; i++) {
+  //   if (sections[i].sh_type == SHT_SYMTAB) {
+  //     Elf32_Shdr *symtab = &sections[i];
+  //     Elf32_Sym *symbols =
+  //         (Elf32_Sym *)((char *)elf_header + symtab->sh_offset);
+  //     int count = symtab->sh_size / symtab->sh_entsize;
+  //     for (int i = 0; i < count; i++) {
+  //       if (ELF32_ST_TYPE(symbols[i].st_info) == STT_FUNC)
+  //         cnt_func++;
+  //     }
+  //   }
+  // }
+  // symbols_table.symbol_items = malloc(sizeof(SymbolItem) * cnt_func);
+  // memset(symbols_table.symbol_items, 0, sizeof(SymbolItem) * cnt_func);
+  int allocated_size = 0;
+  symbols_table.symbol_items = malloc(sizeof(SymbolItem) * 4);
+  symbols_table.symbol_count = 0;
   for (int i = 0; i < elf_header->e_shnum; i++) {
     if (sections[i].sh_type == SHT_SYMTAB) {
       Elf32_Shdr *symtab = &sections[i];
@@ -45,22 +47,33 @@ static int parse_symbols(const Elf32_Ehdr *elf_header) {
         fprintf(stderr, "%08x %d %s\n", symbols[i].st_value, symbols[i].st_size,
                 &symstrtab[symbols[i].st_name]);
         int name_len = strlen(&symstrtab[symbols[i].st_name]);
-        symbols_table.symbol_items[cnt_func].name = malloc(name_len + 1);
-        Assert(symbols_table.symbol_items[cnt_func].name,
+        if (allocated_size == symbols_table.symbol_count) {
+          symbols_table.symbol_items =
+              realloc(symbols_table.symbol_items, allocated_size * 2);
+          if (symbols_table.symbol_items == NULL)
+            panic("Failed to allocate memory for symbols");
+          allocated_size *= 2;
+        }
+        symbols_table.symbol_items[symbols_table.symbol_count].name =
+            malloc(name_len + 1);
+        Assert(symbols_table.symbol_items[symbols_table.symbol_count].name,
                "Failed to allocate memory for symbol name");
-        strncpy(symbols_table.symbol_items[cnt_func].name,
+        strncpy(symbols_table.symbol_items[symbols_table.symbol_count].name,
                 &symstrtab[symbols[i].st_name], name_len);
-        symbols_table.symbol_items[cnt_func].name[name_len] = '\0';
+        symbols_table.symbol_items[symbols_table.symbol_count].name[name_len] =
+            '\0';
+        symbols_table.symbol_items[symbols_table.symbol_count].start =
+            symbols[i].st_value;
         for (vaddr_t addr = symbols[i].st_value;
              addr < symbols[i].st_value + symbols[i].st_size; addr++) {
           Assert(in_pmem(addr), "Invalid symbol addr 0x%08x\n", addr);
-          symbols_table.symbol_map[addr - CONFIG_MBASE] = cnt_func;
+          symbols_table.symbol_map[addr - CONFIG_MBASE] =
+              symbols_table.symbol_count;
+          symbols_table.symbol_count++;
         }
-        cnt_func++;
       }
     }
   }
-  return cnt_func;
 }
 
 long load_symbols(char *elf) {
@@ -74,10 +87,9 @@ long load_symbols(char *elf) {
   fclose(fp);
   Elf32_Ehdr *elf_header = (Elf32_Ehdr *)elf_data;
 
-  int num_funcs = parse_symbols(elf_header);
+  parse_symbols(elf_header);
   free(elf_data);
-  symbols_table.symbol_count = num_funcs;
-  return num_funcs;
+  return symbols_table.symbol_count;
 }
 int find_symbol(vaddr_t addr) {
   Assert(in_pmem(addr), "Invalid addr 0x%08x\n", addr);
