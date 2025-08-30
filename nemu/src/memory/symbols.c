@@ -13,21 +13,6 @@ struct SymbolsTable symbols_table = {};
 static void parse_symbols(const Elf32_Ehdr *elf_header) {
   Elf32_Shdr *sections =
       (Elf32_Shdr *)((char *)elf_header + elf_header->e_shoff);
-  // int cnt_func = 0;
-  // for (int i = 0; i < elf_header->e_shnum; i++) {
-  //   if (sections[i].sh_type == SHT_SYMTAB) {
-  //     Elf32_Shdr *symtab = &sections[i];
-  //     Elf32_Sym *symbols =
-  //         (Elf32_Sym *)((char *)elf_header + symtab->sh_offset);
-  //     int count = symtab->sh_size / symtab->sh_entsize;
-  //     for (int i = 0; i < count; i++) {
-  //       if (ELF32_ST_TYPE(symbols[i].st_info) == STT_FUNC)
-  //         cnt_func++;
-  //     }
-  //   }
-  // }
-  // symbols_table.symbol_items = malloc(sizeof(SymbolItem) * cnt_func);
-  // memset(symbols_table.symbol_items, 0, sizeof(SymbolItem) * cnt_func);
   int allocated_size = 4;
   symbols_table.symbol_items = malloc(sizeof(SymbolItem) * 4);
   symbols_table.symbol_count = 0;
@@ -44,7 +29,8 @@ static void parse_symbols(const Elf32_Ehdr *elf_header) {
         if (ELF32_ST_TYPE(symbols[i].st_info) != STT_FUNC)
           continue;
 
-        fprintf(stderr, "%08x %d %s\n", symbols[i].st_value, symbols[i].st_size,
+        fprintf(stderr, "%3d : %08x %d %s\n", symbols_table.symbol_count,
+                symbols[i].st_value, symbols[i].st_size,
                 &symstrtab[symbols[i].st_name]);
         int name_len = strlen(&symstrtab[symbols[i].st_name]);
         if (allocated_size == symbols_table.symbol_count) {
@@ -105,8 +91,7 @@ const char *find_symbol_name(int idx) {
 void free_symbols() {
   for (int i = 0; i < symbols_table.symbol_count; i++)
     if (symbols_table.symbol_items[i].name)
-      fprintf(stderr, "%s\n", symbols_table.symbol_items[i].name),
-          free(symbols_table.symbol_items[i].name);
+      free(symbols_table.symbol_items[i].name);
   if (symbols_table.symbol_items)
     free(symbols_table.symbol_items);
 }
