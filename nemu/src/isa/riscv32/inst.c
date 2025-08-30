@@ -116,6 +116,7 @@ static void several_spaces(unsigned cnt) {
   while (cnt--)
     fputc(' ', stderr);
 }
+#ifdef CONFIG_FTRACER
 static void check_jal(vaddr_t from_pc, vaddr_t to_pc, uint32_t inst) {
   uint32_t rd = BITS(inst, 11, 7);
   uint32_t rs1 = BITS(inst, 19, 15);
@@ -127,12 +128,12 @@ static void check_jal(vaddr_t from_pc, vaddr_t to_pc, uint32_t inst) {
     push_stack_ftrace(from_pc, to_symbol);
 
   } else if (rd == 0 && (inst & 0x7f) == 0x67 && rs1 == 1) {
-    int to_symbol = find_symbol(from_pc);
-    pop_stack_ftrace();
+    Call ret_call = pop_stack_ftrace();
     several_spaces(cnt_stack_ftrace * 2);
-    fprintf(stderr, "ret %s\n", find_symbol_name(to_symbol));
+    fprintf(stderr, "ret %s\n", find_symbol_name(ret_call.symbol));
   }
 }
+#endif
 
 static int decode_exec(Decode *s) {
   s->dnpc = s->snpc;
