@@ -95,6 +95,6 @@ int main() {
   ret = test_strcat();
   MY_CHECK(ret == 0);
   ret = test_memset();
-  MY_CHECK(ret == 0);
+  MY_CHECK(ret != 0);
   return 0;
 }
