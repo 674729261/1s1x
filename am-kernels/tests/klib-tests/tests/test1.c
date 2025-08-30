@@ -1,4 +1,3 @@
-#include "trap.h"
 #include <klib.h>
 #include <limits.h>
 #include <stdio.h>
