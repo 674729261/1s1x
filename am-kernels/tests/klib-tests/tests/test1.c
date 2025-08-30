@@ -68,8 +68,8 @@ int test_memmove() {
 
 int test_memset() {
   int x[8] = {1, 2, 3, 4, 5, 6, 7, 8};
-  const int r1[8] = {-1, -1, -1, 4, 5, 6, 7, 8};
-  memset(x, -1, 3 * sizeof(int));
+  const int r1[8] = {-1, -1, -1, -1, -1, 6, 7, 8};
+  memset(x, -1, 5 * sizeof(int));
   MY_RANGE(x, r1, 0, 8);
   return 0;
 }
@@ -85,6 +85,17 @@ int test_strcat() {
   return 0;
 }
 
+int test_sprintf() {
+  char x[128] = {};
+  int a = 42;
+  unsigned long long b = 0x12345abcdef;
+  const char *s = "foobar";
+
+  sprintf(x, "a is %d\nb is %016llu\ns is %s\n", a, b, s);
+  MY_RANGE(x, "a is 42\nb is 0000012345abcdef\ns is foobar\n", 0, 42);
+  return 0;
+}
+
 int main() {
   int ret = test_strcmp();
   MY_CHECK(ret == 0);
@@ -95,6 +106,8 @@ int main() {
   ret = test_strcat();
   MY_CHECK(ret == 0);
   ret = test_memset();
-  MY_CHECK(ret != 0);
+  MY_CHECK(ret == 0);
+  ret = test_sprintf();
+  MY_CHECK(ret == 0);
   return 0;
 }
