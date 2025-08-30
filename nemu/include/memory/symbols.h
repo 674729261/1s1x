@@ -24,7 +24,7 @@ typedef struct {
   vaddr_t pc;
 } Call;
 
-extern Call stack_ftrace[];
+extern Call *stack_ftrace;
 extern int cnt_stack_ftrace;
 
 void push_stack_ftrace(vaddr_t pc, int symbol);

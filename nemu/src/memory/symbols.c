@@ -9,6 +9,7 @@
 #include <string.h>
 
 struct SymbolsTable symbols_table = {};
+static int allocated_sz_stack = 0;
 
 static void parse_symbols(const Elf32_Ehdr *elf_header) {
   Elf32_Shdr *sections =
@@ -76,6 +77,8 @@ long load_symbols(char *elf) {
 
   parse_symbols(elf_header);
   free(elf_data);
+  stack_ftrace = malloc(sizeof(Call) * 4);
+  allocated_sz_stack = 4;
   return symbols_table.symbol_count;
 }
 int find_symbol(vaddr_t addr) {
@@ -94,13 +97,20 @@ void free_symbols() {
       free(symbols_table.symbol_items[i].name);
   if (symbols_table.symbol_items)
     free(symbols_table.symbol_items);
+  if (stack_ftrace)
+    free(stack_ftrace);
 }
 
-Call stack_ftrace[MAX_STACK_FTRACE];
+Call *stack_ftrace;
+
 int cnt_stack_ftrace = 0;
 
 void push_stack_ftrace(vaddr_t pc, int symbol) {
-  Assert(cnt_stack_ftrace < MAX_STACK_FTRACE, "Stack FTrace is full.");
+  if (cnt_stack_ftrace == allocated_sz_stack) {
+    stack_ftrace = realloc(stack_ftrace, sizeof(Call) * allocated_sz_stack * 2);
+    Assert(stack_ftrace, "Failed to reallocate memory for stack ftrace");
+    allocated_sz_stack *= 2;
+  }
   stack_ftrace[cnt_stack_ftrace].symbol = symbol;
   stack_ftrace[cnt_stack_ftrace].pc = pc;
   cnt_stack_ftrace++;
