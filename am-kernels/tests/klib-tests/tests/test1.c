@@ -91,7 +91,7 @@ int test_sprintf() {
   unsigned long long b = 0x12345abcdef;
   const char *s = "foobar";
 
-  sprintf(x, "a is %d\nb is %016llu\ns is %s\n", a, b, s);
+  printf("a is %d\nb is %016llu\ns is %s\n", a, b, s);
   MY_RANGE(x, "a is 42\nb is 0000012345abcdef\ns is foobar\n", 0, 42);
   return 0;
 }
