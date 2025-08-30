@@ -2,9 +2,9 @@
 #define ARCH_H__
 
 #ifndef __USE_GNU
-# define __USE_GNU
+#define __USE_GNU
 #endif
-
+#include <stdint.h>
 #include <ucontext.h>
 
 struct Context {
@@ -32,10 +32,10 @@ struct Context {
 #elif defined(__riscv)
 // FIXME: may be wrong
 #define GPR1 uc.uc_mcontext.__gregs[REG_A0]
-#define GPR2 uc.uc_mcontext.__gregs[REG_A0+1]
-#define GPR3 uc.uc_mcontext.__gregs[REG_A0+2]
-#define GPR4 uc.uc_mcontext.__gregs[REG_A0+3]
-#define GPRx uc.uc_mcontext.__gregs[REG_A0+4]
+#define GPR2 uc.uc_mcontext.__gregs[REG_A0 + 1]
+#define GPR3 uc.uc_mcontext.__gregs[REG_A0 + 2]
+#define GPR4 uc.uc_mcontext.__gregs[REG_A0 + 3]
+#define GPRx uc.uc_mcontext.__gregs[REG_A0 + 4]
 #else
 #error Unsupported architecture
 #endif
