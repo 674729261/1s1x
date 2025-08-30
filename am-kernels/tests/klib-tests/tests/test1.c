@@ -99,8 +99,8 @@ int test_sprintf() {
   MY_RANGE(x,
            "MX is 2147483647\nMN is -2147483648\nZERO is 0\nMNdiv7 is "
            "-306783378\na is "
-           "+04\nb is "
-           "0x0000012345abcdef\ns is foobar\n ",
+           "+042\nb is "
+           "0x0000012345abcdef\ns is foobar\n",
            0, 112);
   return 0;
 }
