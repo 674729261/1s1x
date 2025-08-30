@@ -35,6 +35,7 @@ int main(int argc, char *argv[]) {
   free_symbols();
   void destroy_vga();
   destroy_vga();
+  SDL_QuitSubSystem(SDL_INIT_VIDEO);
   SDL_Quit();
   return is_exit_status_bad();
 }
