@@ -96,6 +96,19 @@ int test_sprintf() {
   return 0;
 }
 
+int test_strlen() {
+  const char *x = "abcdef123456\n\0\0abcd\0\0";
+  const char *y = "";
+  const char *z = "123";
+  int a = strlen(x);
+  MY_CHECK(a == 12);
+  a = strlen(y);
+  MY_CHECK(a == 0);
+  a = strlen(z);
+  MY_CHECK(a == 3);
+  return 0;
+}
+
 int main() {
   int ret = test_strcmp();
   MY_CHECK(ret == 0);
@@ -108,6 +121,8 @@ int main() {
   ret = test_memset();
   MY_CHECK(ret == 0);
   ret = test_sprintf();
+  MY_CHECK(ret == 0);
+  ret = test_strlen();
   MY_CHECK(ret == 0);
   return 0;
 }
