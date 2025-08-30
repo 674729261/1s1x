@@ -13,7 +13,6 @@
  * See the Mulan PSL v2 for more details.
  ***************************************************************************************/
 
-#include <SDL2/SDL.h>
 #include <SDL2/SDL_audio.h>
 #include <common.h>
 #include <stdio.h>
@@ -31,15 +30,7 @@ int main(int argc, char *argv[]) {
 #endif
   /* Start engine. */
   engine_start();
-
-#ifdef CONFIG_FTRACER
   extern void free_symbols();
   free_symbols();
-#endif
-#ifdef CONFIG_HAS_VGA
-  void destroy_vga();
-  destroy_vga();
-#endif
-  SDL_Quit();
   return is_exit_status_bad();
 }
