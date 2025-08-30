@@ -31,8 +31,11 @@ int main(int argc, char *argv[]) {
 #endif
   /* Start engine. */
   engine_start();
+
+#ifdef CONFIG_FTRACER
   extern void free_symbols();
   free_symbols();
+#endif
 #ifdef CONFIG_HAS_VGA
   void destroy_vga();
   destroy_vga();
