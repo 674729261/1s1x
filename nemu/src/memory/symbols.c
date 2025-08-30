@@ -49,7 +49,8 @@ static void parse_symbols(const Elf32_Ehdr *elf_header) {
         int name_len = strlen(&symstrtab[symbols[i].st_name]);
         if (allocated_size == symbols_table.symbol_count) {
           symbols_table.symbol_items =
-              realloc(symbols_table.symbol_items, allocated_size * 2);
+              realloc(symbols_table.symbol_items,
+                      sizeof(SymbolItem) * allocated_size * 2);
           Assert(symbols_table.symbol_items,
                  "Failed to allocate memory for symbols");
           allocated_size *= 2;
