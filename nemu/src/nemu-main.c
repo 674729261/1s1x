@@ -32,5 +32,7 @@ int main(int argc, char *argv[]) {
   engine_start();
   extern void free_symbols();
   free_symbols();
+  void destroy_vga();
+  destroy_vga();
   return is_exit_status_bad();
 }
