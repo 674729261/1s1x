@@ -50,8 +50,8 @@ static void parse_symbols(const Elf32_Ehdr *elf_header) {
         if (allocated_size == symbols_table.symbol_count) {
           symbols_table.symbol_items =
               realloc(symbols_table.symbol_items, allocated_size * 2);
-          if (symbols_table.symbol_items == NULL)
-            panic("Failed to allocate memory for symbols");
+          Assert(symbols_table.symbol_items,
+                 "Failed to allocate memory for symbols");
           allocated_size *= 2;
         }
         symbols_table.symbol_items[symbols_table.symbol_count].name =
@@ -69,8 +69,8 @@ static void parse_symbols(const Elf32_Ehdr *elf_header) {
           Assert(in_pmem(addr), "Invalid symbol addr 0x%08x\n", addr);
           symbols_table.symbol_map[addr - CONFIG_MBASE] =
               symbols_table.symbol_count;
-          symbols_table.symbol_count++;
         }
+        symbols_table.symbol_count++;
       }
     }
   }
