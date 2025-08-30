@@ -1,5 +1,6 @@
 #include "trap.h"
 #include <klib.h>
+#include <stdio.h>
 
 #define NR_DATA LENGTH(test_data)
 const char *a = "1145141919810";
@@ -69,12 +70,15 @@ int test_memmove() {
 
 int main() {
   int ret = test_strcmp();
+  printf("%d\n", ret);
   if (ret != 0)
     return ret;
   ret = test_memcmp();
+  printf("%d\n", ret);
   if (ret != 0)
     return ret;
   ret = test_memmove();
+  printf("%d\n", ret);
   if (ret != 0)
     return ret;
   return 0;
