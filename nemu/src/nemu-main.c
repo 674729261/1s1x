@@ -32,6 +32,5 @@ int main(int argc, char *argv[]) {
   engine_start();
   extern void free_symbols();
   free_symbols();
-  SDL_CloseAudio();
   return is_exit_status_bad();
 }
