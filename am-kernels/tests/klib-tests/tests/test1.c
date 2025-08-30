@@ -110,7 +110,6 @@ int test_strlen() {
   const char *y = "";
   const char *z = "123";
   int a = strlen(x);
-  printf("%d\n", a);
   MY_CHECK(a == 13);
   a = strlen(y);
   MY_CHECK(a == 0);
