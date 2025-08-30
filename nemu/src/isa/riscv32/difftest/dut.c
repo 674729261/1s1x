@@ -23,8 +23,9 @@ bool isa_difftest_checkregs(CPU_state *ref_r, vaddr_t pc) {
     if (ref_r->gpr[i] != cpu.gpr[i])
       fprintf(stderr, "GPR %s differs@0x%08x\nShould be %08x but got %08x\n",
               reg_name(i), pc, ref_r->gpr[i], cpu.gpr[i]);
+    return false;
   }
-  return false;
+  return true;
 }
 
 void isa_difftest_attach() {}
