@@ -129,7 +129,7 @@ static void check_jal(vaddr_t from_pc, vaddr_t to_pc, uint32_t inst) {
   } else if (inst == 0x00008067) {
     Call ret_call = pop_stack_ftrace();
     several_spaces(cnt_stack_ftrace * 2);
-    fprintf(stderr, "ret %s\n", find_symbol_name(ret_call.symbol));
+    fprintf(stderr, "ret  %s\n", find_symbol_name(ret_call.symbol));
   }
 }
 #endif
