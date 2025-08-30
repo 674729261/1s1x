@@ -132,6 +132,7 @@ static void check_jal(vaddr_t from_pc, vaddr_t to_pc, uint32_t inst) {
     several_spaces(cnt_stack_ftrace * 2);
     fprintf(stderr, "ret  [%s]\n", find_symbol_name(ret_call.symbol));
   } else if (func_to != func_from) {
+    several_spaces(cnt_stack_ftrace * 2);
     fprintf(stderr, "into [%s]\n", find_symbol_name(func_to));
   }
 }
