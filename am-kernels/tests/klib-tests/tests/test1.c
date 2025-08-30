@@ -66,15 +66,25 @@ int test_memmove() {
   return 0;
 }
 
+int test_strcat() {
+  char x[8] = "abcd";
+  char y[4] = "efg";
+
+  strcat(x, y);
+  MY_RANGE(x, "abcdefg", 0, 8);
+  strcat(y, "");
+  MY_RANGE(y, "efg", 0, 4);
+  return 0;
+}
+
 int main() {
   int ret = test_strcmp();
-  if (ret != 0)
-    return ret;
+  MY_CHECK(ret == 0);
   ret = test_memcmp();
-  if (ret != 0)
-    return ret;
+  MY_CHECK(ret == 0);
   ret = test_memmove();
-  if (ret != 0)
-    return ret;
+  MY_CHECK(ret == 0);
+  ret = test_strcat();
+  MY_CHECK(ret == 0);
   return 0;
 }
