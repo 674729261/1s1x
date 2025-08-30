@@ -29,7 +29,7 @@ static void parse_symbols(const Elf32_Ehdr *elf_header) {
         if (ELF32_ST_TYPE(symbols[i].st_info) != STT_FUNC)
           continue;
 
-        fprintf(stderr, "%3d : %08x %d %s\n", symbols_table.symbol_count,
+        fprintf(stderr, "%3d : %08x %4d %s\n", symbols_table.symbol_count,
                 symbols[i].st_value, symbols[i].st_size,
                 &symstrtab[symbols[i].st_name]);
         int name_len = strlen(&symstrtab[symbols[i].st_name]);
