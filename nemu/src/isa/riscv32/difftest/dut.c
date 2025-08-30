@@ -21,7 +21,7 @@
 bool isa_difftest_checkregs(CPU_state *ref_r, vaddr_t pc) {
   for (int i = 0; i < 32; i++) {
     if (ref_r->gpr[i] != cpu.gpr[i]) {
-      fprintf(stderr, "Register %s differs\n", reg_name(i));
+      fprintf(stderr, "Register %s differs @ 0x%08x\n", reg_name(i), pc);
       return false;
     }
   }
