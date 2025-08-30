@@ -104,7 +104,7 @@ const char *find_symbol_name(int idx) {
 void free_symbols() {
   for (int i = 0; i < symbols_table.symbol_count; i++)
     if (symbols_table.symbol_items[i].name)
-      fprintf(stderr, "%s", symbols_table.symbol_items[i].name),
+      fprintf(stderr, "%s\n", symbols_table.symbol_items[i].name),
           free(symbols_table.symbol_items[i].name);
   if (symbols_table.symbol_items)
     free(symbols_table.symbol_items);
