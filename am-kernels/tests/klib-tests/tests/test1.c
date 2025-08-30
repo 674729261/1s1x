@@ -53,15 +53,15 @@ int test_memmove() {
   const int r1[8] = {3, 4, 5, 6, 0, 0, 0, 0};
   const int r2[8] = {3, 4, 5, 6, 7, 6, 7, 8};
   const int r3[8] = {1, 2, 1, 2, 3, 4, 5, 8};
-  memmove(y, x + 2, 4);
+  memmove(y, x + 2, 4 * sizeof(int));
   for (int i = 0; i < 8; i++)
     if (y[i] != r1[i])
       return -1;
-  memmove(x, x + 2, 5);
+  memmove(x, x + 2, 5 * sizeof(int));
   for (int i = 0; i < 8; i++)
     if (x[i] != r2[i])
       return -1;
-  memmove(z + 2, z, 5);
+  memmove(z + 2, z, 5 * sizeof(int));
   for (int i = 0; i < 8; i++)
     if (z[i] != r3[i])
       return -1;
@@ -70,15 +70,12 @@ int test_memmove() {
 
 int main() {
   int ret = test_strcmp();
-  printf("%d\n", ret);
   if (ret != 0)
     return ret;
   ret = test_memcmp();
-  printf("%d\n", ret);
   if (ret != 0)
     return ret;
   ret = test_memmove();
-  printf("%d\n", ret);
   if (ret != 0)
     return ret;
   return 0;
