@@ -65,9 +65,9 @@ word_t map_read(paddr_t addr, int len, IOMap *map) {
   paddr_t offset = addr - map->low;
 
   invoke_callback(map->callback, offset, len, false); // prepare data to read
-  SDL_LockAudio();
+  IFDEF(CONFIG_HAS_AUDIO, SDL_LockAudio());
   word_t ret = host_read(map->space + offset, len);
-  SDL_UnlockAudio();
+  IFDEF(CONFIG_HAS_AUDIO, SDL_UnlockAudio());
   return ret;
 }
 
@@ -75,8 +75,8 @@ void map_write(paddr_t addr, int len, word_t data, IOMap *map) {
   assert(len >= 1 && len <= 8);
   check_bound(map, addr);
   paddr_t offset = addr - map->low;
-  SDL_LockAudio();
+  IFDEF(CONFIG_HAS_AUDIO, SDL_LockAudio());
   host_write(map->space + offset, len, data);
-  SDL_UnlockAudio();
+  IFDEF(CONFIG_HAS_AUDIO, SDL_UnlockAudio());
   invoke_callback(map->callback, offset, len, true);
 }
