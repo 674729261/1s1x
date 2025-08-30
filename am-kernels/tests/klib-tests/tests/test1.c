@@ -92,10 +92,11 @@ int test_sprintf() {
   unsigned long long b = 0x12345abcdef;
   const char *s = "foobar";
 
-  sprintf(x, "MX is %d\nMN is %d\na is %+04d\nb is %#018llx\ns is %s\n",
-          INT_MAX, INT_MIN, a, b, s);
+  sprintf(
+      x, "MX is %d\nMN is %d\nZERO is %d\na is %+04d\nb is %#018llx\ns is %s\n",
+      INT_MAX, INT_MIN, 0, a, b, s);
   MY_RANGE(x,
-           "MX is 2147483647\nMN is -2147483648\na is +042\nb is "
+           "MX is 2147483647\nMN is -2147483648\nZERO is 0\na is +042\nb is "
            "0x0000012345abcdef\ns is foobar\n",
            0, 42);
   return 0;
