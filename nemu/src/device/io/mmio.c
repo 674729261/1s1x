@@ -15,6 +15,7 @@
 
 #include <device/map.h>
 #include <memory/paddr.h>
+#include <stdio.h>
 
 #define NR_MAP 16
 
@@ -65,5 +66,8 @@ word_t mmio_read(paddr_t addr, int len) {
 }
 
 void mmio_write(paddr_t addr, int len, word_t data) {
+
   map_write(addr, len, data, fetch_mmio_map(addr));
+  fprintf(stderr, "Writing data %08x of length %d to MMIO %08x\n", data, len,
+          addr);
 }
