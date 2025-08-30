@@ -91,7 +91,7 @@ int test_sprintf() {
   unsigned long long b = 0x12345abcdef;
   const char *s = "foobar";
 
-  printf("a is %+04d\nb is %#016llx\ns is %s\n", a, b, s);
+  sprintf(x, "a is %+04d\nb is %#018llx\ns is %s\n", a, b, s);
   MY_RANGE(x, "a is +042\nb is 0x0000012345abcdef\ns is foobar\n", 0, 42);
   return 0;
 }
