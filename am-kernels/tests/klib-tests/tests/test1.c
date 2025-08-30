@@ -66,6 +66,14 @@ int test_memmove() {
   return 0;
 }
 
+int test_memset() {
+  int x[8] = {1, 2, 3, 4, 5, 6, 7, 8};
+  const int r1[8] = {-1, -1, -1, 4, 5, 6, 7, 8};
+  memset(x, -1, 3 * sizeof(int));
+  MY_RANGE(x, r1, 0, 8);
+  return 0;
+}
+
 int test_strcat() {
   char x[8] = "abcd";
   char y[4] = "efg";
