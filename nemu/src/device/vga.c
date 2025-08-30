@@ -99,6 +99,8 @@ void destroy_vga() {
     SDL_DestroyTexture(texture);
   if (renderer)
     SDL_DestroyRenderer(renderer);
-  if (window)
+  if (window) {
     SDL_DestroyWindow(window);
+    SDL_QuitSubSystem(SDL_INIT_VIDEO);
+  };
 }
