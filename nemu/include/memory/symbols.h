@@ -1,7 +1,6 @@
 #ifndef __SYMBOLS_H__
 #define __SYMBOLS_H__
 #include "common.h"
-#define MAX_STACK_FTRACE 4096
 
 typedef struct {
   char *name;
