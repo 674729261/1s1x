@@ -15,6 +15,7 @@
 #include "common.h"
 #include "local-include/reg.h"
 #include "macro.h"
+#include "memory/symbols.h"
 #include "ringbuffer.h"
 #include <cpu/cpu.h>
 #include <cpu/decode.h>
@@ -111,9 +112,31 @@ static void decode_operand(Decode *s, int *rd, word_t *src1, word_t *src2,
   }
 }
 
+static void several_spaces(unsigned cnt) {
+  while (cnt--)
+    fputc(' ', stderr);
+}
+#ifdef CONFIG_FTRACER
+static void check_jal(vaddr_t from_pc, vaddr_t to_pc, uint32_t inst) {
+  uint32_t rd = BITS(inst, 11, 7);
+  if (rd == 1) {
+    several_spaces(cnt_stack_ftrace * 2);
+    int to_symbol = find_symbol(to_pc);
+    fprintf(stderr, "call [%s@0x%08x]\n", find_symbol_name(to_symbol), from_pc);
+    push_stack_ftrace(from_pc, to_symbol);
+
+  } else if (inst == 0x00008067) {
+    Call ret_call = pop_stack_ftrace();
+    several_spaces(cnt_stack_ftrace * 2);
+    fprintf(stderr, "ret  [%s]\n", find_symbol_name(ret_call.symbol));
+  }
+}
+#endif
+
 static int decode_exec(Decode *s) {
   s->dnpc = s->snpc;
-  pushRingBuffer(&inst_buffer, s->pc, s->isa.inst);
+  IFDEF(CONFIG_INST_RINGBUFFER,
+        pushRingBuffer(&inst_buffer, s->pc, s->isa.inst));
 #define INSTPAT_INST(s) ((s)->isa.inst)
 #define INSTPAT_MATCH(s, name, type, ... /* execute body */)                   \
   {                                                                            \
@@ -203,11 +226,12 @@ static int decode_exec(Decode *s) {
           R(rd) = Mr(src1 + imm, 2));
   INSTPAT("??????? ????? ????? 010 ????? 00000 11", lw, I,
           R(rd) = Mr(src1 + imm, 4));
-
   INSTPAT("??????? ????? ????? ??? ????? 11011 11", jal, J, R(rd) = s->snpc;
-          s->dnpc = s->pc + imm);
+          s->dnpc = s->pc + imm;
+          IFDEF(CONFIG_FTRACER, check_jal(s->pc, s->dnpc, s->isa.inst)));
   INSTPAT("??????? ????? ????? 000 ????? 11001 11", jalr, I, R(rd) = s->snpc;
-          s->dnpc = (src1 + imm) & (~0x1u));
+          s->dnpc = (src1 + imm) & (~0x1u);
+          IFDEF(CONFIG_FTRACER, check_jal(s->pc, s->dnpc, s->isa.inst)));
   INSTPAT("??????? ????? ????? 001 ????? 11000 11", bne, B,
           if (src1 != src2) s->dnpc = s->pc + imm);
   INSTPAT("??????? ????? ????? 000 ????? 11000 11", beq, B,

@@ -140,6 +140,10 @@ config MTRACER
   bool "Memory Tracer"
   default n
 
+config FTRACER
+  bool "Function Tracer"
+  default n
+
 config INST_RINGBUFFER
   bool "Instruction Ring Buffer"
 
