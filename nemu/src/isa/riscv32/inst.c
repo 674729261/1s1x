@@ -119,9 +119,11 @@ static void several_spaces(unsigned cnt) {
 #ifdef CONFIG_FTRACER
 static void check_jal(vaddr_t from_pc, vaddr_t to_pc, uint32_t inst) {
   uint32_t rd = BITS(inst, 11, 7);
+  int func_from = find_symbol(from_pc);
+  int func_to = find_symbol(to_pc);
   if (rd == 1) {
     several_spaces(cnt_stack_ftrace * 2);
-    int to_symbol = find_symbol(to_pc);
+    int to_symbol = func_to;
     fprintf(stderr, "call [%s@0x%08x]\n", find_symbol_name(to_symbol), from_pc);
     push_stack_ftrace(from_pc, to_symbol);
 
@@ -129,6 +131,9 @@ static void check_jal(vaddr_t from_pc, vaddr_t to_pc, uint32_t inst) {
     Call ret_call = pop_stack_ftrace();
     several_spaces(cnt_stack_ftrace * 2);
     fprintf(stderr, "ret  [%s]\n", find_symbol_name(ret_call.symbol));
+  } else if (func_to != func_from) {
+    several_spaces(cnt_stack_ftrace * 2);
+    fprintf(stderr, "into [%s]\n", find_symbol_name(func_to));
   }
 }
 #endif
