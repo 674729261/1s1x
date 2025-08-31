@@ -22,8 +22,10 @@ public:
   Interrupt step(std::size_t c) override final;
   int instrCount() override final;
 
-  void writeMemory(int waddr, int wdata, char wmask);
-  uint32_t readMemory(int raddr);
+  void writeMemory(int waddr, int wdata, char wmask) override final;
+  uint32_t readMemory(int raddr) override final;
+
+  void syncCPUState() override final;
 
   friend void trap(int signal);
   friend int pmem_read(int raddr);
@@ -42,6 +44,7 @@ private:
   int trapped;
   int inst_count;
 
+private:
   void writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata);
   std::optional<uint32_t> readMMIO(int raddr);
 

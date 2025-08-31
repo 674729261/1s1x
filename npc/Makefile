@@ -13,20 +13,20 @@ VERILATORFLAGS += --cc --exe --build --trace -j 16
 VERILATOR_DISABLE_WARNINGS += -Wno-UNUSEDSIGNAL -Wno-DECLFILENAME -Wno-SYNCASYNCNET
 
 
-all: $(SVSRC) $(STD_MODULE)
+all: $(SVSRC)
 	$(VERILATOR) $(VERILATORFLAGS) \
 	--top-module $(TOPNAME) \
-	$(CXXFLAGS) -Wall $(STD_MODULE) $(CSRC) $(SVSRC) $(VSRC) \
+	$(CXXFLAGS) -Wall $(CSRC) $(SVSRC) $(VSRC) \
 	$(VERILATOR_DISABLE_WARNINGS)
 
 $(SVSRC): $(CHISELSRC)
 	sbt run
 
-CYCLES ?= -1
+PROG ?= test_progs/add-minirv-npc.bin
 MEM_SIZE ?= 134217728
 sim: all
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
-	$(BIN) --image $(PROG) --cycles $(CYCLES) --mem_size $(MEM_SIZE)
+	$(BIN) --image $(PROG) --mem_size $(MEM_SIZE)
 
 clean:
 	rm -rf obj_dir

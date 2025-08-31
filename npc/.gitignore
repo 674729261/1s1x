@@ -27,3 +27,4 @@ generated_svsrc/
 !prog/*.data
 !csrc/*.*
 !include/**/*
+!test_progs/*
