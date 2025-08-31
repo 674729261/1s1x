@@ -45,6 +45,7 @@ void simulate(std::size_t max_cycles) {
       }
     }
   } catch (const std::exception &err) {
+    emu = nullptr;
     cerr << err.what() << std::endl;
     exit(1);
   }
