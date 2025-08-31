@@ -37,9 +37,9 @@ void simulate(std::size_t max_cycles) {
       auto state = emu->step(max_cycles);
       if (state == RISCV32::Interrupt::EBREAK) {
         if (process_trap()) {
-          println(cerr, "HIT GOOD TRAP");
+          println(clog, "HIT GOOD TRAP");
         } else {
-          println(cerr, "HIT BAD TRAP");
+          println(clog, "HIT BAD TRAP");
         }
         break;
       }

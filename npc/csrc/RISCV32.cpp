@@ -2,6 +2,8 @@
 #include <filesystem>
 #include <format>
 #include <fstream>
+#include <iostream>
+#include <ostream>
 #include <stdexcept>
 #include <string_view>
 
@@ -24,6 +26,7 @@ RISCV32::RISCV32(size_t MemSize, std::string_view program, addr_t init_pc) {
                    sizeof(uint32_t));
     curpos++;
   }
+  std::println(std::clog, "Loaded {} instructions", curpos);
   cpu.pc = init_pc;
   prog_file.close();
 }
