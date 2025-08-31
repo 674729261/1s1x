@@ -1,6 +1,5 @@
 #pragma once
 #include "../Simulators/RISCV32.h"
-#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
@@ -30,4 +29,5 @@ private:
   CommandState help(const std::vector<std::string> &params);
   CommandState step(const std::vector<std::string> &params);
   CommandState run(const std::vector<std::string> &params);
+  CommandState quit(const std::vector<std::string> &params);
 };

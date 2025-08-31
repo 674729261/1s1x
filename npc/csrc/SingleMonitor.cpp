@@ -27,7 +27,10 @@ const SingleMonitor::CommandItem SingleMonitor::command_list[] = {
      .description = "Step several cycles; s [cnt=1]"},
     {.command = "c",
      .func = &SingleMonitor::run,
-     .description = "Continue the program"}};
+     .description = "Continue the program"},
+    {.command = "q",
+     .func = &SingleMonitor::quit,
+     .description = "Quit the simulation"}};
 
 SingleMonitor::SingleMonitor(std::unique_ptr<RISCV32> &emu, bool batch)
     : emu(emu), batch(batch) {}
@@ -133,6 +136,14 @@ SingleMonitor::CommandState SingleMonitor::run(const vector<string> &params) {
   }
   emu->step(-1);
   return CommandState::NONE;
+}
+
+SingleMonitor::CommandState SingleMonitor::quit(const vector<string> &params) {
+  if (!params.empty()) {
+    println("Too many arguments. Useage : q");
+    return CommandState::NONE;
+  }
+  return CommandState::QUIT;
 }
 
 SingleMonitor::~SingleMonitor() { emu = nullptr; }
