@@ -24,7 +24,7 @@ $(SVSRC): $(CHISELSRC)
 
 sim: all
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
-	$(BIN) $(PROG) $(TYPE)
+	$(BIN) $(PROG)
 
 clean:
 	rm -rf obj_dir
