@@ -8,9 +8,10 @@
 using std::optional;
 using std::println, std::print;
 
-template <class T> inline std::optional<T> to_number(std::string_view p) {
+template <class T>
+inline std::optional<T> to_number(std::string_view p, int base = 10) {
   T ret = -1;
-  auto [ptr, ec] = std::from_chars(p.begin(), p.end(), ret);
+  auto [ptr, ec] = std::from_chars(p.begin(), p.end(), ret, base);
   if (ec == std::errc::result_out_of_range) {
     println("Argument is too large : {}", p);
     return std::nullopt;
