@@ -17,7 +17,7 @@ using std::unique_ptr, std::make_unique;
 
 unique_ptr<NPCemu> emu;
 
-extern "C" void trap(int signal) { emu->trapped = 1; }
+extern "C" void trap(int signal) { emu->trapped = signal; }
 extern "C" int pmem_read(int raddr) { return emu->readMemory(raddr); }
 extern "C" void pmem_write(int waddr, int wdata, char wmask) {
   emu->writeMemory(waddr, wdata, wmask);
