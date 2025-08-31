@@ -21,10 +21,12 @@ all: $(SVSRC) $(STD_MODULE)
 
 $(SVSRC): $(CHISELSRC)
 	sbt run
-
+	
+CYCLES ?= -1
+MEM_SIZE ?= 16777216
 sim: all
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
-	$(BIN) $(PROG)
+	$(BIN) --image $(PROG) --cycles $(CYCLES) --mem_size $(MEM_SIZE)
 
 clean:
 	rm -rf obj_dir
