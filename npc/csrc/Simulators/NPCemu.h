@@ -36,7 +36,9 @@ private:
   const addr_t RTCAddr = deviceBase + 0x0000048u;
   const addr_t RTCAddrEnd = RTCAddr + 0x8u;
   const addr_t SerialPort = (deviceBase + 0x00003f8);
+
   TOP_NAME dut;
+
   int trapped;
   int inst_count;
 

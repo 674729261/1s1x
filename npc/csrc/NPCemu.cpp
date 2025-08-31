@@ -8,7 +8,7 @@
 #include <stdexcept>
 #include <string_view>
 NPCemu::NPCemu(size_t MemSize, std::string_view program)
-    : RISCV32(MemSize, program, PC_Init), dut(nullptr, "DUT"), trapped(0),
+    : RISCV32(MemSize, program, PC_Init), dut("DUT"), trapped(0),
       inst_count(0) {}
 
 RISCV32::CPU_State NPCemu::getCPUState() { return cpu; }

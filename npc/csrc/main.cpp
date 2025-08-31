@@ -32,7 +32,7 @@ bool process_trap() {
 
 void simulate(std::size_t max_cycles) {
   try {
-    emu.reset();
+    emu->reset();
     while (true) {
       auto state = emu->step(max_cycles);
       if (state == RISCV32::Interrupt::EBREAK) {
