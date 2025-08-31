@@ -8,7 +8,7 @@ BIN = ./obj_dir/V$(TOPNAME)
 
 VERILATOR = verilator
 
-CXXFLAGS += -CFLAGS "-I../include -std=c++23" -CFLAGS -DTOP_NAME="\"V$(TOPNAME)\""
+CXXFLAGS += -CFLAGS "-O3 -I../include -std=c++23" -CFLAGS -DTOP_NAME="\"V$(TOPNAME)\""
 VERILATORFLAGS += --cc --exe --build --trace -j 16 
 VERILATOR_DISABLE_WARNINGS += -Wno-UNUSEDSIGNAL -Wno-DECLFILENAME -Wno-SYNCASYNCNET
 
@@ -21,7 +21,7 @@ all: $(SVSRC) $(STD_MODULE)
 
 $(SVSRC): $(CHISELSRC)
 	sbt run
-	
+
 CYCLES ?= -1
 MEM_SIZE ?= 16777216
 sim: all
