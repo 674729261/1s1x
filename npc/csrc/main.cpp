@@ -2,10 +2,15 @@
 #include <SDL2/SDL.h>
 #include <VCPU.h>
 #include <VCPU___024root.h>
+#include <fstream>
 #include <iostream>
+#include <ostream>
 #include <print>
+#include <stdexcept>
 
 using std::cerr;
+using std::ifstream;
+using std::ios;
 using std::println;
 
 const size_t Memory_Size = 1 << 24;
@@ -71,27 +76,23 @@ extern "C" void pmem_write(int waddr, int wdata, char wmask) {
 
 int main(int argc, char **argv) {
   if (argc < 3) {
-    println("Usage: {} [prog] [a/b] (num of max cycles)\n", argv[0]);
+    println("Usage: {} [prog] (num of max cycles)\n", argv[0]);
     exit(0);
   }
-  FILE *fp = fopen(argv[1], argv[2][0] == 'a' ? "r" : "rb");
-  if (!fp) {
-    perror("Failed to open program file");
-    return 1;
+  std::ifstream prog_file(argv[1], ios::in | ios::binary);
+  if (!prog_file.good()) {
+    throw std::runtime_error(
+        std::format("Failed to open program file {}", argv[1]));
   }
   uint32_t curpos = 0;
-  if (argv[2][0] == 'a')
-    while (fscanf(fp, "%x", &M[curpos++]) != EOF)
-      ;
-  else
-    while (!feof(fp)) {
-      fread(M + curpos, sizeof(uint32_t), 1, fp);
-      curpos++;
-    }
+  while (!prog_file.eof()) {
+    prog_file.read((char *)(M + curpos), sizeof(uint32_t));
+    curpos++;
+  }
   println(cerr, "Loaded {} words", curpos);
-  fclose(fp);
+  prog_file.close();
   design_init();
-  const unsigned int max_cycle = argc >= 4 ? atoi(argv[3]) : UINT32_MAX;
+  const unsigned int max_cycle = argc >= 4 ? atoi(argv[2]) : UINT32_MAX;
   unsigned int cur_cycle;
   for (cur_cycle = 0; cur_cycle < max_cycle; cur_cycle++) {
     pc = dut.io_pc;
