@@ -53,7 +53,7 @@ void SingleMonitor::start() {
       } else {
         println(std::clog, "HIT BAD TRAP");
       }
-      break;
+      continue;
     }
     if (state == CommandState::QUIT)
       break;
