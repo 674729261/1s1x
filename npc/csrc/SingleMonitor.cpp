@@ -76,6 +76,7 @@ SingleMonitor::query_command(this SingleMonitor &self) {
       head = *it;
     else
       params.push_back(*it);
+    it++;
   }
   if (!head.empty()) {
     for (const auto &item : command_list) {
