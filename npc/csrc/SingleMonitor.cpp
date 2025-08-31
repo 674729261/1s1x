@@ -1,7 +1,9 @@
 #include "Monitor/SingleMonitor.h"
 #include "Simulators/RISCV32.h"
+#include "utils.h"
 #include <algorithm>
 #include <charconv>
+#include <cstdint>
 #include <cstdio>
 #include <iostream>
 #include <ostream>
@@ -111,18 +113,14 @@ SingleMonitor::CommandState SingleMonitor::step(const vector<string> &params) {
   }
   int cnt = 1;
   if (params.size() == 1) {
-    std::string_view p = params.front();
-    auto [ptr, ec] = std::from_chars(p.begin(), p.end(), cnt);
-    if (ec == std::errc::result_out_of_range) {
-      println("Argument is too large : {}", p);
+    auto ret = to_number<int>(params.front());
+    if (!ret.has_value())
       return CommandState::NONE;
-    } else if (ptr != p.end() || ec != std::errc()) {
-      println("Invalid argument : {}", p);
-      return CommandState::NONE;
-    } else if (cnt < 0) {
-      println("Number of cycles must be non-negative : {}", p);
+    if (ret.value() < 0) {
+      println("Number of cycles must be non-negative : {}", params.front());
       return CommandState::NONE;
     }
+    cnt = ret.value();
   }
   if (emu->getEMUState() != RISCV32::Interrupt::NONE) {
     println("Program has been terminated");
@@ -165,6 +163,37 @@ SingleMonitor::info(const std::vector<std::string> &params) {
     }
   } else {
     println("Useage : info {{r}}");
+  }
+  return CommandState::NONE;
+}
+
+SingleMonitor::CommandState
+SingleMonitor::scan(const std::vector<std::string> &params) {
+  if (params.size() != 2) {
+    println("Useage : x [size] [addr]");
+    return CommandState::NONE;
+  }
+  int sz;
+  uint32_t addr;
+  auto ret = to_number<int>(params.front());
+  if (!ret.has_value())
+    return CommandState::NONE;
+  if (ret.value() < 0) {
+    println("Size must be non-negative : {}", params.front());
+    return CommandState::NONE;
+  }
+  sz = ret.value();
+  auto ret2 = to_number<long long>(params[1]);
+  if (!ret2.has_value())
+    return CommandState::NONE;
+  if (ret2.value() < 0 || ret2.value() >= UINT32_MAX) {
+    println("Address must be non-negative and less than {:x} : {} ", UINT32_MAX,
+            params[1]);
+    return CommandState::NONE;
+  }
+  addr = ret2.value();
+  for (int i = 0; i < sz; i++) {
+    println("{} : {}", addr + i, emu->readMemory(addr + i));
   }
   return CommandState::NONE;
 }
