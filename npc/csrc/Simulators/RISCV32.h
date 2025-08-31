@@ -25,11 +25,11 @@ public:
   virtual Interrupt step(std::size_t c) = 0;
   virtual int instrCount() = 0;
   virtual void syncCPUState() = 0;
-  Interrupt getEMUState() { return state; }
+  Interrupt getEMUState() { return EMUstate; }
   virtual ~RISCV32() = default;
 
 protected:
   std::vector<uint32_t> M;
   CPU_State cpu;
-  Interrupt state;
+  Interrupt EMUstate;
 };

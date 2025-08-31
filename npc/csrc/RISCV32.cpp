@@ -8,7 +8,7 @@
 #include <string_view>
 
 RISCV32::RISCV32(size_t MemSize, std::string_view program, addr_t init_pc)
-    : state(Interrupt::NONE) {
+    : EMUstate(Interrupt::NONE) {
   using std::ifstream;
   using std::ios;
   M.resize(MemSize);

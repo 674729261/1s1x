@@ -46,7 +46,7 @@ RISCV32::Interrupt NPCemu::step(std::size_t c) {
     dut.eval();
     inst_count++;
     if (trapped) {
-      state = RISCV32::Interrupt::EBREAK;
+      state = EMUstate = RISCV32::Interrupt::EBREAK;
       break;
     }
   }
