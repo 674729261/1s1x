@@ -2,6 +2,7 @@
 #include "Simulators/RISCV32.h"
 #include <algorithm>
 #include <charconv>
+#include <cstdio>
 #include <iostream>
 #include <ostream>
 #include <print>
@@ -43,6 +44,7 @@ void SingleMonitor::start() {
       emu->step(-1);
     else
       state = query_command();
+    println(std::cerr, "!!!!!");
     if (emu->getEMUState() == RISCV32::Interrupt::EBREAK) {
       if (process_trap()) {
         println(std::clog, "HIT GOOD TRAP");
