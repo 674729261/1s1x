@@ -33,7 +33,7 @@ const SingleMonitor::CommandItem SingleMonitor::command_list[] = {
      .func = &SingleMonitor::quit,
      .description = "Quit the simulation"},
     {.command = "info",
-     .func = &SingleMonitor::quit,
+     .func = &SingleMonitor::info,
      .description = "Check registers"}};
 
 SingleMonitor::SingleMonitor(std::unique_ptr<RISCV32> &emu, bool batch)
@@ -87,7 +87,6 @@ SingleMonitor::query_command(this SingleMonitor &self) {
   }
   if (!head.empty()) {
     for (const auto &item : command_list) {
-      println("{}", item.command);
       if (item.command == head) {
         return (self.*item.func)(params);
       }
