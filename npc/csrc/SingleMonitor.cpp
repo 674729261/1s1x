@@ -44,7 +44,7 @@ void SingleMonitor::start() {
       emu->step(-1);
     else
       state = query_command();
-    println(std::cerr, "!!!!!");
+    println(std::cerr, "{}", emu->getEMUState() == RISCV32::Interrupt::EBREAK);
     if (emu->getEMUState() == RISCV32::Interrupt::EBREAK) {
       if (process_trap()) {
         println(std::clog, "HIT GOOD TRAP");
