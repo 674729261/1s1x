@@ -1,11 +1,11 @@
 #include "ports.h"
 #include <chrono>
-#include <cstdint>
-#include <cstdio>
+#include <format>
+#include <iostream>
 #include <optional>
 
 using namespace std::chrono;
-
+using std::cout;
 struct {
   uint32_t RTC_reg[2];
   steady_clock::time_point last_time;
@@ -39,7 +39,7 @@ int write_mmio(uint32_t addr, uint32_t mask32, uint32_t wdata) {
   if (addr == SERIAL_PORT) {
     if (mask32 != 0xFF)
       return -1;
-    fputc(wdata, stdout);
+    cout.put(wdata);
     return 0;
   }
   return -1;

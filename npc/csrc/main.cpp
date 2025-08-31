@@ -1,13 +1,12 @@
+#include "ports.h"
 #include <SDL2/SDL.h>
 #include <VCPU.h>
 #include <VCPU___024root.h>
-#include <cassert>
-#include <cstddef>
-#include <cstdint>
-#include <cstdio>
-#include <cstdlib>
+#include <iostream>
+#include <print>
 
-#include "ports.h"
+using std::cerr;
+using std::println;
 
 const size_t Memory_Size = 1 << 24;
 uint32_t pc;
@@ -59,11 +58,11 @@ extern "C" void pmem_write(int waddr, int wdata, char wmask) {
         M[addr] |= wdata & mask32;
       } else if (waddr >= DEVICE_BASE) {
         if (write_mmio(waddr & ~0x3, mask32, wdata) < 0) {
-          printf("waddr : %08x invalid device\n", waddr);
+          println(cerr, "waddr : {:08x} invalid device\n", waddr);
           exit(-1);
         }
       } else {
-        printf("waddr : %08x invalid address\n", waddr);
+        println(cerr, "waddr : {:08x} invalid address\n", waddr);
         exit(-1);
       }
     }
@@ -72,7 +71,7 @@ extern "C" void pmem_write(int waddr, int wdata, char wmask) {
 
 int main(int argc, char **argv) {
   if (argc < 3) {
-    printf("Usage: %s [prog] [a/b] (num of max cycles)\n", argv[0]);
+    println("Usage: {} [prog] [a/b] (num of max cycles)\n", argv[0]);
     exit(0);
   }
   FILE *fp = fopen(argv[1], argv[2][0] == 'a' ? "r" : "rb");
@@ -89,7 +88,7 @@ int main(int argc, char **argv) {
       fread(M + curpos, sizeof(uint32_t), 1, fp);
       curpos++;
     }
-  printf("Loaded %d words\n", curpos);
+  println(cerr, "Loaded {} words", curpos);
   fclose(fp);
   design_init();
   const unsigned int max_cycle = argc >= 4 ? atoi(argv[3]) : UINT32_MAX;
@@ -97,7 +96,7 @@ int main(int argc, char **argv) {
   for (cur_cycle = 0; cur_cycle < max_cycle; cur_cycle++) {
     pc = dut.io_pc;
     if (pc < PC_Init) {
-      printf("pc : %08x out of range\n", pc);
+      println(cerr, "pc : {:08x} out of range", pc);
       exit(-1);
     }
     dut.io_instr = M[(pc - PC_Init) / 4];
@@ -107,9 +106,9 @@ int main(int argc, char **argv) {
     dut.eval();
 
     if (trapped) {
-      printf("EBREAK, a0 = %08x, pc = %08x, cycle = %d\n",
-             dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_9_r, pc,
-             cur_cycle);
+      println("EBREAK, a0 = {:08x}, pc = {:08x}, cycle = {}",
+              dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_9_r, pc,
+              cur_cycle);
       if (dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_9_r == 0) {
         puts("HIT GOOD TRAP");
         return 0;
@@ -121,7 +120,7 @@ int main(int argc, char **argv) {
     }
   }
   if (cur_cycle == max_cycle) {
-    printf("Fail to halt, Abort at pc = %08x\n", dut.io_pc);
+    println("Fail to halt, Abort at pc = {:08x}", dut.io_pc);
     return -1;
   }
 }
