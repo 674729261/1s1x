@@ -24,9 +24,12 @@ public:
   virtual void reset() = 0;
   virtual Interrupt step(std::size_t c) = 0;
   virtual int instrCount() = 0;
+  virtual void syncCPUState() = 0;
+  Interrupt getEMUState() { return state; }
   virtual ~RISCV32() = default;
 
 protected:
   std::vector<uint32_t> M;
   CPU_State cpu;
+  Interrupt state;
 };

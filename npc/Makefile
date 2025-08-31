@@ -23,11 +23,10 @@ $(SVSRC): $(CHISELSRC)
 	sbt run
 
 PROG ?= test_progs/add-minirv-npc.bin
-CYCLES ?= -1
 MEM_SIZE ?= 134217728
 sim: all
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
-	$(BIN) --image $(PROG) --cycles $(CYCLES) --mem_size $(MEM_SIZE)
+	$(BIN) --image $(PROG) --mem_size $(MEM_SIZE)
 
 clean:
 	rm -rf obj_dir

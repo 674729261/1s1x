@@ -25,6 +25,8 @@ public:
   void writeMemory(int waddr, int wdata, char wmask) override final;
   uint32_t readMemory(int raddr) override final;
 
+  void syncCPUState() override final;
+
   friend void trap(int signal);
   friend int pmem_read(int raddr);
   friend void pmem_write(int waddr, int wdata, char wmask);

@@ -29,6 +29,7 @@ void NPCemu::reset() {
   dut.clock = 0;
   dut.reset = 0;
   dut.eval();
+  syncCPUState();
 }
 
 RISCV32::Interrupt NPCemu::step(std::size_t c) {
@@ -49,7 +50,11 @@ RISCV32::Interrupt NPCemu::step(std::size_t c) {
       break;
     }
   }
+  syncCPUState();
+  return state;
+}
 
+void NPCemu::syncCPUState() {
   cpu.gpr[0] = 0;
   cpu.gpr[1] = dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_0_r;
   cpu.gpr[2] = dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_1_r;
@@ -83,8 +88,8 @@ RISCV32::Interrupt NPCemu::step(std::size_t c) {
   cpu.gpr[30] = dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_29_r;
   cpu.gpr[31] = dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_30_r;
   cpu.pc = dut.io_pc;
-  return state;
 }
+
 int NPCemu::instrCount() { return inst_count; }
 
 void NPCemu::writeMemory(int waddr, int wdata, char wmask) {

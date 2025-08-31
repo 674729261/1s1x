@@ -3,38 +3,31 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <vector>
 class SingleMonitor {
 public:
-  SingleMonitor(std::unique_ptr<RISCV32> dut, unsigned int max_cycles,
-                bool batch = false);
+  SingleMonitor(std::unique_ptr<RISCV32> &dut, bool batch = false);
 
   void start();
+  ~SingleMonitor();
 
 private:
-  unsigned int max_cycles;
-  std::unique_ptr<RISCV32> dut;
+  std::unique_ptr<RISCV32> &emu;
   bool batch;
+
+  enum class CommandState { NONE, QUIT };
 
   struct CommandItem {
     std::string command;
-    int (SingleMonitor::*func)();
+    CommandState (SingleMonitor::*func)(const std::vector<std::string> &params);
     std::string description;
   };
-  const CommandItem command_list[3] = {
-      {.command = "help",
-       .func = &SingleMonitor::help,
-       .description = "Show descriptions of all commands"},
-      {.command = "s",
-       .func = &SingleMonitor::step,
-       .description = "Step several cycles; s [cnt=1]"},
-      {.command = "c",
-       .func = &SingleMonitor::run,
-       .description = "Continue the program"}};
+  static const CommandItem command_list[];
 
 private:
-  int help();
-  int step();
-  int run();
-
-  void query_command();
+  bool process_trap();
+  CommandState query_command(this SingleMonitor &self);
+  CommandState help(const std::vector<std::string> &params);
+  CommandState step(const std::vector<std::string> &params);
+  CommandState run(const std::vector<std::string> &params);
 };
