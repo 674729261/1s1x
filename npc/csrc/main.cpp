@@ -74,7 +74,7 @@ extern "C" void pmem_write(int waddr, int wdata, char wmask) {
 }
 
 int main(int argc, char **argv) {
-  if (argc < 3) {
+  if (argc < 2) {
     std::println("Usage: {} [prog] (num of max cycles)\n", argv[0]);
     exit(0);
   }
