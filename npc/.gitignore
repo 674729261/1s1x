@@ -25,3 +25,4 @@ target
 generated_svsrc/
 !prog/*.data
 !csrc/*.*
+!include/**/*

@@ -2,16 +2,15 @@
 #include <SDL2/SDL.h>
 #include <VCPU.h>
 #include <VCPU___024root.h>
+#include <format>
 #include <fstream>
 #include <iostream>
 #include <ostream>
 #include <print>
 #include <stdexcept>
 
-using std::cerr;
 using std::ifstream;
 using std::ios;
-using std::println;
 
 const size_t Memory_Size = 1 << 24;
 uint32_t pc;
@@ -63,12 +62,12 @@ extern "C" void pmem_write(int waddr, int wdata, char wmask) {
         M[addr] |= wdata & mask32;
       } else if (waddr >= DEVICE_BASE) {
         if (write_mmio(waddr & ~0x3, mask32, wdata) < 0) {
-          println(cerr, "waddr : {:08x} invalid device\n", waddr);
-          exit(-1);
+          throw std::logic_error(
+              std::format("waddr : {:08x} invalid device", waddr));
         }
       } else {
-        println(cerr, "waddr : {:08x} invalid address\n", waddr);
-        exit(-1);
+        throw std::logic_error(
+            std::format("waddr : {:08x} invalid address", waddr));
       }
     }
   }
@@ -76,7 +75,7 @@ extern "C" void pmem_write(int waddr, int wdata, char wmask) {
 
 int main(int argc, char **argv) {
   if (argc < 3) {
-    println("Usage: {} [prog] (num of max cycles)\n", argv[0]);
+    std::println("Usage: {} [prog] (num of max cycles)\n", argv[0]);
     exit(0);
   }
   std::ifstream prog_file(argv[1], ios::in | ios::binary);
@@ -89,7 +88,7 @@ int main(int argc, char **argv) {
     prog_file.read((char *)(M + curpos), sizeof(uint32_t));
     curpos++;
   }
-  println(cerr, "Loaded {} words", curpos);
+  std::println(std::cerr, "Loaded {} words", curpos);
   prog_file.close();
   design_init();
   const unsigned int max_cycle = argc >= 4 ? atoi(argv[2]) : UINT32_MAX;
@@ -97,8 +96,7 @@ int main(int argc, char **argv) {
   for (cur_cycle = 0; cur_cycle < max_cycle; cur_cycle++) {
     pc = dut.io_pc;
     if (pc < PC_Init) {
-      println(cerr, "pc : {:08x} out of range", pc);
-      exit(-1);
+      throw std::logic_error(std::format("pc : {:08x} out of range", pc));
     }
     dut.io_instr = M[(pc - PC_Init) / 4];
     dut.clock = 0;
@@ -107,9 +105,9 @@ int main(int argc, char **argv) {
     dut.eval();
 
     if (trapped) {
-      println("EBREAK, a0 = {:08x}, pc = {:08x}, cycle = {}",
-              dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_9_r, pc,
-              cur_cycle);
+      std::println("EBREAK, a0 = {:08x}, pc = {:08x}, cycle = {}",
+                   dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_9_r, pc,
+                   cur_cycle);
       if (dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_9_r == 0) {
         puts("HIT GOOD TRAP");
         return 0;
@@ -121,7 +119,7 @@ int main(int argc, char **argv) {
     }
   }
   if (cur_cycle == max_cycle) {
-    println("Fail to halt, Abort at pc = {:08x}", dut.io_pc);
+    std::println("Fail to halt, Abort at pc = {:08x}", dut.io_pc);
     return -1;
   }
 }
