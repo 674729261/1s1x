@@ -136,10 +136,6 @@ menu "Testing and Debugging"
 config WATCHERS
   bool "Watchers"
 
-config DTRACER
-  bool "Device Tracer"
-  default n
-
 config MTRACER
   bool "Memory Tracer"
   default n

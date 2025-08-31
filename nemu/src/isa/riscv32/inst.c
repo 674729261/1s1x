@@ -118,8 +118,6 @@ static void several_spaces(unsigned cnt) {
 }
 #ifdef CONFIG_FTRACER
 static void check_jal(vaddr_t from_pc, vaddr_t to_pc, uint32_t inst) {
-  if (symbols_table.symbol_count == 0)
-    return;
   uint32_t rd = BITS(inst, 11, 7);
   int func_from = find_symbol(from_pc);
   int func_to = find_symbol(to_pc);
