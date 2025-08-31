@@ -61,9 +61,9 @@ int main(int argc, char *argv[]) {
       .default_value(-1)
       .scan<'d', int>();
   program.add_argument("-z", "--mem_size")
-      .help("Size of memory(hex)")
+      .help("Size of memory")
       .default_value(1 << 24)
-      .scan<'x', uint32_t>();
+      .scan<'i', int>();
 
   try {
     program.parse_args(argc, argv);
@@ -74,11 +74,11 @@ int main(int argc, char *argv[]) {
   }
   unsigned int max_cycles = program.get<int>("--cycles");
   string image_path = program.get("--image");
-  uint32_t mem_size = program.get<uint32_t>("--mem_size");
+  int mem_size = program.get<int>("--mem_size");
 
   println(clog, "Image path  : {}", image_path);
   println(clog, "Max cycles  : {}", max_cycles);
-  println(clog, "Memory size : {:x}", mem_size);
+  println(clog, "Memory size : {}", mem_size);
 
   emu = make_unique<NPCemu>(mem_size, image_path);
   simulate(max_cycles);
