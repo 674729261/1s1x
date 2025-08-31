@@ -41,7 +41,6 @@ void simulate(std::size_t max_cycles) {
         } else {
           println(clog, "HIT BAD TRAP");
         }
-        puts("!!!");
         break;
       }
     }
@@ -83,4 +82,5 @@ int main(int argc, char *argv[]) {
 
   emu = make_unique<NPCemu>(mem_size, image_path);
   simulate(max_cycles);
+  emu = nullptr;
 }

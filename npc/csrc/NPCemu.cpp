@@ -39,7 +39,6 @@ RISCV32::Interrupt NPCemu::step(std::size_t c) {
       throw std::logic_error(std::format("pc : {:08x} out of range", pc));
     }
     dut.io_instr = M[(pc - memOffset) / 4];
-    std::println(std::cerr, "inst : {}", dut.io_instr);
     dut.clock = 0;
     dut.eval();
     dut.clock = 1;
