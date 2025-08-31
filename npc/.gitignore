@@ -8,6 +8,7 @@
 !*.sv
 !*.cc
 !*.cpp
+!*.hpp
 !*.scala
 !.gitignore
 !build.sbt

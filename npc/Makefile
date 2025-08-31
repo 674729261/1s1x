@@ -8,7 +8,7 @@ BIN = ./obj_dir/V$(TOPNAME)
 
 VERILATOR = verilator
 
-CXXFLAGS += -CFLAGS -std=c++23 -CFLAGS -DTOP_NAME="\"V$(TOPNAME)\"" -CFLAGS -I./include
+CXXFLAGS += -CFLAGS "-I../include -std=c++23" -CFLAGS -DTOP_NAME="\"V$(TOPNAME)\""
 VERILATORFLAGS += --cc --exe --build --trace -j 16 
 VERILATOR_DISABLE_WARNINGS += -Wno-UNUSEDSIGNAL -Wno-DECLFILENAME -Wno-SYNCASYNCNET
 
