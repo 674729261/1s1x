@@ -195,8 +195,9 @@ SingleMonitor::scan(const std::vector<std::string> &params) {
     return CommandState::NONE;
   }
   addr = ret2.value();
+  addr &= ~0x3;
   for (int i = 0; i < sz; i++) {
-    println("{:08x} : {:08x}", addr + i, emu->readMemory(addr + i));
+    println("{:08x} : {:08x}", addr + i * 4, emu->readMemory(addr + i * 4));
   }
   return CommandState::NONE;
 }
