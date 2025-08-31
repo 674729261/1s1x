@@ -36,7 +36,7 @@ void SingleMonitor::start() {
   emu->reset();
   CommandState state = CommandState::NONE;
   while (true) {
-    if (!batch)
+    if (batch)
       emu->step(-1);
     else
       state = query_command();
