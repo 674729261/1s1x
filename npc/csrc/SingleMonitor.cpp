@@ -36,7 +36,10 @@ const SingleMonitor::CommandItem SingleMonitor::command_list[] = {
      .description = "Quit the simulation"},
     {.command = "info",
      .func = &SingleMonitor::info,
-     .description = "Check registers"}};
+     .description = "Check registers"},
+    {.command = "x",
+     .func = &SingleMonitor::scan,
+     .description = "Scan memory; x [size] [addr]"}};
 
 SingleMonitor::SingleMonitor(std::unique_ptr<RISCV32> &emu, bool batch)
     : emu(emu), batch(batch) {}
