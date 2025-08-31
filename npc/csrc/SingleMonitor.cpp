@@ -87,6 +87,7 @@ SingleMonitor::query_command(this SingleMonitor &self) {
   }
   if (!head.empty()) {
     for (const auto &item : command_list) {
+      println("{}", item.command);
       if (item.command == head) {
         return (self.*item.func)(params);
       }
@@ -151,7 +152,6 @@ SingleMonitor::CommandState SingleMonitor::quit(const vector<string> &params) {
 }
 SingleMonitor::CommandState
 SingleMonitor::info(const std::vector<std::string> &params) {
-  println("!!!!!!!");
   if (params.size() != 1) {
     println("Useage : info {{r}}");
     return CommandState::NONE;
