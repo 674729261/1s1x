@@ -30,4 +30,5 @@ private:
   CommandState step(const std::vector<std::string> &params);
   CommandState run(const std::vector<std::string> &params);
   CommandState quit(const std::vector<std::string> &params);
+  CommandState info(const std::vector<std::string> &params);
 };

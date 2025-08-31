@@ -31,7 +31,10 @@ const SingleMonitor::CommandItem SingleMonitor::command_list[] = {
      .description = "Continue the program"},
     {.command = "q",
      .func = &SingleMonitor::quit,
-     .description = "Quit the simulation"}};
+     .description = "Quit the simulation"},
+    {.command = "info",
+     .func = &SingleMonitor::quit,
+     .description = "Check registers"}};
 
 SingleMonitor::SingleMonitor(std::unique_ptr<RISCV32> &emu, bool batch)
     : emu(emu), batch(batch) {}
@@ -44,7 +47,6 @@ void SingleMonitor::start() {
       emu->step(-1);
     else
       state = query_command();
-    println(std::cerr, "{}", emu->getEMUState() == RISCV32::Interrupt::EBREAK);
     if (emu->getEMUState() == RISCV32::Interrupt::EBREAK) {
       if (process_trap()) {
         println(std::clog, "HIT GOOD TRAP");
@@ -147,5 +149,21 @@ SingleMonitor::CommandState SingleMonitor::quit(const vector<string> &params) {
   }
   return CommandState::QUIT;
 }
-
+SingleMonitor::CommandState
+SingleMonitor::info(const std::vector<std::string> &params) {
+  if (params.size() != 1) {
+    println("Useage : info {{r}}");
+    return CommandState::NONE;
+  }
+  if (params.front() == "r") {
+    for (int i = 0; i < 32; i++) {
+      print("{:4} = {:08x} ", emu->gpr_names[i], emu->getGPR(i));
+      if (i % 8 == 7)
+        println();
+    }
+  } else {
+    println("Useage : info {{r}}");
+  }
+  return CommandState::NONE;
+}
 SingleMonitor::~SingleMonitor() { emu = nullptr; }
