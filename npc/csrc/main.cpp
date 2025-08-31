@@ -30,7 +30,13 @@ int main(int argc, char *argv[]) {
       .default_value(1 << 24)
       .scan<'x', uint32_t>();
 
-  program.parse_args(argc, argv);
+  try {
+    program.parse_args(argc, argv);
+  } catch (const std::exception &err) {
+    std::cerr << err.what() << std::endl;
+    std::cerr << program;
+    return 1;
+  }
   unsigned int max_cycles = program.get<int>("--cycles");
   std::string image_path = program.get("--image");
   uint32_t mem_size = program.get<uint32_t>("--mem_size");
