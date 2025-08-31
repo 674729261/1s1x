@@ -157,7 +157,7 @@ SingleMonitor::info(const std::vector<std::string> &params) {
   }
   if (params.front() == "r") {
     for (int i = 0; i < 32; i++) {
-      print("{:4} = {:08x} ", emu->gpr_names[i], emu->getGPR(i));
+      print("{:3} = {:08x} ", emu->gpr_names[i], emu->getGPR(i));
       if (i % 8 == 7)
         println();
     }
