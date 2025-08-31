@@ -151,6 +151,7 @@ SingleMonitor::CommandState SingleMonitor::quit(const vector<string> &params) {
 }
 SingleMonitor::CommandState
 SingleMonitor::info(const std::vector<std::string> &params) {
+  println("!!!!!!!");
   if (params.size() != 1) {
     println("Useage : info {{r}}");
     return CommandState::NONE;
