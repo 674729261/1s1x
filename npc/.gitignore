@@ -8,6 +8,7 @@
 !*.sv
 !*.cc
 !*.cpp
+!*.hpp
 !*.scala
 !.gitignore
 !build.sbt
@@ -25,3 +26,5 @@ target
 generated_svsrc/
 !prog/*.data
 !csrc/*.*
+!include/**/*
+!test_progs/*

@@ -13,6 +13,8 @@
  * See the Mulan PSL v2 for more details.
  ***************************************************************************************/
 
+#include "difftest-def.h"
+#include "macro.h"
 #include <SDL2/SDL_audio.h>
 #include <device/map.h>
 #include <isa.h>
@@ -68,6 +70,10 @@ word_t map_read(paddr_t addr, int len, IOMap *map) {
   IFDEF(CONFIG_HAS_AUDIO, SDL_LockAudio());
   word_t ret = host_read(map->space + offset, len);
   IFDEF(CONFIG_HAS_AUDIO, SDL_UnlockAudio());
+  IFDEF(CONFIG_DTRACER,
+        fprintf(stderr,
+                "Reading data %08x of length %d from MMIO %08x device %s\n",
+                ret, len, addr, map->name));
   return ret;
 }
 
@@ -78,5 +84,11 @@ void map_write(paddr_t addr, int len, word_t data, IOMap *map) {
   IFDEF(CONFIG_HAS_AUDIO, SDL_LockAudio());
   host_write(map->space + offset, len, data);
   IFDEF(CONFIG_HAS_AUDIO, SDL_UnlockAudio());
+
+  IFDEF(CONFIG_DTRACER,
+        fprintf(stderr,
+                "Writing data %08x of length %d to MMIO %08x device %s\n", data,
+                len, addr, map->name));
+
   invoke_callback(map->callback, offset, len, true);
 }
