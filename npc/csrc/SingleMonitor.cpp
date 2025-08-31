@@ -42,12 +42,14 @@ SingleMonitor::SingleMonitor(std::unique_ptr<RISCV32> &emu, bool batch)
 void SingleMonitor::start() {
   emu->reset();
   CommandState state = CommandState::NONE;
+  bool finished = false;
   while (true) {
     if (batch)
       emu->step(-1);
     else
       state = query_command();
-    if (emu->getEMUState() == RISCV32::Interrupt::EBREAK) {
+    if (!finished && emu->getEMUState() == RISCV32::Interrupt::EBREAK) {
+      finished = true;
       if (process_trap()) {
         println(std::clog, "HIT GOOD TRAP");
       } else {
