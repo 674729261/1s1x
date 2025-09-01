@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cctype>
 #include <charconv>
 #include <optional>
 #include <ostream>
@@ -8,8 +9,12 @@
 using std::optional;
 using std::println, std::print;
 
-template <class T>
-inline std::optional<T> to_number(std::string_view p, int base = 10) {
+template <class T> inline std::optional<T> to_number(std::string_view p) {
+  int base = 10;
+  if (p.size() >= 2 && p[0] == '0' && std::tolower(p[1]) == 'x')
+    base = 16;
+  else if (p.size() > 1 && p[0] == '0')
+    base = 8;
   T ret = -1;
   auto [ptr, ec] = std::from_chars(p.begin(), p.end(), ret, base);
   if (ec == std::errc::result_out_of_range) {
