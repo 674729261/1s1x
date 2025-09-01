@@ -178,7 +178,6 @@ long long Expression::eval_sub(RISCV32 &dut, int l, int r) {
   if (l > r)
     throw std::logic_error("Invalid expression");
   if (l == r) {
-    assert(tokens[l].catagory == TK_CATAGORY_OPERAND);
     if (tokens[l].type == TK_NUMBER)
       return tokens[l].data.value;
     if (tokens[l].type == TK_REGISTER)
