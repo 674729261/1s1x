@@ -190,6 +190,7 @@ long long Expression::eval_sub(RISCV32 &dut, int l, int r) {
       return dut.getGPR(tokens[l].data.regid);
     throw std::logic_error("Invalid expression");
   }
+  println("{}", parentheses[l]);
   if (parentheses[l] == r)
     return eval_sub(dut, l + 1, r - 1);
   int pos_main = main_token(dut, l, r);
