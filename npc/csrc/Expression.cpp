@@ -158,7 +158,7 @@ Expression::generateExpression(std::string_view expr) {
         println("Unpaired parentheses");
         return std::nullopt;
       }
-      parentheses[i] = stack_parentheses.top();
+      parentheses[stack_parentheses.top()] = i;
       stack_parentheses.pop();
     }
   }
