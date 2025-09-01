@@ -187,6 +187,7 @@ long long Expression::eval_sub(RISCV32 &dut, int l, int r) {
   if (parentheses[l] == r)
     return eval_sub(dut, l + 1, r - 1);
   int pos_main = main_token(dut, l, r);
+  println("{}", pos_main);
   if (pos_main == -1) {
     switch (tokens[pos_main].type) {
     case '+':
