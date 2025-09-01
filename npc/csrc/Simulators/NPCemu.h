@@ -15,7 +15,7 @@ class NPCemu : public RISCV32 {
 public:
   NPCemu(size_t MemSize, std::string_view programe);
   CPU_State getCPUState() override final;
-  uint32_t getGPR(int idx) override final;
+
   addr_t getPC() override final;
 
   void reset() override final;

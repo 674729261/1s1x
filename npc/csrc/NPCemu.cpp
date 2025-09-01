@@ -14,10 +14,6 @@ NPCemu::NPCemu(size_t MemSize, std::string_view program)
 
 RISCV32::CPU_State NPCemu::getCPUState() { return cpu; }
 
-uint32_t NPCemu::getGPR(int idx) {
-  assert(idx >= 0 && idx < 32);
-  return cpu.gpr[idx];
-}
 RISCV32::addr_t NPCemu::getPC() { return cpu.pc; }
 
 void NPCemu::reset() {

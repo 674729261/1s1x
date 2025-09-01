@@ -1,10 +1,17 @@
-#include "Expression/Expression.hpp"
+#include "Expression/Expression.h"
+#include "Simulators/RISCV32.h"
 #include "utils.h"
+#include <algorithm>
+#include <cassert>
 #include <iterator>
 #include <optional>
 #include <print>
 #include <regex>
+#include <stack>
+#include <stdexcept>
 #include <string>
+#include <vector>
+
 using std::regex, std::smatch, std::regex_search, std::regex_search;
 
 struct Token {
@@ -84,7 +91,7 @@ Expression::generateExpression(std::string_view expr) {
         switch (tokenTypes[i].type) {
         case TK_NOTYPE:
           break;
-        case TK_NUMBER:
+        case TK_NUMBER: {
           tokens.emplace_back(
               std::string(expr.begin() + pos, expr.begin() + pos + mm.length()),
               tokenTypes[i].type, tokenTypes[i].catagory,
@@ -93,7 +100,35 @@ Expression::generateExpression(std::string_view expr) {
           if (!parsed_value.has_value())
             return std::nullopt;
           tokens.back().data.value = parsed_value.value();
-          break;
+        } break;
+        case TK_REGISTER: {
+          tokens.emplace_back(
+              std::string(expr.begin() + pos, expr.begin() + pos + mm.length()),
+              tokenTypes[i].type, tokenTypes[i].catagory,
+              tokenTypes[i].priotity);
+          int gpr_id = RISCV32::getGPRIDfromName(tokens.back().display);
+          if (gpr_id < 0) {
+            println("Invalid gpr name : {}", tokens.back().display);
+            return std::nullopt;
+          }
+          tokens.back().data.regid = gpr_id;
+        } break;
+        case '+':
+        case '-':
+        case '*': {
+          if (tokens.size() == 0 || tokens.back().type == '(' ||
+              tokens.back().catagory == TK_CATAGORY_OPERATOR ||
+              tokens.back().catagory == TK_CATAGORY_OPERATOR_SINGLE)
+            tokens.emplace_back(std::string(expr.begin() + pos,
+                                            expr.begin() + pos + mm.length()),
+                                tokenTypes[i].type, TK_CATAGORY_OPERATOR_SINGLE,
+                                114514);
+        } // fallthrough
+        default:
+          tokens.emplace_back(
+              std::string(expr.begin() + pos, expr.begin() + pos + mm.length()),
+              tokenTypes[i].type, tokenTypes[i].catagory,
+              tokenTypes[i].priotity);
         }
         pos += mm.length();
         break;
@@ -101,12 +136,134 @@ Expression::generateExpression(std::string_view expr) {
       i++;
     }
     if (!matched) {
-      std::println("Invalid token:");
-      std::println("{}", expr);
+      println("Invalid token:");
+      println("{}", expr);
       while (pos--)
-        std::print(" ");
-      std::println("^");
+        print(" ");
+      println("^");
       return std::nullopt;
     }
   }
+
+  // check parentheses
+  std::vector<int> parentheses(tokens.size());
+  std::stack<int> stack_parentheses;
+  for (int i = 0; i < tokens.size(); i++) {
+    if (tokens[i].type == '(')
+      stack_parentheses.push(i);
+    else if (tokens[i].type == ')') {
+      if (stack_parentheses.empty()) {
+        println("Unpaired parentheses");
+        return std::nullopt;
+      }
+      parentheses[i] = stack_parentheses.top();
+      stack_parentheses.pop();
+    }
+  }
+  if (tokens.empty()) {
+    println("Invalid expression");
+    return std::nullopt;
+  }
+  Expression expression;
+  expression.tokens = std::move(tokens);
+  expression.parentheses = std::move(parentheses);
+  return expression;
+}
+
+long long Expression::eval(RISCV32 &dut) {
+  return eval_sub(dut, 0, tokens.size() - 1);
+}
+long long Expression::eval_sub(RISCV32 &dut, int l, int r) {
+  if (l > r)
+    throw std::logic_error("Invalid expression");
+  if (l == r) {
+    assert(tokens[l].catagory == TK_CATAGORY_OPERAND);
+    if (tokens[l].type == TK_NUMBER)
+      return tokens[l].data.value;
+    if (tokens[l].type == TK_REGISTER)
+      return dut.getGPR(tokens[l].data.regid);
+    throw std::logic_error("Invalid expression");
+  }
+  if (parentheses[l] == r)
+    return eval_sub(dut, l + 1, r - 1);
+  int pos_main = main_token(dut, l, r);
+  if (pos_main == -1) {
+    switch (tokens[pos_main].type) {
+    case '+':
+      return eval_sub(dut, l + 1, r);
+    case '-':
+      return -eval_sub(dut, l + 1, r);
+    case '~':
+      return ~eval_sub(dut, l + 1, r);
+    case '!':
+      return !eval_sub(dut, l + 1, r);
+    case '*':
+      return dut.readMemory(eval_sub(dut, l + 1, r));
+    default:
+      throw std::logic_error("Invalid expression");
+    }
+  }
+  long long LHS = eval_sub(dut, l, pos_main - 1);
+  long long RHS = eval_sub(dut, pos_main + 1, r);
+  switch (tokens[pos_main].type) {
+  case '+':
+    return LHS + RHS;
+  case '-':
+    return LHS - RHS;
+  case '*':
+    return LHS * RHS;
+  case '/':
+    if (RHS == 0)
+      throw std::logic_error("Division by zero");
+    return LHS / RHS;
+  case '%':
+    if (RHS == 0)
+      throw std::logic_error("Division by zero");
+    return LHS % RHS;
+  case '^':
+    return LHS ^ RHS;
+  case '&':
+    return LHS & RHS;
+  case '|':
+    return LHS | RHS;
+  case TK_EQ:
+    return LHS == RHS;
+  case TK_NEQ:
+    return LHS != RHS;
+  case TK_LEQ:
+    return LHS <= RHS;
+  case TK_GEQ:
+    return LHS >= RHS;
+  case '<':
+    return LHS < RHS;
+  case '>':
+    return LHS > RHS;
+  case TK_BOOL_AND:
+    return LHS && RHS;
+  case TK_BOOL_OR:
+    return LHS || RHS;
+  default:
+    throw std::logic_error("Invalid expression");
+  }
+}
+int Expression::main_token(RISCV32 &, int l, int r) {
+  int ret = -1, mn = 99999;
+
+  for (int i = 0; i < tokens.size(); i++) {
+    if (tokens[i].type == '(') {
+      i = parentheses[i];
+      continue;
+    }
+    if (tokens[i].catagory == TK_CATAGORY_OPERATOR &&
+        tokens[i].priority <= mn) {
+      mn = tokens[i].priority;
+      ret = i;
+    }
+  }
+  return ret;
+}
+void Expression::show() {
+  for (const auto &tk : tokens)
+    print("{}", tk.display);
+  println();
 }

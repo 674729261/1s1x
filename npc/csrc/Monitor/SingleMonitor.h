@@ -32,4 +32,5 @@ private:
   CommandState quit(const std::vector<std::string> &params);
   CommandState info(const std::vector<std::string> &params);
   CommandState scan(const std::vector<std::string> &params);
+  CommandState p(const std::vector<std::string> &params);
 };

@@ -1,4 +1,5 @@
 #include "Monitor/SingleMonitor.h"
+#include "Expression/Expression.h"
 #include "Simulators/RISCV32.h"
 #include "utils.h"
 #include <cstdint>
@@ -7,6 +8,7 @@
 #include <ostream>
 #include <print>
 #include <regex>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -34,7 +36,12 @@ const SingleMonitor::CommandItem SingleMonitor::command_list[] = {
      .description = "Check registers"},
     {.command = "x",
      .func = &SingleMonitor::scan,
-     .description = "Scan memory; x [size] [addr]"}};
+     .description = "Scan memory; x [size] [addr]"},
+    {
+        .command = "p",
+        .func = &SingleMonitor::p,
+        .description = "Print infomation; p <expr>",
+    }};
 
 SingleMonitor::SingleMonitor(std::unique_ptr<RISCV32> &emu, bool batch)
     : emu(emu), batch(batch) {}
@@ -196,4 +203,23 @@ SingleMonitor::scan(const std::vector<std::string> &params) {
   }
   return CommandState::NONE;
 }
+
+SingleMonitor::CommandState
+SingleMonitor::p(const std::vector<std::string> &params) {
+  string str = "";
+  for (const string &s : params)
+    str = str + " " + s;
+  auto expr = Expression::generateExpression(str);
+  if (expr.has_value()) {
+    long long value;
+    try {
+      value = expr->eval(*emu);
+      println("{}", value);
+    } catch (std::logic_error e) {
+      println("{}", e.what());
+    }
+  }
+  return CommandState::NONE;
+}
+
 SingleMonitor::~SingleMonitor() { emu = nullptr; }
