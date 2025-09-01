@@ -10,13 +10,16 @@ using std::optional;
 using std::println, std::print;
 
 template <class T> inline std::optional<T> to_number(std::string_view p) {
-  int base = 10;
-  if (p.size() >= 2 && p[0] == '0' && std::tolower(p[1]) == 'x')
+  int base = 10, offset = 0;
+  if (p.size() >= 2 && p[0] == '0' && std::tolower(p[1]) == 'x') {
     base = 16;
-  else if (p.size() > 1 && p[0] == '0')
+    offset = 2;
+  } else if (p.size() > 1 && p[0] == '0') {
     base = 8;
+    offset = 1;
+  }
   T ret = -1;
-  auto [ptr, ec] = std::from_chars(p.begin(), p.end(), ret, base);
+  auto [ptr, ec] = std::from_chars(p.begin() + offset, p.end(), ret, base);
   if (ec == std::errc::result_out_of_range) {
     println("Argument is too large : {}", p);
     return std::nullopt;
