@@ -160,6 +160,10 @@ Expression::generateExpression(std::string_view expr) {
       stack_parentheses.pop();
     }
   }
+  if (!stack_parentheses.empty()) {
+    println("Unpaired parentheses");
+    return std::nullopt;
+  }
   if (tokens.empty()) {
     println("Invalid expression");
     return std::nullopt;
