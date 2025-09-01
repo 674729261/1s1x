@@ -212,7 +212,6 @@ SingleMonitor::p(const std::vector<std::string> &params) {
   auto expr = Expression::generateExpression(str);
 
   if (expr.has_value()) {
-    expr->show();
     long long value;
     try {
       value = expr->eval(*emu);
