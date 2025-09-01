@@ -118,11 +118,13 @@ Expression::generateExpression(std::string_view expr) {
         case '*': {
           if (tokens.size() == 0 || tokens.back().type == '(' ||
               tokens.back().catagory == TK_CATAGORY_OPERATOR ||
-              tokens.back().catagory == TK_CATAGORY_OPERATOR_SINGLE)
+              tokens.back().catagory == TK_CATAGORY_OPERATOR_SINGLE) {
             tokens.emplace_back(std::string(expr.begin() + pos,
                                             expr.begin() + pos + mm.length()),
                                 tokenTypes[i].type, TK_CATAGORY_OPERATOR_SINGLE,
                                 114514);
+            break;
+          }
         } // fallthrough
         default:
           tokens.emplace_back(
