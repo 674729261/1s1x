@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -23,13 +24,15 @@ public:
       "s6", "s7", "s8", "s9", "s10", "s11", "t3", "t4", "t5", "t6"};
 
   static int getGPRIDfromName(std::string_view name) {
-    if (name == "$0")
-      return 0;
     std::string_view remove_dollar(name.begin() + 1, name.end());
     for (int i = 0; i < 32; i++) {
       if (remove_dollar == gpr_names[i])
         return i;
     }
+    if (name == "$0")
+      return 0;
+    if (name == "$pc")
+      return 33;
     return -1;
   }
 
@@ -44,8 +47,11 @@ public:
   virtual void syncCPUState() = 0;
   Interrupt getEMUState() { return EMUstate; }
   uint32_t getGPR(int idx) {
-    assert(idx >= 0 && idx < 32);
-    return cpu.gpr[idx];
+    if (idx >= 0 && idx < 32)
+      return cpu.gpr[idx];
+    if (idx == 33)
+      return cpu.pc;
+    throw std::logic_error("Invalid register");
   }
   virtual ~RISCV32() = default;
 
