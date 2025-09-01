@@ -1,18 +1,15 @@
 #include "Monitor/SingleMonitor.h"
+#include "Expression/Expression.h"
 #include "Simulators/RISCV32.h"
 #include "utils.h"
-#include <algorithm>
-#include <charconv>
 #include <cstdint>
 #include <cstdio>
 #include <iostream>
 #include <ostream>
 #include <print>
 #include <regex>
+#include <stdexcept>
 #include <string>
-#include <string_view>
-#include <system_error>
-#include <utility>
 #include <vector>
 
 using std::cin, std::getline;
@@ -39,7 +36,12 @@ const SingleMonitor::CommandItem SingleMonitor::command_list[] = {
      .description = "Check registers"},
     {.command = "x",
      .func = &SingleMonitor::scan,
-     .description = "Scan memory; x [size] [addr]"}};
+     .description = "Scan memory; x [size] [addr]"},
+    {
+        .command = "p",
+        .func = &SingleMonitor::p,
+        .description = "Print infomation; p <expr>",
+    }};
 
 SingleMonitor::SingleMonitor(std::unique_ptr<RISCV32> &emu, bool batch)
     : emu(emu), batch(batch) {}
@@ -186,7 +188,7 @@ SingleMonitor::scan(const std::vector<std::string> &params) {
     return CommandState::NONE;
   }
   sz = ret.value();
-  auto ret2 = to_number<long long>(params[1], 16);
+  auto ret2 = to_number<long long>(params[1]);
   if (!ret2.has_value())
     return CommandState::NONE;
   if (ret2.value() < 0 || ret2.value() >= UINT32_MAX) {
@@ -201,4 +203,24 @@ SingleMonitor::scan(const std::vector<std::string> &params) {
   }
   return CommandState::NONE;
 }
+
+SingleMonitor::CommandState
+SingleMonitor::p(const std::vector<std::string> &params) {
+  string str = "";
+  for (const string &s : params)
+    str = str + " " + s;
+  auto expr = Expression::generateExpression(str);
+
+  if (expr.has_value()) {
+    long long value;
+    try {
+      value = expr->eval(*emu);
+      println("{}", value);
+    } catch (std::logic_error e) {
+      println("{}", e.what());
+    }
+  }
+  return CommandState::NONE;
+}
+
 SingleMonitor::~SingleMonitor() { emu = nullptr; }
