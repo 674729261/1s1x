@@ -36,6 +36,9 @@ clean:
 	sbt clean
 	rm -f generated_svsrc/*
 
+clean_log:
+	rm -rf log/*
+
 .PHONY: all sim clean
 
 include ../Makefile

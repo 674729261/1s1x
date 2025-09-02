@@ -1,6 +1,7 @@
 #include "Monitor/SingleMonitor.h"
 #include "Expression/Expression.h"
 #include "Simulators/RISCV32.h"
+#include "spdlog/spdlog.h"
 #include "utils.h"
 #include <cstdint>
 #include <cstdio>
@@ -58,9 +59,9 @@ void SingleMonitor::start() {
     if (!finished && emu->getEMUState() == RISCV32::Interrupt::EBREAK) {
       finished = true;
       if (process_trap()) {
-        println(std::clog, "HIT GOOD TRAP");
+        spdlog::info("HIT GOOD TRAP");
       } else {
-        println(std::clog, "HIT BAD TRAP");
+        spdlog::info("HIT BAD TRAP");
       }
       continue;
     }

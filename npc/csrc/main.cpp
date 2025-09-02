@@ -1,6 +1,7 @@
 #include "Monitor/SingleMonitor.h"
 #include "Simulators/NPCemu.h"
 #include "Simulators/RISCV32.h"
+#include "spdlog/common.h"
 #include <VCPU.h>
 #include <argparse/argparse.hpp>
 #include <cstdio>
@@ -65,7 +66,7 @@ int main(int argc, char *argv[]) {
     }
   }
   spdlog::flush_every(std::chrono::seconds(3));
-  spdlog::flush_on(spdlog::level::err);
+  spdlog::flush_on(spdlog::level::warn);
   string image_path = program.get("--image");
   int mem_size = program.get<int>("--mem_size");
   bool batch_mode = program.get<bool>("--batch");
