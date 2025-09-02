@@ -287,14 +287,15 @@ optional<long long> Expression::evalExpression(RISCV32 &dut,
                                                std::string_view expr) {
   auto e = generateExpression(expr);
   long long value;
-  if (e.has_value()) {
-    try {
-      value = e->eval(dut);
-    } catch (std::logic_error e) {
-      println("{}", e.what());
-      println("Evaluation failed", e.what());
-      return std::nullopt;
-    }
+  if (!e.has_value())
+    return std::nullopt;
+
+  try {
+    value = e->eval(dut);
+  } catch (std::logic_error e) {
+    println("{}", e.what());
+    println("Evaluation failed", e.what());
   }
+
   return value;
 }
