@@ -8,7 +8,6 @@
 #include <ostream>
 #include <print>
 #include <regex>
-#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -126,8 +125,8 @@ SingleMonitor::CommandState SingleMonitor::step(const vector<string> &params) {
     auto ret = to_number<int>(params.front());
     if (!ret.has_value())
       return CommandState::NONE;
-    if (ret.value() < 0) {
-      println("Number of cycles must be non-negative : {}", params.front());
+    if (ret.value() <= 0) {
+      println("Number of cycles must be positive : {}", params.front());
       return CommandState::NONE;
     }
     cnt = ret.value();
