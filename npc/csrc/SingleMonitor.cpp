@@ -231,7 +231,7 @@ SingleMonitor::p(const std::vector<std::string> &params) {
     str = str + " " + s;
   auto result = Expression::evalExpression(*emu, str);
   if (result.has_value())
-    println("{:#08x}", result.value());
+    println("{:#010x}", result.value());
   return CommandState::NONE;
 }
 
@@ -246,7 +246,7 @@ SingleMonitor::w(const std::vector<std::string> &params) {
   if (result.has_value()) {
     watchers.push_back(std::move(result.value()));
     watchers.back().id = id++;
-    println("Setup watcher #{}, now ={:#08x}", watchers.size() - 1,
+    println("Setup watcher #{}, now = {:#010x}", watchers.size() - 1,
             result.value().last);
   }
   return CommandState::NONE;
