@@ -93,6 +93,7 @@ bool SingleMonitor::process_trap() {
 void SingleMonitor::simulate(unsigned long cnt) {
   using namespace std::chrono;
   int n_inst = emu->instrCount();
+  println("{}", n_inst);
   auto start = steady_clock::now();
   if (watchers.empty()) {
     emu->step(cnt);
