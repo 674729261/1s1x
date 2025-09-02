@@ -129,7 +129,7 @@ void SingleMonitor::simulate(unsigned long cnt) {
   double elapsed =
       duration_cast<microseconds>(end - start).count() / 1'000'000.0;
   spdlog::info("Simulated {} cycles, PC is now {:#010x}", n_inst, emu->getPC());
-  spdlog::info("Average speed : {} s/inst", elapsed / n_inst);
+  spdlog::info("Average speed : {} inst/s", n_inst / elapsed);
 }
 
 SingleMonitor::CommandState
