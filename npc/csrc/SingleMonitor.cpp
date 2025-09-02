@@ -177,12 +177,12 @@ SingleMonitor::info(const std::vector<std::string> &params) {
         println();
     }
   } else if (params.front() == "w") {
-    println("{:-^30}", "");
+    println("{:-^50}", "");
     for (const auto &wat : watchers) {
-      println("{:>5}|0x{:>08x}|{:<}", wat.id, wat.last,
+      println("{:>5}|{:#>08x}|{:<}", wat.id, wat.last,
               wat.expression.stringify());
     }
-    println("{:-^30}", "");
+    println("{:-^50}", "");
     println("{} watchers", watchers.size());
   } else
     println("Useage : info {{r}}");
@@ -231,7 +231,7 @@ SingleMonitor::p(const std::vector<std::string> &params) {
     str = str + " " + s;
   auto result = Expression::evalExpression(*emu, str);
   if (result.has_value())
-    println("0x{:08x}", result.value());
+    println("{:#08x}", result.value());
   return CommandState::NONE;
 }
 
@@ -246,7 +246,7 @@ SingleMonitor::w(const std::vector<std::string> &params) {
   if (result.has_value()) {
     watchers.push_back(std::move(result.value()));
     watchers.back().id = id++;
-    println("Setup watcher #{}, now =0x{:08x}", watchers.size() - 1,
+    println("Setup watcher #{}, now ={:#08x}", watchers.size() - 1,
             result.value().last);
   }
   return CommandState::NONE;
