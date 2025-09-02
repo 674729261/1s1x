@@ -150,7 +150,7 @@ uint32_t NPCemu::getGPR(int idx) {
   case 31:
     return dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_30_r;
   case 32:
-    cpu.pc = dut.io_pc;
+    return cpu.pc = dut.io_pc;
   }
   throw std::logic_error(std::format("Invalid register idx : {}", idx));
 }
