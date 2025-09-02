@@ -79,9 +79,7 @@ bool SingleMonitor::process_trap() {
 
 SingleMonitor::CommandState
 SingleMonitor::query_command(this SingleMonitor &self) {
-  print("(NPCemu)");
-  string command;
-  getline(cin, command);
+  string command = self.repl.input("(NPCemu)");
   regex del(R"(\s+)");
 
   sregex_token_iterator it(command.begin(), command.end(), del, -1);

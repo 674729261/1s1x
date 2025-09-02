@@ -1,7 +1,9 @@
 #pragma once
 #include "../Simulators/RISCV32.h"
 #include <memory>
+#include <replxx.hxx>
 #include <string>
+
 #include <vector>
 class SingleMonitor {
 public:
@@ -22,6 +24,7 @@ private:
     std::string description;
   };
   static const CommandItem command_list[];
+  replxx::Replxx repl;
 
 private:
   bool process_trap();

@@ -1,4 +1,5 @@
 CSRC = $(wildcard csrc/*.cpp)
+CSRC += $(wildcard /usr/local/lib/*.a)
 SVSRC = generated_svsrc/CPU.sv
 VSRC = $(wildcard vsrc/*.v)
 VSRC += $(wildcard vsrc/*.sv)
@@ -8,8 +9,7 @@ BIN = ./obj_dir/V$(TOPNAME)
 
 VERILATOR = verilator
 
-CXXFLAGS += -CFLAGS "-DSPDLOG_USE_STD_FORMAT -O3 -I../include -std=c++23" \
-    -CFLAGS -DTOP_NAME="\"V$(TOPNAME)\""
+CXXFLAGS += -CFLAGS "-DSPDLOG_USE_STD_FORMAT -O3 -I../include -std=c++23" -CFLAGS -DTOP_NAME="\"V$(TOPNAME)\""
 VERILATORFLAGS += --cc --exe --build --trace -j 16 
 VERILATOR_DISABLE_WARNINGS += -Wno-UNUSEDSIGNAL -Wno-DECLFILENAME -Wno-SYNCASYNCNET
 
@@ -17,8 +17,8 @@ VERILATOR_DISABLE_WARNINGS += -Wno-UNUSEDSIGNAL -Wno-DECLFILENAME -Wno-SYNCASYNC
 all: $(SVSRC)
 	$(VERILATOR) $(VERILATORFLAGS) \
 	--top-module $(TOPNAME) \
-	$(CXXFLAGS) -Wall $(CSRC) $(SVSRC) $(VSRC) \
-	$(VERILATOR_DISABLE_WARNINGS)
+	$(CXXFLAGS) -Wall $(CSRC) $(SVSRC) $(VSRC) $(VERILATOR_DISABLE_WARNINGS) \
+	-CFLAGS "-L/usr/local/lib -lreplxx"
 
 $(SVSRC): $(CHISELSRC)
 	sbt run

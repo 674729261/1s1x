@@ -28,3 +28,5 @@ generated_svsrc/
 !csrc/*.*
 !include/**/*
 !test_progs/*
+thirdparty/**/*
+!thirdparty/Makefile
