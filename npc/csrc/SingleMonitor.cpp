@@ -230,6 +230,7 @@ SingleMonitor::p(const std::vector<std::string> &params) {
 }
 
 SingleMonitor::~SingleMonitor() {
-
-  repl.history_save("replxx_history/history.txt");
+  auto tmp_path =
+      std::filesystem::temp_directory_path().append("NPCemu_history.txt");
+  repl.history_save(tmp_path);
 }
