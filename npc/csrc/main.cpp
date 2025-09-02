@@ -26,8 +26,11 @@ int main(int argc, char *argv[]) {
   argparse::ArgumentParser program("NPCemu");
 
   program.add_argument("-i", "--image")
-      .help("The program image file")
+      .help("Path to log file")
+      .nargs(1)
+      .default_value(string(""))
       .required();
+  program.add_argument("-l", "--log").help("The program image file").required();
   program.add_argument("-z", "--mem_size")
       .help("Size of memory")
       .default_value(1 << 24)
