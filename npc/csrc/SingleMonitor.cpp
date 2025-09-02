@@ -212,9 +212,16 @@ SingleMonitor::p(const std::vector<std::string> &params) {
     str = str + " " + s;
   auto expr = Expression::generateExpression(str);
 
-  long long value = expr->eval(*emu);
-  println("{}", value);
-
+  if (expr.has_value()) {
+    long long value;
+    try {
+      value = expr->eval(*emu);
+      println("{}", value);
+    } catch (std::logic_error e) {
+      println("{}", e.what());
+      println("Evaluation failed", e.what());
+    }
+  }
   return CommandState::NONE;
 }
 
