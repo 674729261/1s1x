@@ -178,21 +178,24 @@ SingleMonitor::info(const std::vector<std::string> &params) {
 
 SingleMonitor::CommandState
 SingleMonitor::scan(const std::vector<std::string> &params) {
-  if (params.size() != 2) {
+  if (params.size() < 2) {
     println("Useage : x [size] [addr]");
     return CommandState::NONE;
   }
   int sz;
   uint32_t addr;
-  auto ret = Expression::evalExpression(*emu, params.front());
+  auto ret = to_number<int>(params.front());
   if (!ret.has_value())
     return CommandState::NONE;
   if (ret.value() < 0) {
     println("Size must be non-negative : {}", params.front());
     return CommandState::NONE;
   }
+  string str = "";
+  for (int i = 1; i < params.size(); i++)
+    str = str + " " + params[i];
   sz = ret.value();
-  auto ret2 = to_number<long long>(params[1]);
+  auto ret2 = to_number<long long>(str);
   if (!ret2.has_value())
     return CommandState::NONE;
   if (ret2.value() < 0 || ret2.value() >= UINT32_MAX) {
