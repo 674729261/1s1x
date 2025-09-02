@@ -1,6 +1,5 @@
 #include "Monitor/SingleMonitor.h"
 #include "Simulators/NPCemu.h"
-#include "Simulators/RISCV32.h"
 #include "spdlog/common.h"
 #include <VCPU.h>
 #include <argparse/argparse.hpp>

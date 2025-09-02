@@ -8,6 +8,8 @@
 class Expression {
 public:
   static std::optional<Expression> generateExpression(std::string_view expr);
+  static std::optional<long long> evalExpression(RISCV32 &dut,
+                                                 std::string_view expr);
   Expression(const Expression &) = default;
   Expression(Expression &&) noexcept = default;
 

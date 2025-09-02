@@ -2,10 +2,8 @@
 #include "Simulators/RISCV32.h"
 #include "spdlog/spdlog.h"
 #include "utils.h"
-#include <algorithm>
 #include <cassert>
 #include <format>
-#include <iterator>
 #include <optional>
 #include <print>
 #include <regex>
@@ -283,4 +281,20 @@ std::string Expression::stringify() {
   for (const auto &tk : tokens)
     ret += std::format("{}", tk.display);
   return ret;
+}
+
+optional<long long> Expression::evalExpression(RISCV32 &dut,
+                                               std::string_view expr) {
+  auto e = generateExpression(expr);
+  long long value;
+  if (e.has_value()) {
+    try {
+      value = e->eval(dut);
+    } catch (std::logic_error e) {
+      println("{}", e.what());
+      println("Evaluation failed", e.what());
+      return std::nullopt;
+    }
+  }
+  return value;
 }
