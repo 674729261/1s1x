@@ -13,13 +13,15 @@ public:
   Expression(const Expression &) = default;
   Expression(Expression &&) noexcept = default;
 
-  uint32_t eval(RISCV32 &);
-  std::string stringify();
+  uint32_t eval(RISCV32 &) const;
+  std::string stringify() const;
+
+protected:
+  Expression() = default;
 
 private:
-  Expression() = default;
-  uint32_t eval_sub(RISCV32 &, int l, int r);
-  int main_token(RISCV32 &, int l, int r);
+  uint32_t eval_sub(RISCV32 &, int l, int r) const;
+  int main_token(RISCV32 &, int l, int r) const;
   struct OneToken {
     std::string display;
     int type;

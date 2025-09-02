@@ -3,11 +3,8 @@
 #include "spdlog/common.h"
 #include <VCPU.h>
 #include <argparse/argparse.hpp>
-#include <cstdio>
-#include <cstdlib>
 #include <iostream>
 #include <memory>
-#include <ostream>
 #include <string>
 
 #include <spdlog/sinks/basic_file_sink.h>

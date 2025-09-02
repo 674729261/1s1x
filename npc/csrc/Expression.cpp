@@ -176,10 +176,10 @@ Expression::generateExpression(std::string_view expr) {
   return expression;
 }
 
-uint32_t Expression::eval(RISCV32 &dut) {
+uint32_t Expression::eval(RISCV32 &dut) const {
   return eval_sub(dut, 0, tokens.size() - 1);
 }
-uint32_t Expression::eval_sub(RISCV32 &dut, int l, int r) {
+uint32_t Expression::eval_sub(RISCV32 &dut, int l, int r) const {
 
   if (l > r)
     throw std::logic_error("Invalid expression");
@@ -260,7 +260,7 @@ uint32_t Expression::eval_sub(RISCV32 &dut, int l, int r) {
     throw std::logic_error(std::format("Invalid expression : {}", stringify()));
   }
 }
-int Expression::main_token(RISCV32 &, int l, int r) {
+int Expression::main_token(RISCV32 &, int l, int r) const {
   int ret = -1, mn = 99999;
 
   for (int i = l; i <= r; i++) {
@@ -276,7 +276,7 @@ int Expression::main_token(RISCV32 &, int l, int r) {
   }
   return ret;
 }
-std::string Expression::stringify() {
+std::string Expression::stringify() const {
   std::string ret;
   for (const auto &tk : tokens)
     ret += std::format("{}", tk.display);
@@ -295,6 +295,7 @@ optional<uint32_t> Expression::evalExpression(RISCV32 &dut,
   } catch (std::logic_error e) {
     println("{}", e.what());
     println("Evaluation failed", e.what());
+    return std::nullopt;
   }
 
   return value;

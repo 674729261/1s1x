@@ -1,9 +1,12 @@
 #pragma once
+#include "../Expression/Expression.h"
 #include "../Simulators/RISCV32.h"
+#include <cstdint>
+#include <list>
 #include <memory>
+#include <optional>
 #include <replxx.hxx>
 #include <string>
-#include <vector>
 class SingleMonitor {
 public:
   SingleMonitor(std::shared_ptr<RISCV32> dut, bool batch = false);
@@ -11,11 +14,22 @@ public:
   void start();
   ~SingleMonitor();
 
+  class Watcher {
+  public:
+    static std::optional<Watcher> generateWatcher(RISCV32 &dut,
+                                                  std::string_view expr);
+    Expression expression;
+    uint32_t last;
+    int id;
+  };
+
 private:
   std::shared_ptr<RISCV32> emu;
   bool batch;
 
   enum class CommandState { NONE, QUIT };
+
+  std::list<Watcher> watchers;
 
   struct CommandItem {
     std::string command;
@@ -35,4 +49,6 @@ private:
   CommandState info(const std::vector<std::string> &params);
   CommandState scan(const std::vector<std::string> &params);
   CommandState p(const std::vector<std::string> &params);
+  CommandState w(const std::vector<std::string> &params);
+  CommandState d(const std::vector<std::string> &params);
 };

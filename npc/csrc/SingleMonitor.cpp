@@ -9,6 +9,7 @@
 #include <print>
 #include <regex>
 #include <string>
+#include <utility>
 #include <vector>
 
 using std::print, std::println;
@@ -35,11 +36,16 @@ const SingleMonitor::CommandItem SingleMonitor::command_list[] = {
     {.command = "x",
      .func = &SingleMonitor::scan,
      .description = "Scan memory; x [size] [addr]"},
-    {
-        .command = "p",
-        .func = &SingleMonitor::p,
-        .description = "Print infomation; p <expr>",
-    }};
+    {.command = "p",
+     .func = &SingleMonitor::p,
+     .description = "Print infomation; p <expr>"},
+    {.command = "w",
+     .func = &SingleMonitor::w,
+     .description = "Setup a watcher; w <expr>"},
+    {.command = "d",
+     .func = &SingleMonitor::d,
+     .description = "Remove a watcher; d <index>"},
+};
 
 SingleMonitor::SingleMonitor(std::shared_ptr<RISCV32> emu, bool batch)
     : emu(emu), batch(batch) {
@@ -170,9 +176,16 @@ SingleMonitor::info(const std::vector<std::string> &params) {
       if (i % 8 == 7)
         println();
     }
-  } else {
+  } else if (params.front() == "w") {
+    println("{:-^30}", "");
+    for (const auto &wat : watchers) {
+      println("{:>5}|0x{:>08x}|{:<}", wat.id, wat.last,
+              wat.expression.stringify());
+    }
+    println("{:-^30}", "");
+    println("{} watchers", watchers.size());
+  } else
     println("Useage : info {{r}}");
-  }
   return CommandState::NONE;
 }
 
@@ -222,8 +235,63 @@ SingleMonitor::p(const std::vector<std::string> &params) {
   return CommandState::NONE;
 }
 
+SingleMonitor::CommandState
+SingleMonitor::w(const std::vector<std::string> &params) {
+  static int id = 0;
+  string str = "";
+  for (const string &s : params)
+    str = str + " " + s;
+  auto result = Watcher::generateWatcher(*emu, str);
+
+  if (result.has_value()) {
+    watchers.push_back(std::move(result.value()));
+    watchers.back().id = id++;
+    println("Setup watcher #{}, now =0x{:08x}", watchers.size() - 1,
+            result.value().last);
+  }
+  return CommandState::NONE;
+}
+SingleMonitor::CommandState
+SingleMonitor::d(const std::vector<std::string> &params) {
+  if (params.size() < 1) {
+    println("Useage : d [index]");
+    return CommandState::NONE;
+  }
+  auto id = to_number<int>(params.front());
+  if (!id.has_value()) {
+    println("Invalid index : {} ", params.front());
+    return CommandState::NONE;
+  }
+  for (auto iter = watchers.begin(); iter != watchers.end(); iter++) {
+    if (iter->id == id.value()) {
+      watchers.erase(iter);
+      return CommandState::NONE;
+    }
+  }
+  println("Invalid index : {} ", params.front());
+  return CommandState::NONE;
+}
+
 SingleMonitor::~SingleMonitor() {
   auto tmp_path =
       std::filesystem::temp_directory_path().append("NPCemu_history.txt");
   repl.history_save(tmp_path);
+}
+
+std::optional<SingleMonitor::Watcher>
+SingleMonitor::Watcher::generateWatcher(RISCV32 &dut, std::string_view expr) {
+  auto e = Expression::generateExpression(expr);
+  uint32_t value;
+  if (!e.has_value())
+    return std::nullopt;
+
+  try {
+    value = e->eval(dut);
+  } catch (std::logic_error e) {
+    println("{}", e.what());
+    println("Evaluation failed", e.what());
+    return std::nullopt;
+  }
+  SingleMonitor::Watcher ret{std::move(e.value()), value};
+  return ret;
 }
