@@ -179,7 +179,7 @@ SingleMonitor::info(const std::vector<std::string> &params) {
   } else if (params.front() == "w") {
     println("{:-^50}", "");
     for (const auto &wat : watchers) {
-      println("{:>5}|{:>#08x}|{:<}", wat.id, wat.last,
+      println("{:>5}|{:>#10x}|{:<}", wat.id, wat.last,
               wat.expression.stringify());
     }
     println("{:-^50}", "");
