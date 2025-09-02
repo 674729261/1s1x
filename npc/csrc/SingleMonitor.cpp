@@ -226,4 +226,6 @@ SingleMonitor::p(const std::vector<std::string> &params) {
   return CommandState::NONE;
 }
 
-SingleMonitor::~SingleMonitor() { emu = nullptr; }
+SingleMonitor::~SingleMonitor() {
+  repl.history_save("replxx_history/history.txt");
+}
