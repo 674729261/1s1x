@@ -43,7 +43,7 @@ const SingleMonitor::CommandItem SingleMonitor::command_list[] = {
 
 SingleMonitor::SingleMonitor(std::shared_ptr<RISCV32> emu, bool batch)
     : emu(emu), batch(batch) {
-
+  repl.set_max_history_size(2);
   if (repl.history_load("replxx_history/history.txt"))
     spdlog::info("Loaded {} history commands from {}", repl.history_size(),
                  "replxx_history/history.txt");
@@ -227,5 +227,6 @@ SingleMonitor::p(const std::vector<std::string> &params) {
 }
 
 SingleMonitor::~SingleMonitor() {
+
   repl.history_save("replxx_history/history.txt");
 }
