@@ -218,7 +218,7 @@ SingleMonitor::p(const std::vector<std::string> &params) {
     str = str + " " + s;
   auto result = Expression::evalExpression(*emu, str);
   if (result.has_value())
-    println("{}", result.value());
+    println("0x{:08x}", result.value());
   return CommandState::NONE;
 }
 

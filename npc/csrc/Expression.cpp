@@ -96,7 +96,7 @@ Expression::generateExpression(std::string_view expr) {
               std::string(expr.begin() + pos, expr.begin() + pos + mm.length()),
               tokenTypes[i].type, tokenTypes[i].catagory,
               tokenTypes[i].priotity);
-          auto parsed_value = to_number<long long>(tokens.back().display);
+          auto parsed_value = to_number<uint32_t>(tokens.back().display);
           if (!parsed_value.has_value())
             return std::nullopt;
           tokens.back().data.value = parsed_value.value();
@@ -176,10 +176,10 @@ Expression::generateExpression(std::string_view expr) {
   return expression;
 }
 
-long long Expression::eval(RISCV32 &dut) {
+uint32_t Expression::eval(RISCV32 &dut) {
   return eval_sub(dut, 0, tokens.size() - 1);
 }
-long long Expression::eval_sub(RISCV32 &dut, int l, int r) {
+uint32_t Expression::eval_sub(RISCV32 &dut, int l, int r) {
 
   if (l > r)
     throw std::logic_error("Invalid expression");
@@ -212,8 +212,8 @@ long long Expression::eval_sub(RISCV32 &dut, int l, int r) {
           std::format("Invalid expression : {}", stringify()));
     }
   }
-  long long LHS = eval_sub(dut, l, pos_main - 1);
-  long long RHS = eval_sub(dut, pos_main + 1, r);
+  uint32_t LHS = eval_sub(dut, l, pos_main - 1);
+  uint32_t RHS = eval_sub(dut, pos_main + 1, r);
   switch (tokens[pos_main].type) {
   case '+':
     return LHS + RHS;
@@ -283,10 +283,10 @@ std::string Expression::stringify() {
   return ret;
 }
 
-optional<long long> Expression::evalExpression(RISCV32 &dut,
-                                               std::string_view expr) {
+optional<uint32_t> Expression::evalExpression(RISCV32 &dut,
+                                              std::string_view expr) {
   auto e = generateExpression(expr);
-  long long value;
+  uint32_t value;
   if (!e.has_value())
     return std::nullopt;
 
