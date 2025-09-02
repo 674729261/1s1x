@@ -58,6 +58,7 @@ int main(int argc, char *argv[]) {
       file_sink->set_pattern("[%Y-%m-%d %H:%M:%S] [%l] %v");
       spdlog::logger logger("multi_logger", {console_sink, file_sink});
       spdlog::set_default_logger(std::make_shared<spdlog::logger>(logger));
+      spdlog::info("Logging to file : {}", log_path);
     } catch (const spdlog::spdlog_ex &e) {
       println(cerr, "Log init failed: {}", e.what());
       exit(1);
@@ -69,9 +70,6 @@ int main(int argc, char *argv[]) {
   bool batch_mode = program.get<bool>("--batch");
   spdlog::info("Image path  : {}", image_path);
   spdlog::info("Memory size : {}", mem_size);
-
-  // println(clog, "Image path  : {}", image_path);
-  // println(clog, "Memory size : {}", mem_size);
 
   unique_ptr<RISCV32> emu = make_unique<NPCemu>(mem_size, image_path);
   emu_cpy = dynamic_cast<NPCemu *>(emu.get());
