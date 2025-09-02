@@ -29,7 +29,7 @@ RISCV32::RISCV32(size_t MemSize, std::string_view program, addr_t init_pc)
 
   prog_file.read(reinterpret_cast<char *>(M.data()), size_prog);
 
-  spdlog::info("Loaded {} instructions", size_prog);
+  spdlog::info("Loaded {} words", size_prog);
   cpu.pc = init_pc;
   prog_file.close();
 }
