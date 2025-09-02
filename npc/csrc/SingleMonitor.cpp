@@ -184,7 +184,7 @@ SingleMonitor::scan(const std::vector<std::string> &params) {
   }
   int sz;
   uint32_t addr;
-  auto ret = to_number<int>(params.front());
+  auto ret = Expression::evalExpression(*emu, params.front());
   if (!ret.has_value())
     return CommandState::NONE;
   if (ret.value() < 0) {
