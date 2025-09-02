@@ -72,8 +72,8 @@ void SingleMonitor::start() {
 
 bool SingleMonitor::process_trap() {
   uint32_t gpr_a0 = emu->getGPR(10);
-  println(std::cerr, "EBREAK, a0 = {:08x}, pc = {:08x}, cycle = {}", gpr_a0,
-          emu->getPC(), emu->instrCount());
+  spdlog::info("EBREAK, a0 = {:08x}, pc = {:08x}, cycle = {}", gpr_a0,
+               emu->getPC(), emu->instrCount());
   return (gpr_a0 == 0);
 }
 
