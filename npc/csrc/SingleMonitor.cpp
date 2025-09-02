@@ -106,9 +106,10 @@ void SingleMonitor::simulate(unsigned long cnt) {
             triggered = true;
           }
         } catch (std::logic_error e) {
-          spdlog::error(
-              "Error while evaluating watcher #{}@{} : {}, error info : {}",
-              wat.id, emu->getPC(), wat.expression.stringify(), e.what());
+          spdlog::error("Error while evaluating watcher #{}@{:#010x} : {}, "
+                        "error info : {}",
+                        wat.id, emu->getPC(), wat.expression.stringify(),
+                        e.what());
           return;
         }
       }
