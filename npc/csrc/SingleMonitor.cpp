@@ -99,7 +99,8 @@ void SingleMonitor::simulate(unsigned long cnt) {
         try {
           uint32_t value = wat.expression.eval(*emu);
           if (value != wat.last) {
-            println("Watcher #{} : {}", wat.id, wat.expression.stringify());
+            println("Watcher #{}@{} : {}", wat.id, emu->getPC(),
+                    wat.expression.stringify());
             println("{:#010x} -> {:#010x}", wat.last, value);
             wat.last = value;
             triggered = true;
