@@ -3,7 +3,9 @@
 #include "Simulators/RISCV32.h"
 #include "spdlog/spdlog.h"
 #include "utils.h"
+#include <chrono>
 #include <cstdint>
+#include <endian.h>
 #include <filesystem>
 #include <ostream>
 #include <print>
@@ -89,12 +91,17 @@ bool SingleMonitor::process_trap() {
 }
 
 void SingleMonitor::simulate(unsigned long cnt) {
+  using namespace std::chrono;
+  int n_inst = 0;
+  auto start = steady_clock::now();
   if (watchers.empty()) {
     emu->step(cnt);
+    n_inst = cnt;
   } else {
     bool triggered = false;
     while (cnt--) {
       emu->step(1);
+      n_inst++;
       for (auto &wat : watchers) {
         try {
           uint32_t value = wat.expression.eval(*emu);
@@ -114,9 +121,14 @@ void SingleMonitor::simulate(unsigned long cnt) {
         }
       }
       if (triggered)
-        return;
+        break;
     }
   }
+  auto end = steady_clock::now();
+  double elapsed =
+      duration_cast<microseconds>(end - start).count() / 1'000'000.0;
+  spdlog::info("Simulated {} cycles, PC is now {:#010x}", n_inst, emu->getPC());
+  spdlog::info("Average speed : {} s/inst", elapsed / n_inst);
 }
 
 SingleMonitor::CommandState
