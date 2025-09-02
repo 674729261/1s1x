@@ -4,6 +4,7 @@
 #include "spdlog/spdlog.h"
 #include "utils.h"
 #include <cstdint>
+#include <filesystem>
 #include <ostream>
 #include <print>
 #include <regex>
@@ -43,10 +44,12 @@ const SingleMonitor::CommandItem SingleMonitor::command_list[] = {
 
 SingleMonitor::SingleMonitor(std::shared_ptr<RISCV32> emu, bool batch)
     : emu(emu), batch(batch) {
-  repl.set_max_history_size(2);
-  if (repl.history_load("replxx_history/history.txt"))
+  repl.set_max_history_size(64);
+  auto tmp_path =
+      std::filesystem::temp_directory_path().append("NPCemu_history.txt");
+  if (repl.history_load(tmp_path))
     spdlog::info("Loaded {} history commands from {}", repl.history_size(),
-                 "replxx_history/history.txt");
+                 tmp_path.string());
 }
 
 void SingleMonitor::start() {
