@@ -28,3 +28,7 @@ generated_svsrc/
 !csrc/*.*
 !include/**/*
 !test_progs/*
+thirdparty/**/*
+!thirdparty/Makefile
+log
+replxx_history

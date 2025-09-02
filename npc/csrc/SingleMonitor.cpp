@@ -1,18 +1,20 @@
 #include "Monitor/SingleMonitor.h"
 #include "Expression/Expression.h"
 #include "Simulators/RISCV32.h"
+#include "spdlog/spdlog.h"
 #include "utils.h"
+#include <chrono>
 #include <cstdint>
-#include <cstdio>
-#include <iostream>
+#include <endian.h>
+#include <filesystem>
 #include <ostream>
 #include <print>
 #include <regex>
 #include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 
-using std::cin, std::getline;
 using std::print, std::println;
 using std::regex, std::sregex_token_iterator;
 using std::string;
@@ -37,14 +39,26 @@ const SingleMonitor::CommandItem SingleMonitor::command_list[] = {
     {.command = "x",
      .func = &SingleMonitor::scan,
      .description = "Scan memory; x [size] [addr]"},
-    {
-        .command = "p",
-        .func = &SingleMonitor::p,
-        .description = "Print infomation; p <expr>",
-    }};
+    {.command = "p",
+     .func = &SingleMonitor::p,
+     .description = "Print infomation; p <expr>"},
+    {.command = "w",
+     .func = &SingleMonitor::w,
+     .description = "Setup a watcher; w <expr>"},
+    {.command = "d",
+     .func = &SingleMonitor::d,
+     .description = "Remove a watcher; d <index>"},
+};
 
-SingleMonitor::SingleMonitor(std::unique_ptr<RISCV32> &emu, bool batch)
-    : emu(emu), batch(batch) {}
+SingleMonitor::SingleMonitor(std::shared_ptr<RISCV32> emu, bool batch)
+    : emu(emu), batch(batch) {
+  repl.set_max_history_size(64);
+  auto tmp_path =
+      std::filesystem::temp_directory_path().append("NPCemu_history.txt");
+  if (repl.history_load(tmp_path))
+    spdlog::info("Loaded {} history commands from {}", repl.history_size(),
+                 tmp_path.string());
+}
 
 void SingleMonitor::start() {
   emu->reset();
@@ -58,9 +72,9 @@ void SingleMonitor::start() {
     if (!finished && emu->getEMUState() == RISCV32::Interrupt::EBREAK) {
       finished = true;
       if (process_trap()) {
-        println(std::clog, "HIT GOOD TRAP");
+        spdlog::info("HIT GOOD TRAP");
       } else {
-        println(std::clog, "HIT BAD TRAP");
+        spdlog::info("HIT BAD TRAP");
       }
       continue;
     }
@@ -71,16 +85,56 @@ void SingleMonitor::start() {
 
 bool SingleMonitor::process_trap() {
   uint32_t gpr_a0 = emu->getGPR(10);
-  println(std::cerr, "EBREAK, a0 = {:08x}, pc = {:08x}, cycle = {}", gpr_a0,
-          emu->getPC(), emu->instrCount());
+  spdlog::info("EBREAK, a0 = {:08x}, pc = {:08x}, cycle = {}", gpr_a0,
+               emu->getPC(), emu->instrCount());
   return (gpr_a0 == 0);
+}
+
+void SingleMonitor::simulate(unsigned long cnt) {
+  using namespace std::chrono;
+  int n_inst = emu->instrCount();
+  auto start = steady_clock::now();
+  if (watchers.empty()) {
+    emu->step(cnt);
+  } else {
+    bool triggered = false;
+    while (cnt--) {
+      emu->step(1);
+      n_inst++;
+      for (auto &wat : watchers) {
+        try {
+          uint32_t value = wat.expression.eval(*emu);
+          if (value != wat.last) {
+            println("Watcher #{}@{:#010x} : {}", wat.id, emu->getPC(),
+                    wat.expression.stringify());
+            println("{:#010x} -> {:#010x}", wat.last, value);
+            wat.last = value;
+            triggered = true;
+          }
+        } catch (std::logic_error e) {
+          spdlog::error("Error while evaluating watcher #{}@{:#010x} : {}, "
+                        "error info : {}",
+                        wat.id, emu->getPC(), wat.expression.stringify(),
+                        e.what());
+          return;
+        }
+      }
+      if (triggered)
+        break;
+    }
+  }
+  auto end = steady_clock::now();
+  n_inst = emu->instrCount() - n_inst;
+  double elapsed =
+      duration_cast<microseconds>(end - start).count() / 1'000'000.0;
+  spdlog::info("Simulated {} cycles, PC is now {:#010x}", n_inst, emu->getPC());
+  spdlog::info("Average speed : {:.1f} inst/s", n_inst / elapsed);
 }
 
 SingleMonitor::CommandState
 SingleMonitor::query_command(this SingleMonitor &self) {
-  print("(NPCemu)");
-  string command;
-  getline(cin, command);
+  string command = self.repl.input("(NPCemu)");
+  self.repl.history_add(command);
   regex del(R"(\s+)");
 
   sregex_token_iterator it(command.begin(), command.end(), del, -1);
@@ -121,8 +175,8 @@ SingleMonitor::CommandState SingleMonitor::step(const vector<string> &params) {
     auto ret = to_number<int>(params.front());
     if (!ret.has_value())
       return CommandState::NONE;
-    if (ret.value() < 0) {
-      println("Number of cycles must be non-negative : {}", params.front());
+    if (ret.value() <= 0) {
+      println("Number of cycles must be positive : {}", params.front());
       return CommandState::NONE;
     }
     cnt = ret.value();
@@ -131,7 +185,7 @@ SingleMonitor::CommandState SingleMonitor::step(const vector<string> &params) {
     println("Program has been terminated");
     return CommandState::NONE;
   }
-  emu->step(cnt);
+  simulate(cnt);
   return CommandState::NONE;
 }
 SingleMonitor::CommandState SingleMonitor::run(const vector<string> &params) {
@@ -143,7 +197,7 @@ SingleMonitor::CommandState SingleMonitor::run(const vector<string> &params) {
     println("Program has been terminated");
     return CommandState::NONE;
   }
-  emu->step(-1);
+  simulate(-1);
   return CommandState::NONE;
 }
 
@@ -166,15 +220,22 @@ SingleMonitor::info(const std::vector<std::string> &params) {
       if (i % 8 == 7)
         println();
     }
-  } else {
+  } else if (params.front() == "w") {
+    println("{:-^50}", "");
+    for (const auto &wat : watchers) {
+      println("{:>5}|{:>#10x}|{:<}", wat.id, wat.last,
+              wat.expression.stringify());
+    }
+    println("{:-^50}", "");
+    println("{} watcher(s)", watchers.size());
+  } else
     println("Useage : info {{r}}");
-  }
   return CommandState::NONE;
 }
 
 SingleMonitor::CommandState
 SingleMonitor::scan(const std::vector<std::string> &params) {
-  if (params.size() != 2) {
+  if (params.size() < 2) {
     println("Useage : x [size] [addr]");
     return CommandState::NONE;
   }
@@ -187,8 +248,11 @@ SingleMonitor::scan(const std::vector<std::string> &params) {
     println("Size must be non-negative : {}", params.front());
     return CommandState::NONE;
   }
+  string str = "";
+  for (int i = 1; i < params.size(); i++)
+    str = str + " " + params[i];
   sz = ret.value();
-  auto ret2 = to_number<long long>(params[1]);
+  auto ret2 = Expression::evalExpression(*emu, str);
   if (!ret2.has_value())
     return CommandState::NONE;
   if (ret2.value() < 0 || ret2.value() >= UINT32_MAX) {
@@ -209,18 +273,69 @@ SingleMonitor::p(const std::vector<std::string> &params) {
   string str = "";
   for (const string &s : params)
     str = str + " " + s;
-  auto expr = Expression::generateExpression(str);
-
-  if (expr.has_value()) {
-    long long value;
-    try {
-      value = expr->eval(*emu);
-      println("{}", value);
-    } catch (std::logic_error e) {
-      println("{}", e.what());
-    }
-  }
+  auto result = Expression::evalExpression(*emu, str);
+  if (result.has_value())
+    println("{:#010x}", result.value());
   return CommandState::NONE;
 }
 
-SingleMonitor::~SingleMonitor() { emu = nullptr; }
+SingleMonitor::CommandState
+SingleMonitor::w(const std::vector<std::string> &params) {
+  static int id = 0;
+  string str = "";
+  for (const string &s : params)
+    str = str + " " + s;
+  auto result = Watcher::generateWatcher(*emu, str);
+
+  if (result.has_value()) {
+    watchers.push_back(std::move(result.value()));
+    watchers.back().id = id++;
+    println("Setup watcher #{}, now = {:#010x}", watchers.size() - 1,
+            result.value().last);
+  }
+  return CommandState::NONE;
+}
+SingleMonitor::CommandState
+SingleMonitor::d(const std::vector<std::string> &params) {
+  if (params.size() < 1) {
+    println("Useage : d [index]");
+    return CommandState::NONE;
+  }
+  auto id = to_number<int>(params.front());
+  if (!id.has_value()) {
+    println("Invalid index : {} ", params.front());
+    return CommandState::NONE;
+  }
+  for (auto iter = watchers.begin(); iter != watchers.end(); iter++) {
+    if (iter->id == id.value()) {
+      watchers.erase(iter);
+      return CommandState::NONE;
+    }
+  }
+  println("Invalid index : {} ", params.front());
+  return CommandState::NONE;
+}
+
+SingleMonitor::~SingleMonitor() {
+  auto tmp_path =
+      std::filesystem::temp_directory_path().append("NPCemu_history.txt");
+  repl.history_save(tmp_path);
+}
+
+std::optional<SingleMonitor::Watcher>
+SingleMonitor::Watcher::generateWatcher(RISCV32 &dut, std::string_view expr) {
+  auto e = Expression::generateExpression(expr);
+  uint32_t value;
+  if (!e.has_value())
+    return std::nullopt;
+
+  try {
+    value = e->eval(dut);
+  } catch (std::logic_error e) {
+    println("{}", e.what());
+    println("Evaluation failed", e.what());
+    return std::nullopt;
+  }
+  SingleMonitor::Watcher ret{std::move(e.value()), value};
+  return ret;
+}

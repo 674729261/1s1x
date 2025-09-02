@@ -1,33 +1,34 @@
 #include "Monitor/SingleMonitor.h"
 #include "Simulators/NPCemu.h"
-#include "Simulators/RISCV32.h"
+#include "spdlog/common.h"
 #include <VCPU.h>
 #include <argparse/argparse.hpp>
-#include <cstdio>
-#include <cstdlib>
 #include <iostream>
 #include <memory>
-#include <ostream>
 #include <string>
 
-using std::println, std::cerr, std::clog;
+#include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/spdlog.h>
+using std::println, std::cerr;
+using std::shared_ptr, std::make_shared;
 using std::string;
-using std::unique_ptr, std::make_unique;
 
-NPCemu *emu_cpy;
-
-extern "C" void trap(int signal) { emu_cpy->trapped = signal; }
-extern "C" int pmem_read(int raddr) { return emu_cpy->readMemory(raddr); }
+shared_ptr<NPCemu> emu;
+extern "C" void trap(int signal) { emu->trapped = signal; }
+extern "C" int pmem_read(int raddr) { return emu->readMemory(raddr); }
 extern "C" void pmem_write(int waddr, int wdata, char wmask) {
-  emu_cpy->writeMemory(waddr, wdata, wmask);
+  emu->writeMemory(waddr, wdata, wmask);
 }
 
 int main(int argc, char *argv[]) {
   argparse::ArgumentParser program("NPCemu");
 
   program.add_argument("-i", "--image")
-      .help("The program image file")
+      .help("Path to log file")
+      .nargs(1)
       .required();
+  program.add_argument("-l", "--log").help("The program image file");
   program.add_argument("-z", "--mem_size")
       .help("Size of memory")
       .default_value(1 << 24)
@@ -40,14 +41,34 @@ int main(int argc, char *argv[]) {
     cerr << program;
     exit(1);
   }
+  bool provided_logfile = program.is_used("--log");
+  if (provided_logfile) {
+    try {
+      string log_path = program.get("--log");
+      auto console_sink =
+          std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+      console_sink->set_pattern("[%Y-%m-%d %H:%M:%S] [%^%l%$] %v");
+
+      auto file_sink =
+          std::make_shared<spdlog::sinks::basic_file_sink_mt>(log_path, true);
+      file_sink->set_pattern("[%Y-%m-%d %H:%M:%S] [%l] %v");
+      spdlog::logger logger("multi_logger", {console_sink, file_sink});
+      spdlog::set_default_logger(std::make_shared<spdlog::logger>(logger));
+      spdlog::info("Logging to file : {}", log_path);
+    } catch (const spdlog::spdlog_ex &e) {
+      println(cerr, "Log init failed: {}", e.what());
+      exit(1);
+    }
+  }
+  spdlog::flush_every(std::chrono::seconds(3));
+  spdlog::flush_on(spdlog::level::warn);
   string image_path = program.get("--image");
   int mem_size = program.get<int>("--mem_size");
   bool batch_mode = program.get<bool>("--batch");
-  println(clog, "Image path  : {}", image_path);
-  println(clog, "Memory size : {}", mem_size);
+  spdlog::info("Image path  : {}", image_path);
+  spdlog::info("Memory size : {}", mem_size);
 
-  unique_ptr<RISCV32> emu = make_unique<NPCemu>(mem_size, image_path);
-  emu_cpy = dynamic_cast<NPCemu *>(emu.get());
+  emu = make_shared<NPCemu>(mem_size, image_path);
   SingleMonitor monitor(emu, batch_mode);
   try {
     monitor.start();

@@ -1,10 +1,10 @@
 #include "Simulators/RISCV32.h"
+#include "spdlog/spdlog.h"
 #include <cstdint>
 #include <filesystem>
 #include <format>
 #include <fstream>
 #include <iostream>
-#include <ostream>
 #include <stdexcept>
 #include <string_view>
 
@@ -29,7 +29,7 @@ RISCV32::RISCV32(size_t MemSize, std::string_view program, addr_t init_pc)
 
   prog_file.read(reinterpret_cast<char *>(M.data()), size_prog);
 
-  std::println(std::clog, "Loaded {} instructions", size_prog);
+  spdlog::info("Loaded {} words", size_prog);
   cpu.pc = init_pc;
   prog_file.close();
 }

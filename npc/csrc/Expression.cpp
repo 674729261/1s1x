@@ -1,9 +1,9 @@
 #include "Expression/Expression.h"
 #include "Simulators/RISCV32.h"
+#include "spdlog/spdlog.h"
 #include "utils.h"
-#include <algorithm>
 #include <cassert>
-#include <iterator>
+#include <format>
 #include <optional>
 #include <print>
 #include <regex>
@@ -96,7 +96,7 @@ Expression::generateExpression(std::string_view expr) {
               std::string(expr.begin() + pos, expr.begin() + pos + mm.length()),
               tokenTypes[i].type, tokenTypes[i].catagory,
               tokenTypes[i].priotity);
-          auto parsed_value = to_number<long long>(tokens.back().display);
+          auto parsed_value = to_number<uint32_t>(tokens.back().display);
           if (!parsed_value.has_value())
             return std::nullopt;
           tokens.back().data.value = parsed_value.value();
@@ -176,10 +176,10 @@ Expression::generateExpression(std::string_view expr) {
   return expression;
 }
 
-long long Expression::eval(RISCV32 &dut) {
+uint32_t Expression::eval(RISCV32 &dut) const {
   return eval_sub(dut, 0, tokens.size() - 1);
 }
-long long Expression::eval_sub(RISCV32 &dut, int l, int r) {
+uint32_t Expression::eval_sub(RISCV32 &dut, int l, int r) const {
 
   if (l > r)
     throw std::logic_error("Invalid expression");
@@ -188,7 +188,8 @@ long long Expression::eval_sub(RISCV32 &dut, int l, int r) {
       return tokens[l].data.value;
     if (tokens[l].type == TK_REGISTER)
       return dut.getGPR(tokens[l].data.regid);
-    throw std::logic_error("Invalid expression");
+    spdlog::error("Invalid expression {}", stringify());
+    return -1;
   }
   if (parentheses[l] == r)
     return eval_sub(dut, l + 1, r - 1);
@@ -206,11 +207,13 @@ long long Expression::eval_sub(RISCV32 &dut, int l, int r) {
     case '*':
       return dut.readMemory(eval_sub(dut, l + 1, r));
     default:
-      throw std::logic_error("Invalid expression");
+      spdlog::error("Invalid expression : {}", stringify());
+      throw std::logic_error(
+          std::format("Invalid expression : {}", stringify()));
     }
   }
-  long long LHS = eval_sub(dut, l, pos_main - 1);
-  long long RHS = eval_sub(dut, pos_main + 1, r);
+  uint32_t LHS = eval_sub(dut, l, pos_main - 1);
+  uint32_t RHS = eval_sub(dut, pos_main + 1, r);
   switch (tokens[pos_main].type) {
   case '+':
     return LHS + RHS;
@@ -219,12 +222,16 @@ long long Expression::eval_sub(RISCV32 &dut, int l, int r) {
   case '*':
     return LHS * RHS;
   case '/':
-    if (RHS == 0)
-      throw std::logic_error("Division by zero");
+    if (RHS == 0) {
+      spdlog::error("Division by zero : {}", stringify());
+      throw std::logic_error(std::format("Division by zero : {}", stringify()));
+    }
     return LHS / RHS;
   case '%':
-    if (RHS == 0)
-      throw std::logic_error("Division by zero");
+    if (RHS == 0) {
+      spdlog::error("Division by zero : {}", stringify());
+      throw std::logic_error(std::format("Division by zero : {}", stringify()));
+    }
     return LHS % RHS;
   case '^':
     return LHS ^ RHS;
@@ -249,10 +256,11 @@ long long Expression::eval_sub(RISCV32 &dut, int l, int r) {
   case TK_BOOL_OR:
     return LHS || RHS;
   default:
-    throw std::logic_error("Invalid expression");
+    spdlog::error("Invalid expression : {}", stringify());
+    throw std::logic_error(std::format("Invalid expression : {}", stringify()));
   }
 }
-int Expression::main_token(RISCV32 &, int l, int r) {
+int Expression::main_token(RISCV32 &, int l, int r) const {
   int ret = -1, mn = 99999;
 
   for (int i = l; i <= r; i++) {
@@ -268,8 +276,27 @@ int Expression::main_token(RISCV32 &, int l, int r) {
   }
   return ret;
 }
-void Expression::show() {
+std::string Expression::stringify() const {
+  std::string ret;
   for (const auto &tk : tokens)
-    print("{}", tk.display);
-  println();
+    ret += std::format("{}", tk.display);
+  return ret;
+}
+
+optional<uint32_t> Expression::evalExpression(RISCV32 &dut,
+                                              std::string_view expr) {
+  auto e = generateExpression(expr);
+  uint32_t value;
+  if (!e.has_value())
+    return std::nullopt;
+
+  try {
+    value = e->eval(dut);
+  } catch (std::logic_error e) {
+    println("{}", e.what());
+    println("Evaluation failed", e.what());
+    return std::nullopt;
+  }
+
+  return value;
 }

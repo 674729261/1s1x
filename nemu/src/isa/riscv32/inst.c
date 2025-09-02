@@ -112,11 +112,13 @@ static void decode_operand(Decode *s, int *rd, word_t *src1, word_t *src2,
   }
 }
 
+#ifdef CONFIG_FTRACER
+
 static void several_spaces(unsigned cnt) {
   while (cnt--)
     fputc(' ', stderr);
 }
-#ifdef CONFIG_FTRACER
+
 static void check_jal(vaddr_t from_pc, vaddr_t to_pc, uint32_t inst) {
   if (symbols_table.symbol_count == 0)
     return;

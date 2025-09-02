@@ -32,11 +32,14 @@ public:
     if (name == "$0")
       return 0;
     if (name == "$pc")
-      return 33;
+      return 32;
     return -1;
   }
 
-  virtual CPU_State getCPUState() = 0;
+  CPU_State getCPUState() {
+    syncCPUState();
+    return cpu;
+  }
 
   virtual addr_t getPC() = 0;
   virtual void writeMemory(int waddr, int wdata, char wmask) = 0;
@@ -46,13 +49,7 @@ public:
   virtual int instrCount() = 0;
   virtual void syncCPUState() = 0;
   Interrupt getEMUState() { return EMUstate; }
-  uint32_t getGPR(int idx) {
-    if (idx >= 0 && idx < 32)
-      return cpu.gpr[idx];
-    if (idx == 33)
-      return cpu.pc;
-    throw std::logic_error("Invalid register");
-  }
+  virtual uint32_t getGPR(int idx) = 0;
   virtual ~RISCV32() = default;
 
 protected:

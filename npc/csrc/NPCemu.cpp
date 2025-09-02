@@ -12,9 +12,7 @@ NPCemu::NPCemu(size_t MemSize, std::string_view program)
     : RISCV32(MemSize, program, PC_Init), dut("DUT"), trapped(0),
       inst_count(0) {}
 
-RISCV32::CPU_State NPCemu::getCPUState() { return cpu; }
-
-RISCV32::addr_t NPCemu::getPC() { return cpu.pc; }
+RISCV32::addr_t NPCemu::getPC() { return getGPR(32); }
 
 void NPCemu::reset() {
   dut.reset = 1;
@@ -46,7 +44,6 @@ RISCV32::Interrupt NPCemu::step(std::size_t c) {
       break;
     }
   }
-  syncCPUState();
   return state;
 }
 
@@ -84,6 +81,78 @@ void NPCemu::syncCPUState() {
   cpu.gpr[30] = dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_29_r;
   cpu.gpr[31] = dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_30_r;
   cpu.pc = dut.io_pc;
+}
+
+uint32_t NPCemu::getGPR(int idx) {
+  switch (idx) {
+  case 0:
+    return 0;
+  case 1:
+    return dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_0_r;
+  case 2:
+    return dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_1_r;
+  case 3:
+    return dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_2_r;
+  case 4:
+    return dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_3_r;
+  case 5:
+    return dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_4_r;
+  case 6:
+    return dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_5_r;
+  case 7:
+    return dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_6_r;
+  case 8:
+    return dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_7_r;
+  case 9:
+    return dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_8_r;
+  case 10:
+    return dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_9_r;
+  case 11:
+    return dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_10_r;
+  case 12:
+    return dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_11_r;
+  case 13:
+    return dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_12_r;
+  case 14:
+    return dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_13_r;
+  case 15:
+    return dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_14_r;
+  case 16:
+    return dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_15_r;
+  case 17:
+    return dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_16_r;
+  case 18:
+    return dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_17_r;
+  case 19:
+    return dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_18_r;
+  case 20:
+    return dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_19_r;
+  case 21:
+    return dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_20_r;
+  case 22:
+    return dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_21_r;
+  case 23:
+    return dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_22_r;
+  case 24:
+    return dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_23_r;
+  case 25:
+    return dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_24_r;
+  case 26:
+    return dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_25_r;
+  case 27:
+    return dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_26_r;
+  case 28:
+    return dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_27_r;
+  case 29:
+    return dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_28_r;
+  case 30:
+    return dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_29_r;
+  case 31:
+    return dut.rootp->CPU__DOT__gpr__DOT__register_bank_regs_30_r;
+  case 32:
+    return dut.io_pc;
+  }
+  throw std::logic_error(std::format("Invalid register idx : {}", idx));
 }
 
 int NPCemu::instrCount() { return inst_count; }
