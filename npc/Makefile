@@ -25,7 +25,8 @@ $(SVSRC): $(CHISELSRC)
 
 PROG ?= test_progs/add-minirv-npc.bin
 MEM_SIZE ?= 134217728
-LOG_FILE ?= log/log.log
+TIME_STAMP = $(shell date +"%Y_%m_%d_%H_%M_%S")
+LOG_FILE ?= "log/$(TIME_STAMP).log"
 sim: all
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
 	$(BIN) --image $(PROG) --mem_size $(MEM_SIZE) --log $(LOG_FILE)
