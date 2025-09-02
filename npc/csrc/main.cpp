@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
       exit(1);
     }
   }
-
+  spdlog::flush_every(std::chrono::seconds(3));
   string image_path = program.get("--image");
   int mem_size = program.get<int>("--mem_size");
   bool batch_mode = program.get<bool>("--batch");
