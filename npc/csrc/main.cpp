@@ -15,10 +15,10 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 using std::println, std::cerr;
+using std::shared_ptr, std::make_shared;
 using std::string;
-using std::unique_ptr, std::make_unique;
 
-std::shared_ptr<NPCemu> emu;
+shared_ptr<NPCemu> emu;
 extern "C" void trap(int signal) { emu->trapped = signal; }
 extern "C" int pmem_read(int raddr) { return emu->readMemory(raddr); }
 extern "C" void pmem_write(int waddr, int wdata, char wmask) {
