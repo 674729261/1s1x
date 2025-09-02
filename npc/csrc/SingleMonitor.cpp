@@ -92,7 +92,7 @@ bool SingleMonitor::process_trap() {
 
 void SingleMonitor::simulate(unsigned long cnt) {
   using namespace std::chrono;
-  int n_inst = 0;
+  int n_inst = emu->instrCount();
   auto start = steady_clock::now();
   if (watchers.empty()) {
     emu->step(cnt);
@@ -125,6 +125,7 @@ void SingleMonitor::simulate(unsigned long cnt) {
     }
   }
   auto end = steady_clock::now();
+  n_inst = emu->instrCount() - n_inst;
   double elapsed =
       duration_cast<microseconds>(end - start).count() / 1'000'000.0;
   spdlog::info("Simulated {} cycles, PC is now {:#010x}", n_inst, emu->getPC());
