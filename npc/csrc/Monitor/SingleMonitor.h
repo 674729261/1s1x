@@ -3,7 +3,6 @@
 #include <memory>
 #include <replxx.hxx>
 #include <string>
-
 #include <vector>
 class SingleMonitor {
 public:

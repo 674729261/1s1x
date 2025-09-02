@@ -1,5 +1,5 @@
 CSRC = $(wildcard csrc/*.cpp)
-CSRC += $(wildcard /usr/local/lib/*.a)
+CSRC += /usr/local/lib/libreplxx.a
 SVSRC = generated_svsrc/CPU.sv
 VSRC = $(wildcard vsrc/*.v)
 VSRC += $(wildcard vsrc/*.sv)
