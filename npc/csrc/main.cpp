@@ -53,8 +53,8 @@ int main(int argc, char *argv[]) {
           std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
       console_sink->set_pattern("[%Y-%m-%d %H:%M:%S] [%^%l%$] %v");
 
-      auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(
-          "logs/output.log", true);
+      auto file_sink =
+          std::make_shared<spdlog::sinks::basic_file_sink_mt>(log_path, true);
       file_sink->set_pattern("[%Y-%m-%d %H:%M:%S] [%l] %v");
       spdlog::logger logger("multi_logger", {console_sink, file_sink});
       spdlog::set_default_logger(std::make_shared<spdlog::logger>(logger));
