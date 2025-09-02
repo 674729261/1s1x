@@ -12,7 +12,7 @@ NPCemu::NPCemu(size_t MemSize, std::string_view program)
     : RISCV32(MemSize, program, PC_Init), dut("DUT"), trapped(0),
       inst_count(0) {}
 
-RISCV32::addr_t NPCemu::getPC() { return cpu.pc; }
+RISCV32::addr_t NPCemu::getPC() { return getGPR(32); }
 
 void NPCemu::reset() {
   dut.reset = 1;

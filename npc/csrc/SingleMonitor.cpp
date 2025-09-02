@@ -8,6 +8,7 @@
 #include <ostream>
 #include <print>
 #include <regex>
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -87,6 +88,35 @@ bool SingleMonitor::process_trap() {
   return (gpr_a0 == 0);
 }
 
+void SingleMonitor::simulate(unsigned long cnt) {
+  if (watchers.empty()) {
+    emu->step(cnt);
+  } else {
+    bool triggered = false;
+    while (cnt--) {
+      emu->step(1);
+      for (auto &wat : watchers) {
+        try {
+          uint32_t value = wat.expression.eval(*emu);
+          if (value != wat.last) {
+            println("Watcher #{} : {}", wat.id, wat.expression.stringify());
+            println("{:#010x} -> {:#010x}", wat.last, value);
+            wat.last = value;
+            triggered = true;
+          }
+        } catch (std::logic_error e) {
+          spdlog::error(
+              "Error while evaluating watcher #{}@{} : {}, error info : {}",
+              wat.id, emu->getPC(), wat.expression.stringify(), e.what());
+          return;
+        }
+      }
+      if (triggered)
+        break;
+    }
+  }
+}
+
 SingleMonitor::CommandState
 SingleMonitor::query_command(this SingleMonitor &self) {
   string command = self.repl.input("(NPCemu)");
@@ -141,7 +171,7 @@ SingleMonitor::CommandState SingleMonitor::step(const vector<string> &params) {
     println("Program has been terminated");
     return CommandState::NONE;
   }
-  emu->step(cnt);
+  simulate(cnt);
   return CommandState::NONE;
 }
 SingleMonitor::CommandState SingleMonitor::run(const vector<string> &params) {
@@ -183,7 +213,7 @@ SingleMonitor::info(const std::vector<std::string> &params) {
               wat.expression.stringify());
     }
     println("{:-^50}", "");
-    println("{} watchers", watchers.size());
+    println("{} watcher(s)", watchers.size());
   } else
     println("Useage : info {{r}}");
   return CommandState::NONE;

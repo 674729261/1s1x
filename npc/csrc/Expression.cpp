@@ -188,7 +188,7 @@ uint32_t Expression::eval_sub(RISCV32 &dut, int l, int r) const {
       return tokens[l].data.value;
     if (tokens[l].type == TK_REGISTER)
       return dut.getGPR(tokens[l].data.regid);
-    spdlog::warn("Invalid expression {}", stringify());
+    spdlog::error("Invalid expression {}", stringify());
     return -1;
   }
   if (parentheses[l] == r)

@@ -41,6 +41,9 @@ private:
 
 private:
   bool process_trap();
+
+  void simulate(unsigned long cnt);
+
   CommandState query_command(this SingleMonitor &self);
   CommandState help(const std::vector<std::string> &params);
   CommandState step(const std::vector<std::string> &params);
