@@ -18,12 +18,11 @@ using std::println, std::cerr;
 using std::string;
 using std::unique_ptr, std::make_unique;
 
-NPCemu *emu_cpy;
-
-extern "C" void trap(int signal) { emu_cpy->trapped = signal; }
-extern "C" int pmem_read(int raddr) { return emu_cpy->readMemory(raddr); }
+std::shared_ptr<NPCemu> emu;
+extern "C" void trap(int signal) { emu->trapped = signal; }
+extern "C" int pmem_read(int raddr) { return emu->readMemory(raddr); }
 extern "C" void pmem_write(int waddr, int wdata, char wmask) {
-  emu_cpy->writeMemory(waddr, wdata, wmask);
+  emu->writeMemory(waddr, wdata, wmask);
 }
 
 int main(int argc, char *argv[]) {
@@ -73,8 +72,7 @@ int main(int argc, char *argv[]) {
   spdlog::info("Image path  : {}", image_path);
   spdlog::info("Memory size : {}", mem_size);
 
-  unique_ptr<RISCV32> emu = make_unique<NPCemu>(mem_size, image_path);
-  emu_cpy = dynamic_cast<NPCemu *>(emu.get());
+  emu = make_shared<NPCemu>(mem_size, image_path);
   SingleMonitor monitor(emu, batch_mode);
   try {
     monitor.start();

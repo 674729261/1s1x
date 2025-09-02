@@ -4,8 +4,6 @@
 #include "spdlog/spdlog.h"
 #include "utils.h"
 #include <cstdint>
-#include <cstdio>
-#include <iostream>
 #include <ostream>
 #include <print>
 #include <regex>
@@ -43,7 +41,7 @@ const SingleMonitor::CommandItem SingleMonitor::command_list[] = {
         .description = "Print infomation; p <expr>",
     }};
 
-SingleMonitor::SingleMonitor(std::unique_ptr<RISCV32> &emu, bool batch)
+SingleMonitor::SingleMonitor(std::shared_ptr<RISCV32> emu, bool batch)
     : emu(emu), batch(batch) {
 
   if (repl.history_load("replxx_history/history.txt"))

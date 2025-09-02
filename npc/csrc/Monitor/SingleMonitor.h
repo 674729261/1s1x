@@ -6,13 +6,13 @@
 #include <vector>
 class SingleMonitor {
 public:
-  SingleMonitor(std::unique_ptr<RISCV32> &dut, bool batch = false);
+  SingleMonitor(std::shared_ptr<RISCV32> dut, bool batch = false);
 
   void start();
   ~SingleMonitor();
 
 private:
-  std::unique_ptr<RISCV32> &emu;
+  std::shared_ptr<RISCV32> emu;
   bool batch;
 
   enum class CommandState { NONE, QUIT };
