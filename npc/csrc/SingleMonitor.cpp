@@ -112,7 +112,7 @@ void SingleMonitor::simulate(unsigned long cnt) {
         }
       }
       if (triggered)
-        break;
+        return;
     }
   }
 }
@@ -183,7 +183,7 @@ SingleMonitor::CommandState SingleMonitor::run(const vector<string> &params) {
     println("Program has been terminated");
     return CommandState::NONE;
   }
-  emu->step(-1);
+  simulate(-1);
   return CommandState::NONE;
 }
 
