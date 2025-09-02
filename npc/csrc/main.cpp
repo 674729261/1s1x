@@ -10,6 +10,9 @@
 #include <ostream>
 #include <string>
 
+#include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/spdlog.h>
 using std::println, std::cerr, std::clog;
 using std::string;
 using std::unique_ptr, std::make_unique;
@@ -42,11 +45,33 @@ int main(int argc, char *argv[]) {
     cerr << program;
     exit(1);
   }
+
+  string log_path = program.get("--log");
+  if (!log_path.empty()) {
+    try {
+      auto console_sink =
+          std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+      console_sink->set_pattern("[%Y-%m-%d %H:%M:%S] [%^%l%$] %v");
+
+      auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(
+          "logs/output.log", true);
+      file_sink->set_pattern("[%Y-%m-%d %H:%M:%S] [%l] %v");
+      spdlog::logger logger("multi_logger", {console_sink, file_sink});
+      spdlog::set_default_logger(std::make_shared<spdlog::logger>(logger));
+    } catch (const spdlog::spdlog_ex &e) {
+      println(cerr, "Log init failed: {}", e.what());
+      exit(1);
+    }
+  }
+
   string image_path = program.get("--image");
   int mem_size = program.get<int>("--mem_size");
   bool batch_mode = program.get<bool>("--batch");
-  println(clog, "Image path  : {}", image_path);
-  println(clog, "Memory size : {}", mem_size);
+  spdlog::info("Image path  : {}", image_path);
+  spdlog::info("Memory size : {}", mem_size);
+
+  // println(clog, "Image path  : {}", image_path);
+  // println(clog, "Memory size : {}", mem_size);
 
   unique_ptr<RISCV32> emu = make_unique<NPCemu>(mem_size, image_path);
   emu_cpy = dynamic_cast<NPCemu *>(emu.get());
