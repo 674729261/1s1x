@@ -195,7 +195,7 @@ SingleMonitor::scan(const std::vector<std::string> &params) {
   for (int i = 1; i < params.size(); i++)
     str = str + " " + params[i];
   sz = ret.value();
-  auto ret2 = to_number<long long>(str);
+  auto ret2 = Expression::evalExpression(*emu, str);
   if (!ret2.has_value())
     return CommandState::NONE;
   if (ret2.value() < 0 || ret2.value() >= UINT32_MAX) {
