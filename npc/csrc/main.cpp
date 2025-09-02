@@ -29,7 +29,10 @@ int main(int argc, char *argv[]) {
       .help("Path to log file")
       .nargs(1)
       .default_value(string(""));
-  program.add_argument("-l", "--log").help("The program image file").required();
+  program.add_argument("-l", "--log")
+      .help("The program image file")
+      .required()
+      .implicit_value("std::any value");
   program.add_argument("-z", "--mem_size")
       .help("Size of memory")
       .default_value(1 << 24)
