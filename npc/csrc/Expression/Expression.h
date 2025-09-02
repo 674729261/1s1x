@@ -12,7 +12,7 @@ public:
   Expression(Expression &&) noexcept = default;
 
   long long eval(RISCV32 &);
-  void show();
+  std::string stringify();
 
 private:
   Expression() = default;

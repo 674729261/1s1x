@@ -1,8 +1,10 @@
 #include "Expression/Expression.h"
 #include "Simulators/RISCV32.h"
+#include "spdlog/spdlog.h"
 #include "utils.h"
 #include <algorithm>
 #include <cassert>
+#include <format>
 #include <iterator>
 #include <optional>
 #include <print>
@@ -188,7 +190,8 @@ long long Expression::eval_sub(RISCV32 &dut, int l, int r) {
       return tokens[l].data.value;
     if (tokens[l].type == TK_REGISTER)
       return dut.getGPR(tokens[l].data.regid);
-    throw std::logic_error("Invalid expression");
+    spdlog::warn("Invalid expression {}", stringify());
+    return -1;
   }
   if (parentheses[l] == r)
     return eval_sub(dut, l + 1, r - 1);
@@ -206,7 +209,9 @@ long long Expression::eval_sub(RISCV32 &dut, int l, int r) {
     case '*':
       return dut.readMemory(eval_sub(dut, l + 1, r));
     default:
-      throw std::logic_error("Invalid expression");
+      spdlog::error("Invalid expression : {}", stringify());
+      throw std::logic_error(
+          std::format("Invalid expression : {}", stringify()));
     }
   }
   long long LHS = eval_sub(dut, l, pos_main - 1);
@@ -219,12 +224,16 @@ long long Expression::eval_sub(RISCV32 &dut, int l, int r) {
   case '*':
     return LHS * RHS;
   case '/':
-    if (RHS == 0)
-      throw std::logic_error("Division by zero");
+    if (RHS == 0) {
+      spdlog::error("Division by zero : {}", stringify());
+      throw std::logic_error(std::format("Division by zero : {}", stringify()));
+    }
     return LHS / RHS;
   case '%':
-    if (RHS == 0)
-      throw std::logic_error("Division by zero");
+    if (RHS == 0) {
+      spdlog::error("Division by zero : {}", stringify());
+      throw std::logic_error(std::format("Division by zero : {}", stringify()));
+    }
     return LHS % RHS;
   case '^':
     return LHS ^ RHS;
@@ -249,7 +258,8 @@ long long Expression::eval_sub(RISCV32 &dut, int l, int r) {
   case TK_BOOL_OR:
     return LHS || RHS;
   default:
-    throw std::logic_error("Invalid expression");
+    spdlog::error("Invalid expression : {}", stringify());
+    throw std::logic_error(std::format("Invalid expression : {}", stringify()));
   }
 }
 int Expression::main_token(RISCV32 &, int l, int r) {
@@ -268,8 +278,9 @@ int Expression::main_token(RISCV32 &, int l, int r) {
   }
   return ret;
 }
-void Expression::show() {
+std::string Expression::stringify() {
+  std::string ret;
   for (const auto &tk : tokens)
-    print("{}", tk.display);
-  println();
+    ret += std::format("{}", tk.display);
+  return ret;
 }
