@@ -13,7 +13,7 @@
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
-using std::println, std::cerr, std::clog;
+using std::println, std::cerr;
 using std::string;
 using std::unique_ptr, std::make_unique;
 
@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
       console_sink->set_pattern("[%Y-%m-%d %H:%M:%S] [%^%l%$] %v");
 
       auto file_sink =
-          std::make_shared<spdlog::sinks::basic_file_sink_mt>(log_path, true);
+          std::make_shared<spdlog::sinks::basic_file_sink_mt>(log_path, false);
       file_sink->set_pattern("[%Y-%m-%d %H:%M:%S] [%l] %v");
       spdlog::logger logger("multi_logger", {console_sink, file_sink});
       spdlog::set_default_logger(std::make_shared<spdlog::logger>(logger));
