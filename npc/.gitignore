@@ -30,3 +30,5 @@ generated_svsrc/
 !test_progs/*
 thirdparty/**/*
 !thirdparty/Makefile
+log
+replxx_history

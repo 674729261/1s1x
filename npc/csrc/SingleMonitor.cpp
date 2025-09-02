@@ -13,7 +13,6 @@
 #include <string>
 #include <vector>
 
-using std::cin, std::getline;
 using std::print, std::println;
 using std::regex, std::sregex_token_iterator;
 using std::string;
@@ -45,7 +44,12 @@ const SingleMonitor::CommandItem SingleMonitor::command_list[] = {
     }};
 
 SingleMonitor::SingleMonitor(std::unique_ptr<RISCV32> &emu, bool batch)
-    : emu(emu), batch(batch) {}
+    : emu(emu), batch(batch) {
+
+  if (repl.history_load("replxx_history/history.txt"))
+    spdlog::info("Loaded {} history commands from {}", repl.history_size(),
+                 "replxx_history/history.txt");
+}
 
 void SingleMonitor::start() {
   emu->reset();
