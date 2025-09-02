@@ -45,10 +45,10 @@ int main(int argc, char *argv[]) {
     cerr << program;
     exit(1);
   }
-
-  string log_path = program.get("--log");
-  if (!log_path.empty()) {
+  bool provided_logfile = program.is_used("--log");
+  if (provided_logfile) {
     try {
+      string log_path = program.get("--log");
       auto console_sink =
           std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
       console_sink->set_pattern("[%Y-%m-%d %H:%M:%S] [%^%l%$] %v");
