@@ -99,8 +99,7 @@ void SingleMonitor::simulate(unsigned long cnt) {
   } else {
     bool triggered = false;
     while (cnt--) {
-      emu->step(1);
-      n_inst++;
+      auto state = emu->step(1);
       for (auto &wat : watchers) {
         try {
           uint32_t value = wat.expression.eval(*emu);
@@ -118,6 +117,8 @@ void SingleMonitor::simulate(unsigned long cnt) {
                         e.what());
           return;
         }
+        if (state != RISCV32::Interrupt::NONE)
+          break;
       }
       if (triggered)
         break;
