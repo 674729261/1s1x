@@ -117,10 +117,8 @@ void SingleMonitor::simulate(unsigned long cnt) {
                         e.what());
           return;
         }
-        if (emu->getEMUState() != RISCV32::Interrupt::NONE)
-          break;
       }
-      if (triggered)
+      if (triggered || emu->getEMUState() != RISCV32::Interrupt::NONE)
         break;
     }
   }
