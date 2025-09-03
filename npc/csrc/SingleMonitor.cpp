@@ -47,7 +47,7 @@ const SingleMonitor::CommandItem SingleMonitor::command_list[] = {
      .description = "Setup a watcher; w <expr>"},
     {.command = "d",
      .func = &SingleMonitor::d,
-     .description = "Remove a watcher; d <index>"},
+     .description = "Remove a watcher; d [index]"},
 };
 
 SingleMonitor::SingleMonitor(std::shared_ptr<RISCV32> emu, bool batch)
