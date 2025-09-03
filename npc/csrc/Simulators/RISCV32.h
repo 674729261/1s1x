@@ -45,7 +45,12 @@ public:
   virtual void writeMemory(int waddr, int wdata, char wmask) = 0;
   virtual uint32_t readMemory(int raddr) = 0;
   virtual void reset() = 0;
-  virtual Interrupt step(std::size_t c) = 0;
+  virtual void step() = 0;
+  Interrupt simulate(unsigned long steps) {
+    while (steps-- && EMUstate == Interrupt::NONE)
+      step();
+    return EMUstate;
+  }
   virtual int instrCount() = 0;
   virtual void syncCPUState() = 0;
   Interrupt getEMUState() { return EMUstate; }

@@ -66,7 +66,7 @@ void SingleMonitor::start() {
   bool finished = false;
   while (true) {
     if (batch)
-      emu->step(-1);
+      emu->simulate(-1);
     else
       state = query_command();
     if (!finished && emu->getEMUState() == RISCV32::Interrupt::EBREAK) {
@@ -95,11 +95,11 @@ void SingleMonitor::simulate(unsigned long cnt) {
   int n_inst = emu->instrCount();
   auto start = steady_clock::now();
   if (watchers.empty()) {
-    emu->step(cnt);
+    emu->simulate(cnt);
   } else {
     bool triggered = false;
     while (cnt--) {
-      emu->step(1);
+      emu->step();
       for (auto &wat : watchers) {
         try {
           uint32_t value = wat.expression.eval(*emu);

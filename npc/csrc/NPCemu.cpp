@@ -26,25 +26,20 @@ void NPCemu::reset() {
   syncCPUState();
 }
 
-RISCV32::Interrupt NPCemu::step(std::size_t c) {
-  Interrupt state = RISCV32::Interrupt::NONE;
-  while (c--) {
-    addr_t pc = dut.io_pc;
-    if (pc < memOffset) {
-      throw std::logic_error(std::format("pc : {:08x} out of range", pc));
-    }
-    dut.io_instr = M[(pc - memOffset) / 4];
-    dut.clock = 0;
-    dut.eval();
-    dut.clock = 1;
-    dut.eval();
-    inst_count++;
-    if (trapped) {
-      state = EMUstate = RISCV32::Interrupt::EBREAK;
-      break;
-    }
+void NPCemu::step() {
+  addr_t pc = dut.io_pc;
+  if (pc < memOffset) {
+    throw std::logic_error(std::format("pc : {:08x} out of range", pc));
   }
-  return state;
+  dut.io_instr = M[(pc - memOffset) / 4];
+  dut.clock = 0;
+  dut.eval();
+  dut.clock = 1;
+  dut.eval();
+  inst_count++;
+  if (trapped) {
+    EMUstate = RISCV32::Interrupt::EBREAK;
+  }
 }
 
 void NPCemu::syncCPUState() {

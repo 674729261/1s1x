@@ -18,7 +18,7 @@ public:
   addr_t getPC() override final;
 
   void reset() override final;
-  Interrupt step(std::size_t c) override final;
+  void step() override final;
   int instrCount() override final;
 
   void writeMemory(int waddr, int wdata, char wmask) override final;
