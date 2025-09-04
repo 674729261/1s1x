@@ -9,7 +9,8 @@
 #include <string>
 class SingleMonitor {
 public:
-  SingleMonitor(std::shared_ptr<RISCV32> dut, bool batch = false);
+  SingleMonitor(std::shared_ptr<RISCV32> dut, bool batch = false,
+                unsigned long itracer = 16, bool mtracer = false);
 
   void start();
   ~SingleMonitor();
@@ -25,9 +26,13 @@ public:
 
 private:
   std::shared_ptr<RISCV32> emu;
-  bool batch;
+  unsigned long itracer;
+  bool batch, mtracer;
 
-  enum class CommandState { NONE, QUIT };
+  enum class CommandState {
+    NONE, // OK to read next command
+    QUIT  // End the monitor
+  };
 
   std::list<Watcher> watchers;
 

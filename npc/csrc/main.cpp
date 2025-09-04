@@ -1,24 +1,33 @@
+#include "Capstone.h"
 #include "Monitor/SingleMonitor.h"
 #include "Simulators/NPCemu.h"
 #include "spdlog/common.h"
 #include <VCPU.h>
 #include <argparse/argparse.hpp>
+#include <bitset>
+#include <cstdint>
 #include <iostream>
 #include <memory>
-#include <string>
-
+#include <ostream>
+#include <print>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
+#include <string>
 using std::println, std::cerr;
 using std::shared_ptr, std::make_shared;
 using std::string;
 
 shared_ptr<NPCemu> emu;
+bool mtracer;
 extern "C" void trap(int signal) { emu->trapped = signal; }
 extern "C" int pmem_read(int raddr) { return emu->readMemory(raddr); }
 extern "C" void pmem_write(int waddr, int wdata, char wmask) {
   emu->writeMemory(waddr, wdata, wmask);
+  if (mtracer) {
+    println("Write to memory : {:#010x}, data : {:#010x}, mask : {:#010x}",
+            (uint32_t)waddr, (uint32_t)wdata, (uint32_t)wmask);
+  }
 }
 
 int main(int argc, char *argv[]) {
@@ -32,8 +41,14 @@ int main(int argc, char *argv[]) {
   program.add_argument("-z", "--mem_size")
       .help("Size of memory")
       .default_value(1 << 24)
-      .scan<'i', int>();
+      .scan<'i', uint32_t>();
   program.add_argument("-b", "--batch").help("Batch mode").flag();
+  program.add_argument("--itracer")
+      .help("Display instruction executed")
+      .default_value(16)
+      .scan<'i', unsigned long>();
+  program.add_argument("--mtracer").help("Display memory visited").flag();
+
   try {
     program.parse_args(argc, argv);
   } catch (const std::exception &err) {
@@ -60,16 +75,27 @@ int main(int argc, char *argv[]) {
       exit(1);
     }
   }
-  spdlog::flush_every(std::chrono::seconds(3));
+  spdlog::flush_every(std::chrono::seconds(5));
   spdlog::flush_on(spdlog::level::warn);
   string image_path = program.get("--image");
-  int mem_size = program.get<int>("--mem_size");
+  uint32_t mem_size = program.get<uint32_t>("--mem_size");
   bool batch_mode = program.get<bool>("--batch");
+  uint32_t itracer = program.get<unsigned long>("--itracer");
+  mtracer = program.get<bool>("--mtracer");
   spdlog::info("Image path  : {}", image_path);
   spdlog::info("Memory size : {}", mem_size);
 
+  if (itracer) {
+    if (!Capstone::capstone.load_libcapstone()) {
+      spdlog::warn("Failed to initialize capstone. Ignoring itracer flag.");
+      itracer = false;
+    } else {
+      spdlog::info("Using capstone");
+    }
+  }
+
   emu = make_shared<NPCemu>(mem_size, image_path);
-  SingleMonitor monitor(emu, batch_mode);
+  SingleMonitor monitor(emu, batch_mode, itracer, mtracer);
   try {
     monitor.start();
   } catch (const std::exception &err) {

@@ -15,7 +15,10 @@ public:
     addr_t pc;
   };
 
-  enum class Interrupt { NONE, EBREAK };
+  enum class Interrupt {
+    NONE,  // Program is still alive
+    EBREAK // Hit trap
+  };
 
   RISCV32(size_t MemSize, std::string_view program, addr_t init_pc);
   static constexpr std::array<std::string, 32> gpr_names = {
@@ -45,7 +48,12 @@ public:
   virtual void writeMemory(int waddr, int wdata, char wmask) = 0;
   virtual uint32_t readMemory(int raddr) = 0;
   virtual void reset() = 0;
-  virtual Interrupt step(std::size_t c) = 0;
+  virtual void step(bool display = false) = 0;
+  Interrupt simulate(unsigned long steps, bool display = false) {
+    while (steps-- && EMUstate == Interrupt::NONE)
+      step(display);
+    return EMUstate;
+  }
   virtual int instrCount() = 0;
   virtual void syncCPUState() = 0;
   Interrupt getEMUState() { return EMUstate; }

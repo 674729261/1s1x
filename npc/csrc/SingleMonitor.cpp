@@ -47,11 +47,12 @@ const SingleMonitor::CommandItem SingleMonitor::command_list[] = {
      .description = "Setup a watcher; w <expr>"},
     {.command = "d",
      .func = &SingleMonitor::d,
-     .description = "Remove a watcher; d <index>"},
+     .description = "Remove a watcher; d [index]"},
 };
 
-SingleMonitor::SingleMonitor(std::shared_ptr<RISCV32> emu, bool batch)
-    : emu(emu), batch(batch) {
+SingleMonitor::SingleMonitor(std::shared_ptr<RISCV32> emu, bool batch,
+                             unsigned long itracer, bool mtracer)
+    : emu(emu), batch(batch), itracer(itracer), mtracer(mtracer) {
   repl.set_max_history_size(64);
   auto tmp_path =
       std::filesystem::temp_directory_path().append("NPCemu_history.txt");
@@ -66,7 +67,7 @@ void SingleMonitor::start() {
   bool finished = false;
   while (true) {
     if (batch)
-      emu->step(-1);
+      emu->simulate(-1);
     else
       state = query_command();
     if (!finished && emu->getEMUState() == RISCV32::Interrupt::EBREAK) {
@@ -94,13 +95,19 @@ void SingleMonitor::simulate(unsigned long cnt) {
   using namespace std::chrono;
   int n_inst = emu->instrCount();
   auto start = steady_clock::now();
+  unsigned long max_display_inst = cnt < 0 ? 0 : itracer;
+  max_display_inst = std::min(max_display_inst, cnt);
   if (watchers.empty()) {
-    emu->step(cnt);
+    emu->simulate(max_display_inst, itracer);
+    emu->simulate(cnt - max_display_inst, false);
   } else {
     bool triggered = false;
     while (cnt--) {
-      emu->step(1);
-      n_inst++;
+      if (max_display_inst > 0) {
+        emu->step(itracer);
+        max_display_inst--;
+      } else
+        emu->step(false);
       for (auto &wat : watchers) {
         try {
           uint32_t value = wat.expression.eval(*emu);
@@ -112,14 +119,14 @@ void SingleMonitor::simulate(unsigned long cnt) {
             triggered = true;
           }
         } catch (std::logic_error e) {
-          spdlog::error("Error while evaluating watcher #{}@{:#010x} : {}, "
-                        "error info : {}",
-                        wat.id, emu->getPC(), wat.expression.stringify(),
-                        e.what());
+          spdlog::warn(
+              "Error encountered while evaluating watcher #{}@{:#010x} : {}, "
+              "error info : {}",
+              wat.id, emu->getPC(), wat.expression.stringify(), e.what());
           return;
         }
       }
-      if (triggered)
+      if (triggered || emu->getEMUState() != RISCV32::Interrupt::NONE)
         break;
     }
   }
@@ -165,6 +172,7 @@ SingleMonitor::CommandState SingleMonitor::help(const vector<string> &params) {
   }
   return CommandState::NONE;
 }
+
 SingleMonitor::CommandState SingleMonitor::step(const vector<string> &params) {
   if (params.size() > 1) {
     println("Too many arguments. Useage : s [cnt=1]");
