@@ -74,6 +74,8 @@ int main(int argc, char *argv[]) {
     if (!Capstone::capstone.load_libcapstone()) {
       spdlog::warn("Failed to initialize capstone. Ignoring itracer flag.");
       itracer = false;
+    } else {
+      spdlog::info("Using capstone");
     }
   }
 
