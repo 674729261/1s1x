@@ -38,6 +38,16 @@ bool Capstone::load_libcapstone() {
     loaded_lib = nullptr;
     return false;
   }
+  cs_free_dl = (csfree_fn_type)dlsym(loaded_lib, "cs_free");
+  if (cs_disasm_dl == nullptr) {
+    spdlog::error("Failed to load symbol cs_free from {}",
+                  STR(SO_PATH_CAPSTONE));
+    dlclose(loaded_lib);
+    cs_open_dl = nullptr;
+    loaded_lib = nullptr;
+    cs_disasm_dl = nullptr;
+    return false;
+  }
   int ret = cs_open_dl(CS_ARCH_RISCV, CS_MODE_RISCV32, &handle);
   if (ret != 0) {
     dlclose(loaded_lib);

@@ -36,7 +36,7 @@ void NPCemu::step(bool display) {
   if (display) {
     Capstone::capstone.disassemble(pc, (uint8_t *)&dut.io_instr, 4);
   }
-  std::println(std::cerr, "!!!");
+
   dut.clock = 0;
   dut.eval();
   dut.clock = 1;
