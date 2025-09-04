@@ -98,13 +98,13 @@ void SingleMonitor::simulate(unsigned long cnt) {
   unsigned long max_display_inst = 8;
   max_display_inst = std::min(max_display_inst, cnt);
   if (watchers.empty()) {
-    emu->simulate(max_display_inst, true);
+    emu->simulate(max_display_inst, itracer);
     emu->simulate(cnt - max_display_inst, false);
   } else {
     bool triggered = false;
     while (cnt--) {
       if (max_display_inst > 0) {
-        emu->step(true);
+        emu->step(itracer);
         max_display_inst--;
       } else
         emu->step(false);
