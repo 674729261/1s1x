@@ -71,7 +71,7 @@ int main(int argc, char *argv[]) {
   spdlog::info("Memory size : {}", mem_size);
 
   if (itracer) {
-    if (Capstone::capstone.load_libcapstone()) {
+    if (!Capstone::capstone.load_libcapstone()) {
       spdlog::warn("Failed to initialize capstone. Ignoring itracer flag.");
       itracer = false;
     }
