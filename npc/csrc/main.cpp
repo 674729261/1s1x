@@ -5,6 +5,7 @@
 #include <VCPU.h>
 #include <argparse/argparse.hpp>
 #include <bitset>
+#include <cstdint>
 #include <iostream>
 #include <memory>
 #include <ostream>
@@ -25,7 +26,7 @@ extern "C" void pmem_write(int waddr, int wdata, char wmask) {
   emu->writeMemory(waddr, wdata, wmask);
   if (mtracer) {
     println("Write to memory : {:#010x}, data : {:#010x}, mask : {:#010x}",
-            waddr, wdata, wmask);
+            (uint32_t)waddr, (uint32_t)wdata, (uint32_t)wmask);
   }
 }
 
