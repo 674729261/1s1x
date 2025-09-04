@@ -43,7 +43,10 @@ int main(int argc, char *argv[]) {
       .default_value(1 << 24)
       .scan<'i', int>();
   program.add_argument("-b", "--batch").help("Batch mode").flag();
-  program.add_argument("--itracer").help("Display instruction executed").flag();
+  program.add_argument("--itracer")
+      .help("Display instruction executed")
+      .default_value(16)
+      .scan<'i', int>();
   program.add_argument("--mtracer").help("Display memory visited").flag();
 
   try {
