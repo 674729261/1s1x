@@ -39,7 +39,7 @@ bool Capstone::load_libcapstone() {
     return false;
   }
   int ret = cs_open_dl(CS_ARCH_RISCV, CS_MODE_RISCV32, &handle);
-  if (ret == 0) {
+  if (ret != 0) {
     dlclose(loaded_lib);
     loaded_lib = nullptr;
     cs_open_dl = nullptr;
