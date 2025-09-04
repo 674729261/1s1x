@@ -95,7 +95,7 @@ void SingleMonitor::simulate(unsigned long cnt) {
   using namespace std::chrono;
   int n_inst = emu->instrCount();
   auto start = steady_clock::now();
-  unsigned long max_display_inst = 8;
+  unsigned long max_display_inst = cnt < 0 ? 0 : 16;
   max_display_inst = std::min(max_display_inst, cnt);
   if (watchers.empty()) {
     emu->simulate(max_display_inst, itracer);
