@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
   program.add_argument("--itracer")
       .help("Display instruction executed")
       .default_value(16)
-      .scan<'i', uint32_t>();
+      .scan<'i', unsigned long>();
   program.add_argument("--mtracer").help("Display memory visited").flag();
 
   try {
@@ -80,7 +80,7 @@ int main(int argc, char *argv[]) {
   string image_path = program.get("--image");
   uint32_t mem_size = program.get<uint32_t>("--mem_size");
   bool batch_mode = program.get<bool>("--batch");
-  uint32_t itracer = program.get<uint32_t>("--itracer");
+  uint32_t itracer = program.get<unsigned long>("--itracer");
   mtracer = program.get<bool>("--mtracer");
   spdlog::info("Image path  : {}", image_path);
   spdlog::info("Memory size : {}", mem_size);

@@ -51,7 +51,7 @@ const SingleMonitor::CommandItem SingleMonitor::command_list[] = {
 };
 
 SingleMonitor::SingleMonitor(std::shared_ptr<RISCV32> emu, bool batch,
-                             uint32_t itracer, bool mtracer)
+                             unsigned long itracer, bool mtracer)
     : emu(emu), batch(batch), itracer(itracer), mtracer(mtracer) {
   repl.set_max_history_size(64);
   auto tmp_path =
@@ -95,7 +95,7 @@ void SingleMonitor::simulate(unsigned long cnt) {
   using namespace std::chrono;
   int n_inst = emu->instrCount();
   auto start = steady_clock::now();
-  unsigned long max_display_inst = cnt < 0 ? 0 : 16;
+  unsigned long max_display_inst = cnt < 0 ? 0 : itracer;
   max_display_inst = std::min(max_display_inst, cnt);
   if (watchers.empty()) {
     emu->simulate(max_display_inst, itracer);
