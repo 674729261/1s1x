@@ -1,3 +1,4 @@
+#include "Capstone.h"
 #include "Monitor/SingleMonitor.h"
 #include "Simulators/NPCemu.h"
 #include "spdlog/common.h"
@@ -5,11 +6,10 @@
 #include <argparse/argparse.hpp>
 #include <iostream>
 #include <memory>
-#include <string>
-
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
+#include <string>
 using std::println, std::cerr;
 using std::shared_ptr, std::make_shared;
 using std::string;
@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
       exit(1);
     }
   }
-  spdlog::flush_every(std::chrono::seconds(3));
+  spdlog::flush_every(std::chrono::seconds(5));
   spdlog::flush_on(spdlog::level::warn);
   string image_path = program.get("--image");
   int mem_size = program.get<int>("--mem_size");
@@ -69,6 +69,13 @@ int main(int argc, char *argv[]) {
   bool itracer = program.get<bool>("--itracer");
   spdlog::info("Image path  : {}", image_path);
   spdlog::info("Memory size : {}", mem_size);
+
+  if (itracer) {
+    if (Capstone::capstone.load_libcapstone()) {
+      spdlog::warn("Failed to initialize capstone. Ignoring itracer flag.");
+      itracer = false;
+    }
+  }
 
   emu = make_shared<NPCemu>(mem_size, image_path);
   SingleMonitor monitor(emu, batch_mode, itracer);

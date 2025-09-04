@@ -5,12 +5,15 @@
 
 class Capstone {
 public:
-  std::string disassemble(int size, uint64_t pc, uint8_t *code, int nbyte,
+  std::string disassemble(uint64_t pc, uint8_t *code, int nbyte,
                           bool display = true);
   bool load_libcapstone();
   Capstone() = default;
   Capstone(const Capstone &) = delete;
   Capstone(Capstone &&) noexcept = delete;
+  ~Capstone();
+
+  static Capstone capstone;
 
 private:
   using disasm_fn_type = size_t (*)(csh handle, const uint8_t *code,
@@ -19,6 +22,7 @@ private:
   using csfree_fn_type = void (*)(cs_insn *insn, size_t count);
   using cserr_fn_type = cs_err (*)(cs_arch arch, cs_mode mode, csh *handle);
 
+  void *loaded_lib;
   disasm_fn_type cs_disasm_dl;
   csfree_fn_type cs_free_dl;
   csh handle;

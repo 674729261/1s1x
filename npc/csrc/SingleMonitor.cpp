@@ -95,12 +95,19 @@ void SingleMonitor::simulate(unsigned long cnt) {
   using namespace std::chrono;
   int n_inst = emu->instrCount();
   auto start = steady_clock::now();
+  unsigned long max_display_inst = 8;
+  max_display_inst = std::min(max_display_inst, cnt);
   if (watchers.empty()) {
-    emu->simulate(cnt);
+    emu->simulate(max_display_inst, true);
+    emu->simulate(cnt - max_display_inst, false);
   } else {
     bool triggered = false;
     while (cnt--) {
-      emu->step();
+      if (max_display_inst > 0) {
+        emu->step(true);
+        max_display_inst--;
+      } else
+        emu->step(false);
       for (auto &wat : watchers) {
         try {
           uint32_t value = wat.expression.eval(*emu);

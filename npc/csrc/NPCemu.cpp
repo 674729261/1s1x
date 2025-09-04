@@ -1,4 +1,5 @@
 #include "Simulators/NPCemu.h"
+#include "Capstone.h"
 #include "Simulators/RISCV32.h"
 #include "VCPU___024root.h"
 #include <cstdint>
@@ -26,12 +27,15 @@ void NPCemu::reset() {
   syncCPUState();
 }
 
-void NPCemu::step() {
+void NPCemu::step(bool display) {
   addr_t pc = dut.io_pc;
   if (pc < memOffset) {
     throw std::logic_error(std::format("pc : {:08x} out of range", pc));
   }
   dut.io_instr = M[(pc - memOffset) / 4];
+  if (display) {
+    Capstone::capstone.disassemble(pc, (uint8_t *)&M[(pc - memOffset) / 4], 4);
+  }
   dut.clock = 0;
   dut.eval();
   dut.clock = 1;

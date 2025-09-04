@@ -7,28 +7,37 @@
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 
+Capstone Capstone::capstone{};
+
 bool Capstone::load_libcapstone() {
-  auto lib = dlopen(STR(SO_PATH_CAPSTONE), RTLD_LAZY);
-  if (lib == nullptr) {
+  if (loaded_lib != nullptr) {
+    spdlog::info("Already loaded from {}", STR(SO_PATH_CAPSTONE));
+    return true;
+  }
+  loaded_lib = dlopen(STR(SO_PATH_CAPSTONE), RTLD_LAZY);
+  if (loaded_lib == nullptr) {
     spdlog::error("Failed to load from {}", STR(SO_PATH_CAPSTONE));
     return false;
   }
   cserr_fn_type cs_open_dl = NULL;
-  cs_open_dl = (cserr_fn_type)dlsym(lib, "cs_open");
+  cs_open_dl = (cserr_fn_type)dlsym(loaded_lib, "cs_open");
   if (cs_open_dl == nullptr) {
-    dlclose(lib);
+    dlclose(loaded_lib);
+    loaded_lib = nullptr;
     return false;
   }
 
-  cs_disasm_dl = (disasm_fn_type)dlsym(lib, "cs_disasm");
+  cs_disasm_dl = (disasm_fn_type)dlsym(loaded_lib, "cs_disasm");
   if (cs_disasm_dl == nullptr) {
-    dlclose(lib);
+    dlclose(loaded_lib);
     cs_open_dl = nullptr;
+    loaded_lib = nullptr;
     return false;
   }
   int ret = cs_open_dl(CS_ARCH_RISCV, CS_MODE_RISCV32, &handle);
   if (ret == 0) {
-    dlclose(lib);
+    dlclose(loaded_lib);
+    loaded_lib = nullptr;
     cs_open_dl = nullptr;
     cs_disasm_dl = nullptr;
     return false;
@@ -36,8 +45,8 @@ bool Capstone::load_libcapstone() {
   return true;
 }
 
-std::string Capstone::disassemble(int size, uint64_t pc, uint8_t *code,
-                                  int nbyte, bool display) {
+std::string Capstone::disassemble(uint64_t pc, uint8_t *code, int nbyte,
+                                  bool display) {
   if (cs_disasm_dl == nullptr)
     throw std::runtime_error("Did not load libcapstone first");
   cs_insn *insn;
@@ -52,4 +61,9 @@ std::string Capstone::disassemble(int size, uint64_t pc, uint8_t *code,
     println("{}", str);
   cs_free_dl(insn, count);
   return str;
+}
+
+Capstone::~Capstone() {
+  if (loaded_lib)
+    dlclose(loaded_lib);
 }
