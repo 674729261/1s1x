@@ -147,7 +147,7 @@ uint32_t NPCemu::getGPR(int idx) {
   case 32:
     return dut.io_pc;
   }
-  throw std::logic_error(std::format("Invalid register idx : {}", idx));
+  throw std::logic_error(std::format("Invalid register index : {}", idx));
 }
 
 int NPCemu::instrCount() { return inst_count; }

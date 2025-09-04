@@ -34,6 +34,7 @@ int main(int argc, char *argv[]) {
       .default_value(1 << 24)
       .scan<'i', int>();
   program.add_argument("-b", "--batch").help("Batch mode").flag();
+  program.add_argument("--itracer").help("Display instruction executed").flag();
   try {
     program.parse_args(argc, argv);
   } catch (const std::exception &err) {
@@ -65,11 +66,12 @@ int main(int argc, char *argv[]) {
   string image_path = program.get("--image");
   int mem_size = program.get<int>("--mem_size");
   bool batch_mode = program.get<bool>("--batch");
+  bool itracer = program.get<bool>("--itracer");
   spdlog::info("Image path  : {}", image_path);
   spdlog::info("Memory size : {}", mem_size);
 
   emu = make_shared<NPCemu>(mem_size, image_path);
-  SingleMonitor monitor(emu, batch_mode);
+  SingleMonitor monitor(emu, batch_mode, itracer);
   try {
     monitor.start();
   } catch (const std::exception &err) {

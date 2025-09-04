@@ -9,6 +9,9 @@
 using std::optional;
 using std::println, std::print;
 
+#define STR_HELPER(x) #x
+#define STR(x) STR_HELPER(x)
+
 template <class T> inline std::optional<T> to_number(std::string_view p) {
   int base = 10, offset = 0;
   if (p.size() >= 2 && p[0] == '0' && std::tolower(p[1]) == 'x') {

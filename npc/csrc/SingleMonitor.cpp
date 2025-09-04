@@ -50,8 +50,9 @@ const SingleMonitor::CommandItem SingleMonitor::command_list[] = {
      .description = "Remove a watcher; d [index]"},
 };
 
-SingleMonitor::SingleMonitor(std::shared_ptr<RISCV32> emu, bool batch)
-    : emu(emu), batch(batch) {
+SingleMonitor::SingleMonitor(std::shared_ptr<RISCV32> emu, bool batch,
+                             bool itracer)
+    : emu(emu), batch(batch), itracer(itracer) {
   repl.set_max_history_size(64);
   auto tmp_path =
       std::filesystem::temp_directory_path().append("NPCemu_history.txt");
@@ -111,10 +112,10 @@ void SingleMonitor::simulate(unsigned long cnt) {
             triggered = true;
           }
         } catch (std::logic_error e) {
-          spdlog::error("Error while evaluating watcher #{}@{:#010x} : {}, "
-                        "error info : {}",
-                        wat.id, emu->getPC(), wat.expression.stringify(),
-                        e.what());
+          spdlog::warn(
+              "Error encountered while evaluating watcher #{}@{:#010x} : {}, "
+              "error info : {}",
+              wat.id, emu->getPC(), wat.expression.stringify(), e.what());
           return;
         }
       }
@@ -164,6 +165,7 @@ SingleMonitor::CommandState SingleMonitor::help(const vector<string> &params) {
   }
   return CommandState::NONE;
 }
+
 SingleMonitor::CommandState SingleMonitor::step(const vector<string> &params) {
   if (params.size() > 1) {
     println("Too many arguments. Useage : s [cnt=1]");

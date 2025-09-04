@@ -9,12 +9,14 @@ BIN = ./obj_dir/V$(TOPNAME)
 
 VERILATOR = verilator
 
-CXXFLAGS += -CFLAGS "-DSPDLOG_USE_STD_FORMAT -O3 -I../include -std=c++23" -CFLAGS -DTOP_NAME="\"V$(TOPNAME)\""
+CXXFLAGS += -CFLAGS "-DSPDLOG_USE_STD_FORMAT -O3 -I$(NPC_HOME)/include -std=c++23" -CFLAGS -DTOP_NAME="\"V$(TOPNAME)\""
 VERILATORFLAGS += --cc --exe --build --trace -j 16 
 VERILATOR_DISABLE_WARNINGS += -Wno-UNUSEDSIGNAL -Wno-DECLFILENAME -Wno-SYNCASYNCNET
 
 
-all: $(SVSRC)
+-include scripts/*.mk
+
+npc: $(SVSRC) $(LIBCAPSTONE)
 	$(VERILATOR) $(VERILATORFLAGS) \
 	--top-module $(TOPNAME) \
 	$(CXXFLAGS) -Wall $(CSRC) $(SVSRC) $(VSRC) $(VERILATOR_DISABLE_WARNINGS) 
@@ -26,7 +28,7 @@ PROG ?= test_progs/add-minirv-npc.bin
 MEM_SIZE ?= 134217728
 TIME_STAMP = $(shell date +"%Y_%m_%d_%H_%M_%S")
 LOG_FILE ?= "log/$(TIME_STAMP).log"
-sim: all
+sim: npc
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
 	$(BIN) --image $(PROG) --mem_size $(MEM_SIZE) --log $(LOG_FILE)
 
@@ -38,6 +40,8 @@ clean:
 clean_log:
 	rm -rf log/*
 
-.PHONY: all sim clean
+
+
+.PHONY: npc sim clean
 
 include ../Makefile

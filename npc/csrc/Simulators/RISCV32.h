@@ -15,7 +15,10 @@ public:
     addr_t pc;
   };
 
-  enum class Interrupt { NONE, EBREAK };
+  enum class Interrupt {
+    NONE,  // Program is still alive
+    EBREAK // Hit trap
+  };
 
   RISCV32(size_t MemSize, std::string_view program, addr_t init_pc);
   static constexpr std::array<std::string, 32> gpr_names = {
