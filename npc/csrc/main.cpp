@@ -4,8 +4,11 @@
 #include "spdlog/common.h"
 #include <VCPU.h>
 #include <argparse/argparse.hpp>
+#include <bitset>
 #include <iostream>
 #include <memory>
+#include <ostream>
+#include <print>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
@@ -15,10 +18,15 @@ using std::shared_ptr, std::make_shared;
 using std::string;
 
 shared_ptr<NPCemu> emu;
+bool mtracer;
 extern "C" void trap(int signal) { emu->trapped = signal; }
 extern "C" int pmem_read(int raddr) { return emu->readMemory(raddr); }
 extern "C" void pmem_write(int waddr, int wdata, char wmask) {
   emu->writeMemory(waddr, wdata, wmask);
+  if (mtracer) {
+    println("Write to memory : {:#010x}, data : {:#010x}, mask : {:#010x}",
+            waddr, wdata, wmask);
+  }
 }
 
 int main(int argc, char *argv[]) {
@@ -35,6 +43,8 @@ int main(int argc, char *argv[]) {
       .scan<'i', int>();
   program.add_argument("-b", "--batch").help("Batch mode").flag();
   program.add_argument("--itracer").help("Display instruction executed").flag();
+  program.add_argument("--mtracer").help("Display memory visited").flag();
+
   try {
     program.parse_args(argc, argv);
   } catch (const std::exception &err) {
@@ -67,6 +77,7 @@ int main(int argc, char *argv[]) {
   int mem_size = program.get<int>("--mem_size");
   bool batch_mode = program.get<bool>("--batch");
   bool itracer = program.get<bool>("--itracer");
+  mtracer = program.get<bool>("--mtracer");
   spdlog::info("Image path  : {}", image_path);
   spdlog::info("Memory size : {}", mem_size);
 
@@ -80,7 +91,7 @@ int main(int argc, char *argv[]) {
   }
 
   emu = make_shared<NPCemu>(mem_size, image_path);
-  SingleMonitor monitor(emu, batch_mode, itracer);
+  SingleMonitor monitor(emu, batch_mode, itracer, mtracer);
   try {
     monitor.start();
   } catch (const std::exception &err) {
