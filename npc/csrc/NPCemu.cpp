@@ -34,7 +34,7 @@ void NPCemu::step(bool display) {
   }
   dut.io_instr = M[(pc - memOffset) / 4];
   if (display) {
-    Capstone::capstone.disassemble(pc, (uint8_t *)&M[(pc - memOffset) / 4], 4);
+    Capstone::capstone.disassemble(pc, (uint8_t *)&dut.io_instr, 4);
   }
   dut.clock = 0;
   dut.eval();
