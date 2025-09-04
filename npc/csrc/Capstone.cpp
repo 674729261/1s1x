@@ -16,12 +16,14 @@ bool Capstone::load_libcapstone() {
   }
   loaded_lib = dlopen(STR(SO_PATH_CAPSTONE), RTLD_LAZY);
   if (loaded_lib == nullptr) {
-    spdlog::error("Failed to load from {}", STR(SO_PATH_CAPSTONE));
+    spdlog::error("Failed to load library from {}", STR(SO_PATH_CAPSTONE));
     return false;
   }
   cserr_fn_type cs_open_dl = NULL;
   cs_open_dl = (cserr_fn_type)dlsym(loaded_lib, "cs_open");
   if (cs_open_dl == nullptr) {
+    spdlog::error("Failed to load symbol cs_open from {}",
+                  STR(SO_PATH_CAPSTONE));
     dlclose(loaded_lib);
     loaded_lib = nullptr;
     return false;
@@ -29,6 +31,8 @@ bool Capstone::load_libcapstone() {
 
   cs_disasm_dl = (disasm_fn_type)dlsym(loaded_lib, "cs_disasm");
   if (cs_disasm_dl == nullptr) {
+    spdlog::error("Failed to load symbol cs_disasm from {}",
+                  STR(SO_PATH_CAPSTONE));
     dlclose(loaded_lib);
     cs_open_dl = nullptr;
     loaded_lib = nullptr;
