@@ -59,7 +59,7 @@ std::string Capstone::disassemble(uint64_t pc, uint8_t *code, int nbyte,
     throw std::logic_error(std::format("Invalid instruction@{:#010x}", pc));
   std::string str;
   if (insn->op_str[0] != '\0') {
-    str = std::format("{}\t{}", insn->mnemonic, insn->op_str);
+    str = std::format("{:#010x}\t{}\t{}", pc, insn->mnemonic, insn->op_str);
   }
   if (display)
     println("{}", str);
