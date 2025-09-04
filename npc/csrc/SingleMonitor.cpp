@@ -51,7 +51,7 @@ const SingleMonitor::CommandItem SingleMonitor::command_list[] = {
 };
 
 SingleMonitor::SingleMonitor(std::shared_ptr<RISCV32> emu, bool batch,
-                             bool itracer, bool mtracer)
+                             uint32_t itracer, bool mtracer)
     : emu(emu), batch(batch), itracer(itracer), mtracer(mtracer) {
   repl.set_max_history_size(64);
   auto tmp_path =

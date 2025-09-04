@@ -41,12 +41,12 @@ int main(int argc, char *argv[]) {
   program.add_argument("-z", "--mem_size")
       .help("Size of memory")
       .default_value(1 << 24)
-      .scan<'i', int>();
+      .scan<'i', uint32_t>();
   program.add_argument("-b", "--batch").help("Batch mode").flag();
   program.add_argument("--itracer")
       .help("Display instruction executed")
       .default_value(16)
-      .scan<'i', int>();
+      .scan<'i', uint32_t>();
   program.add_argument("--mtracer").help("Display memory visited").flag();
 
   try {
@@ -78,9 +78,9 @@ int main(int argc, char *argv[]) {
   spdlog::flush_every(std::chrono::seconds(5));
   spdlog::flush_on(spdlog::level::warn);
   string image_path = program.get("--image");
-  int mem_size = program.get<int>("--mem_size");
+  uint32_t mem_size = program.get<uint32_t>("--mem_size");
   bool batch_mode = program.get<bool>("--batch");
-  bool itracer = program.get<bool>("--itracer");
+  uint32_t itracer = program.get<uint32_t>("--itracer");
   mtracer = program.get<bool>("--mtracer");
   spdlog::info("Image path  : {}", image_path);
   spdlog::info("Memory size : {}", mem_size);
