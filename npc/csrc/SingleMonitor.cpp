@@ -112,7 +112,7 @@ void SingleMonitor::simulate(unsigned long cnt) {
       max_display_inst--;
     } else
       for (auto &e : emus)
-        e->step(itracer);
+        e->step(false);
     for (auto &wat : watchers) {
       try {
         uint32_t value = wat.expression.eval(*emus.front());
