@@ -26,7 +26,7 @@ __EXPORT void difftest_memcpy(paddr_t addr, void *buf, size_t n,
     uint8_t *pos = guest_to_host(addr);
     uint8_t *src = buf;
     for (int i = 0; i < n; i++) {
-      printf("%d\n", i);
+      // printf("%d\n", i);
       *(pos + i) = *(src + i);
     }
   } else {
