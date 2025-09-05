@@ -14,7 +14,7 @@ VERILATORFLAGS += --cc --exe --build --trace -j 16
 VERILATOR_DISABLE_WARNINGS += -Wno-UNUSEDSIGNAL -Wno-DECLFILENAME -Wno-SYNCASYNCNET
 
 
--include scripts/*.mk
+
 
 npc: $(SVSRC) $(LIBCAPSTONE)
 	$(VERILATOR) $(VERILATORFLAGS) \
@@ -23,6 +23,8 @@ npc: $(SVSRC) $(LIBCAPSTONE)
 
 $(SVSRC): $(CHISELSRC)
 	sbt run
+
+-include scripts/*.mk
 
 PROG ?= test_progs/add-minirv-npc.bin
 MEM_SIZE ?= 134217728

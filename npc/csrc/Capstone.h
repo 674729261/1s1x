@@ -8,7 +8,7 @@ public:
   std::string disassemble(uint64_t pc, uint8_t *code, int nbyte,
                           bool display = true);
   bool load_libcapstone();
-  Capstone() = default;
+
   Capstone(const Capstone &) = delete;
   Capstone(Capstone &&) noexcept = delete;
   ~Capstone();
@@ -16,6 +16,7 @@ public:
   static Capstone capstone;
 
 private:
+  Capstone() = default;
   using disasm_fn_type = size_t (*)(csh handle, const uint8_t *code,
                                     size_t code_size, uint64_t address,
                                     size_t count, cs_insn **insn);
