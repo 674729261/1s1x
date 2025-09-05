@@ -68,7 +68,7 @@ void SingleMonitor::start() {
     e.reset();
   CommandState state = CommandState::NONE;
   bool finished = false;
-  spdlog::error("Cnt {}", emus.size());
+  spdlog::error("Cnt {}", (uintptr_t)emus.front().get());
   while (true) {
     if (batch)
       emus.front()->simulate(-1);
