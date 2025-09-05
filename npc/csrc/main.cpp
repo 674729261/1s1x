@@ -84,7 +84,9 @@ int main(int argc, char *argv[]) {
   string image_path = program.get("--image");
   uint32_t mem_size = program.get<uint32_t>("--mem_size");
   bool batch_mode = program.get<bool>("--batch");
-  unsigned long itracer = program.get<unsigned long>("--itracer");
+  unsigned long itracer = 0;
+  if (program.is_used("--itracer"))
+    program.get<unsigned long>("--itracer");
   mtracer = program.get<bool>("--mtracer");
   spdlog::info("Image path  : {}", image_path);
   spdlog::info("Memory size : {}", mem_size);
