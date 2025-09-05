@@ -14,7 +14,7 @@ VERILATORFLAGS += --cc --exe --build --trace -j 16
 VERILATOR_DISABLE_WARNINGS += -Wno-UNUSEDSIGNAL -Wno-DECLFILENAME -Wno-SYNCASYNCNET
 
 
--include scripts/*.mk
+
 
 npc: $(SVSRC) $(LIBCAPSTONE)
 	$(VERILATOR) $(VERILATORFLAGS) \
@@ -24,13 +24,20 @@ npc: $(SVSRC) $(LIBCAPSTONE)
 $(SVSRC): $(CHISELSRC)
 	sbt run
 
+-include scripts/*.mk
+
 PROG ?= test_progs/add-minirv-npc.bin
 MEM_SIZE ?= 134217728
 TIME_STAMP = $(shell date +"%Y_%m_%d_%H_%M_%S")
 LOG_FILE ?= "log/$(TIME_STAMP).log"
 sim: npc
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
-	$(BIN) --image $(PROG) --mem_size $(MEM_SIZE) --log $(LOG_FILE) --itracer 8
+	$(BIN) --image $(PROG) --mem_size $(MEM_SIZE) --log $(LOG_FILE) --itracer 8 --difftest
+
+sim_full_speed: npc
+	$(call git_commit, "sim RTL full speed") # DO NOT REMOVE THIS LINE!!!
+	$(BIN) --image $(PROG) --mem_size $(MEM_SIZE) --log $(LOG_FILE)
+
 
 clean:
 	rm -rf obj_dir

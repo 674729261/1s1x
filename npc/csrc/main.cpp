@@ -1,10 +1,10 @@
 #include "Capstone.h"
 #include "Monitor/SingleMonitor.h"
+#include "Simulators/NEMUemu.h"
 #include "Simulators/NPCemu.h"
 #include "spdlog/common.h"
 #include <VCPU.h>
 #include <argparse/argparse.hpp>
-#include <bitset>
 #include <cstdint>
 #include <iostream>
 #include <memory>
@@ -19,6 +19,7 @@ using std::shared_ptr, std::make_shared;
 using std::string;
 
 shared_ptr<NPCemu> emu;
+shared_ptr<NEMUemu> nemu;
 bool mtracer;
 extern "C" void trap(int signal) { emu->trapped = signal; }
 extern "C" int pmem_read(int raddr) { return emu->readMemory(raddr); }
@@ -48,7 +49,10 @@ int main(int argc, char *argv[]) {
       .default_value(16)
       .scan<'i', unsigned long>();
   program.add_argument("--mtracer").help("Display memory visited").flag();
-
+  program.add_argument("-d", "--difftest")
+      .help("Use NEMUemu as differential test")
+      .flag();
+  ;
   try {
     program.parse_args(argc, argv);
   } catch (const std::exception &err) {
@@ -80,22 +84,36 @@ int main(int argc, char *argv[]) {
   string image_path = program.get("--image");
   uint32_t mem_size = program.get<uint32_t>("--mem_size");
   bool batch_mode = program.get<bool>("--batch");
-  uint32_t itracer = program.get<unsigned long>("--itracer");
+  unsigned long itracer = 0;
+  if (program.is_used("--itracer"))
+    itracer = program.get<unsigned long>("--itracer");
   mtracer = program.get<bool>("--mtracer");
   spdlog::info("Image path  : {}", image_path);
   spdlog::info("Memory size : {}", mem_size);
-
-  if (itracer) {
+  bool difftest = program.get<bool>("--difftest");
+  if (itracer != 0) {
     if (!Capstone::capstone.load_libcapstone()) {
       spdlog::warn("Failed to initialize capstone. Ignoring itracer flag.");
-      itracer = false;
+      itracer = 0;
     } else {
       spdlog::info("Using capstone");
     }
   }
 
+  if (difftest) {
+    try {
+      nemu = make_shared<NEMUemu>(mem_size, image_path);
+    } catch (const std::exception &err) {
+      println(cerr, "Load ref failed: {}", err.what());
+      exit(1);
+    }
+  }
+
   emu = make_shared<NPCemu>(mem_size, image_path);
+
   SingleMonitor monitor(emu, batch_mode, itracer, mtracer);
+  if (difftest)
+    monitor.addRefference(nemu);
   try {
     monitor.start();
   } catch (const std::exception &err) {

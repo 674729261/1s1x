@@ -12,7 +12,7 @@ RISCV32::RISCV32(size_t MemSize, std::string_view program, addr_t init_pc)
     : EMUstate(Interrupt::NONE) {
   using std::ifstream;
   using std::ios;
-  M.resize(MemSize);
+  M.resize(MemSize / 4);
   std::filesystem::path program_path = program;
   std::ifstream prog_file(program_path, ios::in | ios::binary);
   if (!prog_file.good()) {
