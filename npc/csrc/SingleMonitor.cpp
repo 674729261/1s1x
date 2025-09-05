@@ -120,7 +120,8 @@ void SingleMonitor::simulate(unsigned long cnt) {
     } else
       for (auto &e : emus)
         e->step(false);
-    diff_fault = check_diff();
+    if (emus.size() > 1)
+      diff_fault = check_diff();
 
     for (auto &wat : watchers) {
       try {
