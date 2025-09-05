@@ -373,6 +373,7 @@ std::pair<int, int> SingleMonitor::check_diff() {
   for (int i = 1; i < emus.size(); i++) {
     for (int j = 0; j < 33; j++) {
       if (emus.front()->getGPR(j) != emus[i]->getGPR(j)) {
+        spdlog::warn("{}:{}", i, j);
         return {i, j};
       }
     }
