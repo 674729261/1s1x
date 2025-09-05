@@ -54,7 +54,7 @@ SingleMonitor::SingleMonitor(std::shared_ptr<RISCV32> emu, bool batch,
                              unsigned long itracer, bool mtracer)
     : batch(batch), itracer(itracer), mtracer(mtracer) {
   emus.push_back(emu);
-  spdlog::error("Cnt {}", (uintptr_t)emus.front().get());
+
   repl.set_max_history_size(64);
   auto tmp_path =
       std::filesystem::temp_directory_path().append("NPCemu_history.txt");
@@ -70,7 +70,7 @@ void SingleMonitor::start() {
     e.reset();
   CommandState state = CommandState::NONE;
   bool finished = false;
-
+  spdlog::error("Cnt {}", (uintptr_t)emus.front().get());
   while (true) {
     if (batch)
       emus.front()->simulate(-1);
