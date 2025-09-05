@@ -26,7 +26,6 @@ NEMUemu::NEMUemu(size_t MemSize, std::string_view programe)
 
 void NEMUemu::reset() {
   difftest_init(1145);
-  spdlog::error("{:08x}", M.size());
   difftest_memcpy(PC_Init, M.data(), sizeof(uint32_t) * M.size(), 1);
 }
 
