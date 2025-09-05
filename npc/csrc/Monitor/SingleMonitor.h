@@ -7,12 +7,14 @@
 #include <optional>
 #include <replxx.hxx>
 #include <string>
+#include <vector>
 class SingleMonitor {
 public:
   SingleMonitor(std::shared_ptr<RISCV32> dut, bool batch = false,
                 unsigned long itracer = 16, bool mtracer = false);
 
   void start();
+  void addRefference(std::shared_ptr<RISCV32> ref);
   ~SingleMonitor();
 
   class Watcher {
@@ -25,7 +27,7 @@ public:
   };
 
 private:
-  std::shared_ptr<RISCV32> emu;
+  std::vector<std::shared_ptr<RISCV32>> emus;
   unsigned long itracer;
   bool batch, mtracer;
 

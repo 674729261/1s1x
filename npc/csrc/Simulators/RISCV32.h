@@ -9,6 +9,8 @@
 #include <vector>
 class RISCV32 {
 public:
+  RISCV32() = delete;
+
   using addr_t = uint32_t;
   struct CPU_State {
     std::array<uint32_t, 32> gpr;
