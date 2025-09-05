@@ -83,9 +83,16 @@ void SingleMonitor::start() {
       } else {
         spdlog::info("HIT BAD TRAP");
       }
+      if (diff_fault.first >= 0) {
+        spdlog::info("Reg {} differs with ref #{} @ PC = {:#010x}",
+                     RISCV32::gpr_names[diff_fault.second], diff_fault.first,
+                     emus.front()->getPC());
+        diff_fault = {-1, -1};
+      }
+
       continue;
     }
-    if (state == CommandState::QUIT)
+    if (state & CommandState::QUIT)
       break;
   }
 }
@@ -113,6 +120,8 @@ void SingleMonitor::simulate(unsigned long cnt) {
     } else
       for (auto &e : emus)
         e->step(false);
+    diff_fault = check_diff();
+
     for (auto &wat : watchers) {
       try {
         uint32_t value = wat.expression.eval(*emus.front());
@@ -132,7 +141,8 @@ void SingleMonitor::simulate(unsigned long cnt) {
         return;
       }
     }
-    if (triggered || emus.front()->getEMUState() != RISCV32::Interrupt::NONE)
+    if (diff_fault.first >= 0 || triggered ||
+        emus.front()->getEMUState() != RISCV32::Interrupt::NONE)
       break;
   }
 
@@ -355,4 +365,16 @@ SingleMonitor::Watcher::generateWatcher(RISCV32 &dut, std::string_view expr) {
   }
   SingleMonitor::Watcher ret{std::move(e.value()), value};
   return ret;
+}
+
+std::pair<int, int> SingleMonitor::check_diff() {
+
+  for (int i = 1; i < emus.size(); i++) {
+    for (int j = 0; j < 33; j++) {
+      if (emus.front()->getGPR(j) != emus[i]->getGPR(j)) {
+        return {i, j};
+      }
+    }
+  }
+  return {-1, -1};
 }

@@ -18,15 +18,15 @@ public:
   };
 
   enum class Interrupt {
-    NONE,  // Program is still alive
-    EBREAK // Hit trap
+    NONE,   // Program is still alive
+    EBREAK, // Hit trap
   };
 
   RISCV32(size_t MemSize, std::string_view program, addr_t init_pc);
-  static constexpr std::array<std::string, 32> gpr_names = {
+  static constexpr std::array<std::string, 33> gpr_names = {
       "$0", "ra", "sp", "gp", "tp",  "t0",  "t1", "t2", "s0", "s1", "a0",
       "a1", "a2", "a3", "a4", "a5",  "a6",  "a7", "s2", "s3", "s4", "s5",
-      "s6", "s7", "s8", "s9", "s10", "s11", "t3", "t4", "t5", "t6"};
+      "s6", "s7", "s8", "s9", "s10", "s11", "t3", "t4", "t5", "t6", "pc"};
 
   static int getGPRIDfromName(std::string_view name) {
     std::string_view remove_dollar(name.begin() + 1, name.end());

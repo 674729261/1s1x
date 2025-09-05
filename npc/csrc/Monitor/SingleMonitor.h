@@ -7,6 +7,7 @@
 #include <optional>
 #include <replxx.hxx>
 #include <string>
+#include <utility>
 #include <vector>
 class SingleMonitor {
 public:
@@ -31,9 +32,9 @@ private:
   unsigned long itracer;
   bool batch, mtracer;
 
-  enum class CommandState {
-    NONE, // OK to read next command
-    QUIT  // End the monitor
+  enum CommandState {
+    NONE = 0, // OK to read next command
+    QUIT = 1  // End the monitor
   };
 
   std::list<Watcher> watchers;
@@ -48,7 +49,8 @@ private:
 
 private:
   bool process_trap();
-
+  std::pair<int, int> check_diff();
+  std::pair<int, int> diff_fault{-1, -1};
   void simulate(unsigned long cnt);
 
   CommandState query_command(this SingleMonitor &self);
