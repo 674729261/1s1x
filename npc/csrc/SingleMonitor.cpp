@@ -83,14 +83,12 @@ void SingleMonitor::start() {
       } else {
         spdlog::info("HIT BAD TRAP");
       }
-      if (diff_fault.first >= 0) {
-        spdlog::info("Reg {} differs with ref #{} @ PC = {:#010x}",
-                     RISCV32::gpr_names[diff_fault.second], diff_fault.first,
-                     emus.front()->getPC());
-        diff_fault = {-1, -1};
-      }
-
-      continue;
+    }
+    if (diff_fault.first >= 0) {
+      spdlog::info("Reg {} differs with ref #{} @ PC = {:#010x}",
+                   RISCV32::gpr_names[diff_fault.second], diff_fault.first,
+                   emus.front()->getPC());
+      diff_fault = {-1, -1};
     }
     if (state & CommandState::QUIT)
       break;
