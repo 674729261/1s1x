@@ -67,10 +67,9 @@ void SingleMonitor::addRefference(std::shared_ptr<RISCV32> ref) {
 }
 void SingleMonitor::start() {
   for (auto &e : emus)
-    e.reset();
+    e->reset();
   CommandState state = CommandState::NONE;
   bool finished = false;
-  spdlog::error("Cnt {}", (uintptr_t)emus.size());
   while (true) {
     if (batch)
       emus.front()->simulate(-1);
