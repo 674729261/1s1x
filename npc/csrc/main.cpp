@@ -4,7 +4,6 @@
 #include "spdlog/common.h"
 #include <VCPU.h>
 #include <argparse/argparse.hpp>
-#include <bitset>
 #include <cstdint>
 #include <iostream>
 #include <memory>
