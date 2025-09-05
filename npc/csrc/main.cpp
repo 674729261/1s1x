@@ -108,7 +108,7 @@ int main(int argc, char *argv[]) {
   }
 
   emu = make_shared<NPCemu>(mem_size, image_path);
-  spdlog::error("Cnt {}", (uintptr_t)emu.get());
+
   SingleMonitor monitor(emu, batch_mode, itracer, mtracer);
   if (difftest)
     monitor.addRefference(nemu);

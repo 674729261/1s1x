@@ -53,6 +53,7 @@ const SingleMonitor::CommandItem SingleMonitor::command_list[] = {
 SingleMonitor::SingleMonitor(std::shared_ptr<RISCV32> emu, bool batch,
                              unsigned long itracer, bool mtracer)
     : emus({emu}), batch(batch), itracer(itracer), mtracer(mtracer) {
+  spdlog::error("Cnt {}", (uintptr_t)emu.get());
   repl.set_max_history_size(64);
   auto tmp_path =
       std::filesystem::temp_directory_path().append("NPCemu_history.txt");
