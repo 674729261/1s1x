@@ -18,8 +18,11 @@ public:
     cnt = 0;
   }
   void insert(uint32_t pc, uint32_t instr) {
-    instr_buffer[pos_end] = {.pc = pc, .instr = instr};
     pos_end++;
+    if (pos_end == instr_buffer.size())
+      pos_end = 0;
+    instr_buffer[pos_end] = {.pc = pc, .instr = instr};
+
     if (cnt < instr_buffer.size())
       cnt++;
     else {
@@ -27,8 +30,6 @@ public:
       if (pos_begin == instr_buffer.size())
         pos_begin = 0;
     }
-    if (pos_end == instr_buffer.size())
-      pos_end = 0;
   }
 
   Item last(uint32_t instr) {
