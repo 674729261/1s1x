@@ -57,9 +57,9 @@ public:
             instr_buffer[pos].pc, (uint8_t *)&instr_buffer[pos].instr, 4,
             false);
         if (i != cnt - 1)
-          println("{:3}     {}", i, show);
+          println("{:5}    {}", i, show);
         else
-          println("{:3}---->{}", i, show);
+          println("{:5}--->{}", i, show);
         pos++;
         if (pos == instr_buffer.size())
           pos = 0;
