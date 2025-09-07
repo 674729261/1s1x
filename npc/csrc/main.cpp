@@ -3,6 +3,7 @@
 #include "RingBuffer.hpp"
 #include "Simulators/NEMUemu.h"
 #include "Simulators/NPCemu.h"
+#include "Symbols.h"
 #include "spdlog/common.h"
 #include <VCPU.h>
 #include <argparse/argparse.hpp>
@@ -57,6 +58,7 @@ int main(int argc, char *argv[]) {
       .help("Use ring buffer")
       .default_value(16)
       .scan<'i', unsigned long>();
+  program.add_argument("--elf").help("Use ring buffer").default_value("");
   try {
     program.parse_args(argc, argv);
   } catch (const std::exception &err) {
@@ -96,10 +98,16 @@ int main(int argc, char *argv[]) {
   spdlog::info("Memory size : {}", mem_size);
   bool difftest = program.get<bool>("--difftest");
   bool use_irb = program.is_used("--inst_ringbuffer");
+  bool use_ftracer = program.is_used("--elf");
   if (use_irb) {
     unsigned long sz_irb = program.get<unsigned long>("--inst_ringbuffer");
-    spdlog::info("Initializing instruction ringbuffer with size : {}", sz_irb);
     InstRingBuffer::instRingBuffer.init(sz_irb);
+    spdlog::info("Initialized instruction ringbuffer with size : {}", sz_irb);
+  }
+  if (use_ftracer) {
+    auto path_elf = program.get("--elf");
+    load_symbols(path_elf.c_str());
+    spdlog::info("Initialized symbols from elf : {}", path_elf);
   }
   if (itracer != 0) {
     if (!Capstone::capstone.load_libcapstone()) {
