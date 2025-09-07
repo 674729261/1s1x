@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
       .help("Use ring buffer")
       .default_value(16)
       .scan<'i', unsigned long>();
-  program.add_argument("--elf").help("Use ring buffer").default_value("");
+  program.add_argument("--elf").help("ELF file path").default_value("");
   try {
     program.parse_args(argc, argv);
   } catch (const std::exception &err) {
@@ -98,12 +98,13 @@ int main(int argc, char *argv[]) {
   spdlog::info("Memory size : {}", mem_size);
   bool difftest = program.get<bool>("--difftest");
   bool use_irb = program.is_used("--inst_ringbuffer");
-  bool use_ftracer = program.is_used("--elf");
+
   if (use_irb) {
     unsigned long sz_irb = program.get<unsigned long>("--inst_ringbuffer");
     InstRingBuffer::instRingBuffer.init(sz_irb);
     spdlog::info("Initialized instruction ringbuffer with size : {}", sz_irb);
   }
+  bool use_ftracer = program.is_used("--elf");
   if (use_ftracer) {
     auto path_elf = program.get("--elf");
     if (path_elf.empty()) {
