@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 
-#define CONFIG_MSIZE 1024
+#define CONFIG_MSIZE 0x8000000
 
 typedef struct {
   char *name;
