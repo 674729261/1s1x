@@ -60,11 +60,11 @@ static void parse_symbols(const Elf32_Ehdr *elf_header) {
             '\0';
         symbols_table.symbol_items[symbols_table.symbol_count].start =
             symbols[i].st_value;
-        for (uint32_t addr = symbols[i].st_value;
-             addr < symbols[i].st_value + symbols[i].st_size; addr++) {
-          symbols_table.symbol_map[addr - CONFIG_MBASE] =
-              symbols_table.symbol_count;
-        }
+        // for (uint32_t addr = symbols[i].st_value;
+        //      addr < symbols[i].st_value + symbols[i].st_size; addr++) {
+        //   symbols_table.symbol_map[addr - CONFIG_MBASE] =
+        //       symbols_table.symbol_count;
+        // }
         symbols_table.symbol_count++;
       }
     }
