@@ -22,10 +22,13 @@ public:
     pos_end++;
     if (cnt < instr_buffer.size())
       cnt++;
-    else
+    else {
       pos_begin++;
-    if (pos_begin == instr_buffer.size())
-      pos_begin = 0;
+      if (pos_begin == instr_buffer.size())
+        pos_begin = 0;
+    }
+    if (pos_end == instr_buffer.size())
+      pos_end = 0;
   }
 
   Item last(uint32_t instr) {
