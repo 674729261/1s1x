@@ -111,7 +111,7 @@ int main(int argc, char *argv[]) {
       println(cerr, "ELF path not specified");
       exit(1);
     }
-    // load_symbols(path_elf.c_str());
+    load_symbols(path_elf.c_str());
     spdlog::info("Initialized symbols from elf : {}", path_elf);
   }
   if (itracer != 0) {

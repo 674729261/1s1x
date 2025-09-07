@@ -82,7 +82,7 @@ long load_symbols(const char *elf) {
   fclose(fp);
   Elf32_Ehdr *elf_header = (Elf32_Ehdr *)elf_data;
 
-  parse_symbols(elf_header);
+  //   parse_symbols(elf_header);
   free(elf_data);
   stack_ftrace = (Call *)malloc(sizeof(Call) * 4);
   allocated_sz_stack = 4;
