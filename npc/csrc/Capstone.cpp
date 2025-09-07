@@ -68,9 +68,9 @@ std::string Capstone::disassemble(uint64_t pc, uint8_t *code, int nbyte,
   if (count != 1)
     throw std::logic_error(std::format("Invalid instruction@{:#010x}", pc));
   std::string str;
-  if (insn->op_str[0] != '\0') {
-    str = std::format("{:#010x}\t{}\t{}", pc, insn->mnemonic, insn->op_str);
-  }
+  // if (insn->op_str[0] != '\0') {
+  str = std::format("{:#010x}\t{}\t{}", pc, insn->mnemonic, insn->op_str);
+  // }
   if (display)
     println("{}", str);
   cs_free_dl(insn, count);
