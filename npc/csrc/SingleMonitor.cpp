@@ -1,5 +1,6 @@
 #include "Monitor/SingleMonitor.h"
 #include "Expression/Expression.h"
+#include "RingBuffer.hpp"
 #include "Simulators/RISCV32.h"
 #include "spdlog/spdlog.h"
 #include "utils.h"
@@ -7,6 +8,7 @@
 #include <cstdint>
 #include <endian.h>
 #include <filesystem>
+#include <iostream>
 #include <ostream>
 #include <print>
 #include <regex>
@@ -51,8 +53,8 @@ const SingleMonitor::CommandItem SingleMonitor::command_list[] = {
 };
 
 SingleMonitor::SingleMonitor(std::shared_ptr<RISCV32> emu, bool batch,
-                             unsigned long itracer, bool mtracer)
-    : batch(batch), itracer(itracer), mtracer(mtracer) {
+                             unsigned long itracer, bool mtracer, bool irb)
+    : batch(batch), itracer(itracer), mtracer(mtracer), irb(irb) {
   emus.push_back(emu);
 
   repl.set_max_history_size(64);
@@ -70,29 +72,34 @@ void SingleMonitor::start() {
     e->reset();
   CommandState state = CommandState::NONE;
   bool finished = false;
-  while (true) {
-    if (batch)
-      emus.front()->simulate(-1);
-    else
-      state = query_command();
-    if (!finished &&
-        emus.front()->getEMUState() == RISCV32::Interrupt::EBREAK) {
-      finished = true;
-      if (process_trap()) {
-        spdlog::info("HIT GOOD TRAP");
-      } else {
-        spdlog::info("HIT BAD TRAP");
+  try {
+    while (true) {
+      if (batch)
+        emus.front()->simulate(-1);
+      else
+        state = query_command();
+      if (!finished &&
+          emus.front()->getEMUState() == RISCV32::Interrupt::EBREAK) {
+        finished = true;
+        if (process_trap()) {
+          spdlog::info("HIT GOOD TRAP");
+        } else {
+          spdlog::info("HIT BAD TRAP");
+        }
       }
+      if (diff_fault.first >= 0) {
+        spdlog::info("Reg {} differs with ref #{} @ PC = {:#010x}",
+                     RISCV32::gpr_names[diff_fault.second], diff_fault.first,
+                     emus.front()->getPC());
+        diff_fault = {-1, -1};
+      }
+      if (state & CommandState::QUIT)
+        break;
     }
-    if (diff_fault.first >= 0) {
-      spdlog::info("Reg {} differs with ref #{} @ PC = {:#010x}",
-                   RISCV32::gpr_names[diff_fault.second], diff_fault.first,
-                   emus.front()->getPC());
-      diff_fault = {-1, -1};
-    }
-    if (state & CommandState::QUIT)
-      break;
+  } catch (const std::logic_error &e) {
+    std::println(std::cerr, "{}", e.what());
   }
+  InstRingBuffer::instRingBuffer.display();
 }
 
 bool SingleMonitor::process_trap() {
@@ -113,11 +120,11 @@ void SingleMonitor::simulate(unsigned long cnt) {
   while (cnt--) {
     if (max_display_inst > 0) {
       for (auto &e : emus)
-        e->step(itracer);
+        e->step(itracer, irb);
       max_display_inst--;
     } else
       for (auto &e : emus)
-        e->step(false);
+        e->step(false, irb);
     if (emus.size() > 1)
       diff_fault = check_diff();
 

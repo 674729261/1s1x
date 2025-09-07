@@ -50,7 +50,8 @@ public:
   virtual void writeMemory(int waddr, int wdata, char wmask) = 0;
   virtual uint32_t readMemory(int raddr) = 0;
   virtual void reset() = 0;
-  virtual void step(bool display = false) = 0;
+  virtual void step(bool display = false, bool record_inst = false,
+                    bool ftracer = false) = 0;
   Interrupt simulate(unsigned long steps, bool display = false) {
     while (steps-- && EMUstate == Interrupt::NONE)
       step(display);

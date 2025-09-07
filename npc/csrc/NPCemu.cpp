@@ -1,5 +1,6 @@
 #include "Simulators/NPCemu.h"
 #include "Capstone.h"
+#include "RingBuffer.hpp"
 #include "Simulators/RISCV32.h"
 #include "VCPU___024root.h"
 #include <cstdint>
@@ -27,7 +28,7 @@ void NPCemu::reset() {
   syncCPUState();
 }
 
-void NPCemu::step(bool display) {
+void NPCemu::step(bool display, bool record_inst, bool ftracer) {
   addr_t pc = dut.io_pc;
   if (pc < memOffset) {
     throw std::logic_error(std::format("pc : {:08x} out of range", pc));
@@ -35,6 +36,9 @@ void NPCemu::step(bool display) {
   dut.io_instr = M[(pc - memOffset) / 4];
   if (display) {
     Capstone::capstone.disassemble(pc, (uint8_t *)&dut.io_instr, 4);
+  }
+  if (record_inst) {
+    InstRingBuffer::instRingBuffer.insert(dut.io_pc, dut.io_instr);
   }
 
   dut.clock = 0;
