@@ -94,8 +94,8 @@ int find_symbol(uint32_t addr) {
 }
 const char *find_symbol_name(int idx) {
   if (idx < 0 || idx >= symbols_table.symbol_count) {
-    std::println("Invalid symbol id {}", idx);
     // throw std::logic_error(std::format("Invalid symbol id {}", idx));
+    return "???";
   }
   return symbols_table.symbol_items[idx].name;
 }
