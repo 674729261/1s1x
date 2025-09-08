@@ -69,7 +69,7 @@ void NPCemu::step(bool display, bool record_inst, bool ftracer) {
       int to_symbol = find_symbol(dnxt_pc);
       std::println("call {}@{:#010x}", find_symbol_name(to_symbol), dut.io_pc);
       push_stack_ftrace(dut.io_pc, to_symbol);
-    } else if (opcode == 0x67 && rd == 0) {
+    } else if (cur_inst == 0x00008067) {
       Call top = pop_stack_ftrace();
       for (int i = 0; i < cnt_stack_ftrace; i++)
         std::print(" ");
