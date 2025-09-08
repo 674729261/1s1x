@@ -53,8 +53,10 @@ const SingleMonitor::CommandItem SingleMonitor::command_list[] = {
 };
 
 SingleMonitor::SingleMonitor(std::shared_ptr<RISCV32> emu, bool batch,
-                             unsigned long itracer, bool mtracer, bool irb)
-    : batch(batch), itracer(itracer), mtracer(mtracer), irb(irb) {
+                             unsigned long itracer, bool mtracer, bool irb,
+                             bool ftracer)
+    : batch(batch), itracer(itracer), mtracer(mtracer), irb(irb),
+      ftracer(ftracer) {
   emus.push_back(emu);
 
   repl.set_max_history_size(64);
@@ -120,11 +122,11 @@ void SingleMonitor::simulate(unsigned long cnt) {
   while (cnt--) {
     if (max_display_inst > 0) {
       for (auto &e : emus)
-        e->step(itracer, irb);
+        e->step(itracer, irb, ftracer);
       max_display_inst--;
     } else
       for (auto &e : emus)
-        e->step(false, irb);
+        e->step(false, irb, ftracer);
     if (emus.size() > 1)
       diff_fault = check_diff();
 

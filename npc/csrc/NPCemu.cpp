@@ -2,12 +2,14 @@
 #include "Capstone.h"
 #include "RingBuffer.hpp"
 #include "Simulators/RISCV32.h"
+#include "Symbols.h"
 #include "VCPU___024root.h"
 #include <cstdint>
 #include <format>
 #include <iostream>
 #include <optional>
 #include <ostream>
+#include <print>
 #include <stdexcept>
 #include <string_view>
 NPCemu::NPCemu(size_t MemSize, std::string_view program)
@@ -34,11 +36,45 @@ void NPCemu::step(bool display, bool record_inst, bool ftracer) {
     throw std::logic_error(std::format("pc : {:08x} out of range", pc));
   }
   dut.io_instr = M[(pc - memOffset) / 4];
+  uint32_t cur_inst = dut.io_instr;
   if (display) {
-    Capstone::capstone.disassemble(pc, (uint8_t *)&dut.io_instr, 4);
+    Capstone::capstone.disassemble(pc, (uint8_t *)&cur_inst, 4);
   }
   if (record_inst) {
-    InstRingBuffer::instRingBuffer.insert(dut.io_pc, dut.io_instr);
+    InstRingBuffer::instRingBuffer.insert(dut.io_pc, cur_inst);
+  }
+  if (ftracer) {
+    uint32_t opcode = cur_inst & 0x7f;
+    uint32_t rd = (cur_inst >> 7) & 0x1f;
+    uint32_t dnxt_pc = -1;
+    if (opcode == 0x6f) {
+      uint32_t imm20 = cur_inst >> 31;
+      uint32_t imm10_1 = (cur_inst >> 21) & 0x3ff;
+      uint32_t imm11 = (cur_inst >> 20) & 0x1;
+      uint32_t imm19_12 = (cur_inst >> 12) & 0xff;
+      uint32_t imm =
+          (imm20 << 20) | (imm19_12 << 12) | (imm11 << 11) | (imm10_1 << 1);
+      imm |= -(imm & 0x80000);
+      dnxt_pc = (dut.io_pc + imm) & ~0x1;
+    } else if (opcode == 0x67) {
+      uint32_t rs1 = (cur_inst >> 15) & 0x1f;
+      uint32_t imm = cur_inst >> 20;
+      imm |= -(imm & 0x800);
+      dnxt_pc = (imm + getGPR(rs1)) & ~0x1;
+    }
+
+    if (rd == 1) {
+      for (int i = 0; i < cnt_stack_ftrace; i++)
+        std::print(" ");
+      int to_symbol = find_symbol(dnxt_pc);
+      std::println("call {}@{:#010x}", find_symbol_name(to_symbol), dut.io_pc);
+      push_stack_ftrace(dut.io_pc, to_symbol);
+    } else if (opcode == 0x67 && rd == 0) {
+      Call top = pop_stack_ftrace();
+      for (int i = 0; i < cnt_stack_ftrace; i++)
+        std::print(" ");
+      std::println("ret  {}@{:#010x}", find_symbol_name(top.symbol), dut.io_pc);
+    }
   }
 
   dut.clock = 0;

@@ -134,7 +134,8 @@ int main(int argc, char *argv[]) {
 
   emu = make_shared<NPCemu>(mem_size, image_path);
 
-  SingleMonitor monitor(emu, batch_mode, itracer, mtracer, use_irb);
+  SingleMonitor monitor(emu, batch_mode, itracer, mtracer, use_irb,
+                        use_ftracer);
   if (difftest)
     monitor.addRefference(nemu);
   try {
