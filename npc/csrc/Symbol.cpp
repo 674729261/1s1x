@@ -92,8 +92,8 @@ int find_symbol(uint32_t addr) {
   return symbols_table.symbol_map[addr - CONFIG_MBASE];
 }
 const char *find_symbol_name(int idx) {
-  Assert(idx >= 0 && idx < symbols_table.symbol_count,
-         std::format("Invalid symbol id {}", idx));
+  if (idx < 0 || idx >= symbols_table.symbol_count)
+    throw std::logic_error(std::format("Invalid symbol id {}", idx));
   return symbols_table.symbol_items[idx].name;
 }
 
