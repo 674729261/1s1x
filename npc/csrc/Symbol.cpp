@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <elf.h>
 #include <format>
+#include <print>
 #include <stdexcept>
 #include <stdint.h>
 #include <stdio.h>
@@ -92,8 +93,10 @@ int find_symbol(uint32_t addr) {
   return symbols_table.symbol_map[addr - CONFIG_MBASE];
 }
 const char *find_symbol_name(int idx) {
-  if (idx < 0 || idx >= symbols_table.symbol_count)
-    throw std::logic_error(std::format("Invalid symbol id {}", idx));
+  if (idx < 0 || idx >= symbols_table.symbol_count) {
+    std::println("Invalid symbol id {}", idx);
+    // throw std::logic_error(std::format("Invalid symbol id {}", idx));
+  }
   return symbols_table.symbol_items[idx].name;
 }
 
