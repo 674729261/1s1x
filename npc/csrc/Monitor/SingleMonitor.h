@@ -12,7 +12,8 @@
 class SingleMonitor {
 public:
   SingleMonitor(std::shared_ptr<RISCV32> dut, bool batch = false,
-                unsigned long itracer = 16, bool mtracer = false);
+                unsigned long itracer = 16, bool mtracer = false,
+                bool irb = false, bool ftracer = false);
 
   void start();
   void addRefference(std::shared_ptr<RISCV32> ref);
@@ -30,7 +31,7 @@ public:
 private:
   std::vector<std::shared_ptr<RISCV32>> emus;
   unsigned long itracer;
-  bool batch, mtracer;
+  bool batch, mtracer, irb, ftracer;
 
   enum CommandState {
     NONE = 0, // OK to read next command

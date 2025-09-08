@@ -10,7 +10,8 @@ public:
   addr_t getPC() override final;
 
   void reset() override final;
-  void step(bool display = false) override final;
+  void step(bool display = false, bool record_inst = false,
+            bool ftracer = false) override final;
   int instrCount() override final;
 
   void writeMemory(int waddr, int wdata, char wmask) override final;

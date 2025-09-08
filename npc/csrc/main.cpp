@@ -1,7 +1,9 @@
 #include "Capstone.h"
 #include "Monitor/SingleMonitor.h"
+#include "RingBuffer.hpp"
 #include "Simulators/NEMUemu.h"
 #include "Simulators/NPCemu.h"
+#include "Symbols.h"
 #include "spdlog/common.h"
 #include <VCPU.h>
 #include <argparse/argparse.hpp>
@@ -52,7 +54,11 @@ int main(int argc, char *argv[]) {
   program.add_argument("-d", "--difftest")
       .help("Use NEMUemu as differential test")
       .flag();
-  ;
+  program.add_argument("--inst_ringbuffer")
+      .help("Use ring buffer")
+      .default_value(16)
+      .scan<'i', unsigned long>();
+  program.add_argument("--elf").help("ELF file path").default_value("");
   try {
     program.parse_args(argc, argv);
   } catch (const std::exception &err) {
@@ -91,6 +97,23 @@ int main(int argc, char *argv[]) {
   spdlog::info("Image path  : {}", image_path);
   spdlog::info("Memory size : {}", mem_size);
   bool difftest = program.get<bool>("--difftest");
+  bool use_irb = program.is_used("--inst_ringbuffer");
+
+  if (use_irb) {
+    unsigned long sz_irb = program.get<unsigned long>("--inst_ringbuffer");
+    InstRingBuffer::instRingBuffer.init(sz_irb);
+    spdlog::info("Initialized instruction ringbuffer with size : {}", sz_irb);
+  }
+  bool use_ftracer = program.is_used("--elf");
+  if (use_ftracer) {
+    auto path_elf = program.get("--elf");
+    if (path_elf.empty()) {
+      println(cerr, "ELF path not specified");
+      exit(1);
+    }
+    load_symbols(path_elf.c_str());
+    spdlog::info("Initialized symbols from elf : {}", path_elf);
+  }
   if (itracer != 0) {
     if (!Capstone::capstone.load_libcapstone()) {
       spdlog::warn("Failed to initialize capstone. Ignoring itracer flag.");
@@ -111,7 +134,8 @@ int main(int argc, char *argv[]) {
 
   emu = make_shared<NPCemu>(mem_size, image_path);
 
-  SingleMonitor monitor(emu, batch_mode, itracer, mtracer);
+  SingleMonitor monitor(emu, batch_mode, itracer, mtracer, use_irb,
+                        use_ftracer);
   if (difftest)
     monitor.addRefference(nemu);
   try {
