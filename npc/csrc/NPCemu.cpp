@@ -63,7 +63,7 @@ void NPCemu::step(bool display, bool record_inst, bool ftracer) {
       dnxt_pc = (imm + getGPR(rs1)) & ~0x1;
     }
 
-    if (rd == 1) {
+    if ((opcode == 0x67 || opcode == 0x6f) && rd == 1) {
       for (int i = 0; i < cnt_stack_ftrace; i++)
         std::print(" ");
       int to_symbol = find_symbol(dnxt_pc);
