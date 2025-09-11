@@ -101,7 +101,8 @@ void SingleMonitor::start() {
   } catch (const std::logic_error &e) {
     std::println(std::cerr, "{}", e.what());
   }
-  InstRingBuffer::instRingBuffer.display();
+  if (itracer)
+    InstRingBuffer::instRingBuffer.display();
 }
 
 bool SingleMonitor::process_trap() {
