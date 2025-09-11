@@ -27,13 +27,5 @@ class Branch(WIDTH: Int) extends RawModule {
   val is_unsigned = io.funct3(1)
   val compared = Mux(is_unsigned, ~adder.io.Cout, is_lt)
 
-  io.jump := MuxLookup(Cat(io.funct3(2), io.funct3(0)), false.B)(
-    Seq(
-      "b00".U(3.W) -> is_eq,
-      "b01".U(3.W) -> ~is_eq,
-      "b10".U(3.W) -> compared,
-      "b11".U(3.W) -> ~compared
-    )
-  )
-
+  io.jump := io.funct3(0) ^ Mux(io.funct3(2), compared, is_eq)
 }
