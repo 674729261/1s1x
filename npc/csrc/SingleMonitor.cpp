@@ -100,7 +100,7 @@ void SingleMonitor::start() {
                      emus.front()->getGPR(diff_fault.second));
         diff_fault = {-1, -1};
       }
-      if (state == CommandState::QUIT)
+      if (state != CommandState::NONE)
         break;
     }
   } catch (const std::logic_error &e) {
