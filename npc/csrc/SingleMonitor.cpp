@@ -69,7 +69,7 @@ SingleMonitor::SingleMonitor(std::shared_ptr<RISCV32> emu, bool batch,
 void SingleMonitor::addRefference(std::shared_ptr<RISCV32> ref) {
   emus.push_back(ref);
 }
-void SingleMonitor::start() {
+int SingleMonitor::start() {
   for (auto &e : emus)
     e->reset();
   CommandState state = CommandState::NONE;
@@ -108,6 +108,7 @@ void SingleMonitor::start() {
   }
   if (itracer)
     InstRingBuffer::instRingBuffer.display();
+  return state;
 }
 
 bool SingleMonitor::process_trap() {

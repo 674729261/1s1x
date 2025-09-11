@@ -15,7 +15,7 @@ public:
                 unsigned long itracer = 16, bool mtracer = false,
                 bool irb = false, bool ftracer = false);
 
-  void start();
+  int start();
   void addRefference(std::shared_ptr<RISCV32> ref);
   ~SingleMonitor();
 
@@ -34,8 +34,8 @@ private:
   bool batch, mtracer, irb, ftracer;
 
   enum CommandState {
-    NONE = 0, // OK to read next command
-    QUIT = 1, // End the monitor
+    QUIT = 0, // End the monitor
+    NONE = 1, // OK to read next command
     BAD_TRAP
   };
 
