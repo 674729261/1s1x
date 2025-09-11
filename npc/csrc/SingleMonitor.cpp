@@ -99,6 +99,8 @@ int SingleMonitor::start() {
                      emus[diff_fault.first]->getGPR(diff_fault.second),
                      emus.front()->getGPR(diff_fault.second));
         diff_fault = {-1, -1};
+        if (batch)
+          state = CommandState::BAD_TRAP;
       }
       if (state != CommandState::NONE)
         break;
