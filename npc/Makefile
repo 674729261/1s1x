@@ -26,18 +26,18 @@ $(SVSRC): $(CHISELSRC)
 
 
 
-PROG ?= test_progs/add-minirv-npc.bin
-ELF ?= test_progs/add-minirv-npc.elf
+PROG ?= test_progs/add-riscv32e-npc.bin
+ELF ?= test_progs/add-riscv32e-npc.elf
 MEM_SIZE ?= 134217728
 TIME_STAMP = $(shell date +"%Y_%m_%d_%H_%M_%S")
 LOG_FILE ?= "log/$(TIME_STAMP).log"
 sim: npc
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
-	$(BIN) --image $(PROG) --mem_size $(MEM_SIZE) --log $(LOG_FILE) --itracer 8 --difftest --inst_ringbuffer 16 --elf $(ELF)
+	$(BIN) --image $(PROG) --mem_size $(MEM_SIZE) --log $(LOG_FILE) --itracer 8 --difftest --inst_ringbuffer 16 $(NPC_FLAGS)
 
 sim_full_speed: npc
 	$(call git_commit, "sim RTL full speed") # DO NOT REMOVE THIS LINE!!!
-	$(BIN) --image $(PROG) --mem_size $(MEM_SIZE) --log $(LOG_FILE)
+	$(BIN) --image $(PROG) --mem_size $(MEM_SIZE) --log $(LOG_FILE) $(NPC_FLAGS)
 
 
 clean:

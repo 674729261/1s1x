@@ -69,7 +69,7 @@ SingleMonitor::SingleMonitor(std::shared_ptr<RISCV32> emu, bool batch,
 void SingleMonitor::addRefference(std::shared_ptr<RISCV32> ref) {
   emus.push_back(ref);
 }
-void SingleMonitor::start() {
+int SingleMonitor::start() {
   for (auto &e : emus)
     e->reset();
   CommandState state = CommandState::NONE;
@@ -85,23 +85,32 @@ void SingleMonitor::start() {
         finished = true;
         if (process_trap()) {
           spdlog::info("HIT GOOD TRAP");
+          state = CommandState::QUIT;
         } else {
           spdlog::info("HIT BAD TRAP");
+          state = CommandState::BAD_TRAP;
         }
       }
       if (diff_fault.first >= 0) {
-        spdlog::info("Reg {} differs with ref #{} @ PC = {:#010x}",
+        spdlog::info("Reg {} differs with ref #{} @ PC = {:#010x}\nShould be "
+                     "{:#010x}, got {:#010x}",
                      RISCV32::gpr_names[diff_fault.second], diff_fault.first,
-                     emus.front()->getPC());
+                     emus.front()->getPC(),
+                     emus[diff_fault.first]->getGPR(diff_fault.second),
+                     emus.front()->getGPR(diff_fault.second));
         diff_fault = {-1, -1};
+        if (batch)
+          state = CommandState::BAD_TRAP;
       }
-      if (state & CommandState::QUIT)
+      if (state != CommandState::NONE)
         break;
     }
   } catch (const std::logic_error &e) {
     std::println(std::cerr, "{}", e.what());
   }
-  InstRingBuffer::instRingBuffer.display();
+  if (itracer)
+    InstRingBuffer::instRingBuffer.display();
+  return state;
 }
 
 bool SingleMonitor::process_trap() {

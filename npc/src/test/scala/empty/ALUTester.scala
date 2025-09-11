@@ -137,7 +137,7 @@ class ALUTester extends AnyFlatSpec with ChiselScalatestTester {
       for (i <- 0 until 2048) { // srl
         val a: Long = random.nextLong(1L << 32)
         val b: Long = random.nextLong(32)
-        val expected = (a >> b) % (1L << 32)
+        val expected = (a >> b)
 
         set_input(dut, a.U(32.W), b.U(32.W), "b101".U(3.W), false.B, false.B)
 
@@ -147,8 +147,8 @@ class ALUTester extends AnyFlatSpec with ChiselScalatestTester {
         val a: Long = random.nextLong(1L << 32)
         val b: Long = random.nextLong(32)
         val expected =
-          if (a < (1L << 31)) (a >> b) % (1L << 32)
-          else ((a >> b) % (1L << 32)) | ((1L << 32) - (1L << (32 - b)))
+          if (a < (1L << 31)) (a >> b)
+          else (a >> b) | ((1L << 32) - (1L << (32 - b)))
 
         set_input(dut, a.U(32.W), b.U(32.W), "b101".U(3.W), true.B, false.B)
 
