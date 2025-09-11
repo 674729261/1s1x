@@ -114,7 +114,7 @@ bool SingleMonitor::process_trap() {
   uint32_t gpr_a0 = emus.front()->getGPR(10);
   spdlog::info("EBREAK, a0 = {:08x}, pc = {:08x}, cycle = {}", gpr_a0,
                emus.front()->getPC(), emus.front()->instrCount());
-  return (gpr_a0 == 0);
+  return (gpr_a0 != 0);
 }
 
 void SingleMonitor::simulate(unsigned long cnt) {
