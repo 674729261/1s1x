@@ -28,10 +28,10 @@ class DecodeInstr extends RawModule {
     val is_alu_a_pc = Output(Bool())
     val is_alu_b_imm = Output(Bool())
     val is_alu_force_add = Output(Bool())
-    val is_gpr_write = Output(Bool())
     val is_gpr_wdata_from_ram = Output(Bool())
     val is_gpr_wdata_from_snpc = Output(Bool())
     val is_gpr_wdata_from_alu = Output(Bool())
+    val is_gpr_wdata_from_imm = Output(Bool())
 
     val is_gpr_wen = Output(Bool())
 
@@ -66,11 +66,10 @@ class DecodeInstr extends RawModule {
   io.is_alu_a_pc := is_B || is_J || io.is_auipc
   io.is_alu_b_imm := is_I || is_B || is_S
   io.is_alu_force_add := io.is_store || io.is_load || io.is_branch
-  io.is_gpr_write := io.is_jal || io.is_jalr || is_U || is_R ||
-    io.is_arithmetic_imm || io.is_arithmetic_reg || io.is_load
   io.is_gpr_wdata_from_ram := io.is_load
   io.is_gpr_wdata_from_snpc := io.is_jal || io.is_jalr
-  io.is_gpr_wdata_from_alu := (!io.is_gpr_wdata_from_ram) && (!io.is_gpr_wdata_from_snpc)
+  io.is_gpr_wdata_from_imm := io.is_lui
+  io.is_gpr_wdata_from_alu := (!io.is_gpr_wdata_from_imm) && (!io.is_gpr_wdata_from_ram) && (!io.is_gpr_wdata_from_snpc)
   io.is_gpr_wen := is_U || io.is_load || is_R || io.is_arithmetic_imm || io.is_jal || io.is_jalr
 
   io.is_ram_byte := (io.funct3(1, 0) === "b00".U(2.W))

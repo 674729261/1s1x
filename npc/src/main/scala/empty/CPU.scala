@@ -87,13 +87,14 @@ class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
   alu.io.is_force_add := instDecoder.io.is_alu_force_add
 
   gpr.io.waddr := instDecoder.io.rd
-  gpr.io.wen := instDecoder.io.is_gpr_write
+  gpr.io.wen := instDecoder.io.is_gpr_wen
   gpr.io.raddr1 := instDecoder.io.rs1
   gpr.io.raddr2 := instDecoder.io.rs2
   gpr.io.wdata := Mux1H(
     Seq(
       instDecoder.io.is_gpr_wdata_from_ram -> ramLoader.io.out,
       instDecoder.io.is_gpr_wdata_from_snpc -> static_pc_next,
+      instDecoder.io.is_gpr_wdata_from_imm -> instDecoder.io.imm,
       instDecoder.io.is_gpr_wdata_from_alu -> alu.io.out
     )
   )
