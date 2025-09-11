@@ -18,31 +18,22 @@ class Branch(WIDTH: Int) extends RawModule {
   adder.io.B := ~io.B
   adder.io.Cin := true.B
 
-  io.jump := false.B
   val is_lt = Wire(Bool())
   val is_eq = Wire(Bool())
   is_lt := (io.A(31) & ~io.B(31)) | // - < +
     ((~(io.A(31) ^ io.B(31))) & adder.io.out(31)) // A - B < 0
   is_eq := adder.io.out === 0.U(32.W)
-  switch(io.funct3) {
-    is("b000".U(3.W)) { // beq
-      io.jump := is_eq
-    }
-    is("b001".U(3.W)) { // bne
-      io.jump := ~is_eq
-    }
-    is("b100".U(3.W)) { // blt
-      io.jump := is_lt
-    }
-    is("b101".U(3.W)) { // bge
-      io.jump := ~is_lt
-    }
-    is("b110".U(3.W)) { // bltu
-      io.jump := ~adder.io.Cout
-    }
-    is("b111".U(3.W)) { // bgeu
-      io.jump := adder.io.Cout
-    }
-  }
+
+  val is_unsigned = io.funct3(1)
+  val compared = Mux(is_unsigned, ~adder.io.Cout, is_lt)
+
+  io.jump := MuxLookup(Cat(io.funct3(2), io.funct3(0)), false.B)(
+    Seq(
+      "b00".U(3.W) -> is_eq,
+      "b01".U(3.W) -> ~is_eq,
+      "b10".U(3.W) -> compared,
+      "b11".U(3.W) -> ~compared
+    )
+  )
 
 }
