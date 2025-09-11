@@ -85,8 +85,10 @@ void SingleMonitor::start() {
         finished = true;
         if (process_trap()) {
           spdlog::info("HIT GOOD TRAP");
+          state = CommandState::QUIT;
         } else {
           spdlog::info("HIT BAD TRAP");
+          state = CommandState::BAD_TRAP;
         }
       }
       if (diff_fault.first >= 0) {
@@ -98,7 +100,7 @@ void SingleMonitor::start() {
                      emus.front()->getGPR(diff_fault.second));
         diff_fault = {-1, -1};
       }
-      if (state & CommandState::QUIT)
+      if (state == CommandState::QUIT)
         break;
     }
   } catch (const std::logic_error &e) {

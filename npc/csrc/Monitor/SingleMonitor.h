@@ -35,7 +35,8 @@ private:
 
   enum CommandState {
     NONE = 0, // OK to read next command
-    QUIT = 1  // End the monitor
+    QUIT = 1, // End the monitor
+    BAD_TRAP
   };
 
   std::list<Watcher> watchers;
