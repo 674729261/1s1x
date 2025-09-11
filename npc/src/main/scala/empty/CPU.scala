@@ -83,7 +83,7 @@ class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
     gpr.io.rdata2
   )
   alu.io.funct3 := instDecoder.io.funct3
-  alu.io.is_sub_sra := instDecoder.io.funct7(5)
+  alu.io.is_sub_sra := instDecoder.io.is_alu_sub_sra
   alu.io.is_force_add := instDecoder.io.is_alu_force_add
 
   gpr.io.waddr := instDecoder.io.rd
