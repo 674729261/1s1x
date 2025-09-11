@@ -90,9 +90,12 @@ void SingleMonitor::start() {
         }
       }
       if (diff_fault.first >= 0) {
-        spdlog::info("Reg {} differs with ref #{} @ PC = {:#010x}",
+        spdlog::info("Reg {} differs with ref #{} @ PC = {:#010x}\nShould be "
+                     "{:#010x}, got {:#010x}",
                      RISCV32::gpr_names[diff_fault.second], diff_fault.first,
-                     emus.front()->getPC());
+                     emus.front()->getPC(),
+                     emus[diff_fault.first]->getGPR(diff_fault.second),
+                     emus.front()->getGPR(diff_fault.second));
         diff_fault = {-1, -1};
       }
       if (state & CommandState::QUIT)
