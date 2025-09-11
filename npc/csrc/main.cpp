@@ -136,13 +136,15 @@ int main(int argc, char *argv[]) {
 
   SingleMonitor monitor(emu, batch_mode, itracer, mtracer, use_irb,
                         use_ftracer);
+  int result;
   if (difftest)
     monitor.addRefference(nemu);
   try {
-    monitor.start();
+    result = monitor.start();
   } catch (const std::exception &err) {
     cerr << err.what() << std::endl;
     exit(1);
   }
   emu = nullptr;
+  return result;
 }
