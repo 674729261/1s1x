@@ -36,7 +36,7 @@ class __DecoderInstr_test() extends Module {
     val is_ebreak = Output(Bool())
 
     val is_alu_a_pc = Output(Bool())
-    val is_alu_b_imm = Output(Bool())
+    val is_alu_b_reg = Output(Bool())
     val is_alu_sub_sra = Output(Bool())
     val is_alu_force_add = Output(Bool())
     val is_gpr_wdata_from_ram = Output(Bool())

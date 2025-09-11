@@ -26,7 +26,7 @@ class DecodeInstr extends RawModule {
     val is_ebreak = Output(Bool())
 
     val is_alu_a_pc = Output(Bool())
-    val is_alu_b_imm = Output(Bool())
+    val is_alu_b_reg = Output(Bool())
     val is_alu_sub_sra = Output(Bool())
     val is_alu_force_add = Output(Bool())
     val is_gpr_wdata_from_ram = Output(Bool())
@@ -65,7 +65,7 @@ class DecodeInstr extends RawModule {
   val is_U = io.is_auipc || io.is_lui
 
   io.is_alu_a_pc := is_B || is_J || io.is_auipc
-  io.is_alu_b_imm := is_I || is_B || is_S
+  io.is_alu_b_reg := is_R
   io.is_alu_sub_sra :=
     io.inst(5) && !(io.is_arithmetic_reg && io.funct3 === "b000".U(3.W))
   io.is_alu_force_add := io.is_store || io.is_load || io.is_branch

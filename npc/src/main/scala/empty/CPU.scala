@@ -78,9 +78,9 @@ class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
 
   alu.io.A := Mux(instDecoder.io.is_alu_a_pc, pc, gpr.io.rdata1)
   alu.io.B := Mux(
-    instDecoder.io.is_alu_b_imm,
-    instDecoder.io.imm,
-    gpr.io.rdata2
+    instDecoder.io.is_alu_b_reg,
+    gpr.io.rdata2,
+    instDecoder.io.imm
   )
   alu.io.funct3 := instDecoder.io.funct3
   alu.io.is_sub_sra := instDecoder.io.is_alu_sub_sra
