@@ -167,11 +167,7 @@ static word_t *csr_id(int csr) {
   }
   panic("Unknown csr id 0x%x", csr);
 }
-static void csr_swap(int csr, word_t rs, int rd) {
-  word_t *dest_csr = csr_id(csr);
-  R(rd) = *dest_csr;
-  *dest_csr = rs;
-}
+
 static int decode_exec(Decode *s) {
   s->dnpc = s->snpc;
   IFDEF(CONFIG_INST_RINGBUFFER,
@@ -294,7 +290,11 @@ static int decode_exec(Decode *s) {
   INSTPAT("0000000 00000 00000 000 00000 11100 11", ecall, N,
           s->dnpc = isa_raise_intr(11, cpu.pc)); // R(10) is $a0
   INSTPAT("??????? ????? ????? 001 ????? 11100 11", csrrw, CSRR,
-          csr_swap(csr, src1, rd));
+          word_t *dest_csr = csr_id(csr);
+          R(rd) = *dest_csr; *dest_csr = src1;);
+  INSTPAT("??????? ????? ????? 010 ????? 11100 11", csrrs, CSRR,
+          word_t *dest_csr = csr_id(csr);
+          R(rd) = *dest_csr; *dest_csr = *dest_csr | src1;);
   INSTPAT("??????? ????? ????? ??? ????? ????? ??", inv, N, INV(s->pc));
 
   INSTPAT_END();
