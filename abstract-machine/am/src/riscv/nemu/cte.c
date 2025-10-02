@@ -1,14 +1,19 @@
 #include <am.h>
-#include <riscv/riscv.h>
 #include <klib.h>
+#include <riscv/riscv.h>
 
-static Context* (*user_handler)(Event, Context*) = NULL;
+static Context *(*user_handler)(Event, Context *) = NULL;
 
-Context* __am_irq_handle(Context *c) {
+Context *__am_irq_handle(Context *c) {
+  printf("cause = %d\n", c->mcause);
+  printf("status = %x\n", c->mstatus);
+  printf("epc = %x\n", c->mepc);
   if (user_handler) {
     Event ev = {0};
     switch (c->mcause) {
-      default: ev.event = EVENT_ERROR; break;
+    default:
+      ev.event = EVENT_ERROR;
+      break;
     }
 
     c = user_handler(ev, c);
@@ -20,7 +25,7 @@ Context* __am_irq_handle(Context *c) {
 
 extern void __am_asm_trap(void);
 
-bool cte_init(Context*(*handler)(Event, Context*)) {
+bool cte_init(Context *(*handler)(Event, Context *)) {
   // initialize exception entry
   asm volatile("csrw mtvec, %0" : : "r"(__am_asm_trap));
 
@@ -42,9 +47,6 @@ void yield() {
 #endif
 }
 
-bool ienabled() {
-  return false;
-}
+bool ienabled() { return false; }
 
-void iset(bool enable) {
-}
+void iset(bool enable) {}
