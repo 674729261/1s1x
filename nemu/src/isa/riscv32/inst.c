@@ -53,9 +53,9 @@ enum {
   do {                                                                         \
     *imm = SEXT(BITS(i, 31, 20), 12);                                          \
   } while (0)
-#define immC()                                                                 \
+#define csrC()                                                                 \
   do {                                                                         \
-    *imm = BITS(i, 31, 20);                                                    \
+    *csr = BITS(i, 31, 20);                                                    \
   } while (0)
 #define immU()                                                                 \
   do {                                                                         \
@@ -115,7 +115,7 @@ static void decode_operand(Decode *s, int *rd, word_t *src1, word_t *src2,
     break;
   case TYPE_CSRR:
     src1R();
-    immC();
+    csrC();
     break;
   case TYPE_N:
     break;
