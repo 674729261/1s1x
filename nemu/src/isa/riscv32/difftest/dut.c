@@ -19,7 +19,7 @@
 #include <stdio.h>
 
 bool isa_difftest_checkregs(CPU_state *ref_r, vaddr_t pc) {
-  if (ref_r->pc != pc) {
+  if (ref_r->pc != cpu.pc) {
     fprintf(stderr, "PC differs\nShould be %08x but got %08x\n", ref_r->pc, pc);
     return false;
   }
