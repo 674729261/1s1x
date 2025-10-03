@@ -41,6 +41,7 @@ bool cte_init(Context *(*handler)(Event, Context *)) {
 
 Context *kcontext(Area kstack, void (*entry)(void *), void *arg) {
   ((Context *)kstack.start)->mepc = (uintptr_t)entry;
+  ((Context *)kstack.start)->mstatus = 0x1800;
   return kstack.start;
 }
 
