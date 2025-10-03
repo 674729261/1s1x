@@ -43,6 +43,7 @@ Context *kcontext(Area kstack, void (*entry)(void *), void *arg) {
   Context *context_addr = (Context *)(kstack.end - sizeof(Context));
   ((Context *)(context_addr))->mepc = (uintptr_t)entry;
   ((Context *)(context_addr))->mstatus = 0x1800;
+  ((Context *)(context_addr))->gpr[10] = (uintptr_t)arg;
   return context_addr;
 }
 
