@@ -14,11 +14,10 @@
  ***************************************************************************************/
 
 #include <isa.h>
+#include <stdio.h>
 
 word_t isa_raise_intr(word_t NO, vaddr_t epc) {
-  /* TODO: Trigger an interrupt/exception with ``NO''.
-   * Then return the address of the interrupt/exception vector.
-   */
+  printf("Raising interruption : cause = %d, @0x%08x", NO, epc);
   cpu.csr_mepc = epc;
   cpu.csr_mcause = NO;
 
