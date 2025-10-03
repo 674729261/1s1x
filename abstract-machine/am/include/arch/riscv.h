@@ -10,12 +10,11 @@
 #endif
 
 struct Context {
-  // TODO: fix the order of these members to match trap.S
   union {
     uintptr_t gpr[NR_REGS];
     struct {
       void *pdir;
-      uintptr_t ___should_not_use___[NR_REGS - 1];
+      // uintptr_t ___should_not_use___[NR_REGS - 1];
     };
   };
   uintptr_t mcause, mstatus, mepc;
