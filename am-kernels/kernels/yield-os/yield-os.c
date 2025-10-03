@@ -19,6 +19,7 @@ static void f(void *arg) {
 static Context *schedule(Event ev, Context *prev) {
   current->cp = prev;
   current = (current == &pcb[0] ? &pcb[1] : &pcb[0]);
+
   return current->cp;
 }
 
