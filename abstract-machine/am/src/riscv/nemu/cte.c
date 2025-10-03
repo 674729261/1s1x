@@ -9,7 +9,6 @@ Context *__am_irq_handle(Context *c) {
   // printf("cause = %d\n", c->mcause);
   // printf("status = %x\n", c->mstatus);
   // printf("epc = %x\n", c->mepc);
-  printf("!!%x %x\n", &c->gpr[0], &c->pdir);
   if (user_handler) {
     Event ev = {0};
     switch (c->mcause) {
