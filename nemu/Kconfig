@@ -148,6 +148,10 @@ config FTRACER
   bool "Function Tracer"
   default n
 
+config ETRACER
+  bool "Enable exception tracer"
+  default n
+
 config INST_RINGBUFFER
   bool "Instruction Ring Buffer"
 
