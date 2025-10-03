@@ -50,7 +50,7 @@ __am_asm_trap:
 
   STORE t0, OFFSET_CAUSE(sp)
   STORE t1, OFFSET_STATUS(sp)
-  # STORE t2, OFFSET_EPC(sp)
+  STORE t2, OFFSET_EPC(sp)
 
   # set mstatus.MPRV to pass difftest
   li a0, (1 << 17)
@@ -70,6 +70,6 @@ __am_asm_trap:
 
   MAP(REGS, POP)
 
-  addi sp, sp, CONTEXT_SIZE
+  # addi sp, sp, CONTEXT_SIZE
 
   mret
