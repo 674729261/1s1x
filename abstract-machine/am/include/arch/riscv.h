@@ -13,7 +13,6 @@ struct Context {
   union {
     uintptr_t gpr[NR_REGS];
     struct {
-      uintptr_t ___should_not_use___[NR_REGS - 1];
       void *pdir;
     };
   };
