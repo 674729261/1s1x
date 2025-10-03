@@ -13,11 +13,13 @@
  * See the Mulan PSL v2 for more details.
  ***************************************************************************************/
 
+#include <debug.h>
 #include <isa.h>
-#include <stdio.h>
 
 word_t isa_raise_intr(word_t NO, vaddr_t epc) {
-  printf("Raising interruption : cause = %d, @0x%08x", NO, epc);
+#ifdef CONFIG_ETRACER
+  Log("Raising interruption : cause = %d, @0x%08x", NO, epc);
+#endif
   cpu.csr_mepc = epc;
   cpu.csr_mcause = NO;
 

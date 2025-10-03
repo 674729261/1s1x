@@ -71,9 +71,8 @@ word_t map_read(paddr_t addr, int len, IOMap *map) {
   word_t ret = host_read(map->space + offset, len);
   IFDEF(CONFIG_HAS_AUDIO, SDL_UnlockAudio());
   IFDEF(CONFIG_DTRACER,
-        fprintf(stderr,
-                "Reading data %08x of length %d from MMIO %08x device %s\n",
-                ret, len, addr, map->name));
+        Log("Reading data %08x of length %d from MMIO %08x device %s", ret, len,
+            addr, map->name));
   return ret;
 }
 
@@ -86,9 +85,8 @@ void map_write(paddr_t addr, int len, word_t data, IOMap *map) {
   IFDEF(CONFIG_HAS_AUDIO, SDL_UnlockAudio());
 
   IFDEF(CONFIG_DTRACER,
-        fprintf(stderr,
-                "Writing data %08x of length %d to MMIO %08x device %s\n", data,
-                len, addr, map->name));
+        Log("Writing data %08x of length %d to MMIO %08x device %s", data, len,
+            addr, map->name));
 
   invoke_callback(map->callback, offset, len, true);
 }
