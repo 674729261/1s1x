@@ -1,6 +1,6 @@
 #include <am.h>
 #include <klib-macros.h>
-
+#include <klib.h>
 #define STACK_SIZE (4096 * 8)
 typedef union {
   uint8_t stack[STACK_SIZE];
@@ -19,6 +19,7 @@ static void f(void *arg) {
 static Context *schedule(Event ev, Context *prev) {
   current->cp = prev;
   current = (current == &pcb[0] ? &pcb[1] : &pcb[0]);
+  printf("%p\n", current);
   return current->cp;
 }
 
