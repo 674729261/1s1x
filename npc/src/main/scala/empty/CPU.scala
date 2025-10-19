@@ -61,6 +61,11 @@ class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
   val ramWriter = Module(new RamWriteData)
   val ramLoader = Module(new RamLoadData)
 
+  val csrBank = Module(new CSR(Array(0xb00)))
+  // csrBank.io.csr := 32.U(32.W)
+  // csrBank.io.wen := false.B
+  // csrBank.io.wdata := 32.U(32.W)
+
   Trapper.io.clk := clock.asBool
   Trapper.io.ebreak := instDecoder.io.is_ebreak
 
