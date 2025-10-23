@@ -6,7 +6,7 @@
 #ifdef __riscv_e
 #define NR_REGS 16
 #else
-#define NR_REGS 16
+#define NR_REGS 32
 #endif
 
 struct Context {
