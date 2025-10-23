@@ -61,14 +61,36 @@ class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
   val ramWriter = Module(new RamWriteData)
   val ramLoader = Module(new RamLoadData)
 
+  val csrBank = Module(new CSR)
+  csrBank.io.csr := instDecoder.io.csr
+  csrBank.io.wen := instDecoder.io.is_csr_visit
+  csrBank.io.cur_pc := pc
+  csrBank.io.new_cause := 11.U(32.W)
+  csrBank.io.interruption := instDecoder.io.is_ecall
+  val csr_raw_datasrc = Wire(UInt(32.W))
+  csr_raw_datasrc := gpr.io.rdata1
+  csrBank.io.wdata := Mux(
+    instDecoder.io.is_csr_masked,
+    csr_raw_datasrc | csrBank.io.rdata,
+    csr_raw_datasrc
+  )
+
   Trapper.io.clk := clock.asBool
   Trapper.io.ebreak := instDecoder.io.is_ebreak
 
-  dynamic_pc_next := Mux(
-    (instDecoder.io.is_branch && branch.io.jump) || instDecoder.io.is_jal || instDecoder.io.is_jalr,
-    alu.io.out,
-    static_pc_next
+  dynamic_pc_next := MuxCase(
+    static_pc_next,
+    Seq(
+      ((instDecoder.io.is_branch && branch.io.jump) || instDecoder.io.is_jal || instDecoder.io.is_jalr) -> alu.io.out,
+      instDecoder.io.is_ecall -> csrBank.io.mtvec,
+      instDecoder.io.is_mret -> csrBank.io.mepc
+    )
   )
+  // Mux(
+  //   (instDecoder.io.is_branch && branch.io.jump) || instDecoder.io.is_jal || instDecoder.io.is_jalr,
+  //   alu.io.out,
+  //   static_pc_next
+  // )
 
   branch.io.A := gpr.io.rdata1
   branch.io.B := gpr.io.rdata2
@@ -95,7 +117,8 @@ class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
       instDecoder.io.is_gpr_wdata_from_ram -> ramLoader.io.out,
       instDecoder.io.is_gpr_wdata_from_snpc -> static_pc_next,
       instDecoder.io.is_gpr_wdata_from_imm -> instDecoder.io.imm,
-      instDecoder.io.is_gpr_wdata_from_alu -> alu.io.out
+      instDecoder.io.is_gpr_wdata_from_alu -> alu.io.out,
+      instDecoder.io.is_gpr_wdata_from_csr -> csrBank.io.rdata
     )
   )
 

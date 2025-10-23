@@ -23,6 +23,7 @@ class __DecoderInstr_test() extends Module {
     val funct3 = Output(UInt(3.W))
     val funct7 = Output(UInt(7.W))
     val imm = Output(UInt(32.W))
+    val csr = Output(UInt(12.W))
 
     val is_arithmetic_imm = Output(Bool())
     val is_arithmetic_reg = Output(Bool())
@@ -34,6 +35,11 @@ class __DecoderInstr_test() extends Module {
     val is_lui = Output(Bool())
     val is_auipc = Output(Bool())
     val is_ebreak = Output(Bool())
+    val is_ecall = Output(Bool())
+    val is_mret = Output(Bool())
+    val is_csr_visit = Output(Bool())
+
+    val is_csrop = Output(Bool())
 
     val is_alu_a_pc = Output(Bool())
     val is_alu_b_reg = Output(Bool())
@@ -43,6 +49,7 @@ class __DecoderInstr_test() extends Module {
     val is_gpr_wdata_from_snpc = Output(Bool())
     val is_gpr_wdata_from_alu = Output(Bool())
     val is_gpr_wdata_from_imm = Output(Bool())
+    val is_gpr_wdata_from_csr = Output(Bool())
 
     val is_gpr_wen = Output(Bool())
 
@@ -53,6 +60,9 @@ class __DecoderInstr_test() extends Module {
 
     val is_ram_valid = Output(Bool())
     val is_ram_wen = Output(Bool())
+
+    val is_csr_masked = Output(Bool())
+
   })
 
   val alu = Module(new DecodeInstr)
@@ -65,7 +75,6 @@ class DecoderTester extends AnyFlatSpec with ChiselScalatestTester {
     test(new __DecoderInstr_test) { dut =>
       // addi
       dut.io.inst.poke("b101010101100_00111_000_11110_0010011".U(32.W))
-
       dut.io.imm.expect("b11111111111111111111101010101100".U(32.W))
       dut.io.is_arithmetic_imm.expect(true.B)
       dut.io.rs1.expect("b00111".U(5.W))
@@ -74,7 +83,6 @@ class DecoderTester extends AnyFlatSpec with ChiselScalatestTester {
 
       // xori
       dut.io.inst.poke("b001010101100_10110_100_00010_0010011".U(32.W))
-
       dut.io.imm.expect("b00000000000000000000001010101100".U(32.W))
       dut.io.is_arithmetic_imm.expect(true.B)
       dut.io.rs1.expect("b10110".U(5.W))
@@ -83,7 +91,6 @@ class DecoderTester extends AnyFlatSpec with ChiselScalatestTester {
 
       // xori
       dut.io.inst.poke("b001010101100_10110_100_00010_0010011".U(32.W))
-
       dut.io.imm.expect("b00000000000000000000001010101100".U(32.W))
       dut.io.is_arithmetic_imm.expect(true.B)
       dut.io.rs1.expect("b10110".U(5.W))
@@ -92,7 +99,6 @@ class DecoderTester extends AnyFlatSpec with ChiselScalatestTester {
 
       // beq
       dut.io.inst.poke("b1111101_10000_00000_000_01110_1100011".U(32.W))
-
       dut.io.imm.expect("b11111111111111111111011110101110".U(32.W))
       dut.io.rs1.expect("b00000".U(5.W))
       dut.io.rs2.expect("b10000".U(5.W))
@@ -101,7 +107,6 @@ class DecoderTester extends AnyFlatSpec with ChiselScalatestTester {
 
       // sra
       dut.io.inst.poke("b0100000_11011_10001_101_00001_0110011".U(32.W))
-
       dut.io.rs1.expect("b10001".U(5.W))
       dut.io.rs2.expect("b11011".U(5.W))
       dut.io.is_arithmetic_reg.expect(true.B)
@@ -109,25 +114,29 @@ class DecoderTester extends AnyFlatSpec with ChiselScalatestTester {
 
       // lui
       dut.io.inst.poke("b10101010101010101010_10101_0110111".U(32.W))
-
       dut.io.rd.expect("b10101".U(5.W))
       dut.io.is_lui.expect(true.B)
       dut.io.imm.expect("b10101010101010101010_000000000000".U(32.W))
 
       // jal
       dut.io.inst.poke("b10101011110011011110_00110_1101111".U(32.W))
-
       dut.io.rd.expect("b00110".U(5.W))
       dut.io.is_jal.expect(true.B)
       dut.io.imm.expect("b11111111111111011110001010111100".U(32.W))
 
       // jalr
       dut.io.inst.poke("b101010101010_10101_000_01010_1100111".U(32.W))
-
       dut.io.rs1.expect("b10101".U(5.W))
       dut.io.rd.expect("b01010".U(5.W))
       dut.io.is_jalr.expect(true.B)
       dut.io.imm.expect("b11111111111111111111101010101010".U(32.W))
+
+      // csrrw
+      dut.io.inst.poke("b101010101010_10101_000_01010_1110111".U(32.W))
+      dut.io.rs1.expect("b10101".U(5.W))
+      dut.io.rd.expect("b01010".U(5.W))
+      dut.io.is_csrop.expect(true.B)
+      dut.io.csr.expect("b101010101010".U(12.W))
     }
   }
 }
