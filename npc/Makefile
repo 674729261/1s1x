@@ -39,6 +39,10 @@ sim_full_speed: npc
 	$(call git_commit, "sim RTL full speed") # DO NOT REMOVE THIS LINE!!!
 	$(BIN) --image $(PROG) --mem_size $(MEM_SIZE) --log $(LOG_FILE) $(NPC_FLAGS)
 
+sim_ftracer: npc
+	$(call git_commit, "sim RTL ftracer") # DO NOT REMOVE THIS LINE!!!
+	$(BIN) --elf $(ELF) --image $(PROG) --mem_size $(MEM_SIZE) --log $(LOG_FILE) $(NPC_FLAGS)
+
 
 clean:
 	rm -rf obj_dir
