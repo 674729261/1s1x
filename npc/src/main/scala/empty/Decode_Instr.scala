@@ -89,9 +89,9 @@ class DecodeInstr extends RawModule {
   io.is_gpr_wdata_from_ram := io.is_load
   io.is_gpr_wdata_from_snpc := io.is_jal || io.is_jalr
   io.is_gpr_wdata_from_imm := io.is_lui
-  io.is_gpr_wdata_from_csr := io.is_csrop
+  io.is_gpr_wdata_from_csr := io.is_csr_visit
   io.is_gpr_wdata_from_alu := (!io.is_gpr_wdata_from_csr) && (!io.is_gpr_wdata_from_imm) && (!io.is_gpr_wdata_from_ram) && (!io.is_gpr_wdata_from_snpc)
-  io.is_gpr_wen := io.is_csrop || is_U || io.is_load || is_R || io.is_arithmetic_imm || io.is_jal || io.is_jalr
+  io.is_gpr_wen := io.is_csr_visit || io.is_csrop || is_U || io.is_load || is_R || io.is_arithmetic_imm || io.is_jal || io.is_jalr
 
   io.is_ram_byte := (io.funct3(1, 0) === "b00".U(2.W))
   io.is_ram_word := (io.funct3(1, 0) === "b10".U(2.W))
