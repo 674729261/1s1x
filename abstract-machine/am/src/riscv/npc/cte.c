@@ -1,6 +1,7 @@
 #include <am.h>
 #include <klib.h>
 #include <riscv/riscv.h>
+#include <stdint.h>
 
 static Context *(*user_handler)(Event, Context *) = NULL;
 
@@ -40,6 +41,7 @@ Context *kcontext(Area kstack, void (*entry)(void *), void *arg) {
   context_addr->mepc = (uintptr_t)entry - 4;
   context_addr->mstatus = 0x1800;
   context_addr->gpr[10] = (uintptr_t)arg;
+  printf("%08x!!!\n", (uint32_t)context_addr);
   return context_addr;
 }
 
