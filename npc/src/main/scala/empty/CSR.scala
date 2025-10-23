@@ -33,7 +33,7 @@ class CSR extends Module {
   val csr_mcycle = RegNext(mcycle_nxt, 0.U(32.W))
   mcycle_nxt := Mux(io.wen && is_mcycle, io.wdata, csr_mcycle + 1.U(32.W))
 
-  val csr_mstatus = RegEnable(io.wdata, 0.U(32.W), io.wen && is_mstatus)
+  val csr_mstatus = RegEnable(io.wdata, "h1800".U(32.W), io.wen && is_mstatus)
   val csr_mcause =
     RegEnable(
       Mux(io.interruption, io.new_cause, io.wdata),
