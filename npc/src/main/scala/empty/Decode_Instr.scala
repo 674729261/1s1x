@@ -69,8 +69,8 @@ class DecodeInstr extends RawModule {
   val is_funct3_zero = (io.funct3 === "b000".U(3.W))
   io.is_csrop := (inst(6, 0) === "b1110011".U(7.W))
 
-  io.is_ebreak := io.is_csrop && is_funct3_zero && io.inst(20)
-  io.is_ecall := io.is_csrop && is_funct3_zero && !io.inst(20)
+  io.is_ebreak := io.is_csrop && is_funct3_zero && !io.inst(21) && io.inst(20)
+  io.is_ecall := io.is_csrop && is_funct3_zero && !io.inst(21) && !io.inst(20)
   io.is_mret := io.is_csrop && is_funct3_zero && io.inst(21)
   io.is_csr_visit := io.is_csrop && !is_funct3_zero
 
