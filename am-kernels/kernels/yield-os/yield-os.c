@@ -9,12 +9,16 @@ typedef union {
   };
 } PCB;
 static PCB pcb[2], pcb_boot, *current = &pcb_boot;
-
+int c = 0;
 static void f(void *arg) {
+
   while (1) {
+    c++;
     putch("?AB"[(uintptr_t)arg > 2 ? 0 : (uintptr_t)arg]);
     for (int volatile i = 0; i < 100000; i++)
       ;
+    if (c == 50)
+      halt(0);
     yield();
   }
 }
