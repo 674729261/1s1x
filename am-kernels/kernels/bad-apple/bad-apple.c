@@ -14,7 +14,7 @@ static void sleep_until(uint64_t next) {
   while (io_read(AM_TIMER_UPTIME).us < next)
     ;
 }
-/*
+
 static uint8_t getbit(uint8_t *p, int idx) {
   int byte_idx = idx / 8;
   int bit_idx = idx % 8;
@@ -23,7 +23,7 @@ static uint8_t getbit(uint8_t *p, int idx) {
   uint8_t bit = (byte >> bit_idx) & 1;
   return bit;
 }
-*/
+
 int main() {
   extern uint8_t video_payload, video_payload_end;
   extern uint8_t audio_payload, audio_payload_end;
@@ -46,16 +46,16 @@ int main() {
   uint64_t now = io_read(AM_TIMER_UPTIME).us;
 
   for (; f < fend; f++) {
-    /*
-          printf("\033[0;0H"); // reset cursor
-      for (int y = 0; y < VIDEO_ROW; y++) {
-        for (int x = 0; x < VIDEO_COL; x++) {
-          uint8_t p = getbit(f->pixel, y * VIDEO_COL + x);
-          putch(p ? CHAR_BLACK : CHAR_WHITE);
-        }
-        putch('\n');
+
+    printf("\033[0;0H"); // reset cursor
+    for (int y = 0; y < VIDEO_ROW; y++) {
+      for (int x = 0; x < VIDEO_COL; x++) {
+        uint8_t p = getbit(f->pixel, y * VIDEO_COL + x);
+        putch(p ? CHAR_BLACK : CHAR_WHITE);
       }
-          */
+      putch('\n');
+    }
+
     if (has_audio) {
       int should_play = (AUDIO_FREQ / FPS) * sizeof(int16_t) * AUDIO_CHANNEL;
       if (should_play > audio_left)
