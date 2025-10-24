@@ -251,11 +251,11 @@ void NPCemu::update_RTC() {
       duration_cast<microseconds>(now_tick - RTC.last_time).count());
   uint64_t start_time =
       RTC.RTC_reg[0] | (static_cast<uint64_t>(RTC.RTC_reg[1]) << 32);
-  uint64_t now_time = start_time + duration;
+  uint64_t now_time = duration;
 
   RTC.RTC_reg[0] = now_time & 0xFFFFFFFF;
   RTC.RTC_reg[1] = now_time >> 32;
-  RTC.last_time = now_tick;
+  // RTC.last_time = now_tick;
   std::print("!!{}\r", now_time);
 }
 
