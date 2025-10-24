@@ -1,7 +1,7 @@
+#include "npc.h"
 #include "riscv/riscv.h"
 #include <am.h>
 #include <klib.h>
-#include <nemu.h>
 #include <stdint.h>
 
 #define AUDIO_FREQ_ADDR (AUDIO_ADDR + 0x00)

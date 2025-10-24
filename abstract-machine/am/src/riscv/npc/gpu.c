@@ -1,6 +1,8 @@
+#include "npc.h"
+#include "riscv/riscv.h"
 #include <am.h>
+#include <amdev.h>
 #include <klib.h>
-#include <nemu.h>
 #include <stdint.h>
 
 #define SYNC_ADDR (VGACTL_ADDR + 4)
