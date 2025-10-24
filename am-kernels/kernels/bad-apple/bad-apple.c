@@ -43,15 +43,13 @@ int main() {
     audio_left = audio_len = &audio_payload_end - &audio_payload;
     sbuf.start = &audio_payload;
   }
-  int xx = 0;
   uint64_t now = io_read(AM_TIMER_UPTIME).us;
   for (; f < fend; f++) {
-	xx++;
 	printf("\033[0;0H"); // reset cursor
     for (int y = 0; y < VIDEO_ROW; y++) {
       for (int x = 0; x < VIDEO_COL; x++) {
         uint8_t p = getbit(f->pixel, y * VIDEO_COL + x);
-        putch((p + xx) % 2 ? CHAR_BLACK : CHAR_WHITE);
+        putch(p ? CHAR_BLACK : CHAR_WHITE);
       }
       putch('\n');
     }
