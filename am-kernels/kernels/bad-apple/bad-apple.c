@@ -10,10 +10,10 @@ typedef struct {
   uint8_t pixel[VIDEO_ROW * VIDEO_COL / 8];
 } frame_t;
 
-//static void sleep_until(uint64_t next) {
-//  while (io_read(AM_TIMER_UPTIME).us < next)
-//    ;
-//}
+static void sleep_until(uint64_t next) {
+  while (io_read(AM_TIMER_UPTIME).us < next)
+    ;
+}
 
 static uint8_t getbit(uint8_t *p, int idx) {
   int byte_idx = idx / 8;
@@ -70,7 +70,7 @@ int main() {
     }
 
     uint64_t next = now + (1000 * 1000 / FPS);
-    //sleep_until(next);
+    sleep_until(next);
     now = next;
   }
   return 0;
