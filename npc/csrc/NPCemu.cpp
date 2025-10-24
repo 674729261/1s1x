@@ -272,7 +272,7 @@ void NPCemu::writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata) {
       throw std::logic_error(std::format(
           "mask32 {:08x} is not 0xFF when writing serial port", mask32));
     std::cout.put(wdata);
-    std::cout.flush();
+    // std::cout.flush();
     return;
   }
   throw std::logic_error(std::format("Writing to invalid MMIO {:08x}", waddr));
