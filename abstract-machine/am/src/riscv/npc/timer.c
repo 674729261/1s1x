@@ -18,7 +18,7 @@ void __am_timer_uptime(AM_TIMER_UPTIME_T *uptime) {
   //   printf("!!%lld\r", last);
   //   last = uptime->us / 1000000;
   // }
-  printf("");
+  printf("1\r");
 }
 
 void __am_timer_rtc(AM_TIMER_RTC_T *rtc) {
