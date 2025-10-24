@@ -68,7 +68,7 @@ int main() {
       }
     }
 
-    uint64_t next = now + (1000000);
+    uint64_t next = now + (1000000 / FPS);
     sleep_until(next);
     now = next;
   }
