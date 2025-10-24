@@ -16,7 +16,7 @@ void __am_timer_uptime(AM_TIMER_UPTIME_T *uptime) {
   static uint64_t last = 0;
   if (last != uptime->us / 1000000) {
     printf("!!%lld\n", last);
-    last = uptime->us / 1000000;
+    // last = uptime->us / 1000000;
   }
 }
 
