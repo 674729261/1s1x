@@ -35,6 +35,7 @@ int main() {
   printf("%08x??\n", (uint32_t)&(pcb[0].stack));
   printf("%08x??\n", (uint32_t)&(pcb[1].stack));
   printf("%08x??\n", (uint32_t)sizeof(pcb[0].stack));
+  printf("%08x##\n", (uint32_t)sizeof(Context));
   yield();
   panic("Should not reach here!");
 }
