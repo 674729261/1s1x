@@ -13,7 +13,14 @@ extern "C" void pmem_write(int waddr, int wdata, char wmask);
 
 class NPCemu : public RISCV32 {
 public:
-  NPCemu(size_t MemSize, std::string_view programe);
+  struct DeviceSettings {
+    bool enable_vga;
+    bool enable_audio;
+    bool enable_keyboard;
+  };
+
+  NPCemu(size_t MemSize, std::string_view programe,
+         DeviceSettings dev_settings);
 
   addr_t getPC() override final;
 
@@ -44,6 +51,8 @@ private:
 
   int trapped;
   int inst_count;
+
+  DeviceSettings device_settings;
 
 private:
   void writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata);

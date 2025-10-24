@@ -12,9 +12,10 @@
 #include <print>
 #include <stdexcept>
 #include <string_view>
-NPCemu::NPCemu(size_t MemSize, std::string_view program)
-    : RISCV32(MemSize, program, PC_Init), dut("DUT"), trapped(0),
-      inst_count(0) {}
+NPCemu::NPCemu(size_t MemSize, std::string_view program,
+               NPCemu::DeviceSettings ds)
+    : RISCV32(MemSize, program, PC_Init), dut("DUT"), trapped(0), inst_count(0),
+      device_settings(ds) {}
 
 RISCV32::addr_t NPCemu::getPC() { return getGPR(32); }
 
@@ -75,6 +76,9 @@ void NPCemu::step(bool display, bool record_inst, bool ftracer) {
         std::print(" ");
       std::println("ret  {}@{:#010x}", find_symbol_name(top.symbol), dut.io_pc);
     }
+  }
+
+  if (device_settings.enable_audio) {
   }
 
   dut.clock = 0;

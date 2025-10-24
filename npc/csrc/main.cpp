@@ -8,6 +8,7 @@
 #include <VCPU.h>
 #include <argparse/argparse.hpp>
 #include <cstdint>
+#include <exception>
 #include <iostream>
 #include <memory>
 #include <ostream>
@@ -33,9 +34,7 @@ extern "C" void pmem_write(int waddr, int wdata, char wmask) {
   }
 }
 
-int main(int argc, char *argv[]) {
-  argparse::ArgumentParser program("NPCemu");
-
+void register_argparse(argparse::ArgumentParser &program) {
   program.add_argument("-i", "--image")
       .help("Path to log file")
       .nargs(1)
@@ -46,6 +45,11 @@ int main(int argc, char *argv[]) {
       .default_value(1 << 24)
       .scan<'i', uint32_t>();
   program.add_argument("-b", "--batch").help("Batch mode").flag();
+  program.add_argument("-a", "--enable_audio").help("Enable audio").flag();
+  program.add_argument("-v", "--enable_vga").help("Enable vga").flag();
+  program.add_argument("-k", "--enable_keyboard")
+      .help("Enable keyboard")
+      .flag();
   program.add_argument("--itracer")
       .help("Display instruction executed")
       .default_value(16)
@@ -59,13 +63,9 @@ int main(int argc, char *argv[]) {
       .default_value(16)
       .scan<'i', unsigned long>();
   program.add_argument("--elf").help("ELF file path").default_value("");
-  try {
-    program.parse_args(argc, argv);
-  } catch (const std::exception &err) {
-    cerr << err.what() << std::endl;
-    cerr << program;
-    exit(1);
-  }
+}
+
+void register_logger(argparse::ArgumentParser &program) {
   bool provided_logfile = program.is_used("--log");
   if (provided_logfile) {
     try {
@@ -82,11 +82,26 @@ int main(int argc, char *argv[]) {
       spdlog::info("Logging to file : {}", log_path);
     } catch (const spdlog::spdlog_ex &e) {
       println(cerr, "Log init failed: {}", e.what());
-      exit(1);
+      std::terminate();
     }
   }
+
   spdlog::flush_every(std::chrono::seconds(5));
   spdlog::flush_on(spdlog::level::warn);
+}
+
+int main(int argc, char *argv[]) {
+  argparse::ArgumentParser program("NPCemu");
+  register_argparse(program);
+  try {
+    program.parse_args(argc, argv);
+  } catch (const std::exception &err) {
+    cerr << err.what() << std::endl;
+    cerr << program;
+    std::terminate();
+  }
+  register_logger(program);
+
   string image_path = program.get("--image");
   uint32_t mem_size = program.get<uint32_t>("--mem_size");
   bool batch_mode = program.get<bool>("--batch");
@@ -128,11 +143,25 @@ int main(int argc, char *argv[]) {
       nemu = make_shared<NEMUemu>(mem_size, image_path);
     } catch (const std::exception &err) {
       println(cerr, "Load ref failed: {}", err.what());
-      exit(1);
+      std::terminate();
     }
   }
 
-  emu = make_shared<NPCemu>(mem_size, image_path);
+  NPCemu::DeviceSettings device_settings;
+  if (program.get<bool>("--enable_audio")) {
+    spdlog::info("Audio is enabled");
+    device_settings.enable_audio = true;
+  }
+  if (program.get<bool>("--enable_vga")) {
+    spdlog::info("VGA is enabled");
+    device_settings.enable_vga = true;
+  }
+  if (program.get<bool>("--enable_keyboard")) {
+    spdlog::info("Keyboard is enabled");
+    device_settings.enable_keyboard = true;
+  }
+
+  emu = make_shared<NPCemu>(mem_size, image_path, device_settings);
 
   SingleMonitor monitor(emu, batch_mode, itracer, mtracer, use_irb,
                         use_ftracer);
