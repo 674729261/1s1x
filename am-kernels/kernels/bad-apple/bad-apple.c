@@ -70,8 +70,8 @@ int main() {
     }
     // printf("%d\n", 1);
     uint64_t next = now + (1000000 / FPS);
-    sleep_until(next);
-    printf("\n!!%lld\n", io_read(AM_TIMER_UPTIME).us);
+    sleep_until(0);
+    // printf("\n!!%lld\n", io_read(AM_TIMER_UPTIME).us);
     now = next;
   }
   return 0;
