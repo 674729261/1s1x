@@ -46,7 +46,8 @@ int main() {
 
   uint64_t now = io_read(AM_TIMER_UPTIME).us;
   for (; f < fend; f++) {
-    printf("\033[0;0H"); // reset cursor
+	uint64_t next = now + (1000 * 1000 / FPS);
+	printf("\033[0;0H"); // reset cursor
     for (int y = 0; y < VIDEO_ROW; y++) {
       for (int x = 0; x < VIDEO_COL; x++) {
         uint8_t p = getbit(f->pixel, y * VIDEO_COL + x);
@@ -69,7 +70,7 @@ int main() {
       }
     }
 
-    uint64_t next = now + (1000 * 1000 / FPS);
+//    uint64_t next = now + (1000 * 1000 / FPS);
     sleep_until(next);
     now = next;
   }
