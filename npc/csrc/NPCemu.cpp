@@ -256,7 +256,7 @@ void NPCemu::update_RTC() {
   RTC.RTC_reg[0] = now_time & 0xFFFFFFFF;
   RTC.RTC_reg[1] = now_time >> 32;
   // RTC.last_time = now_tick;
-  std::print("!!{}\r", now_time);
+  // std::print("!!{}\r", now_time);
 }
 
 void NPCemu::writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata) {
