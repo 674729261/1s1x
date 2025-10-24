@@ -68,7 +68,7 @@ int main() {
         should_play -= len;
       }
     }
-    printf("%d\n", 1);
+    // printf("%d\n", 1);
     uint64_t next = now + (1000000 / FPS);
     sleep_until(next);
     now = next;
