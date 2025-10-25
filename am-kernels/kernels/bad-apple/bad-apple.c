@@ -51,11 +51,7 @@ int main() {
     for (int y = 0; y < VIDEO_ROW; y++) {
       for (int x = 0; x < VIDEO_COL; x++) {
         uint8_t p = getbit(f->pixel, y * VIDEO_COL + x);
-        // putch(p ? CHAR_BLACK : CHAR_WHITE);
-        if (p)
-          putch(' ');
-        else
-          printf("█");
+        putch(p ? CHAR_BLACK : CHAR_WHITE);
       }
       putch('\n');
     }
