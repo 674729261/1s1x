@@ -71,7 +71,7 @@ int main() {
     // printf("%d\n", 1);
     uint64_t next = now + (1000000 / FPS);
     sleep_until(next);
-    printf("%x", io_read(AM_AUDIO_CONFIG).bufsize);
+    // printf("%x", io_read(AM_AUDIO_CONFIG).bufsize);
     // printf("\n!!%lld\n", io_read(AM_TIMER_UPTIME).us);
     now = next;
   }
