@@ -1,5 +1,6 @@
 #include "Simulators/NPCemu.h"
 #include <SDL2/SDL.h>
+#include <cstdint>
 #include <iostream>
 #include <print>
 #include <spdlog/spdlog.h>
@@ -44,8 +45,9 @@ void NPCemu::init_audio() {
       .callback = fill_audio_callback,
       .userdata = AudioBase.sbuf.get()};
   if (SDL_OpenAudio(&sdlAudioSpec, NULL) < 0) {
-    fprintf(stderr, "Can't open audio - %s\n", SDL_GetError());
-    exit(-1);
+    spdlog::error("Can't open audio - %s\n", SDL_GetError());
+    throw std::runtime_error(
+        std::format("Can't open audio - %s\n", SDL_GetError()));
   }
   AudioBase.reg_init = 0;
   SDL_PauseAudio(0);
@@ -57,6 +59,12 @@ void NPCemu::init_vga() {}
 static void write_mask(uint32_t &dst, uint32_t mask32, uint32_t wdata) {
   dst &= ~mask32;
   dst |= wdata & mask32;
+}
+
+static int check_addr_range(uint32_t addr, uint32_t base, uint32_t end) {
+  if (addr < base || addr >= end)
+    return -1;
+  return (addr - base) >> 2;
 }
 
 std::optional<uint32_t> NPCemu::readMMIO(int raddr) {
@@ -72,8 +80,9 @@ std::optional<uint32_t> NPCemu::readMMIO(int raddr) {
 
 void NPCemu::writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata) {
   using namespace std::chrono;
-  if (waddr >= RTCAddr && waddr < RTCAddrEnd) {
-    uint32_t RTC_id = (waddr - RTCAddr) >> 2;
+  // if (waddr >= RTCAddr && waddr < RTCAddrEnd) {
+  if (uint32_t RTC_id = check_addr_range(waddr, RTCAddr, RTCAddrEnd);
+      RTC_id != -1) {
     update_RTC();
     write_mask(RTC.RTC_reg[RTC_id], mask32, wdata);
     RTC.last_time = steady_clock().now();
@@ -87,5 +96,28 @@ void NPCemu::writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata) {
     // std::cout.flush();
     return;
   }
+
+  // if (waddr >= AudioPort &&
+  //     waddr < AudioPort + sizeof(uint32_t) * AudioBase_t::n_regs) {
+  if (uint32_t AudioReg_id = check_addr_range(
+          waddr, AudioPort, AudioPort + sizeof(uint32_t) * AudioBase_t::n_regs);
+      AudioReg_id != -1) {
+    write_mask(reinterpret_cast<uint32_t *>(&AudioBase)[AudioReg_id], mask32,
+               wdata);
+    if (AudioBase.reg_init)
+      init_audio();
+    return;
+  }
+
+  if (uint32_t SoundBufferOffset = check_addr_range(
+          waddr, SoundBufferPort, SoundBufferPort + SoundBufferSize);
+      SoundBufferOffset != -1) {
+    write_mask(
+        reinterpret_cast<uint32_t *>(AudioBase.sbuf.get())[SoundBufferOffset],
+        mask32, wdata);
+
+    return;
+  }
+
   throw std::logic_error(std::format("Writing to invalid MMIO {:08x}", waddr));
 }

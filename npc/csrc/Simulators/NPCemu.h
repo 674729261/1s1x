@@ -6,6 +6,7 @@
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
+#include <iterator>
 #include <memory>
 #include <string_view>
 
@@ -27,6 +28,7 @@ public:
     uint32_t reg_sbuf_size;
     uint32_t reg_init;
     uint32_t reg_count;
+    static constexpr int n_regs = 6;
 
     std::unique_ptr<uint8_t[]> sbuf;
   };
@@ -59,6 +61,8 @@ private:
   static constexpr addr_t RTCAddr = deviceBase + 0x0000048u;
   static constexpr addr_t RTCAddrEnd = RTCAddr + 0x8u;
   static constexpr addr_t SerialPort = (deviceBase + 0x00003f8);
+  static constexpr addr_t AudioPort = (deviceBase + 0x0000200);
+  static constexpr addr_t SoundBufferPort = (deviceBase + 0x1200000);
 
   TOP_NAME dut;
 
