@@ -52,27 +52,27 @@ static void fill_audio_callback(void *udata, Uint8 *stream, int len) {
 }
 void NPCemu::init_audio() {
 
-  if (SDL_InitSubSystem(SDL_INIT_AUDIO)) {
-    spdlog::error("Could not initialize SDL - {}\n", SDL_GetError());
-    throw std::runtime_error(
-        std::format("Could not initialize SDL - {}\n", SDL_GetError()));
-  }
-  SDL_CloseAudio();
-  SDL_AudioSpec sdlAudioSpec = {
-      .freq = static_cast<int>(AudioBase.reg_freq),
-      .format = AUDIO_S16SYS,
-      .channels = static_cast<Uint8>(AudioBase.reg_channels),
-      .silence = 0,
-      .samples = static_cast<Uint16>(AudioBase.reg_samples),
-      .callback = fill_audio_callback,
-      .userdata = AudioBase.sbuf.get()};
-  if (SDL_OpenAudio(&sdlAudioSpec, NULL) < 0) {
-    spdlog::error("Can't open audio - %s\n", SDL_GetError());
-    throw std::runtime_error(
-        std::format("Can't open audio - %s\n", SDL_GetError()));
-  }
-  AudioBase.reg_init = 0;
-  SDL_PauseAudio(0);
+  // if (SDL_InitSubSystem(SDL_INIT_AUDIO)) {
+  //   spdlog::error("Could not initialize SDL - {}\n", SDL_GetError());
+  //   throw std::runtime_error(
+  //       std::format("Could not initialize SDL - {}\n", SDL_GetError()));
+  // }
+  // SDL_CloseAudio();
+  // SDL_AudioSpec sdlAudioSpec = {
+  //     .freq = static_cast<int>(AudioBase.reg_freq),
+  //     .format = AUDIO_S16SYS,
+  //     .channels = static_cast<Uint8>(AudioBase.reg_channels),
+  //     .silence = 0,
+  //     .samples = static_cast<Uint16>(AudioBase.reg_samples),
+  //     .callback = fill_audio_callback,
+  //     .userdata = AudioBase.sbuf.get()};
+  // if (SDL_OpenAudio(&sdlAudioSpec, NULL) < 0) {
+  //   spdlog::error("Can't open audio - %s\n", SDL_GetError());
+  //   throw std::runtime_error(
+  //       std::format("Can't open audio - %s\n", SDL_GetError()));
+  // }
+  // AudioBase.reg_init = 0;
+  // SDL_PauseAudio(0);
 }
 
 void NPCemu::init_keyboard() {}
