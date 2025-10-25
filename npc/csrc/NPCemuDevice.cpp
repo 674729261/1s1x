@@ -1,6 +1,7 @@
 #include "Simulators/NPCemu.h"
 #include <SDL2/SDL.h>
 #include <cstdint>
+#include <format>
 #include <iostream>
 #include <print>
 #include <spdlog/spdlog.h>
@@ -58,6 +59,18 @@ void NPCemu::init_audio() {
         std::format("Could not initialize SDL - {}\n", SDL_GetError()));
   }
   SDL_CloseAudio();
+  if (AudioBase.reg_samples >= (1 << 16)) {
+    spdlog::error("AudioBase.reg_samples = {} is bigger than 65535",
+                  AudioBase.reg_samples);
+    throw(std::format("AudioBase.reg_samples = {} is bigger than 65535",
+                      AudioBase.reg_samples));
+  }
+  if (AudioBase.reg_channels >= (1 << 8)) {
+    spdlog::error("AudioBase.reg_channels = {} is bigger than 255",
+                  AudioBase.reg_channels);
+    throw(std::format("AudioBase.reg_channels = {} is bigger than 255",
+                      AudioBase.reg_channels));
+  }
   SDL_AudioSpec sdlAudioSpec = {
       .freq = static_cast<int>(AudioBase.reg_freq),
       .format = AUDIO_S16SYS,
@@ -71,6 +84,7 @@ void NPCemu::init_audio() {
     throw std::runtime_error(
         std::format("Can't open audio - %s\n", SDL_GetError()));
   }
+  curAudioBase = &AudioBase;
   AudioBase.reg_init = 0;
   SDL_PauseAudio(0);
 }
@@ -103,7 +117,7 @@ std::optional<uint32_t> NPCemu::readMMIO(int raddr) {
           raddr, AudioPort, AudioPort + sizeof(uint32_t) * AudioBase_t::n_regs);
       AudioReg_id != -1) {
     ensure_audio_enabled();
-    spdlog::info("Reading from AudioBase[{}]", AudioReg_id);
+    // spdlog::info("Reading from AudioBase[{}]", AudioReg_id);
     return reinterpret_cast<uint32_t *>(&AudioBase)[AudioReg_id];
   }
 
@@ -143,7 +157,7 @@ void NPCemu::writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata) {
           waddr, AudioPort, AudioPort + sizeof(uint32_t) * AudioBase_t::n_regs);
       AudioReg_id != -1) {
     ensure_audio_enabled();
-    spdlog::info("Writing to AudioBase[{}]", AudioReg_id);
+    // spdlog::info("Writing to AudioBase[{}]", AudioReg_id);
     write_mask(reinterpret_cast<uint32_t *>(&AudioBase)[AudioReg_id], mask32,
                wdata);
     if (AudioBase.reg_init)
