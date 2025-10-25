@@ -11,7 +11,7 @@ object AddMain extends App {
       "--target-dir",
       "generated_svsrc"
     ),
-    Array("--disable-all-randomization")
+    Array("--disable-all-randomization", "--disable-layers=Verification")
   )
 
 }

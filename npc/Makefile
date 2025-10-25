@@ -1,6 +1,6 @@
 CSRC = $(wildcard csrc/*.cpp)
 CSRC += /usr/local/lib/libreplxx.a
-SVSRC = $(wildcard generated_svsrc/*.sv)
+
 VSRC = $(wildcard vsrc/*.v)
 VSRC += $(wildcard vsrc/*.sv)
 CHISELSRC += $(wildcard src/main/scala/empty/*.scala)
@@ -8,6 +8,8 @@ TOPNAME = CPU
 BIN = ./obj_dir/V$(TOPNAME)
 
 SV_FILELIST=generated_svsrc/filelist.f
+
+SVSRC =  $(shell cat $(SV_FILELIST) | sed 's|^|generated_svsrc/|g' | tr '\n' ' ')
 
 VERILATOR = verilator
 

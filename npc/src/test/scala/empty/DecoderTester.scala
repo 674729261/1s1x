@@ -62,7 +62,6 @@ class __DecoderInstr_test() extends Module {
     val is_ram_wen = Output(Bool())
 
     val is_csr_masked = Output(Bool())
-
   })
 
   val alu = Module(new DecodeInstr)
