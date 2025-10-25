@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 #define FPS 30
-#define CHAR_WHITE '.'
+#define CHAR_WHITE ' '
 #define CHAR_BLACK 'X'
 
 typedef struct {
