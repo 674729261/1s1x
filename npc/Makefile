@@ -7,6 +7,8 @@ CHISELSRC += $(wildcard src/main/scala/empty/*.scala)
 TOPNAME = CPU
 BIN = ./obj_dir/V$(TOPNAME)
 
+SV_FILELIST=generated_svsrc/filelist.f
+
 VERILATOR = verilator
 
 CXXFLAGS += -CFLAGS "-DSPDLOG_USE_STD_FORMAT -O3 -I$(NPC_HOME)/include -std=c++23" -CFLAGS -DTOP_NAME="\"V$(TOPNAME)\"" -LDFLAGS "-lSDL2"
@@ -16,12 +18,12 @@ VERILATOR_DISABLE_WARNINGS += -Wno-UNUSEDSIGNAL -Wno-DECLFILENAME -Wno-SYNCASYNC
 
 -include scripts/*.mk
 
-npc: filelist.f $(LIBCAPSTONE) $(SO_PATH_NEMU)
+npc: $(SV_FILELIST) $(LIBCAPSTONE) $(SO_PATH_NEMU)
 	$(VERILATOR) $(VERILATORFLAGS) \
 	--top-module $(TOPNAME) \
 	$(CXXFLAGS) -Wall $(CSRC) $(SVSRC) $(VSRC) $(VERILATOR_DISABLE_WARNINGS) 
 
-filelist.f: $(CHISELSRC)
+$(SV_FILELIST): $(CHISELSRC)
 	sbt run
 
 
