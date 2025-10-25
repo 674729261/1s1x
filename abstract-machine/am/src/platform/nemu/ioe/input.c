@@ -3,6 +3,7 @@
 #include <klib.h>
 #include <nemu.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <sys/types.h>
 
 #define KEYDOWN_MASK 0x8000
@@ -12,4 +13,5 @@ void __am_input_keybrd(AM_INPUT_KEYBRD_T *kbd) {
   uint32_t code = signal & ~KEYDOWN_MASK;
   kbd->keydown = (bool)(signal & KEYDOWN_MASK);
   kbd->keycode = code;
+  printf("%08x\n", signal);
 }
