@@ -11,6 +11,4 @@ void __am_input_keybrd(AM_INPUT_KEYBRD_T *kbd) {
   uint32_t code = signal & ~KEYDOWN_MASK;
   kbd->keydown = (bool)(signal & KEYDOWN_MASK);
   kbd->keycode = code;
-  if (signal != 0)
-    printf("%d\n", signal);
 }

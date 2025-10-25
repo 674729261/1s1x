@@ -25,7 +25,7 @@ module Memory (
   //     rdata = 0;
   //   end
   // end
-  assign rdata = valid ? pmem_read(raddr) : 32'h0;
+  assign rdata = pmem_read(raddr);
   always @(posedge clk) begin
     if (valid & wen) begin
       pmem_write(waddr, wdata, {4'h0, wmask});
