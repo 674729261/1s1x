@@ -1,6 +1,6 @@
 CSRC = $(wildcard csrc/*.cpp)
 CSRC += /usr/local/lib/libreplxx.a
-SVSRC = generated_svsrc/CPU.sv
+SVSRC = $(wildcard generated_svsrc/*.sv)
 VSRC = $(wildcard vsrc/*.v)
 VSRC += $(wildcard vsrc/*.sv)
 CHISELSRC += $(wildcard src/main/scala/empty/*.scala)
@@ -9,7 +9,7 @@ BIN = ./obj_dir/V$(TOPNAME)
 
 VERILATOR = verilator
 
-CXXFLAGS += -CFLAGS "-DSPDLOG_USE_STD_FORMAT -O3 -I$(NPC_HOME)/include -std=c++23" -CFLAGS -DTOP_NAME="\"V$(TOPNAME)\""
+CXXFLAGS += -CFLAGS "-DSPDLOG_USE_STD_FORMAT -O3 -I$(NPC_HOME)/include -std=c++23" -CFLAGS -DTOP_NAME="\"V$(TOPNAME)\"" -LDFLAGS "-lSDL2"
 VERILATORFLAGS += --cc --exe --build --trace -j 16 
 VERILATOR_DISABLE_WARNINGS += -Wno-UNUSEDSIGNAL -Wno-DECLFILENAME -Wno-SYNCASYNCNET
 

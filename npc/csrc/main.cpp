@@ -172,7 +172,7 @@ int main(int argc, char *argv[]) {
     result = monitor.start();
   } catch (const std::exception &err) {
     cerr << err.what() << std::endl;
-    exit(1);
+    std::terminate();
   }
   emu = nullptr;
   return result;
