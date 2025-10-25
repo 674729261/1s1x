@@ -94,7 +94,10 @@ std::optional<uint32_t> NPCemu::readMMIO(int raddr) {
   if (uint32_t AudioReg_id = check_addr_range(
           raddr, AudioPort, AudioPort + sizeof(uint32_t) * AudioBase_t::n_regs);
       AudioReg_id != -1) {
-    std::cout << "!!" << AudioReg_id << "!!\r";
+    std::println("id : {}", AudioReg_id);
+    std::println("AudioBase.bfsz : {}", AudioBase.reg_sbuf_size);
+    std::println("get : {}",
+                 reinterpret_cast<uint32_t *>(&AudioBase)[AudioReg_id]);
     return reinterpret_cast<uint32_t *>(&AudioBase)[AudioReg_id];
   }
 
