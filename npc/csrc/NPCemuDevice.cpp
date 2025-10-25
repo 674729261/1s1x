@@ -4,6 +4,7 @@
 #include <iostream>
 #include <print>
 #include <spdlog/spdlog.h>
+#include <stdexcept>
 static NPCemu::AudioBase_t *curAudioBase;
 
 void NPCemu::init_ioe() {
@@ -94,17 +95,20 @@ std::optional<uint32_t> NPCemu::readMMIO(int raddr) {
   if (uint32_t AudioReg_id = check_addr_range(
           raddr, AudioPort, AudioPort + sizeof(uint32_t) * AudioBase_t::n_regs);
       AudioReg_id != -1) {
-    spdlog::info("id : {}", AudioReg_id);
-    spdlog::info("AudioBase.bfsz : {}", AudioBase.reg_sbuf_size);
-    spdlog::info("get : {}",
-                 reinterpret_cast<uint32_t *>(&AudioBase)[AudioReg_id]);
+    if (!device_settings.enable_audio) {
+      spdlog::error("Accessing audio MMIO when audio is disabled");
+      throw std::logic_error("Accessing audio MMIO when audio is disabled");
+    }
     return reinterpret_cast<uint32_t *>(&AudioBase)[AudioReg_id];
   }
 
   if (uint32_t SoundBufferOffset = check_addr_range(
           raddr, SoundBufferPort, SoundBufferPort + SoundBufferSize);
       SoundBufferOffset != -1) {
-
+    if (!device_settings.enable_audio) {
+      spdlog::error("Accessing audio MMIO when audio is disabled");
+      throw std::logic_error("Accessing audio MMIO when audio is disabled");
+    }
     return reinterpret_cast<uint32_t *>(
         AudioBase.sbuf.get())[SoundBufferOffset];
   }
@@ -136,6 +140,10 @@ void NPCemu::writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata) {
   if (uint32_t AudioReg_id = check_addr_range(
           waddr, AudioPort, AudioPort + sizeof(uint32_t) * AudioBase_t::n_regs);
       AudioReg_id != -1) {
+    if (!device_settings.enable_audio) {
+      spdlog::error("Accessing audio MMIO when audio is disabled");
+      throw std::logic_error("Accessing audio MMIO when audio is disabled");
+    }
     write_mask(reinterpret_cast<uint32_t *>(&AudioBase)[AudioReg_id], mask32,
                wdata);
     if (AudioBase.reg_init)
@@ -146,6 +154,10 @@ void NPCemu::writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata) {
   if (uint32_t SoundBufferOffset = check_addr_range(
           waddr, SoundBufferPort, SoundBufferPort + SoundBufferSize);
       SoundBufferOffset != -1) {
+    if (!device_settings.enable_audio) {
+      spdlog::error("Accessing audio MMIO when audio is disabled");
+      throw std::logic_error("Accessing audio MMIO when audio is disabled");
+    }
     write_mask(
         reinterpret_cast<uint32_t *>(AudioBase.sbuf.get())[SoundBufferOffset],
         mask32, wdata);
