@@ -1,7 +1,7 @@
 #pragma once
 #include "RISCV32.h"
-#include "lockfree/spsc/queue.hpp"
-#include "lockfree/spsc/ring_buf.hpp"
+#include "lockfree/lockfree.hpp"
+#include "lockfree/mpmc/queue.hpp"
 #include <SDL2/SDL.h>
 #include <VCPU.h>
 #include <atomic>
@@ -119,7 +119,7 @@ private:
 
   std::atomic<bool> device_running;
   std::thread device_update_thread;
-  lockfree::spsc::Queue<uint32_t, 1024> key_queue;
+  lockfree::mpmc::Queue<uint32_t, 1024> key_queue;
 
   void device_update();
 
