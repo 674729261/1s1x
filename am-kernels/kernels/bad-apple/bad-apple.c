@@ -36,9 +36,8 @@ int main() {
 
   printf("\033[H\033[J"); // screan_clear
 
-  printf("!!!\n");
   bool has_audio = io_read(AM_AUDIO_CONFIG).present;
-  printf("???\n");
+
   // bool has_audio = false;
   if (has_audio) {
     io_write(AM_AUDIO_CTRL, AUDIO_FREQ, AUDIO_CHANNEL, 1024);
@@ -56,6 +55,7 @@ int main() {
       }
       putch('\n');
     }
+    printf("!!!\n");
     printf("%x", io_read(AM_AUDIO_CONFIG).bufsize);
     if (has_audio) {
       int should_play = (AUDIO_FREQ / FPS) * sizeof(int16_t) * AUDIO_CHANNEL;
@@ -70,6 +70,7 @@ int main() {
         should_play -= len;
       }
     }
+    printf("???\n");
     // printf("%d\n", 1);
     uint64_t next = now + (1000000 / FPS);
     sleep_until(next);
