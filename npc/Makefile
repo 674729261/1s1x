@@ -16,12 +16,12 @@ VERILATOR_DISABLE_WARNINGS += -Wno-UNUSEDSIGNAL -Wno-DECLFILENAME -Wno-SYNCASYNC
 
 -include scripts/*.mk
 
-npc: $(SVSRC) $(LIBCAPSTONE) $(SO_PATH_NEMU)
+npc: filelist.f $(LIBCAPSTONE) $(SO_PATH_NEMU)
 	$(VERILATOR) $(VERILATORFLAGS) \
 	--top-module $(TOPNAME) \
 	$(CXXFLAGS) -Wall $(CSRC) $(SVSRC) $(VSRC) $(VERILATOR_DISABLE_WARNINGS) 
 
-$(SVSRC): $(CHISELSRC)
+filelist.f: $(CHISELSRC)
 	sbt run
 
 
@@ -47,7 +47,7 @@ sim_ftracer: npc
 clean:
 	rm -rf obj_dir
 	sbt clean
-	rm -f generated_svsrc/*
+	rm -rf generated_svsrc/*
 
 clean_log:
 	rm -rf log/*
