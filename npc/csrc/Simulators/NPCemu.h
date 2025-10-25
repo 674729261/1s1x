@@ -15,7 +15,7 @@
 #include <vector>
 
 extern "C" void trap(int signal);
-extern "C" int pmem_read(int raddr);
+extern "C" int pmem_read(int raddr, int clk, int valid);
 extern "C" void pmem_write(int waddr, int wdata, char wmask);
 
 class NPCemu : public RISCV32 {
