@@ -39,7 +39,7 @@ public:
     uint32_t screen_size_info;
     std::atomic<uint32_t> sync;
 
-    std::vector<uint8_t> vmem;
+    std::unique_ptr<uint8_t[]> vmem;
   };
 
   NPCemu(size_t MemSize, std::string_view programe,

@@ -30,7 +30,7 @@ void NPCemu::init_ioe() {
     AudioBase.reg_sbuf_size = SoundBufferSize;
   }
   if (device_settings.enable_vga) {
-    VideoBase.vmem.resize(VMemSize, 0xFF);
+    VideoBase.vmem = std::make_unique<uint8_t[]>(VMemSize);
     VideoBase.screen_size_info = (ScreenWidth << 16) | ScreenHeight;
     init_vga();
   }

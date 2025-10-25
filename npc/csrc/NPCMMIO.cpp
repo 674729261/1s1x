@@ -43,9 +43,9 @@ std::optional<uint32_t> NPCemu::readMMIO(int raddr) {
   }
 
   if (uint32_t VGA_FB_Offset =
-          check_addr_range(raddr, VGA_FB_Offset, VGA_FB_Offset + VMemSize);
+          check_addr_range(raddr, VGAFBPort, VGAFBPort + VMemSize);
       device_settings.enable_vga && VGA_FB_Offset != -1) {
-    return reinterpret_cast<uint32_t *>(VideoBase.vmem.data())[VGA_FB_Offset];
+    return reinterpret_cast<uint32_t *>(VideoBase.vmem.get())[VGA_FB_Offset];
   }
 
   return std::nullopt;
@@ -110,7 +110,7 @@ void NPCemu::writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata) {
       VGA_FB_Offset != -1) {
     ensure_vga_enabled();
     write_mask(
-        reinterpret_cast<uint32_t *>(VideoBase.vmem.data())[VGA_FB_Offset],
+        reinterpret_cast<uint32_t *>(VideoBase.vmem.get())[VGA_FB_Offset],
         mask32, wdata);
     return;
   }

@@ -23,7 +23,7 @@ void NPCemu::vga_update_screen() {
 }
 
 void NPCemu::update_screen() {
-  SDL_UpdateTexture(texture, NULL, VideoBase.vmem.data(),
+  SDL_UpdateTexture(texture, NULL, VideoBase.vmem.get(),
                     ScreenWidth * sizeof(uint32_t));
   SDL_RenderClear(renderer);
   SDL_RenderCopy(renderer, texture, NULL, NULL);
