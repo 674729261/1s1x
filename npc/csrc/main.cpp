@@ -26,9 +26,9 @@ shared_ptr<NEMUemu> nemu;
 bool mtracer;
 extern "C" void trap(int signal) { emu->trapped = signal; }
 extern "C" int pmem_read(int raddr, int clk, int valid) {
-  static int clk_last = 1;
-  if (clk_last == 0 && clk == 1 && valid)
+  if (clk == 0 && valid)
     return emu->readMemory(raddr);
+
   return 0;
 }
 extern "C" void pmem_write(int waddr, int wdata, char wmask) {
