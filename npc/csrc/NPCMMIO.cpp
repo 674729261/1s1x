@@ -106,7 +106,7 @@ void NPCemu::writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata) {
   }
 
   if (uint32_t VGA_FB_Offset =
-          check_addr_range(waddr, VGA_FB_Offset, VGA_FB_Offset + VMemSize);
+          check_addr_range(waddr, VGAFBPort, VGAFBPort + VMemSize);
       VGA_FB_Offset != -1) {
     ensure_vga_enabled();
     write_mask(
