@@ -7,6 +7,7 @@
 #include "spdlog/spdlog.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_audio.h>
+#include <SDL2/SDL_error.h>
 #include <chrono>
 #include <cstdint>
 #include <format>
@@ -52,8 +53,9 @@ void NPCemu::device_update() {
       continue;
     last = now;
     if (device_settings.enable_vga) {
-      std::println("!!");
+
       vga_update_screen();
+      std::println("{}", SDL_GetError());
     }
   }
 }
