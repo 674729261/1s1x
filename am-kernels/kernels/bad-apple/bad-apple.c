@@ -55,7 +55,7 @@ int main() {
       }
       putch('\n');
     }
-    printf("!!!\n");
+    printf("!!!%p\n", f);
     printf("%x", io_read(AM_AUDIO_CONFIG).bufsize);
     if (has_audio) {
       int should_play = (AUDIO_FREQ / FPS) * sizeof(int16_t) * AUDIO_CHANNEL;
