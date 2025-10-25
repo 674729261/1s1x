@@ -42,7 +42,7 @@ void NPCemu::process_keyboard() {
       bool is_keydown = (event.key.type == SDL_KEYDOWN);
       uint32_t wrapped = wrap_key_event(k, is_keydown);
 
-      if (!key_queue.Push(wrapped))
+      if (!key_queue->Push(wrapped))
         spdlog::warn("Key event {:#08x} ignored because the buffer is full",
                      wrapped);
 

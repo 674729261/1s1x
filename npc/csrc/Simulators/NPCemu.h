@@ -119,11 +119,11 @@ private:
 
   std::atomic<bool> device_running;
   std::thread device_update_thread;
-  lockfree::mpmc::Queue<uint32_t, 1024> key_queue;
+  std::unique_ptr<lockfree::mpmc::Queue<uint32_t, 1024>> key_queue;
 
   static void init_keymap();
 
-  void device_update();
+  void device_update_loop();
 
   void init_audio();
   void init_keyboard();

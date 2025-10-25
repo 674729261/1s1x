@@ -39,14 +39,14 @@ void NPCemu::init_ioe() {
     VideoBase.screen_size_info = (ScreenWidth << 16) | ScreenHeight;
     // init_vga();
   }
-
+  if (device_settings.enable_keyboard) {
+    key_queue = std::make_unique<lockfree::mpmc::Queue<uint32_t, 1024>>();
+  }
   device_running = true;
-  device_update_thread = std::thread([this]() { this->device_update(); });
+  device_update_thread = std::thread([this]() { this->device_update_loop(); });
 }
 
-void NPCemu::device_update() {
-  while (!device_running)
-    ;
+void NPCemu::device_update_loop() {
   if (device_settings.enable_vga) {
     init_vga();
   }
