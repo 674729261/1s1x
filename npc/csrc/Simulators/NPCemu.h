@@ -90,4 +90,6 @@ private:
   void init_audio();
   void init_keyboard();
   void init_vga();
+
+  void ensure_audio_enabled();
 };
