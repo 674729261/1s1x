@@ -30,7 +30,7 @@ void NPCemu::init_ioe() {
     AudioBase.reg_sbuf_size = SoundBufferSize;
   }
   if (device_settings.enable_vga) {
-    VideoBase.vmem.resize(VMemSize);
+    VideoBase.vmem.resize(VMemSize, 0xFF);
     VideoBase.screen_size_info = (ScreenWidth << 16) | ScreenHeight;
     init_vga();
   }
@@ -45,7 +45,6 @@ void NPCemu::device_update() {
   while (!device_running)
     ;
   using namespace std::chrono;
-  std::println("!!!!!");
   auto last = steady_clock::now();
   while (device_running) {
     auto now = steady_clock::now();
