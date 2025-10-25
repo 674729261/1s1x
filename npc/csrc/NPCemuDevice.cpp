@@ -153,9 +153,9 @@ void NPCemu::writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata) {
           waddr, SoundBufferPort, SoundBufferPort + SoundBufferSize);
       SoundBufferOffset != -1) {
     ensure_audio_enabled();
-    // write_mask(
-    //     reinterpret_cast<uint32_t
-    //     *>(AudioBase.sbuf.get())[SoundBufferOffset], mask32, wdata);
+    write_mask(
+        reinterpret_cast<uint32_t *>(AudioBase.sbuf.get())[SoundBufferOffset],
+        mask32, wdata);
 
     return;
   }
