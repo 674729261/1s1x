@@ -3,8 +3,8 @@
 #include <stdio.h>
 
 #define FPS 30
-#define CHAR_WHITE " "
-#define CHAR_BLACK "█"
+#define CHAR_WHITE ' '
+#define CHAR_BLACK 'X'
 
 typedef struct {
   uint8_t pixel[VIDEO_ROW * VIDEO_COL / 8];
@@ -47,11 +47,12 @@ int main() {
   uint64_t now = io_read(AM_TIMER_UPTIME).us;
 
   for (; f < fend; f++) {
-    printf("\033[0;0H"); // reset cursor
+    // printf("\033[0;0H"); // reset cursor
+    printf("\033[47m \033[0m");
     for (int y = 0; y < VIDEO_ROW; y++) {
       for (int x = 0; x < VIDEO_COL; x++) {
         uint8_t p = getbit(f->pixel, y * VIDEO_COL + x);
-        printf("%s", p ? CHAR_BLACK : CHAR_WHITE);
+        putch(p ? CHAR_BLACK : CHAR_WHITE);
       }
       putch('\n');
     }
