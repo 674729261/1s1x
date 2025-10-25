@@ -47,8 +47,7 @@ int main() {
   uint64_t now = io_read(AM_TIMER_UPTIME).us;
 
   for (; f < fend; f++) {
-    // printf("\033[0;0H"); // reset cursor
-    printf("\033[47m \033[0m");
+    printf("\033[0;0H"); // reset cursor
     for (int y = 0; y < VIDEO_ROW; y++) {
       for (int x = 0; x < VIDEO_COL; x++) {
         uint8_t p = getbit(f->pixel, y * VIDEO_COL + x);
