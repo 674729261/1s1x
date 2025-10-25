@@ -45,6 +45,7 @@ void NPCemu::device_update() {
   while (!device_running)
     ;
   using namespace std::chrono;
+  std::println("!!!!!");
   auto last = steady_clock::now();
   while (device_running) {
     auto now = steady_clock::now();
