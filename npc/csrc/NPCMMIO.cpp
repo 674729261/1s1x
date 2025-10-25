@@ -53,7 +53,6 @@ std::optional<uint32_t> NPCemu::readMMIO(int raddr) {
   if (device_settings.enable_keyboard && raddr == KeyboardPort) {
     uint32_t key;
     if (key_queue.Pop(key)) {
-      std::println("--{:#08x}", key);
       return key;
     }
 
