@@ -4,7 +4,7 @@
 
 #define FPS 30
 #define CHAR_WHITE ' '
-#define CHAR_BLACK 'X'
+#define CHAR_BLACK '@'
 
 typedef struct {
   uint8_t pixel[VIDEO_ROW * VIDEO_COL / 8];
