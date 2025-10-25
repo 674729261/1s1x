@@ -43,7 +43,7 @@ void NPCemu::process_keyboard() {
       if (!key_queue.Push(wrapped))
         spdlog::warn("Key event {:#08x} ignored because the buffer is full",
                      wrapped);
-      spdlog::info("Key event {:#08x} detected", wrapped);
+      //   spdlog::info("Key event {:#08x} detected", wrapped);
       break;
     }
     }
