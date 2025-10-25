@@ -15,6 +15,7 @@
 #include <memory>
 #include <optional>
 #include <print>
+#include <signal.h>
 #include <stdexcept>
 #include <string_view>
 #include <thread>
@@ -35,9 +36,7 @@ void NPCemu::init_ioe() {
     VideoBase.screen_size_info = (ScreenWidth << 16) | ScreenHeight;
     // init_vga();
   }
-  if (device_settings.enable_keyboard) {
-    init_keyboard();
-  }
+
   device_running = true;
   device_update_thread = std::thread([this]() { this->device_update(); });
 }
@@ -45,7 +44,14 @@ void NPCemu::init_ioe() {
 void NPCemu::device_update() {
   while (!device_running)
     ;
-  init_vga();
+  if (device_settings.enable_vga) {
+    init_vga();
+  }
+  if (device_settings.enable_keyboard) {
+    init_keyboard();
+  }
+  signal(SIGINT, SIG_DFL);
+  signal(SIGTERM, SIG_DFL);
   using namespace std::chrono;
   auto last = steady_clock::now();
   while (device_running) {
