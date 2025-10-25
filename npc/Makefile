@@ -39,7 +39,7 @@ sim: npc
 
 sim_full_speed: npc
 	$(call git_commit, "sim RTL full speed") # DO NOT REMOVE THIS LINE!!!
-	$(BIN) --image $(PROG) --mem_size $(MEM_SIZE) --log $(LOG_FILE) $(NPC_FLAGS)
+	$(BIN) --image $(PROG) --mem_size $(MEM_SIZE) --log $(LOG_FILE) $(NPC_FLAGS) --enable_audio
 
 sim_ftracer: npc
 	$(call git_commit, "sim RTL ftracer") # DO NOT REMOVE THIS LINE!!!
