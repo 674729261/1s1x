@@ -33,7 +33,7 @@ void NPCemu::init_ioe() {
   if (device_settings.enable_vga) {
     VideoBase.vmem = std::make_unique<uint8_t[]>(VMemSize);
     VideoBase.screen_size_info = (ScreenWidth << 16) | ScreenHeight;
-    init_vga();
+    // init_vga();
   }
   if (device_settings.enable_keyboard) {
     init_keyboard();
@@ -45,6 +45,7 @@ void NPCemu::init_ioe() {
 void NPCemu::device_update() {
   while (!device_running)
     ;
+  init_vga();
   using namespace std::chrono;
   auto last = steady_clock::now();
   while (device_running) {
@@ -53,9 +54,8 @@ void NPCemu::device_update() {
       continue;
     last = now;
     if (device_settings.enable_vga) {
-
       vga_update_screen();
-      std::println("{}", SDL_GetError());
+      // std::println("{}", SDL_GetError());
     }
   }
 }
