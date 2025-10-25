@@ -36,7 +36,9 @@ int main() {
 
   printf("\033[H\033[J"); // screan_clear
 
+  printf("!!!\n");
   bool has_audio = io_read(AM_AUDIO_CONFIG).present;
+  printf("???\n");
   // bool has_audio = false;
   if (has_audio) {
     io_write(AM_AUDIO_CTRL, AUDIO_FREQ, AUDIO_CHANNEL, 1024);
