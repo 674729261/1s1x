@@ -24,9 +24,9 @@ enum { NEMU_KEY_NONE = 0, MAP(NEMU_KEYS, NEMU_KEY_NAME) };
 #define SDL_KEYMAP(k) keymap[SDL_SCANCODE_##k] = NEMU_KEY_##k;
 static uint32_t keymap[256] = {};
 
-static void init_keymap() { MAP(NEMU_KEYS, SDL_KEYMAP) }
+void NPCemu::init_keymap() { MAP(NEMU_KEYS, SDL_KEYMAP) }
 
-void NPCemu::init_keyboard() {}
+void NPCemu::init_keyboard() { init_keymap(); }
 
 uint32_t wrap_key_event(uint8_t scancode, bool is_keydown) {
   return keymap[scancode] | (is_keydown ? 0x8000 : 0);
