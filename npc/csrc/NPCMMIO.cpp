@@ -1,6 +1,8 @@
 #include "Simulators/NPCemu.h"
+#include "spdlog/spdlog.h"
 #include <cstdint>
 #include <iostream>
+#include <print>
 
 static void write_mask(uint32_t &dst, uint32_t mask32, uint32_t wdata) {
   dst &= ~mask32;
@@ -49,6 +51,7 @@ std::optional<uint32_t> NPCemu::readMMIO(int raddr) {
   }
 
   if (device_settings.enable_keyboard && raddr == KeyboardPort) {
+    std::println("--");
     if (uint32_t key; key_queue.Pop(key))
       return key;
 
