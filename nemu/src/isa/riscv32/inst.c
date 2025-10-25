@@ -13,6 +13,8 @@
  * See the Mulan PSL v2 for more details.
  ***************************************************************************************/
 #include "common.h"
+#include "debug.h"
+#include "isa.h"
 #include "local-include/reg.h"
 #include "macro.h"
 #include "memory/symbols.h"
@@ -34,6 +36,8 @@ enum {
   TYPE_R,
   TYPE_J,
   TYPE_B,
+  TYPE_CSRR,
+  TYPE_CSRI,
   TYPE_N, // none
 };
 
@@ -48,6 +52,10 @@ enum {
 #define immI()                                                                 \
   do {                                                                         \
     *imm = SEXT(BITS(i, 31, 20), 12);                                          \
+  } while (0)
+#define csrC()                                                                 \
+  do {                                                                         \
+    *csr = BITS(i, 31, 20);                                                    \
   } while (0)
 #define immU()                                                                 \
   do {                                                                         \
@@ -75,7 +83,7 @@ enum {
   } while (0)
 
 static void decode_operand(Decode *s, int *rd, word_t *src1, word_t *src2,
-                           word_t *imm, int type) {
+                           word_t *imm, int *csr, int type) {
   uint32_t i = s->isa.inst;
   int rs1 = BITS(i, 19, 15);
   int rs2 = BITS(i, 24, 20);
@@ -104,6 +112,10 @@ static void decode_operand(Decode *s, int *rd, word_t *src1, word_t *src2,
     src1R();
     src2R();
     immB();
+    break;
+  case TYPE_CSRR:
+    src1R();
+    csrC();
     break;
   case TYPE_N:
     break;
@@ -142,6 +154,20 @@ static void check_jal(vaddr_t from_pc, vaddr_t to_pc, uint32_t inst) {
 }
 #endif
 
+static word_t *csr_id(int csr) {
+  switch (csr) {
+  case 0x300:
+    return &cpu.csr_mstatus;
+  case 0x305:
+    return &cpu.csr_mtvec;
+  case 0x341:
+    return &cpu.csr_mepc;
+  case 0x342:
+    return &cpu.csr_mcause;
+  }
+  panic("Unknown csr id 0x%x", csr);
+}
+
 static int decode_exec(Decode *s) {
   s->dnpc = s->snpc;
   IFDEF(CONFIG_INST_RINGBUFFER,
@@ -149,9 +175,9 @@ static int decode_exec(Decode *s) {
 #define INSTPAT_INST(s) ((s)->isa.inst)
 #define INSTPAT_MATCH(s, name, type, ... /* execute body */)                   \
   {                                                                            \
-    int rd = 0;                                                                \
+    int rd = 0, csr = 0;                                                       \
     word_t src1 = 0, src2 = 0, imm = 0;                                        \
-    decode_operand(s, &rd, &src1, &src2, &imm, concat(TYPE_, type));           \
+    decode_operand(s, &rd, &src1, &src2, &imm, &csr, concat(TYPE_, type));     \
     __VA_ARGS__;                                                               \
   }
   //   printf("%08x %08x\n", s->pc, s->isa.inst);
@@ -261,6 +287,19 @@ static int decode_exec(Decode *s) {
           Mw(src1 + imm, 4, src2));
   INSTPAT("0000000 00001 00000 000 00000 11100 11", ebreak, N,
           NEMUTRAP(s->pc, R(10))); // R(10) is $a0
+  INSTPAT("0000000 00000 00000 000 00000 11100 11", ecall, N,
+          s->dnpc = isa_raise_intr(11, cpu.pc));
+  INSTPAT("0011000 00010 00000 000 00000 11100 11", mret, N,
+          s->dnpc = cpu.csr_mepc);
+  INSTPAT("??????? ????? ????? 001 ????? 11100 11", csrrw, CSRR,
+          word_t *dest_csr = csr_id(csr);
+          R(rd) = *dest_csr; *dest_csr = src1;);
+  INSTPAT("??????? ????? ????? 010 ????? 11100 11", csrrs, CSRR,
+          word_t *dest_csr = csr_id(csr);
+          R(rd) = *dest_csr; *dest_csr = *dest_csr | src1);
+  //   INSTPAT("??????? ????? ????? 011 ????? 11100 11", csrrc, CSRR,
+  //           word_t *dest_csr = csr_id(csr);
+  //           R(rd) = *dest_csr; *dest_csr = *dest_csr & ~src1);
   INSTPAT("??????? ????? ????? ??? ????? ????? ??", inv, N, INV(s->pc));
   INSTPAT_END();
 

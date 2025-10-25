@@ -1,6 +1,8 @@
 AM_SRCS := riscv/npc/start.S \
            riscv/npc/trm.c \
            riscv/npc/ioe.c \
+           riscv/npc/gpu.c \
+           riscv/npc/audio.c \
            riscv/npc/timer.c \
            riscv/npc/input.c \
            riscv/npc/cte.c \
@@ -26,6 +28,6 @@ image: image-dep
 	@$(OBJCOPY) -S --set-section-flags .bss=alloc,contents -O binary $(IMAGE).elf $(IMAGE).bin
 
 run: insert-arg
-	make -C $(NPC_HOME) sim_full_speed PROG=$(IMAGE).bin NPC_FLAGS="--batch"
+	$(MAKE) -C $(NPC_HOME) sim_full_speed PROG=$(IMAGE).bin NPC_FLAGS="--batch"
 
 .PHONY: insert-arg

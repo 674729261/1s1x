@@ -76,8 +76,8 @@ static uint32_t score(Benchmark *b, uint64_t usec) {
 int main(const char *args) {
   const char *setting_name = args;
   if (args == NULL || strcmp(args, "") == 0) {
-    printf("Empty mainargs. Use \"ref\" by default\n");
-    setting_name = "ref";
+    printf("Empty mainargs. Use \"train\" by default\n");
+    setting_name = "train";
   }
   int setting_id = -1;
 

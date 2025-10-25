@@ -1,27 +1,29 @@
 CSRC = $(wildcard csrc/*.cpp)
 CSRC += /usr/local/lib/libreplxx.a
-SVSRC = generated_svsrc/CPU.sv
+SVSRC = $(wildcard generated_svsrc/*.sv)
 VSRC = $(wildcard vsrc/*.v)
 VSRC += $(wildcard vsrc/*.sv)
 CHISELSRC += $(wildcard src/main/scala/empty/*.scala)
 TOPNAME = CPU
 BIN = ./obj_dir/V$(TOPNAME)
 
+SV_FILELIST=generated_svsrc/filelist.f
+
 VERILATOR = verilator
 
-CXXFLAGS += -CFLAGS "-DSPDLOG_USE_STD_FORMAT -O3 -I$(NPC_HOME)/include -std=c++23" -CFLAGS -DTOP_NAME="\"V$(TOPNAME)\""
+CXXFLAGS += -CFLAGS "-DSPDLOG_USE_STD_FORMAT -O3 -I$(NPC_HOME)/include -std=c++23" -CFLAGS -DTOP_NAME="\"V$(TOPNAME)\"" -LDFLAGS "-lSDL2"
 VERILATORFLAGS += --cc --exe --build --trace -j 16 
 VERILATOR_DISABLE_WARNINGS += -Wno-UNUSEDSIGNAL -Wno-DECLFILENAME -Wno-SYNCASYNCNET
 
 
 -include scripts/*.mk
 
-npc: $(SVSRC) $(LIBCAPSTONE) $(SO_PATH_NEMU)
+npc: $(SV_FILELIST) $(LIBCAPSTONE) $(SO_PATH_NEMU)
 	$(VERILATOR) $(VERILATORFLAGS) \
 	--top-module $(TOPNAME) \
 	$(CXXFLAGS) -Wall $(CSRC) $(SVSRC) $(VSRC) $(VERILATOR_DISABLE_WARNINGS) 
 
-$(SVSRC): $(CHISELSRC)
+$(SV_FILELIST): $(CHISELSRC)
 	sbt run
 
 
@@ -37,13 +39,17 @@ sim: npc
 
 sim_full_speed: npc
 	$(call git_commit, "sim RTL full speed") # DO NOT REMOVE THIS LINE!!!
-	$(BIN) --image $(PROG) --mem_size $(MEM_SIZE) --log $(LOG_FILE) $(NPC_FLAGS)
+	$(BIN) --image $(PROG) --mem_size $(MEM_SIZE) --log $(LOG_FILE) $(NPC_FLAGS) --enable_audio
+
+sim_ftracer: npc
+	$(call git_commit, "sim RTL ftracer") # DO NOT REMOVE THIS LINE!!!
+	$(BIN) --elf $(ELF) --image $(PROG) --mem_size $(MEM_SIZE) --log $(LOG_FILE) $(NPC_FLAGS)
 
 
 clean:
 	rm -rf obj_dir
 	sbt clean
-	rm -f generated_svsrc/*
+	rm -rf generated_svsrc/*
 
 clean_log:
 	rm -rf log/*

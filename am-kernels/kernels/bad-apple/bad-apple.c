@@ -29,22 +29,23 @@ int main() {
   extern uint8_t audio_payload, audio_payload_end;
   int audio_len = 0, audio_left = 0;
   Area sbuf;
-
   ioe_init();
 
   frame_t *f = (void *)&video_payload;
   frame_t *fend = (void *)&video_payload_end;
+
   printf("\033[H\033[J"); // screan_clear
 
   bool has_audio = io_read(AM_AUDIO_CONFIG).present;
 
+  // bool has_audio = false;
   if (has_audio) {
     io_write(AM_AUDIO_CTRL, AUDIO_FREQ, AUDIO_CHANNEL, 1024);
     audio_left = audio_len = &audio_payload_end - &audio_payload;
     sbuf.start = &audio_payload;
   }
-
   uint64_t now = io_read(AM_TIMER_UPTIME).us;
+
   for (; f < fend; f++) {
     printf("\033[0;0H"); // reset cursor
     for (int y = 0; y < VIDEO_ROW; y++) {
@@ -69,8 +70,11 @@ int main() {
       }
     }
 
-    uint64_t next = now + (1000 * 1000 / FPS);
+    // printf("%d\n", 1);
+    uint64_t next = now + (1000000 / FPS);
     sleep_until(next);
+
+    // printf("\n!!%lld\n", io_read(AM_TIMER_UPTIME).us);
     now = next;
   }
   return 0;

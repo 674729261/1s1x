@@ -4,17 +4,21 @@
 #include "Simulators/RISCV32.h"
 #include "Symbols.h"
 #include "VCPU___024root.h"
+#include "spdlog/spdlog.h"
+#include <SDL2/SDL.h>
 #include <cstdint>
 #include <format>
 #include <iostream>
+#include <memory>
 #include <optional>
 #include <ostream>
 #include <print>
 #include <stdexcept>
 #include <string_view>
-NPCemu::NPCemu(size_t MemSize, std::string_view program)
-    : RISCV32(MemSize, program, PC_Init), dut("DUT"), trapped(0),
-      inst_count(0) {}
+NPCemu::NPCemu(size_t MemSize, std::string_view program,
+               NPCemu::DeviceSettings ds)
+    : RISCV32(MemSize, program, PC_Init), dut("DUT"), trapped(0), inst_count(0),
+      device_settings(ds) {}
 
 RISCV32::addr_t NPCemu::getPC() { return getGPR(32); }
 
@@ -27,7 +31,43 @@ void NPCemu::reset() {
   dut.clock = 0;
   dut.reset = 0;
   dut.eval();
+
+  init_ioe();
   syncCPUState();
+}
+
+void NPCemu::record_ftracer(uint32_t cur_inst) {
+  uint32_t opcode = cur_inst & 0x7f;
+  uint32_t rd = (cur_inst >> 7) & 0x1f;
+  uint32_t dnxt_pc = -1;
+  if (opcode == 0x6f) {
+    uint32_t imm20 = cur_inst >> 31;
+    uint32_t imm10_1 = (cur_inst >> 21) & 0x3ff;
+    uint32_t imm11 = (cur_inst >> 20) & 0x1;
+    uint32_t imm19_12 = (cur_inst >> 12) & 0xff;
+    uint32_t imm =
+        (imm20 << 20) | (imm19_12 << 12) | (imm11 << 11) | (imm10_1 << 1);
+    imm |= -(imm & 0x80000);
+    dnxt_pc = (dut.io_pc + imm) & ~0x1;
+  } else if (opcode == 0x67) {
+    uint32_t rs1 = (cur_inst >> 15) & 0x1f;
+    uint32_t imm = cur_inst >> 20;
+    imm |= -(imm & 0x800);
+    dnxt_pc = (imm + getGPR(rs1)) & ~0x1;
+  }
+
+  if ((opcode == 0x67 || opcode == 0x6f) && rd == 1) {
+    for (int i = 0; i < cnt_stack_ftrace; i++)
+      std::print(" ");
+    int to_symbol = find_symbol(dnxt_pc);
+    std::println("call {}@{:#010x}", find_symbol_name(to_symbol), dut.io_pc);
+    push_stack_ftrace(dut.io_pc, to_symbol);
+  } else if (cur_inst == 0x00008067) {
+    Call top = pop_stack_ftrace();
+    for (int i = 0; i < cnt_stack_ftrace; i++)
+      std::print(" ");
+    std::println("ret  {}@{:#010x}", find_symbol_name(top.symbol), dut.io_pc);
+  }
 }
 
 void NPCemu::step(bool display, bool record_inst, bool ftracer) {
@@ -44,37 +84,10 @@ void NPCemu::step(bool display, bool record_inst, bool ftracer) {
     InstRingBuffer::instRingBuffer.insert(dut.io_pc, cur_inst);
   }
   if (ftracer) {
-    uint32_t opcode = cur_inst & 0x7f;
-    uint32_t rd = (cur_inst >> 7) & 0x1f;
-    uint32_t dnxt_pc = -1;
-    if (opcode == 0x6f) {
-      uint32_t imm20 = cur_inst >> 31;
-      uint32_t imm10_1 = (cur_inst >> 21) & 0x3ff;
-      uint32_t imm11 = (cur_inst >> 20) & 0x1;
-      uint32_t imm19_12 = (cur_inst >> 12) & 0xff;
-      uint32_t imm =
-          (imm20 << 20) | (imm19_12 << 12) | (imm11 << 11) | (imm10_1 << 1);
-      imm |= -(imm & 0x80000);
-      dnxt_pc = (dut.io_pc + imm) & ~0x1;
-    } else if (opcode == 0x67) {
-      uint32_t rs1 = (cur_inst >> 15) & 0x1f;
-      uint32_t imm = cur_inst >> 20;
-      imm |= -(imm & 0x800);
-      dnxt_pc = (imm + getGPR(rs1)) & ~0x1;
-    }
+    record_ftracer(cur_inst);
+  }
 
-    if ((opcode == 0x67 || opcode == 0x6f) && rd == 1) {
-      for (int i = 0; i < cnt_stack_ftrace; i++)
-        std::print(" ");
-      int to_symbol = find_symbol(dnxt_pc);
-      std::println("call {}@{:#010x}", find_symbol_name(to_symbol), dut.io_pc);
-      push_stack_ftrace(dut.io_pc, to_symbol);
-    } else if (cur_inst == 0x00008067) {
-      Call top = pop_stack_ftrace();
-      for (int i = 0; i < cnt_stack_ftrace; i++)
-        std::print(" ");
-      std::println("ret  {}@{:#010x}", find_symbol_name(top.symbol), dut.io_pc);
-    }
+  if (device_settings.enable_audio) {
   }
 
   dut.clock = 0;
@@ -228,22 +241,6 @@ uint32_t NPCemu::readMemory(int raddr) {
   return 0xdeafbeef;
 }
 
-static void write_mask(uint32_t &dst, uint32_t mask32, uint32_t wdata) {
-  dst &= ~mask32;
-  dst |= wdata & mask32;
-}
-
-std::optional<uint32_t> NPCemu::readMMIO(int raddr) {
-  if (raddr >= RTCAddr && raddr < RTCAddrEnd) {
-    update_RTC();
-    if (raddr == RTCAddr)
-      return RTC.RTC_reg[0];
-    else
-      return RTC.RTC_reg[1];
-  }
-  return std::nullopt;
-}
-
 void NPCemu::update_RTC() {
   using namespace std::chrono;
   auto now_tick = steady_clock().now();
@@ -251,27 +248,10 @@ void NPCemu::update_RTC() {
       duration_cast<microseconds>(now_tick - RTC.last_time).count());
   uint64_t start_time =
       RTC.RTC_reg[0] | (static_cast<uint64_t>(RTC.RTC_reg[1]) << 32);
-  uint64_t now_time = start_time + duration;
-  RTC.RTC_reg[0] = now_time & 0xFFFFFF;
-  RTC.RTC_reg[1] = now_time >> 32;
-  RTC.last_time = now_tick;
-}
+  uint64_t now_time = duration;
 
-void NPCemu::writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata) {
-  using namespace std::chrono;
-  if (waddr >= RTCAddr && waddr < RTCAddrEnd) {
-    uint32_t RTC_id = (waddr - RTCAddr) >> 2;
-    update_RTC();
-    write_mask(RTC.RTC_reg[RTC_id], mask32, wdata);
-    RTC.last_time = steady_clock().now();
-    return;
-  }
-  if (waddr == SerialPort) {
-    if (mask32 != 0xFF)
-      throw std::logic_error(std::format(
-          "mask32 {:08x} is not 0xFF when writing serial port", mask32));
-    std::cout.put(wdata);
-    return;
-  }
-  throw std::logic_error(std::format("Writing to invalid MMIO {:08x}", waddr));
+  RTC.RTC_reg[0] = now_time & 0xFFFFFFFF;
+  RTC.RTC_reg[1] = now_time >> 32;
+  // RTC.last_time = now_tick;
+  // std::print("!!{}\r", now_time);
 }

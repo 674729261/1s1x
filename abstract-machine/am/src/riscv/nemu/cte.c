@@ -1,14 +1,23 @@
 #include <am.h>
-#include <riscv/riscv.h>
 #include <klib.h>
+#include <riscv/riscv.h>
+#include <stdint.h>
 
-static Context* (*user_handler)(Event, Context*) = NULL;
+static Context *(*user_handler)(Event, Context *) = NULL;
 
-Context* __am_irq_handle(Context *c) {
+Context *__am_irq_handle(Context *c) {
+  // printf("cause = %d\n", c->mcause);
+  // printf("status = %x\n", c->mstatus);
+  // printf("epc = %x\n", c->mepc);
   if (user_handler) {
     Event ev = {0};
     switch (c->mcause) {
-      default: ev.event = EVENT_ERROR; break;
+    case 11:
+      ev.event = EVENT_YIELD;
+      break;
+    default:
+      ev.event = EVENT_ERROR;
+      break;
     }
 
     c = user_handler(ev, c);
@@ -20,7 +29,7 @@ Context* __am_irq_handle(Context *c) {
 
 extern void __am_asm_trap(void);
 
-bool cte_init(Context*(*handler)(Event, Context*)) {
+bool cte_init(Context *(*handler)(Event, Context *)) {
   // initialize exception entry
   asm volatile("csrw mtvec, %0" : : "r"(__am_asm_trap));
 
@@ -31,7 +40,11 @@ bool cte_init(Context*(*handler)(Event, Context*)) {
 }
 
 Context *kcontext(Area kstack, void (*entry)(void *), void *arg) {
-  return NULL;
+  Context *context_addr = (Context *)(kstack.end - sizeof(Context));
+  context_addr->mepc = (uintptr_t)entry - 4;
+  context_addr->mstatus = 0x1800;
+  context_addr->gpr[10] = (uintptr_t)arg;
+  return context_addr;
 }
 
 void yield() {
@@ -42,9 +55,6 @@ void yield() {
 #endif
 }
 
-bool ienabled() {
-  return false;
-}
+bool ienabled() { return false; }
 
-void iset(bool enable) {
-}
+void iset(bool enable) {}
