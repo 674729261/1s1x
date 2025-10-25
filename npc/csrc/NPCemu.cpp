@@ -36,18 +36,6 @@ void NPCemu::reset() {
   syncCPUState();
 }
 
-void NPCemu::init_ioe() {
-  if (device_settings.enable_audio) {
-    AudioBase.sbuf = std::make_unique<uint8_t[]>(SoundBufferSize);
-  }
-  if (device_settings.enable_vga) {
-    init_vga();
-  }
-  if (device_settings.enable_keyboard) {
-    init_keyboard();
-  }
-}
-
 void NPCemu::record_ftracer(uint32_t cur_inst) {
   uint32_t opcode = cur_inst & 0x7f;
   uint32_t rd = (cur_inst >> 7) & 0x1f;

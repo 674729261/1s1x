@@ -5,6 +5,20 @@
 #include <print>
 #include <spdlog/spdlog.h>
 static NPCemu::AudioBase_t *curAudioBase;
+
+void NPCemu::init_ioe() {
+  if (device_settings.enable_audio) {
+    AudioBase.sbuf = std::make_unique<uint8_t[]>(SoundBufferSize);
+    AudioBase.reg_sbuf_size = SoundBufferSize;
+  }
+  if (device_settings.enable_vga) {
+    init_vga();
+  }
+  if (device_settings.enable_keyboard) {
+    init_keyboard();
+  }
+}
+
 static void fill_audio_callback(void *udata, Uint8 *stream, int len) {
   SDL_memset(stream, 0, len);
   static int last_pos = 0;
