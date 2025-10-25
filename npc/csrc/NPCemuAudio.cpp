@@ -77,4 +77,3 @@ void NPCemu::init_audio() {
   SDL_PauseAudio(0);
 }
 
-void NPCemu::init_keyboard() {}

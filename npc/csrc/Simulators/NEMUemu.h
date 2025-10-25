@@ -13,7 +13,7 @@ public:
   void step(bool display = false, bool record_inst = false,
             bool ftracer = false) override final;
   int instrCount() override final;
-
+  void pause(bool is_paused) override final {}
   void writeMemory(int waddr, int wdata, char wmask) override final;
   uint32_t readMemory(int raddr) override final;
   uint32_t getGPR(int idx) override final;

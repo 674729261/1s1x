@@ -128,10 +128,14 @@ void SingleMonitor::simulate(unsigned long cnt) {
   max_display_inst = std::min(max_display_inst, cnt);
 
   bool triggered = false;
+  for (auto &e : emus) {
+    e->pause(false);
+  }
   while (cnt--) {
     if (max_display_inst > 0) {
-      for (auto &e : emus)
+      for (auto &e : emus) {
         e->step(itracer, irb, ftracer);
+      }
       max_display_inst--;
     } else
       for (auto &e : emus)
@@ -155,6 +159,9 @@ void SingleMonitor::simulate(unsigned long cnt) {
             "error info : {}",
             wat.id, emus.front()->getPC(), wat.expression.stringify(),
             e.what());
+        for (auto &e : emus) {
+          e->pause(true);
+        }
         return;
       }
     }
@@ -162,7 +169,9 @@ void SingleMonitor::simulate(unsigned long cnt) {
         emus.front()->getEMUState() != RISCV32::Interrupt::NONE)
       break;
   }
-
+  for (auto &e : emus) {
+    e->pause(true);
+  }
   auto end = steady_clock::now();
   n_inst = emus.front()->instrCount() - n_inst;
   double elapsed =

@@ -57,6 +57,7 @@ public:
       step(display);
     return EMUstate;
   }
+  virtual void pause(bool is_paused) = 0;
   virtual int instrCount() = 0;
   virtual void syncCPUState() = 0;
   Interrupt getEMUState() { return EMUstate; }

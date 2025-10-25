@@ -48,6 +48,12 @@ std::optional<uint32_t> NPCemu::readMMIO(int raddr) {
     return reinterpret_cast<uint32_t *>(VideoBase.vmem.get())[VGA_FB_Offset];
   }
 
+  if (device_settings.enable_keyboard && raddr == KeyboardPort) {
+    if (uint32_t key; key_queue.Pop(key))
+      return key;
+
+    return 0;
+  }
   return std::nullopt;
 }
 

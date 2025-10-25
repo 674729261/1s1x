@@ -12,6 +12,7 @@
 #include <cstdint>
 #include <format>
 #include <iostream>
+#include <lockfree/lockfree.hpp>
 #include <memory>
 #include <optional>
 #include <print>
@@ -25,6 +26,8 @@ NPCemu::NPCemu(size_t MemSize, std::string_view program,
       device_settings(ds), device_update_thread() {}
 
 RISCV32::addr_t NPCemu::getPC() { return getGPR(32); }
+
+void NPCemu::pause(bool is_paused) { device_running = !is_paused; }
 
 void NPCemu::init_ioe() {
   if (device_settings.enable_audio) {
@@ -61,7 +64,9 @@ void NPCemu::device_update() {
     last = now;
     if (device_settings.enable_vga) {
       vga_update_screen();
-      // std::println("{}", SDL_GetError());
+    }
+    if (device_settings.enable_keyboard) {
+      process_keyboard();
     }
   }
 }
