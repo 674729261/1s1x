@@ -56,7 +56,7 @@ public:
   void reset() override final;
   void step(bool display = false, bool record_inst = false,
             bool ftracer = false) override final;
-  int instrCount() override final;
+  unsigned long long instrCount() override final;
 
   void writeMemory(int waddr, int wdata, char wmask) override final;
   uint32_t readMemory(int raddr) override final;
@@ -91,7 +91,7 @@ private:
   TOP_NAME dut;
 
   int trapped;
-  int inst_count;
+  unsigned long long inst_count;
 
   const DeviceSettings device_settings;
 

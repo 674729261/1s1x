@@ -12,7 +12,7 @@ public:
   void reset() override final;
   void step(bool display = false, bool record_inst = false,
             bool ftracer = false) override final;
-  int instrCount() override final;
+  unsigned long long instrCount() override final;
   void pause(bool is_paused) override final {}
   void writeMemory(int waddr, int wdata, char wmask) override final;
   uint32_t readMemory(int raddr) override final;
@@ -26,7 +26,7 @@ private:
   const addr_t PC_Init = 0x80000000u;
   const addr_t memOffset = 0x80000000u;
 
-  int inst_count;
+  unsigned long long inst_count;
   bool need_sync;
 
   void *loaded_lib;

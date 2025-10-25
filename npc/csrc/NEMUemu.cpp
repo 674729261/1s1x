@@ -65,4 +65,4 @@ void NEMUemu::writeMemory(int waddr, int wdata, char wmask) {
   throw std::logic_error("Can not write NEMUemu memory");
 }
 
-int NEMUemu::instrCount() { return inst_count; }
+unsigned long long NEMUemu::instrCount() { return inst_count; }

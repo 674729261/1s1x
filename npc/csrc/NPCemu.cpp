@@ -254,7 +254,7 @@ uint32_t NPCemu::getGPR(int idx) {
   throw std::logic_error(std::format("Invalid register index : {}", idx));
 }
 
-int NPCemu::instrCount() { return inst_count; }
+unsigned long long NPCemu::instrCount() { return inst_count; }
 
 void NPCemu::writeMemory(int waddr, int wdata, char wmask) {
   for (int i = 0; i < 4; i++) {
