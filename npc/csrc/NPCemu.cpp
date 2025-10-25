@@ -52,6 +52,7 @@ void NPCemu::device_update() {
       continue;
     last = now;
     if (device_settings.enable_vga) {
+      std::println("!!");
       vga_update_screen();
     }
   }
