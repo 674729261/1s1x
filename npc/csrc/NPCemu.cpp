@@ -6,21 +6,56 @@
 #include "VCPU___024root.h"
 #include "spdlog/spdlog.h"
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_audio.h>
+#include <chrono>
 #include <cstdint>
 #include <format>
 #include <iostream>
 #include <memory>
 #include <optional>
-#include <ostream>
 #include <print>
 #include <stdexcept>
 #include <string_view>
+#include <thread>
 NPCemu::NPCemu(size_t MemSize, std::string_view program,
                NPCemu::DeviceSettings ds)
     : RISCV32(MemSize, program, PC_Init), dut("DUT"), trapped(0), inst_count(0),
-      device_settings(ds) {}
+      device_settings(ds), device_update_thread() {}
 
 RISCV32::addr_t NPCemu::getPC() { return getGPR(32); }
+
+void NPCemu::init_ioe() {
+  if (device_settings.enable_audio) {
+    AudioBase.sbuf = std::make_unique<uint8_t[]>(SoundBufferSize);
+    AudioBase.reg_sbuf_size = SoundBufferSize;
+  }
+  if (device_settings.enable_vga) {
+    VideoBase.vmem.resize(VMemSize);
+    VideoBase.screen_size_info = (ScreenWidth << 16) | ScreenHeight;
+    init_vga();
+  }
+  if (device_settings.enable_keyboard) {
+    init_keyboard();
+  }
+  device_running = true;
+  device_update_thread = std::thread([this]() { this->device_update(); });
+}
+
+void NPCemu::device_update() {
+  while (!device_running)
+    ;
+  using namespace std::chrono;
+  auto last = steady_clock::now();
+  while (device_running) {
+    auto now = steady_clock::now();
+    if (duration_cast<microseconds>(now - last).count() < 1'000'000 / 60)
+      continue;
+    last = now;
+    if (device_settings.enable_vga) {
+      vga_update_screen();
+    }
+  }
+}
 
 void NPCemu::reset() {
   dut.reset = 1;
@@ -85,9 +120,6 @@ void NPCemu::step(bool display, bool record_inst, bool ftracer) {
   }
   if (ftracer) {
     record_ftracer(cur_inst);
-  }
-
-  if (device_settings.enable_audio) {
   }
 
   dut.clock = 0;
@@ -254,4 +286,17 @@ void NPCemu::update_RTC() {
   RTC.RTC_reg[1] = now_time >> 32;
   // RTC.last_time = now_tick;
   // std::print("!!{}\r", now_time);
+}
+
+NPCemu::~NPCemu() {
+  device_running = false;
+  device_update_thread.join();
+  if (texture)
+    SDL_DestroyTexture(texture);
+  if (renderer)
+    SDL_DestroyRenderer(renderer);
+  if (window)
+    SDL_DestroyWindow(window);
+  SDL_CloseAudio();
+  SDL_Quit();
 }
