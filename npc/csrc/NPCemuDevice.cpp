@@ -1,5 +1,7 @@
 #include "Simulators/NPCemu.h"
 #include <SDL2/SDL.h>
+#include <iostream>
+#include <print>
 #include <spdlog/spdlog.h>
 static NPCemu::AudioBase_t *curAudioBase;
 static void fill_audio_callback(void *udata, Uint8 *stream, int len) {
@@ -51,3 +53,39 @@ void NPCemu::init_audio() {
 
 void NPCemu::init_keyboard() {}
 void NPCemu::init_vga() {}
+
+static void write_mask(uint32_t &dst, uint32_t mask32, uint32_t wdata) {
+  dst &= ~mask32;
+  dst |= wdata & mask32;
+}
+
+std::optional<uint32_t> NPCemu::readMMIO(int raddr) {
+  if (raddr >= RTCAddr && raddr < RTCAddrEnd) {
+    update_RTC();
+    if (raddr == RTCAddr)
+      return RTC.RTC_reg[0];
+    else
+      return RTC.RTC_reg[1];
+  }
+  return std::nullopt;
+}
+
+void NPCemu::writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata) {
+  using namespace std::chrono;
+  if (waddr >= RTCAddr && waddr < RTCAddrEnd) {
+    uint32_t RTC_id = (waddr - RTCAddr) >> 2;
+    update_RTC();
+    write_mask(RTC.RTC_reg[RTC_id], mask32, wdata);
+    RTC.last_time = steady_clock().now();
+    return;
+  }
+  if (waddr == SerialPort) {
+    if (mask32 != 0xFF)
+      throw std::logic_error(std::format(
+          "mask32 {:08x} is not 0xFF when writing serial port", mask32));
+    std::cout.put(wdata);
+    // std::cout.flush();
+    return;
+  }
+  throw std::logic_error(std::format("Writing to invalid MMIO {:08x}", waddr));
+}

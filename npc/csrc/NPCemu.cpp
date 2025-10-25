@@ -253,22 +253,6 @@ uint32_t NPCemu::readMemory(int raddr) {
   return 0xdeafbeef;
 }
 
-static void write_mask(uint32_t &dst, uint32_t mask32, uint32_t wdata) {
-  dst &= ~mask32;
-  dst |= wdata & mask32;
-}
-
-std::optional<uint32_t> NPCemu::readMMIO(int raddr) {
-  if (raddr >= RTCAddr && raddr < RTCAddrEnd) {
-    update_RTC();
-    if (raddr == RTCAddr)
-      return RTC.RTC_reg[0];
-    else
-      return RTC.RTC_reg[1];
-  }
-  return std::nullopt;
-}
-
 void NPCemu::update_RTC() {
   using namespace std::chrono;
   auto now_tick = steady_clock().now();
@@ -282,24 +266,4 @@ void NPCemu::update_RTC() {
   RTC.RTC_reg[1] = now_time >> 32;
   // RTC.last_time = now_tick;
   // std::print("!!{}\r", now_time);
-}
-
-void NPCemu::writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata) {
-  using namespace std::chrono;
-  if (waddr >= RTCAddr && waddr < RTCAddrEnd) {
-    uint32_t RTC_id = (waddr - RTCAddr) >> 2;
-    update_RTC();
-    write_mask(RTC.RTC_reg[RTC_id], mask32, wdata);
-    RTC.last_time = steady_clock().now();
-    return;
-  }
-  if (waddr == SerialPort) {
-    if (mask32 != 0xFF)
-      throw std::logic_error(std::format(
-          "mask32 {:08x} is not 0xFF when writing serial port", mask32));
-    std::cout.put(wdata);
-    // std::cout.flush();
-    return;
-  }
-  throw std::logic_error(std::format("Writing to invalid MMIO {:08x}", waddr));
 }
