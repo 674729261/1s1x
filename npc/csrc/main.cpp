@@ -1,6 +1,5 @@
 #include "Capstone.h"
 #include "Monitor/SingleMonitor.h"
-#include "RingBuffer.hpp"
 #include "Simulators/NEMUemu.h"
 #include "Simulators/NPCemu.h"
 #include "spdlog/common.h"
@@ -56,7 +55,6 @@ void register_argparse(argparse::ArgumentParser &program) {
       .flag();
   program.add_argument("--itracer")
       .help("Display instruction executed")
-      .default_value(16)
       .scan<'i', unsigned long>();
   program.add_argument("--mtracer").help("Display memory visited").flag();
   program.add_argument("-d", "--difftest")
@@ -64,7 +62,6 @@ void register_argparse(argparse::ArgumentParser &program) {
       .flag();
   program.add_argument("--inst_ringbuffer")
       .help("Use ring buffer")
-      .default_value(16)
       .scan<'i', unsigned long>();
   program.add_argument("--elf").help("ELF file path").default_value("");
 }

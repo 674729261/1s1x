@@ -1,3 +1,4 @@
+#include "amdev.h"
 #include <am.h>
 #include <klib-macros.h>
 #include <stdio.h>
@@ -37,6 +38,7 @@ int main() {
   printf("\033[H\033[J"); // screan_clear
 
   bool has_audio = io_read(AM_AUDIO_CONFIG).present;
+  bool has_keyboard = io_read(AM_INPUT_CONFIG).present;
 
   // bool has_audio = false;
   if (has_audio) {
@@ -45,7 +47,9 @@ int main() {
     sbuf.start = &audio_payload;
   }
   uint64_t now = io_read(AM_TIMER_UPTIME).us;
-
+  if (has_keyboard)
+    while (io_read(AM_INPUT_KEYBRD).keycode != AM_KEY_NONE)
+      ;
   for (; f < fend; f++) {
     printf("\033[0;0H"); // reset cursor
     for (int y = 0; y < VIDEO_ROW; y++) {
@@ -69,7 +73,11 @@ int main() {
         should_play -= len;
       }
     }
-
+    if (has_keyboard) {
+      printf("Press any key to quit.");
+      if (io_read(AM_INPUT_KEYBRD).keycode != AM_KEY_NONE)
+        break;
+    }
     // printf("%d\n", 1);
     uint64_t next = now + (1000000 / FPS);
     sleep_until(next);
@@ -77,5 +85,6 @@ int main() {
     // printf("\n!!%lld\n", io_read(AM_TIMER_UPTIME).us);
     now = next;
   }
+  printf("\033[H\033[J");
   return 0;
 }

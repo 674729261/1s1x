@@ -1,7 +1,5 @@
 #include "Monitor/SingleMonitor.h"
-#include "ELFParser.h"
 #include "Expression/Expression.h"
-#include "RingBuffer.hpp"
 #include "Simulators/RISCV32.h"
 #include "Tracer/Tracer.h"
 #include "spdlog/spdlog.h"
@@ -142,22 +140,25 @@ void SingleMonitor::simulate(unsigned long cnt) {
   using namespace std::chrono;
   int n_inst = emus.front()->instrCount();
   auto start = steady_clock::now();
-  unsigned long max_display_inst = cnt < 0 ? 0 : itracer;
+  unsigned long max_display_inst = itracer;
   max_display_inst = std::min(max_display_inst, cnt);
 
   bool triggered = false;
   for (auto &e : emus) {
     e->pause(false);
   }
-  tracer->set_display(true);
+
+  tracer->set_display(max_display_inst > 0);
+
   while (cnt--) {
-    if (max_display_inst > 0) {
+    if (max_display_inst > 0) [[unlikely]] {
       for (auto &e : emus) {
         e->step();
       }
       max_display_inst--;
+      if (max_display_inst == 0)
+        tracer->set_display(false);
     } else {
-      tracer->set_display(false);
       for (auto &e : emus)
         e->step();
     }
