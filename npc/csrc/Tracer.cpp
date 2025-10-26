@@ -9,12 +9,11 @@
 #include <stdexcept>
 #include <string_view>
 
-Tracer::Tracer(bool ftracer, std::string_view elf_path, bool itracer,
-               size_t rb_size) {
+Tracer::Tracer(bool ftracer, std::string_view elf_path, size_t rb_size) {
   if (ftracer) {
     sym_tab = std::make_unique<ProgSymTab>(elf_path);
   }
-  if (itracer) {
+  if (rb_size > 0) {
     inst_ringbuf = std::make_unique<InstRingBuffer>(rb_size);
   }
   //   if (!capstone.load_libcapstone())
