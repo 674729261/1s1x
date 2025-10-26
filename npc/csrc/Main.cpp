@@ -1,6 +1,5 @@
 #include "Monitor/SingleMonitor.h"
 #include "Setup.h"
-#include "verilated.h"
 
 using std::cerr;
 using std::make_shared;
