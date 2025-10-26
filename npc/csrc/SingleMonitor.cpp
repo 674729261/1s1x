@@ -3,6 +3,7 @@
 #include "Expression/Expression.h"
 #include "RingBuffer.hpp"
 #include "Simulators/RISCV32.h"
+#include "Tracer/Tracer.h"
 #include "spdlog/spdlog.h"
 #include <chrono>
 #include <cstdint>
@@ -57,8 +58,7 @@ const SingleMonitor::CommandItem SingleMonitor::command_list[] = {
 SingleMonitor::SingleMonitor(std::shared_ptr<RISCV32> emu, bool batch,
                              unsigned long itracer, bool mtracer, bool irb,
                              bool ftracer, std::string_view elf_path)
-    : batch(batch), itracer(itracer), mtracer(mtracer), irb(irb),
-      ftracer(ftracer) {
+    : batch(batch), itracer(itracer), mtracer(mtracer) {
   emus.push_back(emu);
 
   repl.set_max_history_size(64);
@@ -68,10 +68,8 @@ SingleMonitor::SingleMonitor(std::shared_ptr<RISCV32> emu, bool batch,
     spdlog::info("Loaded {} history commands from {}", repl.history_size(),
                  tmp_path.string());
 
-  if (ftracer) {
-    symbol_table = std::make_shared<ProgSymTab>();
-    symbol_table->init_and_parse(elf_path);
-  }
+  tracer = std::make_shared<Tracer>(ftracer, elf_path, irb, itracer);
+  emus.front()->tie_tracer(tracer);
 }
 void SingleMonitor::addRefference(std::shared_ptr<RISCV32> ref) {
   emus.push_back(ref);
@@ -126,8 +124,8 @@ int SingleMonitor::start() {
   } catch (const std::logic_error &e) {
     std::println(std::cerr, "{}", e.what());
   }
-  if (itracer)
-    InstRingBuffer::instRingBuffer.display();
+  if (itracer > 0)
+    tracer->show_history_instructions();
   return state;
 }
 
@@ -149,15 +147,19 @@ void SingleMonitor::simulate(unsigned long cnt) {
   for (auto &e : emus) {
     e->pause(false);
   }
+  tracer->set_display(true);
   while (cnt--) {
     if (max_display_inst > 0) {
       for (auto &e : emus) {
-        e->step(itracer, irb, symbol_table);
+        e->step();
       }
       max_display_inst--;
-    } else
+    } else {
+      tracer->set_display(false);
       for (auto &e : emus)
-        e->step(false, irb, symbol_table);
+        e->step();
+    }
+
     if (emus.size() > 1)
       diff_fault = check_diff();
 

@@ -91,60 +91,28 @@ void NPCemu::reset() {
   syncCPUState();
 }
 
-void NPCemu::record_ftracer(uint32_t cur_inst,
-                            std::shared_ptr<ProgSymTab> sy_tab) {
-  uint32_t opcode = cur_inst & 0x7f;
-  uint32_t rd = (cur_inst >> 7) & 0x1f;
-  uint32_t dnxt_pc = -1;
-  if (opcode == 0x6f) {
-    uint32_t imm20 = cur_inst >> 31;
-    uint32_t imm10_1 = (cur_inst >> 21) & 0x3ff;
-    uint32_t imm11 = (cur_inst >> 20) & 0x1;
-    uint32_t imm19_12 = (cur_inst >> 12) & 0xff;
-    uint32_t imm =
-        (imm20 << 20) | (imm19_12 << 12) | (imm11 << 11) | (imm10_1 << 1);
-    imm |= -(imm & 0x80000);
-    dnxt_pc = (dut.io_pc + imm) & ~0x1;
-  } else if (opcode == 0x67) {
-    uint32_t rs1 = (cur_inst >> 15) & 0x1f;
-    uint32_t imm = cur_inst >> 20;
-    imm |= -(imm & 0x800);
-    dnxt_pc = (imm + getGPR(rs1)) & ~0x1;
-  }
-
-  if ((opcode == 0x67 || opcode == 0x6f) && rd == 1) {
-    for (int i = 0; i < sy_tab->stack_cnt(); i++)
-      std::print(" ");
-    int to_symbol = sy_tab->find_symbol_by_addr(dnxt_pc);
-    std::println("call {}@{:#010x}", sy_tab->find_symbol_name(to_symbol),
-                 dut.io_pc);
-    sy_tab->push_call_stack(to_symbol, dut.io_pc);
-  } else if (cur_inst == 0x00008067) {
-    ProgSymTab::Call top = sy_tab->pop_call_stack();
-    for (int i = 0; i < sy_tab->stack_cnt(); i++)
-      std::print(" ");
-    std::println("ret  {}@{:#010x}", sy_tab->find_symbol_name(top.symbol),
-                 dut.io_pc);
-  }
-}
-
-void NPCemu::step(bool display, bool record_inst,
-                  std::shared_ptr<ProgSymTab> sy_tab) {
+void NPCemu::step() {
   addr_t pc = dut.io_pc;
   if (pc < memOffset) {
     throw std::logic_error(std::format("pc : {:08x} out of range", pc));
   }
   dut.io_instr = M[(pc - memOffset) / 4];
-  uint32_t cur_inst = dut.io_instr;
-  if (display) {
-    Capstone::capstone.disassemble(pc, (uint8_t *)&cur_inst, 4);
-  }
-  if (record_inst) {
-    InstRingBuffer::instRingBuffer.insert(dut.io_pc, cur_inst);
-  }
-  if (sy_tab) {
-    record_ftracer(cur_inst, sy_tab);
-  }
+
+  uint32_t rs1 = (dut.io_instr >> 15) & 0x1f;
+
+  if (tracer)
+    tracer->register_instruction(dut.io_pc, dut.io_instr, getGPR(rs1));
+
+  // uint32_t cur_inst = dut.io_instr;
+  // if (display) {
+  //   Capstone::capstone.disassemble(pc, (uint8_t *)&cur_inst, 4);
+  // }
+  // if (record_inst) {
+  //   InstRingBuffer::instRingBuffer.insert(dut.io_pc, cur_inst);
+  // }
+  // if (sy_tab) {
+  //   record_ftracer(cur_inst, sy_tab);
+  // }
 
   dut.clock = 0;
   dut.eval();

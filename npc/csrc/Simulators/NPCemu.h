@@ -58,8 +58,7 @@ public:
   addr_t getPC() override final;
 
   void reset() override final;
-  void step(bool display = false, bool record_inst = false,
-            std::shared_ptr<ProgSymTab> sy_tab = nullptr) override final;
+  void step() override final;
   unsigned long long instrCount() override final;
 
   void writeMemory(int waddr, int wdata, char wmask) override final;

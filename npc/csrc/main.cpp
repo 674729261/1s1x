@@ -118,11 +118,12 @@ int main(int argc, char *argv[]) {
   bool difftest = program.get<bool>("--difftest");
   bool use_irb = program.is_used("--inst_ringbuffer");
 
-  if (use_irb) {
-    unsigned long sz_irb = program.get<unsigned long>("--inst_ringbuffer");
-    InstRingBuffer::instRingBuffer.init(sz_irb);
-    spdlog::info("Initialized instruction ringbuffer with size : {}", sz_irb);
-  }
+  // if (use_irb) {
+  //   unsigned long sz_irb = program.get<unsigned long>("--inst_ringbuffer");
+  //   InstRingBuffer::instRingBuffer.init(sz_irb);
+  //   spdlog::info("Initialized instruction ringbuffer with size : {}",
+  //   sz_irb);
+  // }
   bool use_ftracer = program.is_used("--elf");
   std::string path_elf = ""s;
   if (use_ftracer) {
@@ -132,14 +133,14 @@ int main(int argc, char *argv[]) {
       std::terminate();
     }
   }
-  if (itracer != 0) {
-    if (!Capstone::capstone.load_libcapstone()) {
-      spdlog::warn("Failed to initialize capstone. Ignoring itracer flag.");
-      itracer = 0;
-    } else {
-      spdlog::info("Using capstone");
-    }
-  }
+  // if (itracer != 0) {
+  //   if (!Capstone::capstone.load_libcapstone()) {
+  //     spdlog::warn("Failed to initialize capstone. Ignoring itracer flag.");
+  //     itracer = 0;
+  //   } else {
+  //     spdlog::info("Using capstone");
+  //   }
+  // }
 
   if (difftest) {
     try {

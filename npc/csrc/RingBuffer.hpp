@@ -1,3 +1,4 @@
+#pragma once
 #include "Capstone.h"
 #include <cstddef>
 #include <cstdint>
@@ -6,6 +7,9 @@
 #include <vector>
 class InstRingBuffer {
 public:
+  InstRingBuffer(size_t sz) : instr_buffer(), pos_begin(), pos_end(), cnt() {
+    init(sz);
+  }
   struct Item {
     uint32_t pc;
     uint32_t instr;
@@ -46,16 +50,16 @@ public:
     return instr_buffer[pos_begin];
   }
 
-  void display() {
+  void display(Capstone &capstone) {
     if (cnt == 0)
       std::println("No instruction recorded");
     else {
       std::println("Recent {} instructions", cnt);
       int pos = pos_begin;
       for (int i = 0; i < cnt; i++) {
-        auto show = Capstone::capstone.disassemble(
-            instr_buffer[pos].pc, (uint8_t *)&instr_buffer[pos].instr, 4,
-            false);
+        auto show =
+            capstone.disassemble(instr_buffer[pos].pc,
+                                 (uint8_t *)&instr_buffer[pos].instr, 4, false);
         if (i != cnt - 1)
           println("{:5}    {}", i, show);
         else
@@ -70,9 +74,8 @@ public:
   static InstRingBuffer instRingBuffer;
 
 private:
-  InstRingBuffer() : instr_buffer(), pos_begin(), pos_end(), cnt() {}
   std::vector<Item> instr_buffer;
   int pos_begin, pos_end, cnt;
 };
 
-inline InstRingBuffer InstRingBuffer::instRingBuffer{};
+// inline InstRingBuffer InstRingBuffer::instRingBuffer{};

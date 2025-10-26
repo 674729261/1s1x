@@ -34,7 +34,7 @@ public:
 private:
   std::vector<std::shared_ptr<RISCV32>> emus;
   unsigned long itracer;
-  bool batch, mtracer, irb, ftracer;
+  bool batch, mtracer;
 
   enum CommandState {
     QUIT = 0, // End the monitor
@@ -52,7 +52,7 @@ private:
   static const CommandItem command_list[];
   replxx::Replxx repl;
 
-  std::shared_ptr<ProgSymTab> symbol_table;
+  std::shared_ptr<Tracer> tracer;
 
 private:
   bool process_trap();

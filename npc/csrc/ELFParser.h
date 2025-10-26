@@ -20,6 +20,8 @@ public:
     uint32_t pc;
   } Call;
 
+  ProgSymTab(std::string_view elf_path) { init_and_parse(elf_path); }
+
   void init_and_parse(std::string_view elf_path);
 
   void push_call_stack(int symbol, uint32_t pc);
