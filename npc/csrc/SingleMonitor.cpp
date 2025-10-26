@@ -56,8 +56,9 @@ const SingleMonitor::CommandItem SingleMonitor::command_list[] = {
 };
 
 SingleMonitor::SingleMonitor(std::shared_ptr<RISCV32> emu, bool batch,
-                             unsigned long itracer, bool mtracer, bool irb,
-                             bool ftracer, std::string_view elf_path)
+                             unsigned long itracer, bool mtracer,
+                             unsigned int irb, bool ftracer,
+                             std::string_view elf_path)
     : batch(batch), itracer(itracer), mtracer(mtracer), irb(irb) {
   emus.push_back(emu);
 

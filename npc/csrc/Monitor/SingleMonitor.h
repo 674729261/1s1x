@@ -15,7 +15,7 @@ class SingleMonitor {
 public:
   SingleMonitor(std::shared_ptr<RISCV32> dut, bool batch = false,
                 unsigned long itracer = 16, bool mtracer = false,
-                bool irb = false, bool ftracer = false,
+                unsigned int irb = 16, bool ftracer = false,
                 std::string_view elf_path = "");
 
   int start();
@@ -33,8 +33,8 @@ public:
 
 private:
   std::vector<std::shared_ptr<RISCV32>> emus;
-  unsigned long itracer;
-  bool batch, mtracer, irb;
+  unsigned long itracer, irb;
+  bool batch, mtracer;
 
   enum CommandState {
     QUIT = 0, // End the monitor
