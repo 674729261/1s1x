@@ -45,7 +45,6 @@ void ProgSymTab::init_and_parse(std::string_view elf_path) {
         pc_offset = std::min(pc_offset, static_cast<uint32_t>(value));
         max_addr = std::max(max_addr, static_cast<uint32_t>(value + size));
       }
-
       table.symbol_map.resize(max_addr - pc_offset);
       std::fill(table.symbol_map.begin(), table.symbol_map.end(), -1);
 
