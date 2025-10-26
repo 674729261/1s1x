@@ -23,12 +23,19 @@ public:
     bool enable_keyboard;
   };
   struct AudioBase_t {
-    uint32_t reg_freq;
-    uint32_t reg_channels;
-    uint32_t reg_samples;
-    uint32_t reg_sbuf_size;
-    uint32_t reg_init;
-    uint32_t reg_count;
+
+    union {
+      uint32_t regs_ctl[6];
+      struct {
+        uint32_t reg_freq;
+        uint32_t reg_channels;
+        uint32_t reg_samples;
+        uint32_t reg_sbuf_size;
+        uint32_t reg_init;
+        uint32_t reg_count;
+      };
+    };
+
     static constexpr int n_regs = 6;
 
     std::unique_ptr<uint8_t[]> sbuf;

@@ -17,7 +17,7 @@
 #elif defined(__PLATFORM_NEMU)
 #define PERF_CONFIG PERF_MIDDLE
 #else
-#define PERF_CONFIG PERF_LOW
+#define PERF_CONFIG PERF_MIDDLE
 #endif
 
 #if PERF_CONFIG == PERF_HIGH
