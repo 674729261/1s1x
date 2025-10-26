@@ -10,7 +10,7 @@
 
 void NPCemu::ensure_vga_enabled() {
   if (!device_settings.enable_vga) {
-    log_and_error<std::logic_error>(
+    log_and_throw<std::logic_error>(
         "Accessing audio MMIO when vga is disabled");
   }
 }

@@ -9,7 +9,7 @@ NEMUemu::NEMUemu(size_t MemSize, std::string_view programe)
     : RISCV32(MemSize, programe, PC_Init) {
   loaded_lib = dlopen(STR(SO_PATH_NEMU), RTLD_LAZY);
   if (loaded_lib == nullptr) {
-    log_and_error<std::runtime_error>("Failed to load library from {}",
+    log_and_throw<std::runtime_error>("Failed to load library from {}",
                                       STR(SO_PATH_NEMU));
   }
   difftest_memcpy = (difftest_memcpy_t)dlsym(loaded_lib, "difftest_memcpy");
@@ -18,7 +18,7 @@ NEMUemu::NEMUemu(size_t MemSize, std::string_view programe)
   difftest_regcpy = (difftest_regcpy_t)dlsym(loaded_lib, "difftest_regcpy");
   if (!difftest_memcpy || !difftest_exec || !difftest_init ||
       !difftest_regcpy) {
-    log_and_error<std::runtime_error>("Failed to load exported symbols from {}",
+    log_and_throw<std::runtime_error>("Failed to load exported symbols from {}",
                                       STR(SO_PATH_NEMUemu));
   }
 }

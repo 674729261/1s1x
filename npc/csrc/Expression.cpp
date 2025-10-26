@@ -207,7 +207,7 @@ uint32_t Expression::eval_sub(RISCV32 &dut, int l, int r) const {
     case '*':
       return dut.readMemory(eval_sub(dut, l + 1, r));
     default:
-      log_and_error<std::logic_error>("Invalid expression : {}", stringify());
+      log_and_throw<std::logic_error>("Invalid expression : {}", stringify());
     }
   }
   uint32_t LHS = eval_sub(dut, l, pos_main - 1);
@@ -221,12 +221,12 @@ uint32_t Expression::eval_sub(RISCV32 &dut, int l, int r) const {
     return LHS * RHS;
   case '/':
     if (RHS == 0) {
-      log_and_error<std::logic_error>("Division by zero : {}", stringify());
+      log_and_throw<std::logic_error>("Division by zero : {}", stringify());
     }
     return LHS / RHS;
   case '%':
     if (RHS == 0) {
-      log_and_error<std::logic_error>("Division by zero : {}", stringify());
+      log_and_throw<std::logic_error>("Division by zero : {}", stringify());
     }
     return LHS % RHS;
   case '^':
@@ -252,7 +252,7 @@ uint32_t Expression::eval_sub(RISCV32 &dut, int l, int r) const {
   case TK_BOOL_OR:
     return LHS || RHS;
   default:
-    log_and_error<std::logic_error>("Invalid expression : {}", stringify());
+    log_and_throw<std::logic_error>("Invalid expression : {}", stringify());
   }
 }
 int Expression::main_token(RISCV32 &, int l, int r) const {

@@ -1,6 +1,4 @@
 #include "Simulators/NPCemu.h"
-#include "Capstone.h"
-#include "RingBuffer.hpp"
 #include "Simulators/RISCV32.h"
 #include "VCPU___024root.h"
 #include <SDL2/SDL.h>
