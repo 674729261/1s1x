@@ -28,7 +28,7 @@ npc: $(SV_FILELIST) $(LIBCAPSTONE) $(SO_PATH_NEMU)
 sbt: $(SV_FILELIST)
 
 $(SV_FILELIST): $(CHISELSRC)
-	sbt run
+	sbt run 
 
 
 
