@@ -3,6 +3,7 @@
 #include "my_utils.h"
 #include <functional>
 #include <memory>
+#include <ostream>
 #include <stdexcept>
 #include <string_view>
 
@@ -15,6 +16,7 @@ Tracer::Tracer(bool ftracer, std::string_view elf_path, bool itracer,
     inst_ringbuf = std::make_unique<InstRingBuffer>(rb_size);
   }
   capstone.load_libcapstone();
+  std::println("!!!");
 }
 
 void Tracer::register_instruction(uint32_t pc, uint32_t inst, uint32_t rs1) {
