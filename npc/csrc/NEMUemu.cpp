@@ -1,16 +1,16 @@
 #include "Simulators/NEMUemu.h"
-#include "utils.h"
 #include <cstdint>
 #include <dlfcn.h>
 #include <format>
+#include <my_utils.h>
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 NEMUemu::NEMUemu(size_t MemSize, std::string_view programe)
     : RISCV32(MemSize, programe, PC_Init) {
   loaded_lib = dlopen(STR(SO_PATH_NEMU), RTLD_LAZY);
   if (loaded_lib == nullptr) {
-    spdlog::error("Failed to load library from {}", STR(SO_PATH_NEMU));
-    throw std::runtime_error("Failed to load NEMU library");
+    log_and_error<std::runtime_error>("Failed to load library from {}",
+                                      STR(SO_PATH_NEMU));
   }
   difftest_memcpy = (difftest_memcpy_t)dlsym(loaded_lib, "difftest_memcpy");
   difftest_exec = (difftest_exec_t)dlsym(loaded_lib, "difftest_exec");
@@ -18,9 +18,8 @@ NEMUemu::NEMUemu(size_t MemSize, std::string_view programe)
   difftest_regcpy = (difftest_regcpy_t)dlsym(loaded_lib, "difftest_regcpy");
   if (!difftest_memcpy || !difftest_exec || !difftest_init ||
       !difftest_regcpy) {
-    spdlog::error("Failed to load exported symbols from {}",
-                  STR(SO_PATH_NEMUemu));
-    throw std::runtime_error("Failed to load NEMU symbols");
+    log_and_error<std::runtime_error>("Failed to load exported symbols from {}",
+                                      STR(SO_PATH_NEMUemu));
   }
 }
 
@@ -29,7 +28,8 @@ void NEMUemu::reset() {
   difftest_memcpy(PC_Init, M.data(), sizeof(uint32_t) * M.size(), 1);
 }
 
-void NEMUemu::step(bool display, bool record_inst, bool ftracer) {
+void NEMUemu::step(bool display, bool record_inst,
+                   std::shared_ptr<ProgSymTab> sy_tab) {
   difftest_exec(1);
   inst_count++;
   need_sync = true;
@@ -65,4 +65,4 @@ void NEMUemu::writeMemory(int waddr, int wdata, char wmask) {
   throw std::logic_error("Can not write NEMUemu memory");
 }
 
-int NEMUemu::instrCount() { return inst_count; }
+unsigned long long NEMUemu::instrCount() { return inst_count; }

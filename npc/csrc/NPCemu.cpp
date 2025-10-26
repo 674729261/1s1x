@@ -2,25 +2,71 @@
 #include "Capstone.h"
 #include "RingBuffer.hpp"
 #include "Simulators/RISCV32.h"
-#include "Symbols.h"
 #include "VCPU___024root.h"
-#include "spdlog/spdlog.h"
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_audio.h>
+#include <SDL2/SDL_error.h>
+#include <chrono>
 #include <cstdint>
 #include <format>
-#include <iostream>
+#include <lockfree/lockfree.hpp>
 #include <memory>
 #include <optional>
-#include <ostream>
 #include <print>
+#include <signal.h>
 #include <stdexcept>
 #include <string_view>
+#include <thread>
 NPCemu::NPCemu(size_t MemSize, std::string_view program,
                NPCemu::DeviceSettings ds)
     : RISCV32(MemSize, program, PC_Init), dut("DUT"), trapped(0), inst_count(0),
-      device_settings(ds) {}
+      device_settings(ds), device_update_thread() {}
 
 RISCV32::addr_t NPCemu::getPC() { return getGPR(32); }
+
+void NPCemu::pause(bool is_paused) { device_running = !is_paused; }
+
+void NPCemu::init_ioe() {
+  if (device_settings.enable_audio) {
+    AudioBase.sbuf = std::make_unique<uint8_t[]>(SoundBufferSize);
+    AudioBase.reg_sbuf_size = SoundBufferSize;
+  }
+  if (device_settings.enable_vga) {
+    VideoBase.vmem = std::make_unique<uint8_t[]>(VMemSize);
+    VideoBase.screen_size_info = (ScreenWidth << 16) | ScreenHeight;
+    // init_vga();
+  }
+  if (device_settings.enable_keyboard) {
+    key_queue = std::make_unique<lockfree::mpmc::Queue<uint32_t, 1024>>();
+  }
+  device_running = true;
+  device_update_thread = std::thread([this]() { this->device_update_loop(); });
+}
+
+void NPCemu::device_update_loop() {
+  if (device_settings.enable_vga) {
+    init_vga();
+  }
+  if (device_settings.enable_keyboard) {
+    init_keyboard();
+  }
+  signal(SIGINT, SIG_DFL);
+  signal(SIGTERM, SIG_DFL);
+  using namespace std::chrono;
+  auto last = steady_clock::now();
+  while (device_running) {
+    auto now = steady_clock::now();
+    if (duration_cast<microseconds>(now - last).count() < 1'000'000 / 60)
+      continue;
+    last = now;
+    if (device_settings.enable_vga) {
+      vga_update_screen();
+    }
+    if (device_settings.enable_keyboard) {
+      process_keyboard();
+    }
+  }
+}
 
 void NPCemu::reset() {
   dut.reset = 1;
@@ -36,7 +82,8 @@ void NPCemu::reset() {
   syncCPUState();
 }
 
-void NPCemu::record_ftracer(uint32_t cur_inst) {
+void NPCemu::record_ftracer(uint32_t cur_inst,
+                            std::shared_ptr<ProgSymTab> sy_tab) {
   uint32_t opcode = cur_inst & 0x7f;
   uint32_t rd = (cur_inst >> 7) & 0x1f;
   uint32_t dnxt_pc = -1;
@@ -57,20 +104,23 @@ void NPCemu::record_ftracer(uint32_t cur_inst) {
   }
 
   if ((opcode == 0x67 || opcode == 0x6f) && rd == 1) {
-    for (int i = 0; i < cnt_stack_ftrace; i++)
+    for (int i = 0; i < sy_tab->stack_cnt(); i++)
       std::print(" ");
-    int to_symbol = find_symbol(dnxt_pc);
-    std::println("call {}@{:#010x}", find_symbol_name(to_symbol), dut.io_pc);
-    push_stack_ftrace(dut.io_pc, to_symbol);
+    int to_symbol = sy_tab->find_symbol_by_addr(dnxt_pc);
+    std::println("call {}@{:#010x}", sy_tab->find_symbol_name(to_symbol),
+                 dut.io_pc);
+    sy_tab->push_call_stack(to_symbol, dut.io_pc);
   } else if (cur_inst == 0x00008067) {
-    Call top = pop_stack_ftrace();
-    for (int i = 0; i < cnt_stack_ftrace; i++)
+    ProgSymTab::Call top = sy_tab->pop_call_stack();
+    for (int i = 0; i < sy_tab->stack_cnt(); i++)
       std::print(" ");
-    std::println("ret  {}@{:#010x}", find_symbol_name(top.symbol), dut.io_pc);
+    std::println("ret  {}@{:#010x}", sy_tab->find_symbol_name(top.symbol),
+                 dut.io_pc);
   }
 }
 
-void NPCemu::step(bool display, bool record_inst, bool ftracer) {
+void NPCemu::step(bool display, bool record_inst,
+                  std::shared_ptr<ProgSymTab> sy_tab) {
   addr_t pc = dut.io_pc;
   if (pc < memOffset) {
     throw std::logic_error(std::format("pc : {:08x} out of range", pc));
@@ -83,11 +133,8 @@ void NPCemu::step(bool display, bool record_inst, bool ftracer) {
   if (record_inst) {
     InstRingBuffer::instRingBuffer.insert(dut.io_pc, cur_inst);
   }
-  if (ftracer) {
-    record_ftracer(cur_inst);
-  }
-
-  if (device_settings.enable_audio) {
+  if (sy_tab) {
+    record_ftracer(cur_inst, sy_tab);
   }
 
   dut.clock = 0;
@@ -208,7 +255,7 @@ uint32_t NPCemu::getGPR(int idx) {
   throw std::logic_error(std::format("Invalid register index : {}", idx));
 }
 
-int NPCemu::instrCount() { return inst_count; }
+unsigned long long NPCemu::instrCount() { return inst_count; }
 
 void NPCemu::writeMemory(int waddr, int wdata, char wmask) {
   for (int i = 0; i < 4; i++) {
@@ -254,4 +301,17 @@ void NPCemu::update_RTC() {
   RTC.RTC_reg[1] = now_time >> 32;
   // RTC.last_time = now_tick;
   // std::print("!!{}\r", now_time);
+}
+
+NPCemu::~NPCemu() {
+  device_running = false;
+  device_update_thread.join();
+  if (texture)
+    SDL_DestroyTexture(texture);
+  if (renderer)
+    SDL_DestroyRenderer(renderer);
+  if (window)
+    SDL_DestroyWindow(window);
+  SDL_CloseAudio();
+  SDL_Quit();
 }

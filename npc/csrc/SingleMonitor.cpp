@@ -1,14 +1,16 @@
 #include "Monitor/SingleMonitor.h"
+#include "ELFParser.h"
 #include "Expression/Expression.h"
 #include "RingBuffer.hpp"
 #include "Simulators/RISCV32.h"
 #include "spdlog/spdlog.h"
-#include "utils.h"
 #include <chrono>
 #include <cstdint>
 #include <endian.h>
 #include <filesystem>
 #include <iostream>
+#include <memory>
+#include <my_utils.h>
 #include <ostream>
 #include <print>
 #include <regex>
@@ -54,7 +56,7 @@ const SingleMonitor::CommandItem SingleMonitor::command_list[] = {
 
 SingleMonitor::SingleMonitor(std::shared_ptr<RISCV32> emu, bool batch,
                              unsigned long itracer, bool mtracer, bool irb,
-                             bool ftracer)
+                             bool ftracer, std::string_view elf_path)
     : batch(batch), itracer(itracer), mtracer(mtracer), irb(irb),
       ftracer(ftracer) {
   emus.push_back(emu);
@@ -65,20 +67,36 @@ SingleMonitor::SingleMonitor(std::shared_ptr<RISCV32> emu, bool batch,
   if (repl.history_load(tmp_path))
     spdlog::info("Loaded {} history commands from {}", repl.history_size(),
                  tmp_path.string());
+
+  if (ftracer) {
+    symbol_table = std::make_shared<ProgSymTab>();
+    symbol_table->init_and_parse(elf_path);
+  }
 }
 void SingleMonitor::addRefference(std::shared_ptr<RISCV32> ref) {
   emus.push_back(ref);
 }
 int SingleMonitor::start() {
+  using namespace std::chrono;
   for (auto &e : emus)
     e->reset();
   CommandState state = CommandState::NONE;
   bool finished = false;
   try {
     while (true) {
-      if (batch)
+      if (batch) {
+        emus.front()->pause(false);
+        auto n_inst = emus.front()->instrCount();
+        auto start = steady_clock::now();
         emus.front()->simulate(-1);
-      else
+        auto end = steady_clock::now();
+        n_inst = emus.front()->instrCount() - n_inst;
+        double elapsed = duration_cast<nanoseconds>(end - start).count();
+        spdlog::info("Average speed : {:.1f} inst/s",
+                     1'000'000'000.0 * n_inst / elapsed);
+
+        emus.front()->pause(true);
+      } else
         state = query_command();
       if (!finished &&
           emus.front()->getEMUState() == RISCV32::Interrupt::EBREAK) {
@@ -128,14 +146,18 @@ void SingleMonitor::simulate(unsigned long cnt) {
   max_display_inst = std::min(max_display_inst, cnt);
 
   bool triggered = false;
+  for (auto &e : emus) {
+    e->pause(false);
+  }
   while (cnt--) {
     if (max_display_inst > 0) {
-      for (auto &e : emus)
-        e->step(itracer, irb, ftracer);
+      for (auto &e : emus) {
+        e->step(itracer, irb, symbol_table);
+      }
       max_display_inst--;
     } else
       for (auto &e : emus)
-        e->step(false, irb, ftracer);
+        e->step(false, irb, symbol_table);
     if (emus.size() > 1)
       diff_fault = check_diff();
 
@@ -155,6 +177,9 @@ void SingleMonitor::simulate(unsigned long cnt) {
             "error info : {}",
             wat.id, emus.front()->getPC(), wat.expression.stringify(),
             e.what());
+        for (auto &e : emus) {
+          e->pause(true);
+        }
         return;
       }
     }
@@ -162,14 +187,16 @@ void SingleMonitor::simulate(unsigned long cnt) {
         emus.front()->getEMUState() != RISCV32::Interrupt::NONE)
       break;
   }
-
+  for (auto &e : emus) {
+    e->pause(true);
+  }
   auto end = steady_clock::now();
   n_inst = emus.front()->instrCount() - n_inst;
-  double elapsed =
-      duration_cast<microseconds>(end - start).count() / 1'000'000.0;
+  double elapsed = duration_cast<nanoseconds>(end - start).count();
   spdlog::info("Simulated {} cycles, PC is now {:#010x}", n_inst,
                emus.front()->getPC());
-  spdlog::info("Average speed : {:.1f} inst/s", n_inst / elapsed);
+  spdlog::info("Average speed : {:.1f} inst/s",
+               1'000'000'000.0 * n_inst / elapsed);
 }
 
 SingleMonitor::CommandState

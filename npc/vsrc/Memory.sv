@@ -1,4 +1,8 @@
-import "DPI-C" function int pmem_read(input int raddr);
+import "DPI-C" function int pmem_read(
+  input int raddr,
+  input int clk,
+  input int valid
+);
 import "DPI-C" function void pmem_write(
   input int  waddr,
   input int  wdata,
@@ -25,7 +29,7 @@ module Memory (
   //     rdata = 0;
   //   end
   // end
-  assign rdata = valid ? pmem_read(raddr) : 32'h0;
+  assign rdata = pmem_read(raddr, {31'b0, clk}, {31'b0, valid});
   always @(posedge clk) begin
     if (valid & wen) begin
       pmem_write(waddr, wdata, {4'h0, wmask});

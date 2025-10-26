@@ -1,6 +1,6 @@
 CSRC = $(wildcard csrc/*.cpp)
 CSRC += /usr/local/lib/libreplxx.a
-SVSRC = $(wildcard generated_svsrc/*.sv)
+
 VSRC = $(wildcard vsrc/*.v)
 VSRC += $(wildcard vsrc/*.sv)
 CHISELSRC += $(wildcard src/main/scala/empty/*.scala)
@@ -8,6 +8,8 @@ TOPNAME = CPU
 BIN = ./obj_dir/V$(TOPNAME)
 
 SV_FILELIST=generated_svsrc/filelist.f
+
+SVSRC =  $(shell cat $(SV_FILELIST) | sed 's|^|generated_svsrc/|g' | tr '\n' ' ')
 
 VERILATOR = verilator
 
@@ -31,7 +33,7 @@ $(SV_FILELIST): $(CHISELSRC)
 PROG ?= test_progs/matrix-mul-riscv32e-npc.bin
 ELF ?= test_progs/matrix-mul-riscv32e-npc.elf
 MEM_SIZE ?= 134217728
-TIME_STAMP = $(shell date +"%Y_%m_%d_%H_%M_%S")
+TIME_STAMP ?= $(shell date +"%Y_%m_%d_%H_%M_%S")
 LOG_FILE ?= "log/$(TIME_STAMP).log"
 sim: npc
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
@@ -39,7 +41,7 @@ sim: npc
 
 sim_full_speed: npc
 	$(call git_commit, "sim RTL full speed") # DO NOT REMOVE THIS LINE!!!
-	$(BIN) --image $(PROG) --mem_size $(MEM_SIZE) --log $(LOG_FILE) $(NPC_FLAGS) --enable_audio
+	$(BIN) --image $(PROG) --mem_size $(MEM_SIZE) --log $(LOG_FILE) $(NPC_FLAGS) --enable_audio --enable_vga --enable_keyboard
 
 sim_ftracer: npc
 	$(call git_commit, "sim RTL ftracer") # DO NOT REMOVE THIS LINE!!!

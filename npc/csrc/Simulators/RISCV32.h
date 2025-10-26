@@ -1,9 +1,10 @@
 #pragma once
+#include "../ELFParser.h"
 #include <array>
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
-#include <stdexcept>
+#include <memory>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -51,13 +52,16 @@ public:
   virtual uint32_t readMemory(int raddr) = 0;
   virtual void reset() = 0;
   virtual void step(bool display = false, bool record_inst = false,
-                    bool ftracer = false) = 0;
-  Interrupt simulate(unsigned long steps, bool display = false) {
+                    std::shared_ptr<ProgSymTab> sy_tab = nullptr) = 0;
+  Interrupt simulate(unsigned long steps, bool display = false,
+                     bool record_inst = false,
+                     std::shared_ptr<ProgSymTab> sy_tab = nullptr) {
     while (steps-- && EMUstate == Interrupt::NONE)
-      step(display);
+      step(display, record_inst, sy_tab);
     return EMUstate;
   }
-  virtual int instrCount() = 0;
+  virtual void pause(bool is_paused) = 0;
+  virtual unsigned long long instrCount() = 0;
   virtual void syncCPUState() = 0;
   Interrupt getEMUState() { return EMUstate; }
   virtual uint32_t getGPR(int idx) = 0;
