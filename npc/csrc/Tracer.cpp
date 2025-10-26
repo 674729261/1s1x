@@ -16,7 +16,8 @@ Tracer::Tracer(bool ftracer, std::string_view elf_path, bool itracer,
   if (itracer) {
     inst_ringbuf = std::make_unique<InstRingBuffer>(rb_size);
   }
-  capstone.load_libcapstone();
+  if (!capstone.load_libcapstone())
+    log_and_error<std::runtime_error>("Failed to load libcapstone");
 }
 
 void Tracer::register_instruction(uint32_t pc, uint32_t inst, uint32_t rs1) {
