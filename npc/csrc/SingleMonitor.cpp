@@ -69,7 +69,7 @@ SingleMonitor::SingleMonitor(std::shared_ptr<RISCV32> emu, bool batch,
     spdlog::info("Loaded {} history commands from {}", repl.history_size(),
                  tmp_path.string());
 
-  tracer = std::make_shared<Tracer>(ftracer, elf_path, irb, itracer);
+  tracer = std::make_shared<Tracer>(ftracer, elf_path, irb);
   emus.front()->tie_tracer(tracer);
 }
 void SingleMonitor::addRefference(std::shared_ptr<RISCV32> ref) {

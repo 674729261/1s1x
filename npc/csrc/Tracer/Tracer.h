@@ -7,7 +7,7 @@
 #include <memory>
 class Tracer {
 public:
-  Tracer(bool ftracer, std::string_view elf_path, bool itracer, size_t rb_size);
+  Tracer(bool ftracer, std::string_view elf_path, size_t rb_size);
 
   void register_instruction(uint32_t pc, uint32_t inst, uint32_t rs1);
   void show_history_instructions();
