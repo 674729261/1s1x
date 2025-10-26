@@ -39,6 +39,7 @@ void NPCemu::init_ioe() {
   if (device_settings.enable_keyboard) {
     key_queue = std::make_unique<lockfree::mpmc::Queue<uint32_t, 1024>>();
   }
+  device_alive = true;
   device_running = true;
   device_update_thread = std::thread([this]() { this->device_update_loop(); });
 }
@@ -54,16 +55,18 @@ void NPCemu::device_update_loop() {
   signal(SIGTERM, SIG_DFL);
   using namespace std::chrono;
   auto last = steady_clock::now();
-  while (device_running) {
-    auto now = steady_clock::now();
-    if (duration_cast<microseconds>(now - last).count() < 1'000'000 / 60)
-      continue;
-    last = now;
-    if (device_settings.enable_vga) {
-      vga_update_screen();
-    }
-    if (device_settings.enable_keyboard) {
-      process_keyboard();
+  while (device_alive) {
+    if (device_running) {
+      auto now = steady_clock::now();
+      if (duration_cast<microseconds>(now - last).count() < 1'000'000 / 60)
+        continue;
+      last = now;
+      if (device_settings.enable_vga) {
+        vga_update_screen();
+      }
+      if (device_settings.enable_keyboard) {
+        process_keyboard();
+      }
     }
   }
 }
@@ -305,6 +308,7 @@ void NPCemu::update_RTC() {
 
 NPCemu::~NPCemu() {
   device_running = false;
+  device_alive = false;
   device_update_thread.join();
   if (texture)
     SDL_DestroyTexture(texture);
