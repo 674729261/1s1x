@@ -147,9 +147,8 @@ void SingleMonitor::simulate(unsigned long cnt) {
   for (auto &e : emus) {
     e->pause(false);
   }
-  println("cnt {}", max_display_inst);
-  if (max_display_inst > 0)
-    tracer->set_display(true);
+
+  tracer->set_display(max_display_inst > 0);
 
   while (cnt--) {
     if (max_display_inst > 0) [[unlikely]] {
