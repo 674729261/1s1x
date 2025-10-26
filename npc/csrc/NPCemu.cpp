@@ -1,5 +1,6 @@
 #include "Simulators/NPCemu.h"
 #include "Simulators/RISCV32.h"
+#include "VCPU.h"
 #include "VCPU___024root.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_audio.h>
@@ -285,4 +286,5 @@ NPCemu::~NPCemu() {
 
   SDL_CloseAudio();
   SDL_Quit();
+  dut.final();
 }
