@@ -121,7 +121,7 @@ private:
   void update_RTC();
   void init_ioe();
 
-  std::atomic<bool> device_running;
+  std::atomic<bool> device_running, device_alive;
   std::thread device_update_thread;
   std::unique_ptr<lockfree::mpmc::Queue<uint32_t, 1024>> key_queue;
 
