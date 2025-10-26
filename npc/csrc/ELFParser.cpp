@@ -13,7 +13,7 @@ void ProgSymTab::init_and_parse(std::string_view elf_path) {
   call_stack.clear();
   call_stack.shrink_to_fit();
   pc_offset = 0xFFFFFFFF;
-
+  spdlog::info("Loading symbols from {}", elf_path);
   elfio reader;
   if (!reader.load(std::string(elf_path))) {
     spdlog::error("Can't find or process ELF file {}", elf_path);
