@@ -1,5 +1,6 @@
 #include "Monitor/SingleMonitor.h"
 #include "Setup.h"
+#include "verilated.h"
 
 using std::cerr;
 using std::make_shared;
@@ -33,7 +34,6 @@ int main(int argc, char *argv[]) {
     cerr << err.what() << std::endl;
     std::terminate();
   }
-
   spdlog::shutdown();
   return result;
 }
