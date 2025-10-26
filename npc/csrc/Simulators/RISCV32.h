@@ -1,5 +1,4 @@
 #pragma once
-#include "../ELFParser.h"
 #include "../Tracer/Tracer.h"
 #include <array>
 #include <cassert>

@@ -58,8 +58,8 @@ public:
       int pos = pos_begin;
       for (int i = 0; i < cnt; i++) {
         auto show = Capstone::capstone.disassemble(
-            instr_buffer[pos].pc, (uint8_t *)&instr_buffer[pos].instr, 4,
-            false);
+            instr_buffer[pos].pc,
+            reinterpret_cast<uint8_t *>(&instr_buffer[pos].instr), 4, false);
         if (i != cnt - 1)
           println("{:5}    {}", i, show);
         else
