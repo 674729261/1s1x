@@ -84,6 +84,7 @@ int SingleMonitor::start() {
   try {
     while (true) {
       if (batch) {
+        tracer->set_display(false);
         emus.front()->pause(false);
         auto n_inst = emus.front()->instrCount();
         auto start = steady_clock::now();
