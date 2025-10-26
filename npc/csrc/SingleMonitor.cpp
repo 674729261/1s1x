@@ -86,14 +86,14 @@ int SingleMonitor::start() {
     while (true) {
       if (batch) {
         emus.front()->pause(false);
-
         auto n_inst = emus.front()->instrCount();
         auto start = steady_clock::now();
         emus.front()->simulate(-1);
         auto end = steady_clock::now();
         n_inst = emus.front()->instrCount() - n_inst;
         double elapsed = duration_cast<microseconds>(end - start).count();
-        spdlog::info("Average speed : {:.1f} inst/s", n_inst / elapsed);
+        spdlog::info("Average speed : {:.1f} inst/s",
+                     1'000'000.0 * n_inst / elapsed);
 
         emus.front()->pause(true);
       } else
