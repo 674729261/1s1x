@@ -4,6 +4,7 @@
 #include <functional>
 #include <memory>
 #include <ostream>
+#include <print>
 #include <stdexcept>
 #include <string_view>
 
@@ -31,6 +32,7 @@ void Tracer::register_instruction(uint32_t pc, uint32_t inst, uint32_t rs1) {
   }
   if (display) {
     std::println("!!!");
+    println("{:#08x}", inst);
     capstone.disassemble(pc, (uint8_t *)&inst, 4);
     std::println("???");
   }
