@@ -85,5 +85,6 @@ int main() {
     // printf("\n!!%lld\n", io_read(AM_TIMER_UPTIME).us);
     now = next;
   }
+  printf("\033[H\033[J");
   return 0;
 }
