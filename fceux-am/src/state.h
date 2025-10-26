@@ -15,29 +15,29 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-struct SFORMAT
-{
-	//a void* to the data or a void** to the data
-	void *v;
+struct SFORMAT {
+  // a void* to the data or a void** to the data
+  void *v;
 
-	//size, plus flags
-	uint32 s;
+  // size, plus flags
+  uint32 s;
 
-	//a string description of the element
-	const char *desc;
+  // a string description of the element
+  const char *desc;
 };
 
-void ResetExState(void (*PreSave)(void),void (*PostSave)(void));
+void ResetExState(void (*PreSave)(void), void (*PostSave)(void));
 void AddExState(void *v, uint32 s, int type, const char *desc);
 
-//indicates that the value is a multibyte integer that needs to be put in the correct byte order
-#define FCEUSTATE_RLSB            0x80000000
+// indicates that the value is a multibyte integer that needs to be put in the
+// correct byte order
+#define FCEUSTATE_RLSB 0x80000000
 
-//void*v is actually a void** which will be indirected before reading
-#define FCEUSTATE_INDIRECT            0x40000000
+// void*v is actually a void** which will be indirected before reading
+#define FCEUSTATE_INDIRECT 0x40000000
 
-//all FCEUSTATE flags together so that we can mask them out and get the size
-#define FCEUSTATE_FLAGS (FCEUSTATE_RLSB|FCEUSTATE_INDIRECT)
+// all FCEUSTATE flags together so that we can mask them out and get the size
+#define FCEUSTATE_FLAGS (FCEUSTATE_RLSB | FCEUSTATE_INDIRECT)
