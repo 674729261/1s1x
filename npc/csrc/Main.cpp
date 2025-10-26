@@ -1,3 +1,4 @@
+#include "Monitor/SingleMonitor.h"
 #include "Setup.h"
 
 using std::cerr;
@@ -32,7 +33,6 @@ int main(int argc, char *argv[]) {
     cerr << err.what() << std::endl;
     std::terminate();
   }
-  emu = nullptr;
   spdlog::shutdown();
   return result;
 }
