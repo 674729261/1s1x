@@ -1,4 +1,5 @@
 #include "ELFParser.h"
+#include "my_utils.h"
 #include "spdlog/spdlog.h"
 #include <algorithm>
 #include <cstdint>
@@ -16,14 +17,12 @@ void ProgSymTab::init_and_parse(std::string_view elf_path) {
   spdlog::info("Loading symbols from {}", elf_path);
   elfio reader;
   if (!reader.load(std::string(elf_path))) {
-    spdlog::error("Can't find or process ELF file {}", elf_path);
-    throw std::runtime_error(
-        std::format("Can't find or process ELF file {}", elf_path));
+    log_and_error<std::runtime_error>("Can't find or process ELF file {}",
+                                      elf_path);
   }
   if (reader.get_class() != ELFCLASS32) {
-    spdlog::error("Class of ELF file {} is not ELF32", elf_path);
-    throw std::runtime_error(
-        std::format("Class of ELF file {} is not ELF32", elf_path));
+    log_and_error<std::runtime_error>("Class of ELF file {} is not ELF32",
+                                      elf_path);
   }
   Elf_Half sec_num = reader.sections.size();
 

@@ -4,13 +4,13 @@
 #include "RingBuffer.hpp"
 #include "Simulators/RISCV32.h"
 #include "spdlog/spdlog.h"
-#include "utils.h"
 #include <chrono>
 #include <cstdint>
 #include <endian.h>
 #include <filesystem>
 #include <iostream>
 #include <memory>
+#include <my_utils.h>
 #include <ostream>
 #include <print>
 #include <regex>

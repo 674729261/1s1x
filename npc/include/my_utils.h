@@ -1,11 +1,14 @@
 #pragma once
 
+#include "spdlog/spdlog.h"
 #include <cctype>
 #include <charconv>
+#include <format>
 #include <optional>
 #include <ostream>
 #include <print>
 #include <string_view>
+#include <utility>
 using std::optional;
 using std::println, std::print;
 
@@ -31,4 +34,10 @@ template <class T> inline std::optional<T> to_number(std::string_view p) {
     return std::nullopt;
   }
   return ret;
+}
+
+template <class ExceptionType, typename... Args>
+void log_and_error(std::format_string<Args...> fmt, Args &&...args) {
+  spdlog::error(fmt, std::forward<Args>(args)...);
+  throw ExceptionType(std::format(fmt, std::forward<Args>(args)...));
 }
