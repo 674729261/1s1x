@@ -77,7 +77,8 @@ void ProgSymTab::push_call_stack(int symbol, uint32_t pc) {
 }
 
 ProgSymTab::Call ProgSymTab::pop_call_stack() {
-  log_and_error<std::logic_error>("Can't pop an empty call stack");
+  if (call_stack.empty())
+    log_and_error<std::logic_error>("Can't pop an empty call stack");
   Call ret = call_stack.back();
   call_stack.pop_back();
   return ret;
@@ -93,7 +94,6 @@ const std::string &ProgSymTab::find_symbol_name(int idx) {
 }
 int ProgSymTab::find_symbol_by_addr(uint32_t addr) {
   if (addr < pc_offset || addr >= pc_offset + table.symbol_map.size()) {
-
     log_and_error<std::logic_error>("Addr {} is out of range [{}, {})", addr,
                                     pc_offset,
                                     pc_offset + table.symbol_map.size());
