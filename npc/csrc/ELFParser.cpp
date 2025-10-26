@@ -17,11 +17,11 @@ void ProgSymTab::init_and_parse(std::string_view elf_path) {
   spdlog::info("Loading symbols from {}", elf_path);
   elfio reader;
   if (!reader.load(std::string(elf_path))) {
-    log_and_error<std::runtime_error>("Can't find or process ELF file {}",
+    log_and_throw<std::runtime_error>("Can't find or process ELF file {}",
                                       elf_path);
   }
   if (reader.get_class() != ELFCLASS32) {
-    log_and_error<std::runtime_error>("Class of ELF file {} is not ELF32",
+    log_and_throw<std::runtime_error>("Class of ELF file {} is not ELF32",
                                       elf_path);
   }
   Elf_Half sec_num = reader.sections.size();
@@ -78,7 +78,7 @@ void ProgSymTab::push_call_stack(int symbol, uint32_t pc) {
 
 ProgSymTab::Call ProgSymTab::pop_call_stack() {
   if (call_stack.empty())
-    log_and_error<std::logic_error>("Can't pop an empty call stack");
+    log_and_throw<std::logic_error>("Can't pop an empty call stack");
   Call ret = call_stack.back();
   call_stack.pop_back();
   return ret;
@@ -86,7 +86,7 @@ ProgSymTab::Call ProgSymTab::pop_call_stack() {
 
 const std::string &ProgSymTab::find_symbol_name(int idx) {
   if (idx < 0 || idx >= table.symbol_items.size()) {
-    log_and_error<std::logic_error>(
+    log_and_throw<std::logic_error>(
         "Index {} of symbol_table is out of range [0, {})", idx,
         table.symbol_items.size());
   }
@@ -94,7 +94,7 @@ const std::string &ProgSymTab::find_symbol_name(int idx) {
 }
 int ProgSymTab::find_symbol_by_addr(uint32_t addr) {
   if (addr < pc_offset || addr >= pc_offset + table.symbol_map.size()) {
-    log_and_error<std::logic_error>("Addr {} is out of range [{}, {})", addr,
+    log_and_throw<std::logic_error>("Addr {} is out of range [{}, {})", addr,
                                     pc_offset,
                                     pc_offset + table.symbol_map.size());
   }

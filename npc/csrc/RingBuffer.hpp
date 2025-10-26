@@ -1,3 +1,4 @@
+#pragma once
 #include "Capstone.h"
 #include <cstddef>
 #include <cstdint>
@@ -6,6 +7,9 @@
 #include <vector>
 class InstRingBuffer {
 public:
+  InstRingBuffer(size_t sz) : instr_buffer(), pos_begin(), pos_end(), cnt() {
+    init(sz);
+  }
   struct Item {
     uint32_t pc;
     uint32_t instr;
@@ -70,9 +74,8 @@ public:
   static InstRingBuffer instRingBuffer;
 
 private:
-  InstRingBuffer() : instr_buffer(), pos_begin(), pos_end(), cnt() {}
   std::vector<Item> instr_buffer;
   int pos_begin, pos_end, cnt;
 };
 
-inline InstRingBuffer InstRingBuffer::instRingBuffer{};
+// inline InstRingBuffer InstRingBuffer::instRingBuffer{};

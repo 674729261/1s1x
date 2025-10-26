@@ -65,9 +65,12 @@ std::string Capstone::disassemble(uint64_t pc, uint8_t *code, int nbyte,
   if (cs_disasm_dl == nullptr)
     throw std::runtime_error("Did not load libcapstone first");
   cs_insn *insn;
+
   size_t count = cs_disasm_dl(handle, code, nbyte, pc, 0, &insn);
+
   if (count != 1)
     throw std::logic_error(std::format("Invalid instruction@{:#010x}", pc));
+
   std::string str;
   str = std::format("{:#010x}\t{:08x}\t{}\t{}", pc, *(uint32_t *)code,
                     insn->mnemonic, insn->op_str);

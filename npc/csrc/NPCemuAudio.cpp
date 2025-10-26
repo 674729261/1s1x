@@ -11,7 +11,7 @@ static NPCemu::AudioBase_t *curAudioBase;
 
 void NPCemu::ensure_audio_enabled() {
   if (!device_settings.enable_audio) {
-    log_and_error<std::logic_error>(
+    log_and_throw<std::logic_error>(
         "Accessing audio MMIO when audio is disabled");
   }
 }
@@ -42,17 +42,17 @@ static void fill_audio_callback(void *udata, Uint8 *stream, int len) {
 void NPCemu::init_audio() {
 
   if (SDL_InitSubSystem(SDL_INIT_AUDIO)) {
-    log_and_error<std::runtime_error>("Could not initialize SDL - {}\n",
+    log_and_throw<std::runtime_error>("Could not initialize SDL - {}\n",
                                       SDL_GetError());
   }
   SDL_CloseAudio();
   if (AudioBase.reg_samples >= (1 << 16)) {
-    log_and_error<std::logic_error>(
+    log_and_throw<std::logic_error>(
         "AudioBase.reg_samples = {} is bigger than 65535",
         AudioBase.reg_samples);
   }
   if (AudioBase.reg_channels >= (1 << 8)) {
-    log_and_error<std::logic_error>(
+    log_and_throw<std::logic_error>(
         "AudioBase.reg_channels = {} is bigger than 255",
         AudioBase.reg_channels);
   }
@@ -65,7 +65,7 @@ void NPCemu::init_audio() {
       .callback = fill_audio_callback,
       .userdata = AudioBase.sbuf.get()};
   if (SDL_OpenAudio(&sdlAudioSpec, NULL) < 0) {
-    log_and_error<std::runtime_error>("Can't open audio - %s\n",
+    log_and_throw<std::runtime_error>("Can't open audio - %s\n",
                                       SDL_GetError());
   }
   curAudioBase = &AudioBase;

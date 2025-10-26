@@ -1,6 +1,9 @@
 #include "riscv/riscv.h"
 #include <am.h>
 #include <klib-macros.h>
+#include <klib.h>
+#include <stdint.h>
+#include <stdio.h>
 
 extern char _heap_start;
 int main(const char *args);
@@ -22,7 +25,9 @@ void halt(int code) {
     ;
 }
 
-void _trm_init() {
+void _trm_init(uint32_t vendorid, uint32_t archid) {
+  printf("\033[31mmvendorid\033[0m : %#010x\n\033[31mmarchid\033[0m : %d\n",
+         vendorid, archid);
   int ret = main(mainargs);
   halt(ret);
 }

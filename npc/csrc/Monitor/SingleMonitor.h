@@ -15,11 +15,11 @@ class SingleMonitor {
 public:
   SingleMonitor(std::shared_ptr<RISCV32> dut, bool batch = false,
                 unsigned long itracer = 16, bool mtracer = false,
-                bool irb = false, bool ftracer = false,
+                unsigned long irb = 16, bool ftracer = false,
                 std::string_view elf_path = "");
 
   int start();
-  void addRefference(std::shared_ptr<RISCV32> ref);
+  void addReference(std::shared_ptr<RISCV32> ref);
   ~SingleMonitor();
 
   class Watcher {
@@ -33,8 +33,8 @@ public:
 
 private:
   std::vector<std::shared_ptr<RISCV32>> emus;
-  unsigned long itracer;
-  bool batch, mtracer, irb, ftracer;
+  unsigned long itracer, irb;
+  bool batch, mtracer;
 
   enum CommandState {
     QUIT = 0, // End the monitor
@@ -52,7 +52,7 @@ private:
   static const CommandItem command_list[];
   replxx::Replxx repl;
 
-  std::shared_ptr<ProgSymTab> symbol_table;
+  std::shared_ptr<Tracer> tracer;
 
 private:
   bool process_trap();

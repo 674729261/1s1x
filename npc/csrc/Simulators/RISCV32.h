@@ -1,5 +1,6 @@
 #pragma once
 #include "../ELFParser.h"
+#include "../Tracer/Tracer.h"
 #include <array>
 #include <cassert>
 #include <cstddef>
@@ -51,13 +52,10 @@ public:
   virtual void writeMemory(int waddr, int wdata, char wmask) = 0;
   virtual uint32_t readMemory(int raddr) = 0;
   virtual void reset() = 0;
-  virtual void step(bool display = false, bool record_inst = false,
-                    std::shared_ptr<ProgSymTab> sy_tab = nullptr) = 0;
-  Interrupt simulate(unsigned long steps, bool display = false,
-                     bool record_inst = false,
-                     std::shared_ptr<ProgSymTab> sy_tab = nullptr) {
+  virtual void step() = 0;
+  Interrupt simulate(unsigned long steps) {
     while (steps-- && EMUstate == Interrupt::NONE)
-      step(display, record_inst, sy_tab);
+      step();
     return EMUstate;
   }
   virtual void pause(bool is_paused) = 0;
@@ -67,8 +65,12 @@ public:
   virtual uint32_t getGPR(int idx) = 0;
   virtual ~RISCV32() = default;
 
+  void tie_tracer(std::shared_ptr<Tracer> t) { tracer = t; }
+
 protected:
   std::vector<uint32_t> M;
   CPU_State cpu;
   Interrupt EMUstate;
+
+  std::shared_ptr<Tracer> tracer;
 };
