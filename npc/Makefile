@@ -25,6 +25,8 @@ npc: $(SV_FILELIST) $(LIBCAPSTONE) $(SO_PATH_NEMU)
 	--top-module $(TOPNAME) \
 	$(CXXFLAGS) -Wall $(CSRC) $(SVSRC) $(VSRC) $(VERILATOR_DISABLE_WARNINGS) 
 
+sbt: $(SV_FILELIST)
+
 $(SV_FILELIST): $(CHISELSRC)
 	sbt run
 
@@ -55,7 +57,6 @@ clean:
 
 clean_log:
 	rm -rf log/*
-
 
 
 .PHONY: npc sim clean
