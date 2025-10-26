@@ -1,6 +1,5 @@
 #pragma once
 #include "RISCV32.h"
-#include "lockfree/lockfree.hpp"
 #include "lockfree/mpmc/queue.hpp"
 #include <SDL2/SDL.h>
 #include <VCPU.h>
@@ -9,10 +8,8 @@
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
-#include <iterator>
 #include <memory>
 #include <string_view>
-#include <vector>
 
 extern "C" void trap(int signal);
 extern "C" int pmem_read(int raddr, int clk, int valid);
