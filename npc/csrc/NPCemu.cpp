@@ -55,7 +55,7 @@ void NPCemu::device_update_loop() {
   signal(SIGTERM, SIG_DFL);
   using namespace std::chrono;
   auto last = steady_clock::now();
-  while (device_running) {
+  while (device_alive) {
     if (device_running) {
       auto now = steady_clock::now();
       if (duration_cast<microseconds>(now - last).count() < 1'000'000 / 60)
