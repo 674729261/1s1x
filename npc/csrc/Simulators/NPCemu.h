@@ -55,7 +55,7 @@ public:
 
   void reset() override final;
   void step(bool display = false, bool record_inst = false,
-            bool ftracer = false) override final;
+            std::shared_ptr<ProgSymTab> sy_tab = nullptr) override final;
   unsigned long long instrCount() override final;
 
   void writeMemory(int waddr, int wdata, char wmask) override final;
@@ -112,7 +112,7 @@ private:
   SDL_Texture *texture;
   SDL_Window *window;
 
-  void record_ftracer(uint32_t cur_inst);
+  void record_ftracer(uint32_t cur_inst, std::shared_ptr<ProgSymTab> sy_tab);
 
   void update_RTC();
   void init_ioe();

@@ -29,7 +29,8 @@ void NEMUemu::reset() {
   difftest_memcpy(PC_Init, M.data(), sizeof(uint32_t) * M.size(), 1);
 }
 
-void NEMUemu::step(bool display, bool record_inst, bool ftracer) {
+void NEMUemu::step(bool display, bool record_inst,
+                   std::shared_ptr<ProgSymTab> sy_tab) {
   difftest_exec(1);
   inst_count++;
   need_sync = true;

@@ -1,8 +1,10 @@
 #pragma once
+#include "../ELFParser.h"
 #include <array>
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -51,7 +53,7 @@ public:
   virtual uint32_t readMemory(int raddr) = 0;
   virtual void reset() = 0;
   virtual void step(bool display = false, bool record_inst = false,
-                    bool ftracer = false) = 0;
+                    std::shared_ptr<ProgSymTab> sy_tab = nullptr) = 0;
   Interrupt simulate(unsigned long steps, bool display = false) {
     while (steps-- && EMUstate == Interrupt::NONE)
       step(display);

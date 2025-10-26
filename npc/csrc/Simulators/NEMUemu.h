@@ -11,7 +11,7 @@ public:
 
   void reset() override final;
   void step(bool display = false, bool record_inst = false,
-            bool ftracer = false) override final;
+            std::shared_ptr<ProgSymTab> sy_tab = nullptr) override final;
   unsigned long long instrCount() override final;
   void pause(bool is_paused) override final {}
   void writeMemory(int waddr, int wdata, char wmask) override final;

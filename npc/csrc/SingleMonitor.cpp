@@ -1,4 +1,5 @@
 #include "Monitor/SingleMonitor.h"
+#include "ELFParser.h"
 #include "Expression/Expression.h"
 #include "RingBuffer.hpp"
 #include "Simulators/RISCV32.h"
@@ -9,6 +10,7 @@
 #include <endian.h>
 #include <filesystem>
 #include <iostream>
+#include <memory>
 #include <ostream>
 #include <print>
 #include <regex>
@@ -54,7 +56,7 @@ const SingleMonitor::CommandItem SingleMonitor::command_list[] = {
 
 SingleMonitor::SingleMonitor(std::shared_ptr<RISCV32> emu, bool batch,
                              unsigned long itracer, bool mtracer, bool irb,
-                             bool ftracer)
+                             bool ftracer, std::string_view elf_path)
     : batch(batch), itracer(itracer), mtracer(mtracer), irb(irb),
       ftracer(ftracer) {
   emus.push_back(emu);
@@ -65,6 +67,11 @@ SingleMonitor::SingleMonitor(std::shared_ptr<RISCV32> emu, bool batch,
   if (repl.history_load(tmp_path))
     spdlog::info("Loaded {} history commands from {}", repl.history_size(),
                  tmp_path.string());
+
+  if (ftracer) {
+    symbol_table = std::make_shared<ProgSymTab>();
+    symbol_table->init_and_parse(elf_path);
+  }
 }
 void SingleMonitor::addRefference(std::shared_ptr<RISCV32> ref) {
   emus.push_back(ref);
@@ -76,9 +83,11 @@ int SingleMonitor::start() {
   bool finished = false;
   try {
     while (true) {
-      if (batch)
+      if (batch) {
+        emus.front()->pause(false);
         emus.front()->simulate(-1);
-      else
+        emus.front()->pause(true);
+      } else
         state = query_command();
       if (!finished &&
           emus.front()->getEMUState() == RISCV32::Interrupt::EBREAK) {
@@ -134,12 +143,12 @@ void SingleMonitor::simulate(unsigned long cnt) {
   while (cnt--) {
     if (max_display_inst > 0) {
       for (auto &e : emus) {
-        e->step(itracer, irb, ftracer);
+        e->step(itracer, irb, symbol_table);
       }
       max_display_inst--;
     } else
       for (auto &e : emus)
-        e->step(false, irb, ftracer);
+        e->step(false, irb, symbol_table);
     if (emus.size() > 1)
       diff_fault = check_diff();
 

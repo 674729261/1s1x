@@ -2,7 +2,6 @@
 #include "Capstone.h"
 #include "RingBuffer.hpp"
 #include "Simulators/RISCV32.h"
-#include "Symbols.h"
 #include "VCPU___024root.h"
 #include "spdlog/spdlog.h"
 #include <SDL2/SDL.h>
@@ -85,7 +84,8 @@ void NPCemu::reset() {
   syncCPUState();
 }
 
-void NPCemu::record_ftracer(uint32_t cur_inst) {
+void NPCemu::record_ftracer(uint32_t cur_inst,
+                            std::shared_ptr<ProgSymTab> sy_tab) {
   uint32_t opcode = cur_inst & 0x7f;
   uint32_t rd = (cur_inst >> 7) & 0x1f;
   uint32_t dnxt_pc = -1;
@@ -106,20 +106,23 @@ void NPCemu::record_ftracer(uint32_t cur_inst) {
   }
 
   if ((opcode == 0x67 || opcode == 0x6f) && rd == 1) {
-    for (int i = 0; i < cnt_stack_ftrace; i++)
+    for (int i = 0; i < sy_tab->stack_cnt(); i++)
       std::print(" ");
-    int to_symbol = find_symbol(dnxt_pc);
-    std::println("call {}@{:#010x}", find_symbol_name(to_symbol), dut.io_pc);
-    push_stack_ftrace(dut.io_pc, to_symbol);
+    int to_symbol = sy_tab->find_symbol_by_addr(dnxt_pc);
+    std::println("call {}@{:#010x}", sy_tab->find_symbol_name(to_symbol),
+                 dut.io_pc);
+    sy_tab->push_call_stack(to_symbol, dut.io_pc);
   } else if (cur_inst == 0x00008067) {
-    Call top = pop_stack_ftrace();
-    for (int i = 0; i < cnt_stack_ftrace; i++)
+    ProgSymTab::Call top = sy_tab->pop_call_stack();
+    for (int i = 0; i < sy_tab->stack_cnt(); i++)
       std::print(" ");
-    std::println("ret  {}@{:#010x}", find_symbol_name(top.symbol), dut.io_pc);
+    std::println("ret  {}@{:#010x}", sy_tab->find_symbol_name(top.symbol),
+                 dut.io_pc);
   }
 }
 
-void NPCemu::step(bool display, bool record_inst, bool ftracer) {
+void NPCemu::step(bool display, bool record_inst,
+                  std::shared_ptr<ProgSymTab> sy_tab) {
   addr_t pc = dut.io_pc;
   if (pc < memOffset) {
     throw std::logic_error(std::format("pc : {:08x} out of range", pc));
@@ -132,8 +135,8 @@ void NPCemu::step(bool display, bool record_inst, bool ftracer) {
   if (record_inst) {
     InstRingBuffer::instRingBuffer.insert(dut.io_pc, cur_inst);
   }
-  if (ftracer) {
-    record_ftracer(cur_inst);
+  if (sy_tab) {
+    record_ftracer(cur_inst, sy_tab);
   }
 
   dut.clock = 0;
