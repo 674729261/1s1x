@@ -1,24 +1,7 @@
-#include "Capstone.h"
-#include "Monitor/SingleMonitor.h"
-#include "Simulators/NEMUemu.h"
-#include "Simulators/NPCemu.h"
-#include "spdlog/common.h"
-#include <VCPU.h>
-#include <argparse/argparse.hpp>
-#include <cstdint>
-#include <exception>
-#include <iostream>
-#include <memory>
-#include <ostream>
-#include <print>
-#include <spdlog/sinks/basic_file_sink.h>
-#include <spdlog/sinks/stdout_color_sinks.h>
-#include <spdlog/spdlog.h>
-#include <string>
+#include "Setup.h"
 using std::println, std::cerr;
 using std::shared_ptr, std::make_shared;
 using std::string;
-
 shared_ptr<NPCemu> emu;
 shared_ptr<NEMUemu> nemu;
 bool mtracer;
@@ -93,20 +76,6 @@ void register_logger(argparse::ArgumentParser &program) {
   spdlog::flush_on(spdlog::level::warn);
 }
 
-struct Config {
-  string image_path;
-  uint32_t mem_size;
-  bool batch_mode;
-  unsigned long itracer;
-  bool mtracer;
-  bool difftest;
-  bool use_irb;
-  unsigned long sz_irb;
-  bool use_ftracer;
-  std::string path_elf;
-  NPCemu::DeviceSettings device_settings;
-};
-
 Config setup(argparse::ArgumentParser &program) {
 
   Config ret = {};
@@ -170,37 +139,4 @@ Config setup(argparse::ArgumentParser &program) {
     ret.device_settings.enable_keyboard = true;
   }
   return ret;
-}
-
-int main(int argc, char *argv[]) {
-  argparse::ArgumentParser program("NPCemu");
-  register_argparse(program);
-  try {
-    program.parse_args(argc, argv);
-  } catch (const std::exception &err) {
-    cerr << err.what() << std::endl;
-    cerr << program;
-    std::terminate();
-  }
-  register_logger(program);
-
-  auto config = setup(program);
-
-  emu = make_shared<NPCemu>(config.mem_size, config.image_path,
-                            config.device_settings);
-
-  SingleMonitor monitor(emu, config.batch_mode, config.itracer, config.mtracer,
-                        config.sz_irb, config.use_ftracer, config.path_elf);
-  int result;
-  if (config.difftest)
-    monitor.addReference(nemu);
-  try {
-    result = monitor.start();
-  } catch (const std::exception &err) {
-    cerr << err.what() << std::endl;
-    std::terminate();
-  }
-  emu = nullptr;
-  spdlog::shutdown();
-  return result;
 }
