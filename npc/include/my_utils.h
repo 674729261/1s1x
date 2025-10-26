@@ -37,7 +37,8 @@ template <class T> inline std::optional<T> to_number(std::string_view p) {
 }
 
 template <class ExceptionType, typename... Args>
-void log_and_error(std::format_string<Args...> fmt, Args &&...args) {
+[[noreturn]] void log_and_error(std::format_string<Args...> fmt,
+                                Args &&...args) {
   spdlog::error(fmt, std::forward<Args>(args)...);
   throw ExceptionType(std::format(fmt, std::forward<Args>(args)...));
 }
