@@ -26,7 +26,7 @@ void halt(int code) {
 }
 
 void _trm_init(uint32_t vendorid, uint32_t archid) {
-  printf("mvendorid : %#08x\nmarchid : %#08x\n", vendorid, archid);
+  printf("mvendorid : %#010x\nmarchid : %#010x\n", vendorid, archid);
   int ret = main(mainargs);
   halt(ret);
 }
