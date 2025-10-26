@@ -69,6 +69,12 @@ void NPCemu::device_update_loop() {
       }
     }
   }
+  if (texture)
+    SDL_DestroyTexture(texture);
+  if (renderer)
+    SDL_DestroyRenderer(renderer);
+  if (window)
+    SDL_DestroyWindow(window);
 }
 
 void NPCemu::reset() {
@@ -310,12 +316,7 @@ NPCemu::~NPCemu() {
   device_running = false;
   device_alive = false;
   device_update_thread.join();
-  if (texture)
-    SDL_DestroyTexture(texture);
-  if (renderer)
-    SDL_DestroyRenderer(renderer);
-  if (window)
-    SDL_DestroyWindow(window);
+
   SDL_CloseAudio();
   SDL_Quit();
 }
