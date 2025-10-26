@@ -109,7 +109,6 @@ int main(int argc, char *argv[]) {
   unsigned long itracer = 0;
   if (program.is_used("--itracer"))
     itracer = program.get<unsigned long>("--itracer");
-  println("IT {}", itracer);
   mtracer = program.get<bool>("--mtracer");
   spdlog::info("Image path  : {}", image_path);
   spdlog::info("Memory size : {}", mem_size);

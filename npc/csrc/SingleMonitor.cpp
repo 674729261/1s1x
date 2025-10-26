@@ -140,13 +140,14 @@ void SingleMonitor::simulate(unsigned long cnt) {
   using namespace std::chrono;
   int n_inst = emus.front()->instrCount();
   auto start = steady_clock::now();
-  unsigned long max_display_inst = cnt < 0 ? 0 : itracer;
+  unsigned long max_display_inst = itracer;
   max_display_inst = std::min(max_display_inst, cnt);
 
   bool triggered = false;
   for (auto &e : emus) {
     e->pause(false);
   }
+  println("cnt {}", max_display_inst);
   if (max_display_inst > 0)
     tracer->set_display(true);
 
