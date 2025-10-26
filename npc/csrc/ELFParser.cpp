@@ -77,10 +77,7 @@ void ProgSymTab::push_call_stack(int symbol, uint32_t pc) {
 }
 
 ProgSymTab::Call ProgSymTab::pop_call_stack() {
-  if (call_stack.empty()) {
-    spdlog::error("Can't pop an empty call stack");
-    throw std::logic_error("Can't pop an empty call stack");
-  }
+  log_and_error<std::logic_error>("Can't pop an empty call stack");
   Call ret = call_stack.back();
   call_stack.pop_back();
   return ret;
@@ -88,21 +85,18 @@ ProgSymTab::Call ProgSymTab::pop_call_stack() {
 
 const std::string &ProgSymTab::find_symbol_name(int idx) {
   if (idx < 0 || idx >= table.symbol_items.size()) {
-    spdlog::error("Index {} of symbol_table is out of range [0, {})", idx,
-                  table.symbol_items.size());
-    throw std::logic_error(
-        std::format("Index {} of symbol_table is out of range [0, {})", idx,
-                    table.symbol_items.size()));
+    log_and_error<std::logic_error>(
+        "Index {} of symbol_table is out of range [0, {})", idx,
+        table.symbol_items.size());
   }
   return table.symbol_items[idx].name;
 }
 int ProgSymTab::find_symbol_by_addr(uint32_t addr) {
   if (addr < pc_offset || addr >= pc_offset + table.symbol_map.size()) {
-    spdlog::error("Addr {} is out of range [{}, {})", addr, pc_offset,
-                  pc_offset + table.symbol_map.size());
-    throw std::logic_error(std::format("Addr {} is out of range [{}, {})", addr,
-                                       pc_offset,
-                                       pc_offset + table.symbol_map.size()));
+
+    log_and_error<std::logic_error>("Addr {} is out of range [{}, {})", addr,
+                                    pc_offset,
+                                    pc_offset + table.symbol_map.size());
   }
   return table.symbol_map[addr - pc_offset];
 }

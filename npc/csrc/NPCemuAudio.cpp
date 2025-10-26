@@ -1,4 +1,5 @@
 #include "Simulators/NPCemu.h"
+#include "my_utils.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_audio.h>
 #include <cstdint>
@@ -11,8 +12,8 @@ static NPCemu::AudioBase_t *curAudioBase;
 
 void NPCemu::ensure_audio_enabled() {
   if (!device_settings.enable_audio) {
-    spdlog::error("Accessing audio MMIO when audio is disabled");
-    throw std::logic_error("Accessing audio MMIO when audio is disabled");
+    log_and_error<std::logic_error>(
+        "Accessing audio MMIO when audio is disabled");
   }
 }
 
@@ -42,22 +43,19 @@ static void fill_audio_callback(void *udata, Uint8 *stream, int len) {
 void NPCemu::init_audio() {
 
   if (SDL_InitSubSystem(SDL_INIT_AUDIO)) {
-    spdlog::error("Could not initialize SDL - {}\n", SDL_GetError());
-    throw std::runtime_error(
-        std::format("Could not initialize SDL - {}\n", SDL_GetError()));
+    log_and_error<std::runtime_error>("Could not initialize SDL - {}\n",
+                                      SDL_GetError());
   }
   SDL_CloseAudio();
   if (AudioBase.reg_samples >= (1 << 16)) {
-    spdlog::error("AudioBase.reg_samples = {} is bigger than 65535",
-                  AudioBase.reg_samples);
-    throw(std::format("AudioBase.reg_samples = {} is bigger than 65535",
-                      AudioBase.reg_samples));
+    log_and_error<std::logic_error>(
+        "AudioBase.reg_samples = {} is bigger than 65535",
+        AudioBase.reg_samples);
   }
   if (AudioBase.reg_channels >= (1 << 8)) {
-    spdlog::error("AudioBase.reg_channels = {} is bigger than 255",
-                  AudioBase.reg_channels);
-    throw(std::format("AudioBase.reg_channels = {} is bigger than 255",
-                      AudioBase.reg_channels));
+    log_and_error<std::logic_error>(
+        "AudioBase.reg_channels = {} is bigger than 255",
+        AudioBase.reg_channels);
   }
   SDL_AudioSpec sdlAudioSpec = {
       .freq = static_cast<int>(AudioBase.reg_freq),
@@ -68,12 +66,10 @@ void NPCemu::init_audio() {
       .callback = fill_audio_callback,
       .userdata = AudioBase.sbuf.get()};
   if (SDL_OpenAudio(&sdlAudioSpec, NULL) < 0) {
-    spdlog::error("Can't open audio - %s\n", SDL_GetError());
-    throw std::runtime_error(
-        std::format("Can't open audio - %s\n", SDL_GetError()));
+    log_and_error<std::runtime_error>("Can't open audio - %s\n",
+                                      SDL_GetError());
   }
   curAudioBase = &AudioBase;
   AudioBase.reg_init = 0;
   SDL_PauseAudio(0);
 }
-

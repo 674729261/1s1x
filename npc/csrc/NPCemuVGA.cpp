@@ -1,4 +1,5 @@
 #include "Simulators/NPCemu.h"
+#include "my_utils.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_audio.h>
 #include <cstdint>
@@ -10,8 +11,8 @@
 
 void NPCemu::ensure_vga_enabled() {
   if (!device_settings.enable_vga) {
-    spdlog::error("Accessing audio MMIO when vga is disabled");
-    throw std::logic_error("Accessing audio MMIO when vga is disabled");
+    log_and_error<std::logic_error>(
+        "Accessing audio MMIO when vga is disabled");
   }
 }
 
