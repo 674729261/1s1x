@@ -33,7 +33,7 @@ void Tracer::register_instruction(uint32_t pc, uint32_t inst, uint32_t rs1) {
   if (display) {
     std::println("!!!");
     println("{:#08x}", inst);
-    capstone.disassemble(pc, (uint8_t *)&inst, 4);
+    capstone.disassemble(pc, (uint8_t *)&inst, 4, true);
     std::println("???");
   }
 }
