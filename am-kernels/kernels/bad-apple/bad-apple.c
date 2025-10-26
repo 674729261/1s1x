@@ -1,3 +1,4 @@
+#include "amdev.h"
 #include <am.h>
 #include <klib-macros.h>
 #include <stdio.h>
@@ -37,6 +38,7 @@ int main() {
   printf("\033[H\033[J"); // screan_clear
 
   bool has_audio = io_read(AM_AUDIO_CONFIG).present;
+  bool has_keyboard = io_read(AM_INPUT_CONFIG).present;
 
   // bool has_audio = false;
   if (has_audio) {
@@ -69,7 +71,11 @@ int main() {
         should_play -= len;
       }
     }
-
+    if (has_keyboard) {
+      printf("Press any key to quit.");
+      if (io_read(AM_INPUT_KEYBRD).keycode != AM_KEY_NONE)
+        break;
+    }
     // printf("%d\n", 1);
     uint64_t next = now + (1000000 / FPS);
     sleep_until(next);
