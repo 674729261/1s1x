@@ -1,7 +1,6 @@
 #pragma once
 #include "RISCV32.h"
 #include <cstdint>
-#include <stdexcept>
 
 class NEMUemu : public RISCV32 {
 public:

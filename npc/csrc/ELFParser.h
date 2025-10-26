@@ -1,9 +1,7 @@
 #pragma once
-#include <cstddef>
 #include <cstdint>
 #include <elfio/elfio.hpp>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 class ProgSymTab {

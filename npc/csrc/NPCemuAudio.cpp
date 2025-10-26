@@ -4,7 +4,6 @@
 #include <SDL2/SDL_audio.h>
 #include <cstdint>
 #include <format>
-#include <iostream>
 #include <print>
 #include <spdlog/spdlog.h>
 #include <stdexcept>

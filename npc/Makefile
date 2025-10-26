@@ -33,7 +33,7 @@ $(SV_FILELIST): $(CHISELSRC)
 PROG ?= test_progs/matrix-mul-riscv32e-npc.bin
 ELF ?= test_progs/matrix-mul-riscv32e-npc.elf
 MEM_SIZE ?= 134217728
-TIME_STAMP = $(shell date +"%Y_%m_%d_%H_%M_%S")
+TIME_STAMP ?= $(shell date +"%Y_%m_%d_%H_%M_%S")
 LOG_FILE ?= "log/$(TIME_STAMP).log"
 sim: npc
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
