@@ -47,7 +47,9 @@ int main() {
     sbuf.start = &audio_payload;
   }
   uint64_t now = io_read(AM_TIMER_UPTIME).us;
-
+  if (has_keyboard)
+    while (io_read(AM_INPUT_KEYBRD).keycode != AM_KEY_NONE)
+      ;
   for (; f < fend; f++) {
     printf("\033[0;0H"); // reset cursor
     for (int y = 0; y < VIDEO_ROW; y++) {
