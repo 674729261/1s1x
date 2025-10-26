@@ -133,14 +133,14 @@ int main(int argc, char *argv[]) {
       std::terminate();
     }
   }
-  // if (itracer != 0) {
-  //   if (!Capstone::capstone.load_libcapstone()) {
-  //     spdlog::warn("Failed to initialize capstone. Ignoring itracer flag.");
-  //     itracer = 0;
-  //   } else {
-  //     spdlog::info("Using capstone");
-  //   }
-  // }
+  if (itracer != 0) {
+    if (!Capstone::capstone.load_libcapstone()) {
+      spdlog::warn("Failed to initialize capstone. Ignoring itracer flag.");
+      itracer = 0;
+    } else {
+      spdlog::info("Using capstone");
+    }
+  }
 
   if (difftest) {
     try {

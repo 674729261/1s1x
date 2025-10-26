@@ -13,7 +13,7 @@ public:
   Capstone(Capstone &&) noexcept = delete;
   ~Capstone();
 
-  // static Capstone capstone;
+  static Capstone capstone;
 
 private:
   using disasm_fn_type = size_t (*)(csh handle, const uint8_t *code,

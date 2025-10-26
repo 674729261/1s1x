@@ -8,7 +8,7 @@
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 
-// Capstone Capstone::capstone{};
+Capstone Capstone::capstone{};
 
 bool Capstone::load_libcapstone() {
   if (loaded_lib != nullptr) {

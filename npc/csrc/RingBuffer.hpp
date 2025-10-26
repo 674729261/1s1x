@@ -50,16 +50,16 @@ public:
     return instr_buffer[pos_begin];
   }
 
-  void display(Capstone &capstone) {
+  void display() {
     if (cnt == 0)
       std::println("No instruction recorded");
     else {
       std::println("Recent {} instructions", cnt);
       int pos = pos_begin;
       for (int i = 0; i < cnt; i++) {
-        auto show =
-            capstone.disassemble(instr_buffer[pos].pc,
-                                 (uint8_t *)&instr_buffer[pos].instr, 4, false);
+        auto show = Capstone::capstone.disassemble(
+            instr_buffer[pos].pc, (uint8_t *)&instr_buffer[pos].instr, 4,
+            false);
         if (i != cnt - 1)
           println("{:5}    {}", i, show);
         else

@@ -1,4 +1,5 @@
 #include "Tracer/Tracer.h"
+#include "Capstone.h"
 #include "ELFParser.h"
 #include "my_utils.h"
 #include <functional>
@@ -16,8 +17,8 @@ Tracer::Tracer(bool ftracer, std::string_view elf_path, bool itracer,
   if (itracer) {
     inst_ringbuf = std::make_unique<InstRingBuffer>(rb_size);
   }
-  if (!capstone.load_libcapstone())
-    log_and_error<std::runtime_error>("Failed to load libcapstone");
+  //   if (!capstone.load_libcapstone())
+  //     log_and_error<std::runtime_error>("Failed to load libcapstone");
 }
 
 void Tracer::register_instruction(uint32_t pc, uint32_t inst, uint32_t rs1) {
@@ -27,16 +28,16 @@ void Tracer::register_instruction(uint32_t pc, uint32_t inst, uint32_t rs1) {
   if (sym_tab) {
     record_ftracer(pc, inst, rs1);
   }
-  //   if (display) {
-  //     capstone.disassemble(pc, (uint8_t *)&inst, 4, true);
-  //   }
+  if (display) {
+    Capstone::capstone.disassemble(pc, (uint8_t *)&inst, 4, true);
+  }
 }
 void Tracer::show_history_instructions() {
   if (!inst_ringbuf) {
     log_and_error<std::runtime_error>(
         "Tried to show instruction history when inst_ringbuf is unavailable");
   }
-  inst_ringbuf->display(capstone);
+  inst_ringbuf->display();
 }
 void Tracer::record_ftracer(uint32_t pc, uint32_t cur_inst,
                             uint32_t rs1_value) {

@@ -20,7 +20,7 @@ private:
 private:
   std::unique_ptr<ProgSymTab> sym_tab;
   std::unique_ptr<InstRingBuffer> inst_ringbuf;
-  Capstone capstone;
+  //   Capstone capstone;
 
   bool display;
 };
