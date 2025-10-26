@@ -126,16 +126,16 @@ void NPCemu::step(bool display, bool record_inst,
     throw std::logic_error(std::format("pc : {:08x} out of range", pc));
   }
   dut.io_instr = M[(pc - memOffset) / 4];
-  // uint32_t cur_inst = dut.io_instr;
-  // if (display) {
-  //   Capstone::capstone.disassemble(pc, (uint8_t *)&cur_inst, 4);
-  // }
-  // if (record_inst) {
-  //   InstRingBuffer::instRingBuffer.insert(dut.io_pc, cur_inst);
-  // }
-  // if (sy_tab) {
-  //   record_ftracer(cur_inst, sy_tab);
-  // }
+  uint32_t cur_inst = dut.io_instr;
+  if (display) {
+    Capstone::capstone.disassemble(pc, (uint8_t *)&cur_inst, 4);
+  }
+  if (record_inst) {
+    InstRingBuffer::instRingBuffer.insert(dut.io_pc, cur_inst);
+  }
+  if (sy_tab) {
+    record_ftracer(cur_inst, sy_tab);
+  }
 
   dut.clock = 0;
   dut.eval();

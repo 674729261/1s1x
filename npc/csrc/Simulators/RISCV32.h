@@ -53,9 +53,11 @@ public:
   virtual void reset() = 0;
   virtual void step(bool display = false, bool record_inst = false,
                     std::shared_ptr<ProgSymTab> sy_tab = nullptr) = 0;
-  Interrupt simulate(unsigned long steps, bool display = false) {
+  Interrupt simulate(unsigned long steps, bool display = false,
+                     bool record_inst = false,
+                     std::shared_ptr<ProgSymTab> sy_tab = nullptr) {
     while (steps-- && EMUstate == Interrupt::NONE)
-      step(display);
+      step(display, record_inst, sy_tab);
     return EMUstate;
   }
   virtual void pause(bool is_paused) = 0;
