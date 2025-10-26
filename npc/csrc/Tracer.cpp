@@ -22,21 +22,14 @@ Tracer::Tracer(bool ftracer, std::string_view elf_path, bool itracer,
 
 void Tracer::register_instruction(uint32_t pc, uint32_t inst, uint32_t rs1) {
   if (inst_ringbuf) {
-    std::println("!");
     inst_ringbuf->insert(pc, inst);
-    std::println("?");
   }
   if (sym_tab) {
-    std::println("!!");
     record_ftracer(pc, inst, rs1);
-    std::println("??");
   }
-  if (display) {
-    std::println("!!!");
-    println("{:#08x}", inst);
-    capstone.disassemble(pc, (uint8_t *)&inst, 4, true);
-    std::println("???");
-  }
+  //   if (display) {
+  //     capstone.disassemble(pc, (uint8_t *)&inst, 4, true);
+  //   }
 }
 void Tracer::show_history_instructions() {
   if (!inst_ringbuf) {
