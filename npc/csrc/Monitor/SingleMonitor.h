@@ -34,7 +34,7 @@ public:
 private:
   std::vector<std::shared_ptr<RISCV32>> emus;
   unsigned long itracer;
-  bool batch, mtracer;
+  bool batch, mtracer, irb;
 
   enum CommandState {
     QUIT = 0, // End the monitor

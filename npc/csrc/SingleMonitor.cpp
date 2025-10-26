@@ -58,7 +58,7 @@ const SingleMonitor::CommandItem SingleMonitor::command_list[] = {
 SingleMonitor::SingleMonitor(std::shared_ptr<RISCV32> emu, bool batch,
                              unsigned long itracer, bool mtracer, bool irb,
                              bool ftracer, std::string_view elf_path)
-    : batch(batch), itracer(itracer), mtracer(mtracer) {
+    : batch(batch), itracer(itracer), mtracer(mtracer), irb(irb) {
   emus.push_back(emu);
 
   repl.set_max_history_size(64);
@@ -124,7 +124,7 @@ int SingleMonitor::start() {
   } catch (const std::logic_error &e) {
     std::println(std::cerr, "{}", e.what());
   }
-  if (itracer > 0)
+  if (irb > 0)
     tracer->show_history_instructions();
   return state;
 }
