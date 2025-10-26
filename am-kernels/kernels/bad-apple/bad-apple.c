@@ -40,7 +40,6 @@ int main() {
   bool has_audio = io_read(AM_AUDIO_CONFIG).present;
   bool has_keyboard = io_read(AM_INPUT_CONFIG).present;
 
-  // bool has_audio = false;
   if (has_audio) {
     io_write(AM_AUDIO_CTRL, AUDIO_FREQ, AUDIO_CHANNEL, 1024);
     audio_left = audio_len = &audio_payload_end - &audio_payload;

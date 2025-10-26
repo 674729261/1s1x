@@ -1,27 +1,10 @@
-#include "Capstone.h"
-#include "Monitor/SingleMonitor.h"
-#include "Simulators/NEMUemu.h"
-#include "Simulators/NPCemu.h"
-#include "spdlog/common.h"
-#include <VCPU.h>
-#include <argparse/argparse.hpp>
-#include <cstdint>
-#include <exception>
-#include <iostream>
-#include <memory>
-#include <ostream>
-#include <print>
-#include <spdlog/sinks/basic_file_sink.h>
-#include <spdlog/sinks/stdout_color_sinks.h>
-#include <spdlog/spdlog.h>
-#include <string>
+#include "Setup.h"
 using std::println, std::cerr;
 using std::shared_ptr, std::make_shared;
 using std::string;
-
 shared_ptr<NPCemu> emu;
 shared_ptr<NEMUemu> nemu;
-bool mtracer;
+static bool mtracer;
 extern "C" void trap(int signal) { emu->trapped = signal; }
 extern "C" int pmem_read(int raddr, int clk, int valid) {
   if (clk == 1 && valid)
@@ -73,11 +56,13 @@ void register_logger(argparse::ArgumentParser &program) {
       string log_path = program.get("--log");
       auto console_sink =
           std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-      console_sink->set_pattern("[%Y-%m-%d %H:%M:%S] [%^%l%$] %v");
+      console_sink->set_pattern(
+          "[%Y-%m-%d %H:%M:%S.%e] [thread %t] [%^%l%$] - %v");
 
       auto file_sink =
           std::make_shared<spdlog::sinks::basic_file_sink_mt>(log_path, true);
-      file_sink->set_pattern("[%Y-%m-%d %H:%M:%S] [%l] %v");
+      file_sink->set_pattern(
+          "[%Y-%m-%d %H:%M:%S.%e] [thread %t] [%^%l%$] [%s:%#] - %v");
       spdlog::logger logger("multi_logger", {console_sink, file_sink});
       spdlog::set_default_logger(std::make_shared<spdlog::logger>(logger));
       spdlog::info("Logging to file : {}", log_path);
@@ -91,91 +76,67 @@ void register_logger(argparse::ArgumentParser &program) {
   spdlog::flush_on(spdlog::level::warn);
 }
 
-int main(int argc, char *argv[]) {
-  argparse::ArgumentParser program("NPCemu");
-  register_argparse(program);
-  try {
-    program.parse_args(argc, argv);
-  } catch (const std::exception &err) {
-    cerr << err.what() << std::endl;
-    cerr << program;
-    std::terminate();
-  }
-  register_logger(program);
+Config setup(argparse::ArgumentParser &program) {
 
-  string image_path = program.get("--image");
-  uint32_t mem_size = program.get<uint32_t>("--mem_size");
-  bool batch_mode = program.get<bool>("--batch");
-  unsigned long itracer = 0;
+  Config ret = {};
+
+  ret.image_path = program.get("--image");
+  ret.mem_size = program.get<uint32_t>("--mem_size");
+  ret.batch_mode = program.get<bool>("--batch");
+  ret.itracer = 0;
   if (program.is_used("--itracer"))
-    itracer = program.get<unsigned long>("--itracer");
-  mtracer = program.get<bool>("--mtracer");
-  spdlog::info("Image path  : {}", image_path);
-  spdlog::info("Memory size : {}", mem_size);
-  bool difftest = program.get<bool>("--difftest");
-  bool use_irb = program.is_used("--inst_ringbuffer");
-  unsigned long sz_irb = 0;
-  if (use_irb) {
-    sz_irb = program.get<unsigned long>("--inst_ringbuffer");
-    if (sz_irb <= 0) {
+    ret.itracer = program.get<unsigned long>("--itracer");
+  ret.mtracer = ::mtracer = program.get<bool>("--mtracer");
+  spdlog::info("Image path  : {}", ret.image_path);
+  spdlog::info("Memory size : {}", ret.mem_size);
+  ret.difftest = program.get<bool>("--difftest");
+  ret.use_irb = program.is_used("--inst_ringbuffer");
+  ret.sz_irb = 0;
+  if (ret.use_irb) {
+    ret.sz_irb = program.get<unsigned long>("--inst_ringbuffer");
+    if (ret.sz_irb <= 0) {
       println(cerr, "sz_irb must be greater than zero");
       std::terminate();
     }
   }
-  bool use_ftracer = program.is_used("--elf");
-  std::string path_elf = ""s;
-  if (use_ftracer) {
-    path_elf = program.get("--elf");
-    if (path_elf.empty()) {
+  ret.use_ftracer = program.is_used("--elf");
+  ret.path_elf = ""s;
+  if (ret.use_ftracer) {
+    ret.path_elf = program.get("--elf");
+    if (ret.path_elf.empty()) {
       println(cerr, "ELF path not specified");
       std::terminate();
     }
   }
-  if (itracer != 0 || use_irb) {
+  if (ret.itracer != 0 || ret.use_irb) {
     if (!Capstone::capstone.load_libcapstone()) {
       spdlog::warn("Failed to initialize capstone. Ignoring itracer flag.");
-      itracer = 0;
+      ret.itracer = 0;
     } else {
       spdlog::info("Using capstone");
     }
   }
 
-  if (difftest) {
+  if (ret.difftest) {
     try {
-      nemu = make_shared<NEMUemu>(mem_size, image_path);
+      nemu = make_shared<NEMUemu>(ret.mem_size, ret.image_path);
     } catch (const std::exception &err) {
       println(cerr, "Load ref failed: {}", err.what());
       std::terminate();
     }
   }
 
-  NPCemu::DeviceSettings device_settings;
   if (program.get<bool>("--enable_audio")) {
     spdlog::info("Audio is enabled");
-    device_settings.enable_audio = true;
+    ret.device_settings.enable_audio = true;
   }
   if (program.get<bool>("--enable_vga")) {
     spdlog::info("VGA is enabled");
-    device_settings.enable_vga = true;
+    ret.device_settings.enable_vga = true;
   }
   if (program.get<bool>("--enable_keyboard")) {
     spdlog::info("Keyboard is enabled");
-    device_settings.enable_keyboard = true;
+    ret.device_settings.enable_keyboard = true;
   }
-
-  emu = make_shared<NPCemu>(mem_size, image_path, device_settings);
-
-  SingleMonitor monitor(emu, batch_mode, itracer, mtracer, sz_irb, use_ftracer,
-                        path_elf);
-  int result;
-  if (difftest)
-    monitor.addReference(nemu);
-  try {
-    result = monitor.start();
-  } catch (const std::exception &err) {
-    cerr << err.what() << std::endl;
-    std::terminate();
-  }
-  emu = nullptr;
-  return result;
+  return ret;
 }

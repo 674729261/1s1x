@@ -31,33 +31,24 @@ void ProgSymTab::init_and_parse(std::string_view elf_path) {
     if (psec->get_type() == SHT_SYMTAB) {
       uint32_t max_addr = 0;
       const symbol_section_accessor symbols(reader, psec);
-      for (unsigned int j = 0; j < symbols.get_symbols_num(); ++j) {
-        std::string name;
-        Elf64_Addr value;
-        Elf_Xword size;
-        unsigned char bind;
-        unsigned char type;
-        Elf_Half section_index;
-        unsigned char other;
 
+      std::string name;
+      Elf64_Addr value;
+      Elf_Xword size;
+      unsigned char bind;
+      unsigned char type;
+      Elf_Half section_index;
+      unsigned char other;
+      for (unsigned int j = 0; j < symbols.get_symbols_num(); ++j) {
         symbols.get_symbol(j, name, value, size, bind, type, section_index,
                            other);
         pc_offset = std::min(pc_offset, static_cast<uint32_t>(value));
         max_addr = std::max(max_addr, static_cast<uint32_t>(value + size));
       }
-
       table.symbol_map.resize(max_addr - pc_offset);
       std::fill(table.symbol_map.begin(), table.symbol_map.end(), -1);
 
       for (unsigned int j = 0; j < symbols.get_symbols_num(); ++j) {
-        std::string name;
-        Elf64_Addr value;
-        Elf_Xword size;
-        unsigned char bind;
-        unsigned char type;
-        Elf_Half section_index;
-        unsigned char other;
-
         symbols.get_symbol(j, name, value, size, bind, type, section_index,
                            other);
         if (type == STT_FUNC) {

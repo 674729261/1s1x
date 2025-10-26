@@ -28,7 +28,7 @@ npc: $(SV_FILELIST) $(LIBCAPSTONE) $(SO_PATH_NEMU)
 sbt: $(SV_FILELIST)
 
 $(SV_FILELIST): $(CHISELSRC)
-	sbt run
+	sbt run 
 
 
 
@@ -59,6 +59,6 @@ clean_log:
 	rm -rf log/*
 
 
-.PHONY: npc sim clean
+.PHONY: npc sim clean sbt
 
 include ../Makefile

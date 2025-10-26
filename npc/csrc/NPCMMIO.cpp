@@ -1,5 +1,4 @@
 #include "Simulators/NPCemu.h"
-#include "spdlog/spdlog.h"
 #include <cstdint>
 #include <iostream>
 #include <print>

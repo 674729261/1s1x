@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../Capstone.h"
 #include "../ELFParser.h"
 #include "../RingBuffer.hpp"
 #include <cstdint>
