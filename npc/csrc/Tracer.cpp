@@ -16,18 +16,23 @@ Tracer::Tracer(bool ftracer, std::string_view elf_path, bool itracer,
     inst_ringbuf = std::make_unique<InstRingBuffer>(rb_size);
   }
   capstone.load_libcapstone();
-  std::println("!!!");
 }
 
 void Tracer::register_instruction(uint32_t pc, uint32_t inst, uint32_t rs1) {
   if (inst_ringbuf) {
+    std::println("!");
     inst_ringbuf->insert(pc, inst);
+    std::println("?");
   }
   if (sym_tab) {
+    std::println("!!");
     record_ftracer(pc, inst, rs1);
+    std::println("??");
   }
   if (display) {
+    std::println("!!!");
     capstone.disassemble(pc, (uint8_t *)&inst, 4);
+    std::println("???");
   }
 }
 void Tracer::show_history_instructions() {
