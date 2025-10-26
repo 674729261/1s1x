@@ -19,7 +19,7 @@ public:
                 std::string_view elf_path = "");
 
   int start();
-  void addRefference(std::shared_ptr<RISCV32> ref);
+  void addReference(std::shared_ptr<RISCV32> ref);
   ~SingleMonitor();
 
   class Watcher {

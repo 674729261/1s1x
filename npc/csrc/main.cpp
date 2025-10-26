@@ -134,7 +134,7 @@ int main(int argc, char *argv[]) {
       std::terminate();
     }
   }
-  if (itracer != 0) {
+  if (itracer != 0 || use_irb) {
     if (!Capstone::capstone.load_libcapstone()) {
       spdlog::warn("Failed to initialize capstone. Ignoring itracer flag.");
       itracer = 0;
@@ -172,7 +172,7 @@ int main(int argc, char *argv[]) {
                         path_elf);
   int result;
   if (difftest)
-    monitor.addRefference(nemu);
+    monitor.addReference(nemu);
   try {
     result = monitor.start();
   } catch (const std::exception &err) {

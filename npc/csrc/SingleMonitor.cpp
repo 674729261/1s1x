@@ -72,7 +72,7 @@ SingleMonitor::SingleMonitor(std::shared_ptr<RISCV32> emu, bool batch,
   tracer = std::make_shared<Tracer>(ftracer, elf_path, irb);
   emus.front()->tie_tracer(tracer);
 }
-void SingleMonitor::addRefference(std::shared_ptr<RISCV32> ref) {
+void SingleMonitor::addReference(std::shared_ptr<RISCV32> ref) {
   emus.push_back(ref);
 }
 int SingleMonitor::start() {
