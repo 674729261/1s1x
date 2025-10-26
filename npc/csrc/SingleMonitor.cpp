@@ -77,6 +77,7 @@ void SingleMonitor::addRefference(std::shared_ptr<RISCV32> ref) {
   emus.push_back(ref);
 }
 int SingleMonitor::start() {
+  using namespace std::chrono;
   for (auto &e : emus)
     e->reset();
   CommandState state = CommandState::NONE;
@@ -85,7 +86,15 @@ int SingleMonitor::start() {
     while (true) {
       if (batch) {
         emus.front()->pause(false);
+
+        auto n_inst = emus.front()->instrCount();
+        auto start = steady_clock::now();
         emus.front()->simulate(-1);
+        auto end = steady_clock::now();
+        n_inst = emus.front()->instrCount() - n_inst;
+        double elapsed = duration_cast<microseconds>(end - start).count();
+        spdlog::info("Average speed : {:.1f} inst/s", n_inst / elapsed);
+
         emus.front()->pause(true);
       } else
         state = query_command();
