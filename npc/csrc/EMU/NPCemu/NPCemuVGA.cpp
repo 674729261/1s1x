@@ -17,8 +17,8 @@ void NPCemu::ensure_vga_enabled() {
 
 void NPCemu::vga_update_screen() {
   if (VideoBase.sync) {
-    update_screen();
     VideoBase.sync = 0;
+    update_screen();
   }
 }
 
