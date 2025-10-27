@@ -20,7 +20,7 @@ int main(int argc, char *argv[]) {
     register_logger(program);
     config = setup(program);
   } catch (const std::exception &err) {
-    std::println(std::cerr, "{}", err.what());
+    std::println(std::cerr, "Error : {}", err.what());
     std::terminate();
   }
 
@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
   try {
     result = monitor.start();
   } catch (const std::exception &err) {
-    std::println(std::cerr, "{}", err.what());
+    std::println(std::cerr, "Error : {}", err.what());
     std::terminate();
   }
   emu = nullptr;

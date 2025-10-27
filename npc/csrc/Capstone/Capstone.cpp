@@ -63,7 +63,7 @@ bool Capstone::load_libcapstone() {
 std::string Capstone::disassemble(uint64_t pc, uint8_t *code, int nbyte,
                                   bool display) {
   if (cs_disasm_dl == nullptr)
-    throw std::runtime_error("Did not load libcapstone first");
+    throw std::logic_error("Did not load libcapstone first");
   cs_insn *insn;
 
   size_t count = cs_disasm_dl(handle, code, nbyte, pc, 0, &insn);

@@ -73,7 +73,7 @@ void NPCemu::device_update_loop() {
       }
     }
   } catch (const std::exception &err) {
-    std::println(std::cerr, "{}", err.what());
+    std::println(std::cerr, "Error : {}", err.what());
     std::terminate();
   }
   if (texture)
