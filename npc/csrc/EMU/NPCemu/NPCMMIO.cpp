@@ -46,7 +46,7 @@ std::optional<uint32_t> NPCemu::readMMIO(int raddr) {
   if (uint32_t VGA_FB_Offset =
           check_addr_range(raddr, VGAFBPort, VGAFBPort + VMemSize);
       device_settings.enable_vga && VGA_FB_Offset != -1) {
-    return reinterpret_cast<uint32_t *>(VideoBase.vmem.get())[VGA_FB_Offset];
+    return reinterpret_cast<uint32_t *>(VideoBase.back_ptr)[VGA_FB_Offset];
   }
 
   if (device_settings.enable_keyboard && raddr == KeyboardPort) {
@@ -109,6 +109,9 @@ void NPCemu::writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata) {
     ensure_vga_enabled();
     uint32_t tmp = VideoBase.sync;
     write_mask(tmp, mask32, wdata);
+    if (tmp) {
+      VideoBase.back_ptr = VideoBase.front_ptr.exchange(VideoBase.back_ptr);
+    }
     VideoBase.sync = tmp;
     return;
   }
@@ -117,9 +120,8 @@ void NPCemu::writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata) {
           check_addr_range(waddr, VGAFBPort, VGAFBPort + VMemSize);
       VGA_FB_Offset != -1) {
     ensure_vga_enabled();
-    write_mask(
-        reinterpret_cast<uint32_t *>(VideoBase.vmem.get())[VGA_FB_Offset],
-        mask32, wdata);
+    write_mask(reinterpret_cast<uint32_t *>(VideoBase.back_ptr)[VGA_FB_Offset],
+               mask32, wdata);
     return;
   }
 
