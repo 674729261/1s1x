@@ -40,7 +40,7 @@ void NPCemu::init_ioe() {
     // init_vga();
   }
   if (device_settings.enable_keyboard) {
-    key_queue = std::make_unique<lockfree::mpmc::Queue<uint32_t, 1024>>();
+    key_queue = std::make_unique<lockfree::spsc::Queue<uint32_t, 1024>>();
   }
   device_alive = true;
   device_running = true;

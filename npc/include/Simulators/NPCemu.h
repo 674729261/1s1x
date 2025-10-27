@@ -1,6 +1,6 @@
 #pragma once
 #include "RISCV32.h"
-#include "lockfree/mpmc/queue.hpp"
+#include "lockfree/spsc/queue.hpp"
 #include <SDL2/SDL.h>
 #include <VCPU.h>
 #include <atomic>
@@ -124,7 +124,7 @@ private:
 
   std::atomic<bool> device_running, device_alive;
   std::thread device_update_thread;
-  std::unique_ptr<lockfree::mpmc::Queue<uint32_t, 1024>> key_queue;
+  std::unique_ptr<lockfree::spsc::Queue<uint32_t, 1024>> key_queue;
 
   static void init_keymap();
 
