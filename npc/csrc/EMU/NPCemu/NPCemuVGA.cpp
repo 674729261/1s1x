@@ -1,9 +1,9 @@
-#include "Simulators/NPCemu.h"
-#include "my_utils.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_audio.h>
+#include <Simulators/NPCemu.h>
 #include <cstdint>
 #include <format>
+#include <my_utils.h>
 #include <print>
 #include <spdlog/spdlog.h>
 #include <stdexcept>

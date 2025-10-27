@@ -1,7 +1,7 @@
-#include "Simulators/NPCemu.h"
-#include "spdlog/spdlog.h"
+#include <Simulators/NPCemu.h>
 #include <cstdint>
 #include <print>
+#include <spdlog/spdlog.h>
 
 #define MAP(c, f) c(f)
 #define NEMU_KEYS(f)                                                           \

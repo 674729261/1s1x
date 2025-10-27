@@ -1,6 +1,6 @@
 #pragma once
-#include "Simulators/NEMUemu.h"
-#include "Simulators/NPCemu.h"
+#include <Simulators/NEMUemu.h>
+#include <Simulators/NPCemu.h>
 #include <VCPU.h>
 #include <argparse/argparse.hpp>
 #include <cstdint>

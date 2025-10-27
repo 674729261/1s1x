@@ -1,4 +1,4 @@
-CSRC = $(wildcard csrc/*.cpp)
+CSRC = $(shell find csrc -name "*.cpp")
 CSRC += /usr/local/lib/libreplxx.a
 
 VSRC = $(wildcard vsrc/*.v)

@@ -1,10 +1,10 @@
-#include "Simulators/NPCemu.h"
-#include "Simulators/RISCV32.h"
 #include "VCPU.h"
 #include "VCPU___024root.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_audio.h>
 #include <SDL2/SDL_error.h>
+#include <Simulators/NPCemu.h>
+#include <Simulators/RISCV32.h>
 #include <chrono>
 #include <cstdint>
 #include <format>

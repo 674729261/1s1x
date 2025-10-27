@@ -1,5 +1,5 @@
-#include "Monitor/SingleMonitor.h"
 #include "Setup.h"
+#include <Monitor/SingleMonitor.h>
 
 using std::cerr;
 using std::make_shared;
