@@ -17,11 +17,11 @@ void ProgSymTab::init_and_parse(std::string_view elf_path) {
   spdlog::info("Loading symbols from {}", elf_path);
   elfio reader;
   if (!reader.load(std::string(elf_path))) {
-    log_and_throw<std::runtime_error>("Can't find or process ELF file {}",
+    log_and_throw<std::runtime_error>("Can't find or process ELF file : {}",
                                       elf_path);
   }
   if (reader.get_class() != ELFCLASS32) {
-    log_and_throw<std::runtime_error>("Class of ELF file {} is not ELF32",
+    log_and_throw<std::runtime_error>("Class of ELF file is not ELF32 : {}",
                                       elf_path);
   }
   Elf_Half sec_num = reader.sections.size();
