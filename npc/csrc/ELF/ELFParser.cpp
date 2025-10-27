@@ -21,8 +21,8 @@ void ProgSymTab::init_and_parse(std::string_view elf_path) {
                                       elf_path);
   }
   if (reader.get_class() != ELFCLASS32) {
-    log_and_throw<std::runtime_error>("Class of ELF file is not ELF32 : {}",
-                                      elf_path);
+    log_and_throw<std::logic_error>("Class of ELF file is not ELF32 : {}",
+                                    elf_path);
   }
   Elf_Half sec_num = reader.sections.size();
 

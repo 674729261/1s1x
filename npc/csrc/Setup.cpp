@@ -91,7 +91,7 @@ Config setup(argparse::ArgumentParser &program) {
   if (ret.use_irb) {
     ret.sz_irb = program.get<unsigned long>("--inst_ringbuffer");
     if (ret.sz_irb <= 0) {
-      log_and_throw<std::runtime_error>("sz_irb must be greater than zero");
+      log_and_throw<std::logic_error>("sz_irb must be greater than zero");
     }
   }
   ret.use_ftracer = program.is_used("--elf");
@@ -99,7 +99,7 @@ Config setup(argparse::ArgumentParser &program) {
   if (ret.use_ftracer) {
     ret.path_elf = program.get("--elf");
     if (ret.path_elf.empty()) {
-      log_and_throw<std::runtime_error>("ELF path not specified");
+      log_and_throw<std::logic_error>("ELF path not specified");
     }
   }
   if (ret.itracer != 0 || ret.use_irb) {

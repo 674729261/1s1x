@@ -24,7 +24,7 @@ RISCV32::RISCV32(size_t MemSize, std::string_view program, addr_t init_pc)
   size_prog = prog_file.tellg();
   prog_file.seekg(0, ios::beg);
   if (size_prog > MemSize * sizeof(uint32_t))
-    throw std::runtime_error(
+    throw std::logic_error(
         std::format("Program size is bigger than memory size {}", MemSize));
 
   prog_file.read(reinterpret_cast<char *>(M.data()), size_prog);
