@@ -1,4 +1,5 @@
 #include <Simulators/NPCemu.h>
+#include <algorithm>
 #include <cstdint>
 #include <iostream>
 #include <print>
@@ -112,6 +113,8 @@ void NPCemu::writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata) {
       write_mask(tmp, mask32, wdata);
       if (tmp) {
         VideoBase.back_ptr = VideoBase.front_ptr.exchange(VideoBase.back_ptr);
+        uint8_t *f = VideoBase.front_ptr;
+        std::copy(f, f + NPCemu::VMemSize, VideoBase.back_ptr);
       }
       VideoBase.sync = tmp;
     }
