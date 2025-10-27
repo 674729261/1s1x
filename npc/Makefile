@@ -13,9 +13,9 @@ SVSRC =  $(shell cat $(SV_FILELIST) | sed 's|^|generated_svsrc/|g' | tr '\n' ' '
 
 VERILATOR = verilator
 
-VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -O3 -I$(NPC_HOME)/include -std=c++23 -march=native -funroll-loops -flto 
+VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -O3 -I$(NPC_HOME)/include -std=c++23 -march=native -funroll-loops -flto=auto 
 
-CXXFLAGS += -CFLAGS "$(VERILATOR_CFLAGS)" -CFLAGS -DTOP_NAME="\"V$(TOPNAME)\"" -LDFLAGS "-lSDL2 -flto"
+CXXFLAGS += -CFLAGS "$(VERILATOR_CFLAGS)" -CFLAGS -DTOP_NAME="\"V$(TOPNAME)\"" -LDFLAGS "-lSDL2 -flto=auto"
 VERILATORFLAGS += --cc --exe --build --trace -j 16 
 VERILATOR_DISABLE_WARNINGS += -Wno-UNUSEDSIGNAL -Wno-DECLFILENAME -Wno-SYNCASYNCNET
 
