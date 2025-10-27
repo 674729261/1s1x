@@ -75,7 +75,7 @@ void NPCemu::writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata) {
       log_and_throw<std::logic_error>(
           "mask32 {:08x} is not 0x000000FF when writing serial port", mask32);
     std::cout.put(wdata);
-    std::cout.flush();
+    // std::cout.flush();
     return;
   }
   if (uint32_t VGA_FB_Offset =
