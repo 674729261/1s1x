@@ -57,19 +57,24 @@ void NPCemu::device_update_loop() {
   signal(SIGTERM, SIG_DFL);
   using namespace std::chrono;
   auto last = steady_clock::now();
-  while (device_alive) {
-    if (device_running) {
-      auto now = steady_clock::now();
-      if (duration_cast<microseconds>(now - last).count() < 1'000'000 / 60)
-        continue;
-      last = now;
-      if (device_settings.enable_vga) {
-        vga_update_screen();
-      }
-      if (device_settings.enable_keyboard) {
-        process_keyboard();
+  try {
+    while (device_alive) {
+      if (device_running) {
+        auto now = steady_clock::now();
+        if (duration_cast<microseconds>(now - last).count() < 1'000'000 / 60)
+          continue;
+        last = now;
+        if (device_settings.enable_vga) {
+          vga_update_screen();
+        }
+        if (device_settings.enable_keyboard) {
+          process_keyboard();
+        }
       }
     }
+  } catch (const std::exception &err) {
+    std::println(std::cerr, "{}", err.what());
+    std::terminate();
   }
   if (texture)
     SDL_DestroyTexture(texture);

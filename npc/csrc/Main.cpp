@@ -15,9 +15,14 @@ int main(int argc, char *argv[]) {
     cerr << program;
     std::terminate();
   }
-  register_logger(program);
-
-  auto config = setup(program);
+  Config config;
+  try {
+    register_logger(program);
+    config = setup(program);
+  } catch (const std::exception &err) {
+    std::println(std::cerr, "{}", err.what());
+    std::terminate();
+  }
 
   emu = make_shared<NPCemu>(config.mem_size, config.image_path,
                             config.device_settings);
@@ -30,7 +35,7 @@ int main(int argc, char *argv[]) {
   try {
     result = monitor.start();
   } catch (const std::exception &err) {
-    cerr << err.what() << std::endl;
+    std::println(std::cerr, "{}", err.what());
     std::terminate();
   }
   emu = nullptr;
