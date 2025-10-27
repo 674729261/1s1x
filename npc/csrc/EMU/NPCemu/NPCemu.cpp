@@ -1,5 +1,6 @@
 #include "VCPU.h"
 #include "VCPU___024root.h"
+#include "my_utils.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_audio.h>
 #include <SDL2/SDL_error.h>
@@ -57,19 +58,24 @@ void NPCemu::device_update_loop() {
   signal(SIGTERM, SIG_DFL);
   using namespace std::chrono;
   auto last = steady_clock::now();
-  while (device_alive) {
-    if (device_running) {
-      auto now = steady_clock::now();
-      if (duration_cast<microseconds>(now - last).count() < 1'000'000 / 60)
-        continue;
-      last = now;
-      if (device_settings.enable_vga) {
-        vga_update_screen();
-      }
-      if (device_settings.enable_keyboard) {
-        process_keyboard();
+  try {
+    while (device_alive) {
+      if (device_running) {
+        auto now = steady_clock::now();
+        if (duration_cast<microseconds>(now - last).count() < 1'000'000 / 60)
+          continue;
+        last = now;
+        if (device_settings.enable_vga) {
+          vga_update_screen();
+        }
+        if (device_settings.enable_keyboard) {
+          process_keyboard();
+        }
       }
     }
+  } catch (const std::exception &err) {
+    std::println(std::cerr, "Error : {}", err.what());
+    std::terminate();
   }
   if (texture)
     SDL_DestroyTexture(texture);
@@ -96,7 +102,7 @@ void NPCemu::reset() {
 void NPCemu::step() {
   addr_t pc = dut.io_pc;
   if (pc < memOffset) {
-    throw std::logic_error(std::format("pc : {:08x} out of range", pc));
+    log_and_throw<std::logic_error>("pc : {:08x} out of range", pc);
   }
   dut.io_instr = M[(pc - memOffset) / 4];
 
@@ -231,7 +237,7 @@ uint32_t NPCemu::getGPR(int idx) {
   case 32:
     return dut.io_pc;
   }
-  throw std::logic_error(std::format("Invalid register index : {}", idx));
+  log_and_throw<std::logic_error>("Invalid register index : {}", idx);
 }
 
 unsigned long long NPCemu::instrCount() { return inst_count; }

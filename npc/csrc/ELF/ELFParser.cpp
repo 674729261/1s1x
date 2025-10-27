@@ -17,12 +17,12 @@ void ProgSymTab::init_and_parse(std::string_view elf_path) {
   spdlog::info("Loading symbols from {}", elf_path);
   elfio reader;
   if (!reader.load(std::string(elf_path))) {
-    log_and_throw<std::runtime_error>("Can't find or process ELF file {}",
+    log_and_throw<std::runtime_error>("Can't find or process ELF file : {}",
                                       elf_path);
   }
   if (reader.get_class() != ELFCLASS32) {
-    log_and_throw<std::runtime_error>("Class of ELF file {} is not ELF32",
-                                      elf_path);
+    log_and_throw<std::logic_error>("Class of ELF file is not ELF32 : {}",
+                                    elf_path);
   }
   Elf_Half sec_num = reader.sections.size();
 
@@ -55,7 +55,7 @@ void ProgSymTab::init_and_parse(std::string_view elf_path) {
           for (uint32_t addr = value; addr < value + size; addr++) {
             table.symbol_map[addr - pc_offset] = table.symbol_items.size();
           }
-          spdlog::info("Found symbol {}@{:#08x}, size = {:8x}", name, value,
+          spdlog::info("Found symbol {}@{:#08x}, size = {:#x}", name, value,
                        size);
           table.symbol_items.push_back({std::move(name), (uint32_t)value});
         }

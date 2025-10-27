@@ -1,5 +1,6 @@
 #pragma once
 #include "Capstone.h"
+#include "my_utils.h"
 #include <cstddef>
 #include <cstdint>
 #include <print>
@@ -38,14 +39,14 @@ public:
 
   Item last(uint32_t instr) {
     if (cnt == 0)
-      throw std::logic_error(
+      log_and_throw<std::logic_error>(
           "Can not fetch last element of an empty RingBuffer");
     return instr_buffer[pos_end];
   }
 
   Item first(uint32_t instr) {
     if (cnt == 0)
-      throw std::logic_error(
+      log_and_throw<std::logic_error>(
           "Can not fetch first element of an empty RingBuffer");
     return instr_buffer[pos_begin];
   }

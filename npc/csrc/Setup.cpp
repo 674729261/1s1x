@@ -1,4 +1,6 @@
 #include "Setup.h"
+#include "my_utils.h"
+#include <stdexcept>
 using std::println, std::cerr;
 using std::shared_ptr, std::make_shared;
 using std::string;
@@ -52,24 +54,18 @@ void register_argparse(argparse::ArgumentParser &program) {
 void register_logger(argparse::ArgumentParser &program) {
   bool provided_logfile = program.is_used("--log");
   if (provided_logfile) {
-    try {
-      string log_path = program.get("--log");
-      auto console_sink =
-          std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-      console_sink->set_pattern(
-          "[%Y-%m-%d %H:%M:%S.%e] [thread %t] [%^%l%$] - %v");
+    string log_path = program.get("--log");
+    auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+    console_sink->set_pattern(
+        "[%Y-%m-%d %H:%M:%S.%e] [thread %t] [%^%l%$] - %v");
 
-      auto file_sink =
-          std::make_shared<spdlog::sinks::basic_file_sink_mt>(log_path, true);
-      file_sink->set_pattern(
-          "[%Y-%m-%d %H:%M:%S.%e] [thread %t] [%^%l%$] [%s:%#] - %v");
-      spdlog::logger logger("multi_logger", {console_sink, file_sink});
-      spdlog::set_default_logger(std::make_shared<spdlog::logger>(logger));
-      spdlog::info("Logging to file : {}", log_path);
-    } catch (const spdlog::spdlog_ex &e) {
-      println(cerr, "Log init failed: {}", e.what());
-      std::terminate();
-    }
+    auto file_sink =
+        std::make_shared<spdlog::sinks::basic_file_sink_mt>(log_path, true);
+    file_sink->set_pattern(
+        "[%Y-%m-%d %H:%M:%S.%e] [thread %t] [%^%l%$] [%s:%#] - %v");
+    spdlog::logger logger("multi_logger", {console_sink, file_sink});
+    spdlog::set_default_logger(std::make_shared<spdlog::logger>(logger));
+    spdlog::info("Logging to file : {}", log_path);
   }
 
   spdlog::flush_every(std::chrono::seconds(5));
@@ -95,8 +91,7 @@ Config setup(argparse::ArgumentParser &program) {
   if (ret.use_irb) {
     ret.sz_irb = program.get<unsigned long>("--inst_ringbuffer");
     if (ret.sz_irb <= 0) {
-      println(cerr, "sz_irb must be greater than zero");
-      std::terminate();
+      log_and_throw<std::logic_error>("sz_irb must be greater than zero");
     }
   }
   ret.use_ftracer = program.is_used("--elf");
@@ -104,8 +99,7 @@ Config setup(argparse::ArgumentParser &program) {
   if (ret.use_ftracer) {
     ret.path_elf = program.get("--elf");
     if (ret.path_elf.empty()) {
-      println(cerr, "ELF path not specified");
-      std::terminate();
+      log_and_throw<std::logic_error>("ELF path not specified");
     }
   }
   if (ret.itracer != 0 || ret.use_irb) {
@@ -122,7 +116,7 @@ Config setup(argparse::ArgumentParser &program) {
       nemu = make_shared<NEMUemu>(ret.mem_size, ret.image_path);
     } catch (const std::exception &err) {
       println(cerr, "Load ref failed: {}", err.what());
-      std::terminate();
+      throw err;
     }
   }
 

@@ -31,7 +31,7 @@ void Tracer::register_instruction(uint32_t pc, uint32_t inst, uint32_t rs1) {
 }
 void Tracer::show_history_instructions() {
   if (!inst_ringbuf) {
-    log_and_throw<std::runtime_error>(
+    log_and_throw<std::logic_error>(
         "Tried to show instruction history when inst_ringbuf is unavailable");
   }
   inst_ringbuf->display();

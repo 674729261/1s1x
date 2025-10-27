@@ -1,3 +1,4 @@
+#include "my_utils.h"
 #include <Simulators/NPCemu.h>
 #include <algorithm>
 #include <cstdint>
@@ -24,6 +25,14 @@ std::optional<uint32_t> NPCemu::readMMIO(int raddr) {
     else
       return RTC.RTC_reg[RTC_id];
   }
+  if (uint32_t VGA_FB_Offset =
+          check_addr_range(raddr, VGAFBPort, VGAFBPort + VMemSize);
+      device_settings.enable_vga && VGA_FB_Offset != -1) {
+    return reinterpret_cast<uint32_t *>(VideoBase.back_ptr)[VGA_FB_Offset];
+  }
+  if (device_settings.enable_vga && raddr == VGAControlRegsPort) {
+    return VideoBase.screen_size_info;
+  }
 
   if (uint32_t AudioReg_id = check_addr_range(
           raddr, AudioPort, AudioPort + sizeof(uint32_t) * AudioBase_t::n_regs);
@@ -38,16 +47,6 @@ std::optional<uint32_t> NPCemu::readMMIO(int raddr) {
       device_settings.enable_audio && SoundBufferOffset != -1) {
     return reinterpret_cast<uint32_t *>(
         AudioBase.sbuf.get())[SoundBufferOffset];
-  }
-
-  if (device_settings.enable_vga && raddr == VGAControlRegsPort) {
-    return VideoBase.screen_size_info;
-  }
-
-  if (uint32_t VGA_FB_Offset =
-          check_addr_range(raddr, VGAFBPort, VGAFBPort + VMemSize);
-      device_settings.enable_vga && VGA_FB_Offset != -1) {
-    return reinterpret_cast<uint32_t *>(VideoBase.back_ptr)[VGA_FB_Offset];
   }
 
   if (device_settings.enable_keyboard && raddr == KeyboardPort) {
@@ -73,10 +72,33 @@ void NPCemu::writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata) {
   }
   if (waddr == SerialPort) {
     if (mask32 != 0xFF)
-      throw std::logic_error(std::format(
-          "mask32 {:08x} is not 0xFF when writing serial port", mask32));
+      log_and_throw<std::logic_error>(
+          "mask32 {:08x} is not 0x000000FF when writing serial port", mask32);
     std::cout.put(wdata);
     // std::cout.flush();
+    return;
+  }
+  if (uint32_t VGA_FB_Offset =
+          check_addr_range(waddr, VGAFBPort, VGAFBPort + VMemSize);
+      VGA_FB_Offset != -1) {
+    ensure_vga_enabled();
+    write_mask(reinterpret_cast<uint32_t *>(VideoBase.back_ptr)[VGA_FB_Offset],
+               mask32, wdata);
+    return;
+  }
+
+  if (waddr == VGAControlRegsPort + sizeof(uint32_t)) {
+    ensure_vga_enabled();
+    uint32_t tmp = VideoBase.sync;
+    if (!tmp) {
+      write_mask(tmp, mask32, wdata);
+      if (tmp) {
+        VideoBase.back_ptr = VideoBase.front_ptr.exchange(VideoBase.back_ptr);
+        uint8_t *f = VideoBase.front_ptr;
+        std::copy(f, f + NPCemu::VMemSize, VideoBase.back_ptr);
+      }
+      VideoBase.sync = tmp;
+    }
     return;
   }
 
@@ -106,29 +128,5 @@ void NPCemu::writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata) {
     return;
   }
 
-  if (waddr == VGAControlRegsPort + sizeof(uint32_t)) {
-    ensure_vga_enabled();
-    uint32_t tmp = VideoBase.sync;
-    if (!tmp) {
-      write_mask(tmp, mask32, wdata);
-      if (tmp) {
-        VideoBase.back_ptr = VideoBase.front_ptr.exchange(VideoBase.back_ptr);
-        uint8_t *f = VideoBase.front_ptr;
-        std::copy(f, f + NPCemu::VMemSize, VideoBase.back_ptr);
-      }
-      VideoBase.sync = tmp;
-    }
-    return;
-  }
-
-  if (uint32_t VGA_FB_Offset =
-          check_addr_range(waddr, VGAFBPort, VGAFBPort + VMemSize);
-      VGA_FB_Offset != -1) {
-    ensure_vga_enabled();
-    write_mask(reinterpret_cast<uint32_t *>(VideoBase.back_ptr)[VGA_FB_Offset],
-               mask32, wdata);
-    return;
-  }
-
-  throw std::logic_error(std::format("Writing to invalid MMIO {:08x}", waddr));
+  log_and_throw<std::logic_error>("Writing to invalid MMIO {:08x}", waddr);
 }
