@@ -25,16 +25,15 @@ std::optional<uint32_t> NPCemu::readMMIO(int raddr) {
     else
       return RTC.RTC_reg[RTC_id];
   }
-
-  if (device_settings.enable_vga && raddr == VGAControlRegsPort) {
-    return VideoBase.screen_size_info;
-  }
-
   if (uint32_t VGA_FB_Offset =
           check_addr_range(raddr, VGAFBPort, VGAFBPort + VMemSize);
       device_settings.enable_vga && VGA_FB_Offset != -1) {
     return reinterpret_cast<uint32_t *>(VideoBase.back_ptr)[VGA_FB_Offset];
   }
+  if (device_settings.enable_vga && raddr == VGAControlRegsPort) {
+    return VideoBase.screen_size_info;
+  }
+
   if (uint32_t AudioReg_id = check_addr_range(
           raddr, AudioPort, AudioPort + sizeof(uint32_t) * AudioBase_t::n_regs);
       device_settings.enable_audio && AudioReg_id != -1) {
@@ -79,6 +78,15 @@ void NPCemu::writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata) {
     // std::cout.flush();
     return;
   }
+  if (uint32_t VGA_FB_Offset =
+          check_addr_range(waddr, VGAFBPort, VGAFBPort + VMemSize);
+      VGA_FB_Offset != -1) {
+    ensure_vga_enabled();
+    write_mask(reinterpret_cast<uint32_t *>(VideoBase.back_ptr)[VGA_FB_Offset],
+               mask32, wdata);
+    return;
+  }
+
   if (waddr == VGAControlRegsPort + sizeof(uint32_t)) {
     ensure_vga_enabled();
     uint32_t tmp = VideoBase.sync;
@@ -91,15 +99,6 @@ void NPCemu::writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata) {
       }
       VideoBase.sync = tmp;
     }
-    return;
-  }
-
-  if (uint32_t VGA_FB_Offset =
-          check_addr_range(waddr, VGAFBPort, VGAFBPort + VMemSize);
-      VGA_FB_Offset != -1) {
-    ensure_vga_enabled();
-    write_mask(reinterpret_cast<uint32_t *>(VideoBase.back_ptr)[VGA_FB_Offset],
-               mask32, wdata);
     return;
   }
 
