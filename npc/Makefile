@@ -13,9 +13,12 @@ SVSRC =  $(shell cat $(SV_FILELIST) | sed 's|^|generated_svsrc/|g' | tr '\n' ' '
 
 VERILATOR = verilator
 
-VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -O3 -I$(NPC_HOME)/include -std=c++23 -march=native -funroll-loops -flto=auto 
+VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -O3 -I$(NPC_HOME)/include -std=c++23 -march=native -mtune=native \
+-funroll-loops -flto=auto -ffast-math -fno-math-errno -funsafe-math-optimizations 
+VERILATOR_LDLAGS = -flto=auto -fipa-pta 
 
-CXXFLAGS += -CFLAGS "$(VERILATOR_CFLAGS)" -CFLAGS -DTOP_NAME="\"V$(TOPNAME)\"" -LDFLAGS "-lSDL2 -flto=auto"
+
+CXXFLAGS += -CFLAGS "$(VERILATOR_CFLAGS)" -CFLAGS -DTOP_NAME="\"V$(TOPNAME)\"" -LDFLAGS "-lSDL2"
 VERILATORFLAGS += --cc --exe --build --trace -j 16 
 VERILATOR_DISABLE_WARNINGS += -Wno-UNUSEDSIGNAL -Wno-DECLFILENAME -Wno-SYNCASYNCNET
 
@@ -43,7 +46,10 @@ sim: npc
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
 	$(BIN) --image $(PROG) --mem_size $(MEM_SIZE) --log $(LOG_FILE) --itracer 8 --difftest --inst_ringbuffer 16 $(NPC_FLAGS) 
 
-sim_full_speed: VERILATOR_CFLAGS+=-fomit-frame-pointer
+sim_full_speed: VERILATOR_CFLAGS+=-DNDEBUG -fstrict-aliasing -fno-rtti \
+-frename-registers -fomit-frame-pointer -fprefetch-loop-arrays -finline-functions \
+-finline-small-functions -fipa-cp -fipa-cp-clone
+sim_full_speed: VERILATOR_LDLAGS+=-fuse-linker-plugin -s
 sim_full_speed: npc
 	$(call git_commit, "sim RTL full speed") # DO NOT REMOVE THIS LINE!!!
 	$(BIN) --image $(PROG) --mem_size $(MEM_SIZE) --log $(LOG_FILE) $(NPC_FLAGS) --enable_audio --enable_vga --enable_keyboard
