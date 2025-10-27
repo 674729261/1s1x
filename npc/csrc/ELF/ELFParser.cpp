@@ -55,7 +55,7 @@ void ProgSymTab::init_and_parse(std::string_view elf_path) {
           for (uint32_t addr = value; addr < value + size; addr++) {
             table.symbol_map[addr - pc_offset] = table.symbol_items.size();
           }
-          spdlog::info("Found symbol {}@{:#08x}, size = {:8x}", name, value,
+          spdlog::info("Found symbol {}@{:#08x}, size = {:x}", name, value,
                        size);
           table.symbol_items.push_back({std::move(name), (uint32_t)value});
         }
