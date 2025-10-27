@@ -46,10 +46,10 @@ sim: npc
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
 	$(BIN) --image $(PROG) --mem_size $(MEM_SIZE) --log $(LOG_FILE) --itracer 8 --difftest --inst_ringbuffer 16 $(NPC_FLAGS) 
 
-sim_full_speed: VERILATOR_CFLAGS+=-DNDEBUG -fstrict-aliasing -fno-rtti \
--frename-registers -fomit-frame-pointer -fprefetch-loop-arrays -finline-functions \
+sim_full_speed: VERILATOR_CFLAGS+=-DNDEBUG -fstrict-aliasing \
+-frename-registers -fomit-frame-pointer -finline-functions \
 -finline-small-functions -fipa-cp -fipa-cp-clone
-sim_full_speed: VERILATOR_LDLAGS+=-fuse-linker-plugin -s
+sim_full_speed: VERILATOR_LDLAGS+=-fuse-linker-plugin
 sim_full_speed: npc
 	$(call git_commit, "sim RTL full speed") # DO NOT REMOVE THIS LINE!!!
 	$(BIN) --image $(PROG) --mem_size $(MEM_SIZE) --log $(LOG_FILE) $(NPC_FLAGS) --enable_audio --enable_vga --enable_keyboard
