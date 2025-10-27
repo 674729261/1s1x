@@ -1,10 +1,10 @@
-#include "Simulators/RISCV32.h"
-#include "spdlog/spdlog.h"
+#include <Simulators/RISCV32.h>
 #include <cstdint>
 #include <filesystem>
 #include <format>
 #include <fstream>
 #include <iostream>
+#include <spdlog/spdlog.h>
 #include <stdexcept>
 #include <string_view>
 

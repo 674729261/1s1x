@@ -1,8 +1,7 @@
-#include "Monitor/SingleMonitor.h"
-#include "Expression/Expression.h"
-#include "Simulators/RISCV32.h"
-#include "Tracer/Tracer.h"
-#include "spdlog/spdlog.h"
+#include <Expression/Expression.h>
+#include <Monitor/SingleMonitor.h>
+#include <Simulators/RISCV32.h>
+#include <Tracer/Tracer.h>
 #include <chrono>
 #include <cstdint>
 #include <endian.h>
@@ -13,6 +12,7 @@
 #include <ostream>
 #include <print>
 #include <regex>
+#include <spdlog/spdlog.h>
 #include <stdexcept>
 #include <string>
 #include <utility>

@@ -1,12 +1,12 @@
-#include "Expression/Expression.h"
-#include "Simulators/RISCV32.h"
-#include "spdlog/spdlog.h"
+#include <Expression/Expression.h>
+#include <Simulators/RISCV32.h>
 #include <cassert>
 #include <format>
 #include <my_utils.h>
 #include <optional>
 #include <print>
 #include <regex>
+#include <spdlog/spdlog.h>
 #include <stack>
 #include <stdexcept>
 #include <string>
