@@ -67,7 +67,7 @@ void NPCemu::writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata) {
       RTC_id != -1) {
     update_RTC();
     write_mask(RTC.RTC_reg[RTC_id], mask32, wdata);
-    RTC.last_time = steady_clock().now();
+    RTC.last_time = steady_clock::now();
     return;
   }
   if (waddr == SerialPort) {

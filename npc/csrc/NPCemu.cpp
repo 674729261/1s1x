@@ -40,7 +40,7 @@ void NPCemu::init_ioe() {
   }
   device_alive = true;
   device_running = true;
-  device_update_thread = std::thread([this]() { this->device_update_loop(); });
+  device_update_thread = std::thread(&NPCemu::device_update_loop, this);
 }
 
 void NPCemu::device_update_loop() {
@@ -269,12 +269,12 @@ void NPCemu::update_RTC() {
   auto now_tick = steady_clock().now();
   uint64_t duration = static_cast<uint64_t>(
       duration_cast<microseconds>(now_tick - RTC.last_time).count());
-  uint64_t start_time =
-      RTC.RTC_reg[0] | (static_cast<uint64_t>(RTC.RTC_reg[1]) << 32);
+  // uint64_t start_time =
+  //     RTC.RTC_reg[0] | (static_cast<uint64_t>(RTC.RTC_reg[1]) << 32);
   uint64_t now_time = duration;
 
-  RTC.RTC_reg[0] = now_time & 0xFFFFFFFF;
-  RTC.RTC_reg[1] = now_time >> 32;
+  RTC.RTC_reg[0] = static_cast<uint32_t>(now_time & 0xFFFFFFFF);
+  RTC.RTC_reg[1] = static_cast<uint32_t>(now_time >> 32);
   // RTC.last_time = now_tick;
   // std::print("!!{}\r", now_time);
 }
@@ -286,5 +286,4 @@ NPCemu::~NPCemu() {
 
   SDL_CloseAudio();
   SDL_Quit();
-  dut.final();
 }

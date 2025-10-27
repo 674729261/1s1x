@@ -59,6 +59,6 @@ clean_log:
 	rm -rf log/*
 
 
-.PHONY: npc sim clean
+.PHONY: npc sim clean sbt
 
 include ../Makefile
