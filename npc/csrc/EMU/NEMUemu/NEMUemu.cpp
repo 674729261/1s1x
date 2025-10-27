@@ -44,7 +44,7 @@ uint32_t NEMUemu::getGPR(int idx) {
   else if (idx == 32)
     return cpu.pc;
   else
-    throw std::logic_error(std::format("Invalid idx gpr {}", idx));
+    log_and_throw<std::logic_error>("Invalid idx gpr {}", idx);
 }
 uint32_t NEMUemu::getPC() {
   if (need_sync) {
@@ -58,10 +58,10 @@ NEMUemu::~NEMUemu() {
     dlclose(loaded_lib);
 }
 uint32_t NEMUemu::readMemory(int raddr) {
-  throw std::logic_error("Can not read NEMUemu memory");
+  log_and_throw<std::logic_error>("Can not read NEMUemu memory");
 }
 void NEMUemu::writeMemory(int waddr, int wdata, char wmask) {
-  throw std::logic_error("Can not write NEMUemu memory");
+  log_and_throw<std::logic_error>("Can not write NEMUemu memory");
 }
 
 unsigned long long NEMUemu::instrCount() { return inst_count; }

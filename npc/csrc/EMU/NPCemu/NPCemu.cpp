@@ -1,5 +1,6 @@
 #include "VCPU.h"
 #include "VCPU___024root.h"
+#include "my_utils.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_audio.h>
 #include <SDL2/SDL_error.h>
@@ -101,7 +102,7 @@ void NPCemu::reset() {
 void NPCemu::step() {
   addr_t pc = dut.io_pc;
   if (pc < memOffset) {
-    throw std::logic_error(std::format("pc : {:08x} out of range", pc));
+    log_and_throw<std::logic_error>("pc : {:08x} out of range", pc);
   }
   dut.io_instr = M[(pc - memOffset) / 4];
 
@@ -236,7 +237,7 @@ uint32_t NPCemu::getGPR(int idx) {
   case 32:
     return dut.io_pc;
   }
-  throw std::logic_error(std::format("Invalid register index : {}", idx));
+  log_and_throw<std::logic_error>("Invalid register index : {}", idx);
 }
 
 unsigned long long NPCemu::instrCount() { return inst_count; }

@@ -1,3 +1,4 @@
+#include "my_utils.h"
 #include <Simulators/NPCemu.h>
 #include <algorithm>
 #include <cstdint>
@@ -73,8 +74,8 @@ void NPCemu::writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata) {
   }
   if (waddr == SerialPort) {
     if (mask32 != 0xFF)
-      throw std::logic_error(std::format(
-          "mask32 {:08x} is not 0xFF when writing serial port", mask32));
+      log_and_throw<std::logic_error>(
+          "mask32 {:08x} is not 0x000000FF when writing serial port", mask32);
     std::cout.put(wdata);
     // std::cout.flush();
     return;
@@ -130,5 +131,5 @@ void NPCemu::writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata) {
     return;
   }
 
-  throw std::logic_error(std::format("Writing to invalid MMIO {:08x}", waddr));
+  log_and_throw<std::logic_error>("Writing to invalid MMIO {:08x}", waddr);
 }
