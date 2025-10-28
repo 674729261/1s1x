@@ -19,9 +19,8 @@ static void write_mask(uint32_t &dst, uint32_t mask32, uint32_t wdata) {
 
 static void write_mask(std::atomic<uint32_t> &dst, uint32_t mask32,
                        uint32_t wdata) {
-  uint32_t t, new_value;
+  uint32_t t = dst.load(), new_value;
   do {
-    t = dst.load();
     new_value = (t & ~mask32) | (wdata & mask32);
   } while (dst.compare_exchange_weak(t, new_value));
 }
@@ -128,7 +127,6 @@ void NPCemu::writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata) {
     // spdlog::info("Writing to AudioBase[{}]", AudioReg_id);
     if (AudioReg_id == AudioBase_t::n_regs - 1) {
       write_mask(AudioBase.reg_ctl.reg_count, mask32, wdata);
-
     } else {
       std::span<uint32_t, AudioBase_t::n_regs> ctlreg_arrview(
           &AudioBase.reg_ctl.reg_freq, AudioBase_t::n_regs);
