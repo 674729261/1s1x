@@ -11,8 +11,7 @@
 #include <stdexcept>
 
 static void write_mask(uint32_t &dst, uint32_t mask32, uint32_t wdata) {
-  dst &= ~mask32;
-  dst |= wdata & mask32;
+  dst = (dst & ~mask32) | (wdata & mask32);
 }
 
 static void write_mask(std::atomic<uint32_t> &dst, uint32_t mask32,
