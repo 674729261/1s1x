@@ -19,10 +19,12 @@ static void write_mask(uint32_t &dst, uint32_t mask32, uint32_t wdata) {
 
 static void write_mask(std::atomic<uint32_t> &dst, uint32_t mask32,
                        uint32_t wdata) {
-  uint32_t t = dst.load(), new_value;
-  do {
-    new_value = (t & ~mask32) | (wdata & mask32);
-  } while (dst.compare_exchange_weak(t, new_value));
+  // uint32_t t = dst.load(), new_value;
+  // do {
+  //   new_value = (t & ~mask32) | (wdata & mask32);
+  // } while (dst.compare_exchange_weak(t, new_value));
+  dst &= ~mask32;
+  dst |= wdata & mask32;
 }
 
 static int check_addr_range(uint32_t addr, uint32_t base, uint32_t end) {
