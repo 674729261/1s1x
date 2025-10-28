@@ -1,6 +1,9 @@
+#include "Simulators/NPCDeviceBases/Audio.h"
 #include "my_utils.h"
+#include <SDL2/SDL.h>
 #include <Simulators/NPCemu.h>
 #include <algorithm>
+#include <bit>
 #include <cstdint>
 #include <iostream>
 #include <print>
@@ -39,7 +42,8 @@ std::optional<uint32_t> NPCemu::readMMIO(int raddr) {
       device_settings.enable_audio && AudioReg_id != -1) {
 
     // spdlog::info("Reading from AudioBase[{}]", AudioReg_id);
-    return AudioBase.regs_ctl[AudioReg_id];
+    return std::bit_cast<std::array<uint32_t, 6>>(
+        AudioBase.reg_ctl)[AudioReg_id];
   }
 
   if (uint32_t SoundBufferOffset = check_addr_range(
@@ -109,8 +113,10 @@ void NPCemu::writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata) {
       AudioReg_id != -1) {
     ensure_audio_enabled();
     // spdlog::info("Writing to AudioBase[{}]", AudioReg_id);
-    write_mask(AudioBase.regs_ctl[AudioReg_id], mask32, wdata);
-    if (AudioBase.reg_init)
+    write_mask(
+        std::bit_cast<std::array<uint32_t, 6>>(AudioBase.reg_ctl)[AudioReg_id],
+        mask32, wdata);
+    if (AudioBase.reg_ctl.reg_init)
       init_audio();
     return;
   }

@@ -7,7 +7,7 @@
 #include <print>
 #include <spdlog/spdlog.h>
 #include <stdexcept>
-static NPCemu::AudioBase_t *curAudioBase;
+static AudioBase_t *curAudioBase;
 
 void NPCemu::ensure_audio_enabled() {
   if (!device_settings.enable_audio) {
@@ -22,8 +22,8 @@ static void fill_audio_callback(void *udata, Uint8 *stream, int len) {
   if (len == 0) {
     return;
   }
-  if (len > curAudioBase->reg_count)
-    len = curAudioBase->reg_count;
+  if (len > curAudioBase->reg_ctl.reg_count)
+    len = curAudioBase->reg_ctl.reg_count;
   if (last_pos + len <= NPCemu::SoundBufferSize) {
     SDL_MixAudio(stream, static_cast<uint8_t *>(udata) + last_pos, len,
                  SDL_MIX_MAXVOLUME);
@@ -37,7 +37,7 @@ static void fill_audio_callback(void *udata, Uint8 *stream, int len) {
     last_pos = len - NPCemu::SoundBufferSize + last_pos;
   }
 
-  curAudioBase->reg_count -= len;
+  curAudioBase->reg_ctl.reg_count -= len;
 }
 void NPCemu::init_audio() {
 
@@ -46,22 +46,22 @@ void NPCemu::init_audio() {
                                       SDL_GetError());
   }
   SDL_CloseAudio();
-  if (AudioBase.reg_samples >= (1 << 16)) {
+  if (AudioBase.reg_ctl.reg_samples >= (1 << 16)) {
     log_and_throw<std::logic_error>(
         "AudioBase.reg_samples = {} is bigger than 65535",
-        AudioBase.reg_samples);
+        AudioBase.reg_ctl.reg_samples);
   }
-  if (AudioBase.reg_channels >= (1 << 8)) {
+  if (AudioBase.reg_ctl.reg_channels >= (1 << 8)) {
     log_and_throw<std::logic_error>(
         "AudioBase.reg_channels = {} is bigger than 255",
-        AudioBase.reg_channels);
+        AudioBase.reg_ctl.reg_channels);
   }
   SDL_AudioSpec sdlAudioSpec = {
-      .freq = static_cast<int>(AudioBase.reg_freq),
+      .freq = static_cast<int>(AudioBase.reg_ctl.reg_freq),
       .format = AUDIO_S16SYS,
-      .channels = static_cast<Uint8>(AudioBase.reg_channels),
+      .channels = static_cast<Uint8>(AudioBase.reg_ctl.reg_channels),
       .silence = 0,
-      .samples = static_cast<Uint16>(AudioBase.reg_samples),
+      .samples = static_cast<Uint16>(AudioBase.reg_ctl.reg_samples),
       .callback = fill_audio_callback,
       .userdata = AudioBase.sbuf.get()};
   if (SDL_OpenAudio(&sdlAudioSpec, NULL) < 0) {
@@ -69,6 +69,6 @@ void NPCemu::init_audio() {
                                       SDL_GetError());
   }
   curAudioBase = &AudioBase;
-  AudioBase.reg_init = 0;
+  AudioBase.reg_ctl.reg_init = 0;
   SDL_PauseAudio(0);
 }

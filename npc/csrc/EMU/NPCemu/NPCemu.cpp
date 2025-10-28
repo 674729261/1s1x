@@ -29,7 +29,7 @@ void NPCemu::pause(bool is_paused) { device_running = !is_paused; }
 void NPCemu::init_ioe() {
   if (device_settings.enable_audio) {
     AudioBase.sbuf = std::make_unique<uint8_t[]>(SoundBufferSize);
-    AudioBase.reg_sbuf_size = SoundBufferSize;
+    AudioBase.reg_ctl.reg_sbuf_size = SoundBufferSize;
   }
   if (device_settings.enable_vga) {
     VideoBase.vmem1 = std::make_unique<uint8_t[]>(VMemSize);
