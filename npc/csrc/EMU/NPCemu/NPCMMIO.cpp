@@ -4,6 +4,7 @@
 #include <Simulators/NPCemu.h>
 #include <algorithm>
 #include <array>
+#include <atomic>
 #include <bit>
 #include <cstdint>
 #include <iostream>
@@ -14,6 +15,15 @@
 static void write_mask(uint32_t &dst, uint32_t mask32, uint32_t wdata) {
   dst &= ~mask32;
   dst |= wdata & mask32;
+}
+
+static void write_mask(std::atomic<uint32_t> &dst, uint32_t mask32,
+                       uint32_t wdata) {
+  uint32_t t, new_value;
+  do {
+    t = dst.load();
+    new_value = (t & ~mask32) | (wdata & mask32);
+  } while (dst.compare_exchange_weak(t, new_value));
 }
 
 static int check_addr_range(uint32_t addr, uint32_t base, uint32_t end) {
@@ -116,14 +126,19 @@ void NPCemu::writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata) {
       AudioReg_id != -1) {
     ensure_audio_enabled();
     // spdlog::info("Writing to AudioBase[{}]", AudioReg_id);
-    std::span<uint32_t, AudioBase_t::n_regs> ctlreg_arrview(
-        &AudioBase.reg_ctl.reg_freq, AudioBase_t::n_regs);
+    if (AudioReg_id == AudioBase_t::n_regs - 1) {
+      write_mask(AudioBase.reg_ctl.reg_count, mask32, wdata);
 
-    write_mask(ctlreg_arrview[AudioReg_id], mask32, wdata);
-    if (AudioBase.reg_ctl.reg_init) {
-      init_audio();
-      AudioBase.reg_ctl.reg_init = 0;
+    } else {
+      std::span<uint32_t, AudioBase_t::n_regs> ctlreg_arrview(
+          &AudioBase.reg_ctl.reg_freq, AudioBase_t::n_regs);
+      write_mask(ctlreg_arrview[AudioReg_id], mask32, wdata);
+      if (AudioBase.reg_ctl.reg_init) {
+        init_audio();
+        AudioBase.reg_ctl.reg_init = 0;
+      }
     }
+
     return;
   }
 
