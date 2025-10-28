@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <iostream>
 #include <print>
+#include <span>
 #include <stdexcept>
 
 static void write_mask(uint32_t &dst, uint32_t mask32, uint32_t wdata) {
@@ -113,11 +114,10 @@ void NPCemu::writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata) {
           waddr, AudioPort, AudioPort + sizeof(AudioBase.reg_ctl));
       AudioReg_id != -1) {
     ensure_audio_enabled();
-    log_and_throw<std::logic_error>("Init Audio {}", AudioReg_id);
     // spdlog::info("Writing to AudioBase[{}]", AudioReg_id);
-    write_mask(std::bit_cast<std::array<uint32_t, AudioBase_t::n_regs>>(
-                   AudioBase.reg_ctl)[AudioReg_id],
-               mask32, wdata);
+    std::span<uint32_t, AudioBase_t::n_regs> ctlreg_arrview(
+        &AudioBase.reg_ctl.reg_freq, AudioBase_t::n_regs);
+    write_mask(ctlreg_arrview[AudioReg_id], mask32, wdata);
     if (AudioBase.reg_ctl.reg_init) {
       init_audio();
       AudioBase.reg_ctl.reg_init = 0;
