@@ -115,7 +115,7 @@ void NPCemu::writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata) {
           waddr, AudioPort, AudioPort + sizeof(AudioBase.reg_ctl));
       AudioReg_id != -1) {
     ensure_audio_enabled();
-    spdlog::info("Writing to AudioBase[{}]", AudioReg_id);
+    // spdlog::info("Writing to AudioBase[{}]", AudioReg_id);
     std::span<uint32_t, AudioBase_t::n_regs> ctlreg_arrview(
         &AudioBase.reg_ctl.reg_freq, AudioBase_t::n_regs);
 
