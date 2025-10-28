@@ -113,9 +113,9 @@ void NPCemu::writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata) {
       AudioReg_id != -1) {
     ensure_audio_enabled();
     // spdlog::info("Writing to AudioBase[{}]", AudioReg_id);
-    write_mask(
-        std::bit_cast<std::array<uint32_t, 6>>(AudioBase.reg_ctl)[AudioReg_id],
-        mask32, wdata);
+    write_mask(std::bit_cast<std::array<uint32_t, AudioBase_t::n_regs>>(
+                   AudioBase.reg_ctl)[AudioReg_id],
+               mask32, wdata);
     if (AudioBase.reg_ctl.reg_init)
       init_audio();
     return;
