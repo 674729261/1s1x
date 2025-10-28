@@ -9,7 +9,7 @@ struct AudioBase_t {
     uint32_t reg_samples;
     uint32_t reg_sbuf_size;
     uint32_t reg_init;
-    std::atomic<uint32_t> reg_count;
+    uint32_t reg_count;
   } reg_ctl;
 
   static constexpr int n_regs = 6;
