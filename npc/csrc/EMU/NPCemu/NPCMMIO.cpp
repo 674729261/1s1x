@@ -54,8 +54,14 @@ std::optional<uint32_t> NPCemu::readMMIO(int raddr) {
       device_settings.enable_audio && AudioReg_id != -1) {
 
     // spdlog::info("Reading from AudioBase[{}]", AudioReg_id);
-    return std::bit_cast<std::array<uint32_t, 6>>(
-        AudioBase.reg_ctl)[AudioReg_id];
+    if (AudioReg_id == AudioBase_t::n_regs - 1) {
+      return AudioBase.reg_ctl.reg_count.load();
+
+    } else {
+      std::span<uint32_t, AudioBase_t::n_regs> ctlreg_arrview(
+          &AudioBase.reg_ctl.reg_freq, AudioBase_t::n_regs);
+      return ctlreg_arrview[AudioReg_id];
+    }
   }
 
   if (uint32_t SoundBufferOffset = check_addr_range(
