@@ -23,10 +23,7 @@ static void write_mask(std::atomic<uint32_t> &dst, uint32_t mask32,
   int n = 0;
   do {
     new_value = (t & ~mask32) | (wdata & mask32);
-    if (n)
-      println("{}", n);
-    n++;
-  } while (dst.compare_exchange_strong(t, new_value));
+  } while (!dst.compare_exchange_weak(t, new_value));
 }
 
 static int check_addr_range(uint32_t addr, uint32_t base, uint32_t end) {
