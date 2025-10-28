@@ -20,8 +20,12 @@ static void write_mask(uint32_t &dst, uint32_t mask32, uint32_t wdata) {
 static void write_mask(std::atomic<uint32_t> &dst, uint32_t mask32,
                        uint32_t wdata) {
   uint32_t t = dst.load(), new_value;
+  int n = 0;
   do {
     new_value = (t & ~mask32) | (wdata & mask32);
+    if (n)
+      println("{}", n);
+    n++;
   } while (dst.compare_exchange_weak(t, new_value));
 }
 
