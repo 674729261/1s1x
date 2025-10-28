@@ -22,7 +22,7 @@ static void fill_audio_callback(void *udata, Uint8 *stream, int len) {
   if (len == 0) {
     return;
   }
-  uint32_t cnt = curAudioBase->reg_ctl.reg_count.load();
+  uint32_t cnt = curAudioBase->reg_ctl.reg_count;
   if (len > cnt)
     len = cnt;
   if (last_pos + len <= NPCemu::SoundBufferSize) {

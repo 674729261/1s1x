@@ -3,9 +3,7 @@
 #include <SDL2/SDL.h>
 #include <Simulators/NPCemu.h>
 #include <algorithm>
-#include <array>
 #include <atomic>
-#include <bit>
 #include <cstdint>
 #include <iostream>
 #include <print>
@@ -54,14 +52,10 @@ std::optional<uint32_t> NPCemu::readMMIO(int raddr) {
       device_settings.enable_audio && AudioReg_id != -1) {
 
     // spdlog::info("Reading from AudioBase[{}]", AudioReg_id);
-    if (AudioReg_id == AudioBase_t::n_regs - 1) {
-      return AudioBase.reg_ctl.reg_count.load();
 
-    } else {
-      std::span<uint32_t, AudioBase_t::n_regs> ctlreg_arrview(
-          &AudioBase.reg_ctl.reg_freq, AudioBase_t::n_regs);
-      return ctlreg_arrview[AudioReg_id];
-    }
+    std::span<uint32_t, AudioBase_t::n_regs> ctlreg_arrview(
+        &AudioBase.reg_ctl.reg_freq, AudioBase_t::n_regs);
+    return ctlreg_arrview[AudioReg_id];
   }
 
   if (uint32_t SoundBufferOffset = check_addr_range(
@@ -127,20 +121,17 @@ void NPCemu::writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata) {
   // if (waddr >= AudioPort &&
   //     waddr < AudioPort + sizeof(uint32_t) * AudioBase_t::n_regs) {
   if (uint32_t AudioReg_id = check_addr_range(
-          waddr, AudioPort, AudioPort + sizeof(AudioBase.reg_ctl));
+          waddr, AudioPort, AudioPort + sizeof(uint32_t) * AudioBase_t::n_regs);
       AudioReg_id != -1) {
     ensure_audio_enabled();
     // spdlog::info("Writing to AudioBase[{}]", AudioReg_id);
-    if (AudioReg_id == AudioBase_t::n_regs - 1) {
-      write_mask(AudioBase.reg_ctl.reg_count, mask32, wdata);
-    } else {
-      std::span<uint32_t, AudioBase_t::n_regs> ctlreg_arrview(
-          &AudioBase.reg_ctl.reg_freq, AudioBase_t::n_regs);
-      write_mask(ctlreg_arrview[AudioReg_id], mask32, wdata);
-      if (AudioBase.reg_ctl.reg_init) {
-        init_audio();
-        AudioBase.reg_ctl.reg_init = 0;
-      }
+
+    std::span<uint32_t, AudioBase_t::n_regs> ctlreg_arrview(
+        &AudioBase.reg_ctl.reg_freq, AudioBase_t::n_regs);
+    write_mask(ctlreg_arrview[AudioReg_id], mask32, wdata);
+    if (AudioBase.reg_ctl.reg_init) {
+      init_audio();
+      AudioBase.reg_ctl.reg_init = 0;
     }
 
     return;
