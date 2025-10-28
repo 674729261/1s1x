@@ -3,6 +3,7 @@
 #include <SDL2/SDL.h>
 #include <Simulators/NPCemu.h>
 #include <algorithm>
+#include <array>
 #include <bit>
 #include <cstdint>
 #include <iostream>
@@ -114,9 +115,10 @@ void NPCemu::writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata) {
           waddr, AudioPort, AudioPort + sizeof(AudioBase.reg_ctl));
       AudioReg_id != -1) {
     ensure_audio_enabled();
-    // spdlog::info("Writing to AudioBase[{}]", AudioReg_id);
+    spdlog::info("Writing to AudioBase[{}]", AudioReg_id);
     std::span<uint32_t, AudioBase_t::n_regs> ctlreg_arrview(
         &AudioBase.reg_ctl.reg_freq, AudioBase_t::n_regs);
+
     write_mask(ctlreg_arrview[AudioReg_id], mask32, wdata);
     if (AudioBase.reg_ctl.reg_init) {
       init_audio();
