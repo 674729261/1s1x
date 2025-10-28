@@ -22,8 +22,9 @@ static void fill_audio_callback(void *udata, Uint8 *stream, int len) {
   if (len == 0) {
     return;
   }
-  if (len > curAudioBase->reg_ctl.reg_count)
-    len = curAudioBase->reg_ctl.reg_count;
+  uint32_t cnt = curAudioBase->reg_ctl.reg_count.load();
+  if (len > cnt)
+    len = cnt;
   if (last_pos + len <= NPCemu::SoundBufferSize) {
     SDL_MixAudio(stream, static_cast<uint8_t *>(udata) + last_pos, len,
                  SDL_MIX_MAXVOLUME);
