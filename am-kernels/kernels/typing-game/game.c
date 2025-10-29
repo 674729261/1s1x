@@ -2,7 +2,7 @@
 #include <klib-macros.h>
 #include <klib.h>
 
-#define FPS 60
+#define FPS 30
 #define CPS 5
 #define CHAR_W 8
 #define CHAR_H 16
@@ -28,7 +28,7 @@ int randint(int l, int r) { return l + (rand() & 0x7fffffff) % (r - l + 1); }
 void new_char() {
   for (int i = 0; i < LENGTH(chars); i++) {
     struct character *c = &chars[i];
-    const char *qwe = "qwe";
+    const char *qwe = "QWE";
     if (!c->ch) {
       // c->ch = 'A' + randint(0, 25);
       c->ch = qwe[randint(0, 2)];
