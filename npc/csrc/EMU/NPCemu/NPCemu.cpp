@@ -29,7 +29,7 @@ void NPCemu::pause(bool is_paused) { device_running = !is_paused; }
 void NPCemu::init_ioe() {
   if (device_settings.enable_audio) {
     AudioBase.sbuf = std::make_unique<uint8_t[]>(SoundBufferSize);
-    AudioBase.reg_sbuf_size = SoundBufferSize;
+    AudioBase.reg_ctl.reg_sbuf_size = SoundBufferSize;
   }
   if (device_settings.enable_vga) {
     VideoBase.vmem1 = std::make_unique<uint8_t[]>(VMemSize);
@@ -40,7 +40,7 @@ void NPCemu::init_ioe() {
     // init_vga();
   }
   if (device_settings.enable_keyboard) {
-    key_queue = std::make_unique<lockfree::mpmc::Queue<uint32_t, 1024>>();
+    key_queue = std::make_unique<lockfree::spsc::Queue<uint32_t, 1024>>();
   }
   device_alive = true;
   device_running = true;

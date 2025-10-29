@@ -53,6 +53,5 @@ void __am_audio_play(AM_AUDIO_PLAY_T *ctl) {
   }
 
   int new_count = inl(AUDIO_COUNT_ADDR) + len;
-
   outl(AUDIO_COUNT_ADDR, new_count);
 }

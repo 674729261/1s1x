@@ -1,19 +1,30 @@
 #pragma once
-#include "RISCV32.h"
-#include "lockfree/mpmc/queue.hpp"
-#include <SDL2/SDL.h>
-#include <VCPU.h>
+
 #include <atomic>
-#include <cassert>
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <optional>
 #include <string_view>
+#include <thread>
+
+#include "RISCV32.h"
+#include <Simulators/NPCDeviceBases/Audio.h>
+#include <Simulators/NPCDeviceBases/Keyboard.h>
+#include <Simulators/NPCDeviceBases/VGA.h>
+#include <VCPU.h>
+#include <lockfree/spsc/queue.hpp>
 
 extern "C" void trap(int signal);
 extern "C" int pmem_read(int raddr, int clk, int valid);
 extern "C" void pmem_write(int waddr, int wdata, char wmask);
+
+struct SDL_Renderer;
+struct SDL_Texture;
+struct SDL_Window;
+
+class ProgSymTab;
 
 class NPCemu : public RISCV32 {
 public:
@@ -21,37 +32,6 @@ public:
     bool enable_vga;
     bool enable_audio;
     bool enable_keyboard;
-  };
-  struct AudioBase_t {
-
-    union {
-      uint32_t regs_ctl[6];
-      struct {
-        uint32_t reg_freq;
-        uint32_t reg_channels;
-        uint32_t reg_samples;
-        uint32_t reg_sbuf_size;
-        uint32_t reg_init;
-        uint32_t reg_count;
-      };
-    };
-
-    static constexpr int n_regs = 6;
-
-    std::unique_ptr<uint8_t[]> sbuf;
-  };
-
-  struct VideoBase_t {
-    uint32_t screen_size_info;
-    std::atomic<uint32_t> sync;
-
-    std::unique_ptr<uint8_t[]> vmem1, vmem2;
-    std::atomic<uint8_t *> front_ptr;
-    uint8_t *back_ptr;
-  };
-
-  struct KeyboardBase_t {
-    uint32_t data;
   };
 
   NPCemu(size_t MemSize, std::string_view programe,
@@ -69,9 +49,11 @@ public:
 
   void syncCPUState() override final;
   void pause(bool is_paused) override final;
+
   friend void trap(int signal);
   friend int pmem_read(int raddr);
   friend void pmem_write(int waddr, int wdata, char wmask);
+
   static constexpr size_t SoundBufferSize = 0x10000;
 
   ~NPCemu();
@@ -82,17 +64,18 @@ private:
   static constexpr addr_t deviceBase = 0xa0000000u;
   static constexpr addr_t RTCAddr = deviceBase + 0x0000048u;
   static constexpr addr_t RTCAddrEnd = RTCAddr + 0x8u;
-  static constexpr addr_t SerialPort = (deviceBase + 0x00003f8);
-  static constexpr addr_t AudioPort = (deviceBase + 0x0000200);
-  static constexpr addr_t SoundBufferPort = (deviceBase + 0x1200000);
-  static constexpr addr_t VGAControlRegsPort = (deviceBase + 0x0000100);
-  static constexpr addr_t VGAFBPort = (deviceBase + 0x1000000);
-  static constexpr addr_t KeyboardPort = (deviceBase + 0x0000060);
+  static constexpr addr_t SerialPort = deviceBase + 0x00003f8;
+  static constexpr addr_t AudioPort = deviceBase + 0x0000200;
+  static constexpr addr_t SoundBufferPort = deviceBase + 0x1200000;
+  static constexpr addr_t VGAControlRegsPort = deviceBase + 0x0000100;
+  static constexpr addr_t VGAFBPort = deviceBase + 0x1000000;
+  static constexpr addr_t KeyboardPort = deviceBase + 0x0000060;
 
   static constexpr uint32_t ScreenWidth = 400;
   static constexpr uint32_t ScreenHeight = 300;
   static constexpr uint32_t VMemSize =
       ScreenWidth * ScreenHeight * sizeof(uint32_t);
+
   TOP_NAME dut;
 
   int trapped;
@@ -110,9 +93,9 @@ private:
   } RTC;
 
   KeyboardBase_t KeyboardBase;
-
   AudioBase_t AudioBase;
   VideoBase_t VideoBase;
+
   SDL_Renderer *renderer;
   SDL_Texture *texture;
   SDL_Window *window;
@@ -124,7 +107,8 @@ private:
 
   std::atomic<bool> device_running, device_alive;
   std::thread device_update_thread;
-  std::unique_ptr<lockfree::mpmc::Queue<uint32_t, 1024>> key_queue;
+
+  std::unique_ptr<lockfree::spsc::Queue<uint32_t, 1024>> key_queue;
 
   static void init_keymap();
 
