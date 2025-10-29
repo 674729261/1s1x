@@ -19,7 +19,7 @@ VERILATOR_LDLAGS = -flto=auto -fipa-pta
 
 
 CXXFLAGS += -CFLAGS "$(VERILATOR_CFLAGS)" -CFLAGS -DTOP_NAME="\"V$(TOPNAME)\"" -LDFLAGS "-lSDL2"
-VERILATORFLAGS += --no-trace --threads 1 --cc --exe --build --trace -j 16 
+VERILATORFLAGS += -O3 --no-trace --threads 1 --cc --exe --build --trace -j 16 
 VERILATOR_DISABLE_WARNINGS += -Wno-UNUSEDSIGNAL -Wno-DECLFILENAME -Wno-SYNCASYNCNET
 
 
