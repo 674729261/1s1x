@@ -76,7 +76,6 @@ std::optional<uint32_t> NPCemu::readMMIO(int raddr) {
 }
 
 void NPCemu::writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata) {
-  auto lock = std::lock_guard(AudioBase.buf_lock);
   using namespace std::chrono;
   // if (waddr >= RTCAddr && waddr < RTCAddrEnd) {
   if (uint32_t RTC_id = check_addr_range(waddr, RTCAddr, RTCAddrEnd);
