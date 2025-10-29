@@ -1,11 +1,10 @@
-#include "Simulators/NPCDeviceBases/Audio.h"
-#include "my_utils.h"
+#include <Device/Device.h>
 #include <SDL2/SDL.h>
-#include <Simulators/NPCemu.h>
 #include <algorithm>
 #include <atomic>
 #include <cstdint>
 #include <iostream>
+#include <my_utils.h>
 #include <print>
 #include <span>
 #include <stdexcept>
@@ -28,7 +27,7 @@ static int check_addr_range(uint32_t addr, uint32_t base, uint32_t end) {
   return (addr - base) >> 2;
 }
 
-std::optional<uint32_t> NPCemu::readMMIO(int raddr) {
+std::optional<uint32_t> Devices::readMMIO(int raddr) {
   if (uint32_t RTC_id = check_addr_range(raddr, RTCAddr, RTCAddrEnd);
       RTC_id != -1) {
     update_RTC();
@@ -75,7 +74,7 @@ std::optional<uint32_t> NPCemu::readMMIO(int raddr) {
   return std::nullopt;
 }
 
-void NPCemu::writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata) {
+void Devices::writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata) {
   using namespace std::chrono;
   // if (waddr >= RTCAddr && waddr < RTCAddrEnd) {
   if (uint32_t RTC_id = check_addr_range(waddr, RTCAddr, RTCAddrEnd);
@@ -110,7 +109,7 @@ void NPCemu::writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata) {
       if (tmp) {
         VideoBase.back_ptr = VideoBase.front_ptr.exchange(VideoBase.back_ptr);
         uint8_t *f = VideoBase.front_ptr;
-        std::copy(f, f + NPCemu::VMemSize, VideoBase.back_ptr);
+        std::copy(f, f + Devices::VMemSize, VideoBase.back_ptr);
       }
       VideoBase.sync = tmp;
     }

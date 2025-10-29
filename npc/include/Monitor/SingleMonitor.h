@@ -1,6 +1,7 @@
 #pragma once
 #include "../Expression/Expression.h"
 #include "../Simulators/RISCV32.h"
+#include "Device/Device.h"
 #include <cstdint>
 #include <list>
 #include <memory>
@@ -12,10 +13,10 @@
 #include <vector>
 class SingleMonitor {
 public:
-  SingleMonitor(std::shared_ptr<RISCV32> dut, bool batch = false,
-                unsigned long itracer = 16, bool mtracer = false,
-                unsigned long irb = 16, bool ftracer = false,
-                std::string_view elf_path = "");
+  SingleMonitor(std::shared_ptr<RISCV32> dut, Devices::DeviceSettings ds,
+                bool batch = false, unsigned long itracer = 16,
+                bool mtracer = false, unsigned long irb = 16,
+                bool ftracer = false, std::string_view elf_path = "");
 
   int start();
   void addReference(std::shared_ptr<RISCV32> ref);
@@ -32,6 +33,7 @@ public:
 
 private:
   std::vector<std::shared_ptr<RISCV32>> emus;
+  std::shared_ptr<Devices> devices;
   unsigned long itracer, irb;
   bool batch, mtracer;
 

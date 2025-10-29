@@ -42,21 +42,3 @@ template <class ExceptionType, typename... Args>
   spdlog::error(fmt, std::forward<Args>(args)...);
   throw ExceptionType(std::format(fmt, std::forward<Args>(args)...));
 }
-
-class SpinLock {
-public:
-  SpinLock() : flag_(false) {}
-
-  void lock() {
-    bool expected = false;
-    while (!flag_.compare_exchange_weak(expected, true,
-                                        std::memory_order_acquire)) {
-      expected = false;
-    }
-  }
-
-  void unlock() { flag_.store(false, std::memory_order_release); }
-
-private:
-  std::atomic<bool> flag_;
-};

@@ -1,4 +1,5 @@
 #pragma once
+#include "Device/Device.h"
 #include <Simulators/NEMUemu.h>
 #include <Simulators/NPCemu.h>
 #include <VCPU.h>
@@ -26,7 +27,7 @@ struct Config {
   unsigned long sz_irb;
   bool use_ftracer;
   std::string path_elf;
-  NPCemu::DeviceSettings device_settings;
+  Devices::DeviceSettings device_settings;
 };
 
 Config setup(argparse::ArgumentParser &program);

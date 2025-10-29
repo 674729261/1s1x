@@ -1,5 +1,5 @@
+#include <Device/Device.h>
 #include <SDL2/SDL.h>
-#include <Simulators/NPCemu.h>
 #include <cstdint>
 #include <print>
 #include <spdlog/spdlog.h>
@@ -25,15 +25,15 @@ enum { NEMU_KEY_NONE = 0, MAP(NEMU_KEYS, NEMU_KEY_NAME) };
 #define SDL_KEYMAP(k) keymap[SDL_SCANCODE_##k] = NEMU_KEY_##k;
 static uint32_t keymap[256] = {};
 
-void NPCemu::init_keymap() { MAP(NEMU_KEYS, SDL_KEYMAP) }
+void Devices::init_keymap() { MAP(NEMU_KEYS, SDL_KEYMAP) }
 
-void NPCemu::init_keyboard() { init_keymap(); }
+void Devices::init_keyboard() { init_keymap(); }
 
 uint32_t wrap_key_event(uint8_t scancode, bool is_keydown) {
   return keymap[scancode] | (is_keydown ? 0x8000 : 0);
 }
 
-void NPCemu::process_keyboard() {
+void Devices::process_keyboard() {
   SDL_Event event;
   while (SDL_PollEvent(&event)) {
     switch (event.type) {
