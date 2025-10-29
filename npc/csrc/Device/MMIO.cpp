@@ -126,6 +126,7 @@ void Devices::writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata) {
 
     std::span<uint32_t, AudioBase_t::n_regs> ctlreg_arrview(
         &AudioBase.reg_ctl.reg_freq, AudioBase_t::n_regs);
+    std::println("!!{}", AudioReg_id);
     write_mask(ctlreg_arrview[AudioReg_id], mask32, wdata);
     if (AudioBase.reg_ctl.reg_init) {
       init_audio();
