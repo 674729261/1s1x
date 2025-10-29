@@ -1,10 +1,10 @@
 #pragma once
 
 #include "RISCV32.h"
+#include <Device/Audio.h>
 #include <Device/Device.h>
-#include <Simulators/NPCDeviceBases/Audio.h>
-#include <Simulators/NPCDeviceBases/Keyboard.h>
-#include <Simulators/NPCDeviceBases/VGA.h>
+#include <Device/Keyboard.h>
+#include <Device/VGA.h>
 #include <VCPU.h>
 #include <cstddef>
 #include <cstdint>

@@ -1,8 +1,8 @@
 #pragma once
+#include <Device/Audio.h>
+#include <Device/Keyboard.h>
+#include <Device/VGA.h>
 #include <SDL2/SDL.h>
-#include <Simulators/NPCDeviceBases/Audio.h>
-#include <Simulators/NPCDeviceBases/Keyboard.h>
-#include <Simulators/NPCDeviceBases/VGA.h>
 #include <cstdint>
 #include <lockfree/spsc/queue.hpp>
 #include <memory>
