@@ -16,8 +16,7 @@ public:
   };
 
   Devices(DeviceSettings ds)
-      : KeyboardBase({}), AudioBase({}), VideoBase(), RTC({}),
-        device_settings(ds) {}
+      : KeyboardBase{}, AudioBase{}, VideoBase{}, RTC{}, device_settings(ds) {}
 
   void writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata);
   std::optional<uint32_t> readMMIO(int raddr);
