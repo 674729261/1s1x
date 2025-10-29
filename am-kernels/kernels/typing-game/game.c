@@ -2,7 +2,7 @@
 #include <klib-macros.h>
 #include <klib.h>
 
-#define FPS 45
+#define FPS 60
 #define CPS 5
 #define CHAR_W 8
 #define CHAR_H 16
