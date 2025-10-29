@@ -1,4 +1,6 @@
 #pragma once
+#include "my_utils.h"
+#include <atomic>
 #include <cstdint>
 #include <memory>
 struct AudioBase_t {
@@ -14,4 +16,5 @@ struct AudioBase_t {
   static constexpr int n_regs = 6;
 
   std::unique_ptr<uint8_t[]> sbuf;
+  SpinLock buf_lock;
 };

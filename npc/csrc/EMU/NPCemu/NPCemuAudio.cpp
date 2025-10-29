@@ -3,6 +3,7 @@
 #include <Simulators/NPCemu.h>
 #include <cstdint>
 #include <format>
+#include <mutex>
 #include <my_utils.h>
 #include <print>
 #include <spdlog/spdlog.h>
@@ -22,6 +23,8 @@ static void fill_audio_callback(void *udata, Uint8 *stream, int len) {
   if (len == 0) {
     return;
   }
+  auto lock = std::lock_guard(curAudioBase->buf_lock);
+
   uint32_t cnt = curAudioBase->reg_ctl.reg_count;
   if (len > cnt)
     len = cnt;

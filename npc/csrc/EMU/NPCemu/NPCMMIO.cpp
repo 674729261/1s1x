@@ -125,6 +125,8 @@ void NPCemu::writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata) {
     ensure_audio_enabled();
     // spdlog::info("Writing to AudioBase[{}]", AudioReg_id);
 
+    auto lock = std::lock_guard(AudioBase.buf_lock);
+
     std::span<uint32_t, AudioBase_t::n_regs> ctlreg_arrview(
         &AudioBase.reg_ctl.reg_freq, AudioBase_t::n_regs);
     write_mask(ctlreg_arrview[AudioReg_id], mask32, wdata);
@@ -140,6 +142,8 @@ void NPCemu::writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata) {
           waddr, SoundBufferPort, SoundBufferPort + SoundBufferSize);
       SoundBufferOffset != -1) {
     ensure_audio_enabled();
+    auto lock = std::lock_guard(AudioBase.buf_lock);
+
     SDL_LockAudio();
     write_mask(
         reinterpret_cast<uint32_t *>(AudioBase.sbuf.get())[SoundBufferOffset],
