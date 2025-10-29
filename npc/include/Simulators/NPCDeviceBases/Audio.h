@@ -1,7 +1,7 @@
 #pragma once
-#include "my_utils.h"
 #include <cstdint>
 #include <memory>
+#include <mutex>
 struct AudioBase_t {
   struct {
     uint32_t reg_freq;
@@ -15,4 +15,5 @@ struct AudioBase_t {
   static constexpr int n_regs = 6;
 
   std::unique_ptr<uint8_t[]> sbuf;
+  std::mutex buf_lock;
 };
