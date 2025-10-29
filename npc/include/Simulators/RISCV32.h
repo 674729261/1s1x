@@ -1,5 +1,6 @@
 #pragma once
 #include "../Tracer/Tracer.h"
+#include "Device/Device.h"
 #include <array>
 #include <cassert>
 #include <cstddef>
@@ -57,7 +58,6 @@ public:
       step();
     return EMUstate;
   }
-  virtual void pause(bool is_paused) = 0;
   virtual unsigned long long instrCount() = 0;
   virtual void syncCPUState() = 0;
   Interrupt getEMUState() { return EMUstate; }
@@ -65,6 +65,7 @@ public:
   virtual ~RISCV32() = default;
 
   void tie_tracer(std::shared_ptr<Tracer> t) { tracer = t; }
+  void tie_devices(std::shared_ptr<Devices> d) { devices = d; }
 
 protected:
   std::vector<uint32_t> M;
@@ -72,4 +73,5 @@ protected:
   Interrupt EMUstate;
 
   std::shared_ptr<Tracer> tracer;
+  std::shared_ptr<Devices> devices;
 };

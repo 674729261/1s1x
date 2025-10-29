@@ -1,3 +1,4 @@
+#include "Device/Device.h"
 #include "VCPU.h"
 #include "VCPU___024root.h"
 #include "my_utils.h"
@@ -6,84 +7,18 @@
 #include <SDL2/SDL_error.h>
 #include <Simulators/NPCemu.h>
 #include <Simulators/RISCV32.h>
-#include <chrono>
 #include <cstdint>
 #include <format>
 #include <lockfree/lockfree.hpp>
-#include <memory>
 #include <optional>
 #include <print>
-#include <signal.h>
 #include <stdexcept>
 #include <string_view>
-#include <thread>
-NPCemu::NPCemu(size_t MemSize, std::string_view program,
-               NPCemu::DeviceSettings ds)
-    : RISCV32(MemSize, program, PC_Init), dut("DUT"), trapped(0), inst_count(0),
-      device_settings(ds), device_update_thread() {}
+NPCemu::NPCemu(size_t MemSize, std::string_view program)
+    : RISCV32(MemSize, program, Devices::PC_Init), dut("DUT"), trapped(0),
+      inst_count(0) {}
 
 RISCV32::addr_t NPCemu::getPC() { return getGPR(32); }
-
-void NPCemu::pause(bool is_paused) { device_running = !is_paused; }
-
-void NPCemu::init_ioe() {
-  if (device_settings.enable_audio) {
-    AudioBase.sbuf = std::make_unique<uint8_t[]>(SoundBufferSize);
-    AudioBase.reg_ctl.reg_sbuf_size = SoundBufferSize;
-  }
-  if (device_settings.enable_vga) {
-    VideoBase.vmem1 = std::make_unique<uint8_t[]>(VMemSize);
-    VideoBase.vmem2 = std::make_unique<uint8_t[]>(VMemSize);
-    VideoBase.front_ptr = VideoBase.vmem1.get();
-    VideoBase.back_ptr = VideoBase.vmem2.get();
-    VideoBase.screen_size_info = (ScreenWidth << 16) | ScreenHeight;
-    // init_vga();
-  }
-  if (device_settings.enable_keyboard) {
-    key_queue = std::make_unique<lockfree::spsc::Queue<uint32_t, 1024>>();
-  }
-  device_alive = true;
-  device_running = true;
-  device_update_thread = std::thread(&NPCemu::device_update_loop, this);
-}
-
-void NPCemu::device_update_loop() {
-  if (device_settings.enable_vga) {
-    init_vga();
-  }
-  if (device_settings.enable_keyboard) {
-    init_keyboard();
-  }
-  signal(SIGINT, SIG_DFL);
-  signal(SIGTERM, SIG_DFL);
-  using namespace std::chrono;
-  auto last = steady_clock::now();
-  try {
-    while (device_alive) {
-      if (device_running) {
-        auto now = steady_clock::now();
-        if (duration_cast<microseconds>(now - last).count() < 1'000'000 / 60)
-          continue;
-        last = now;
-        if (device_settings.enable_vga) {
-          vga_update_screen();
-        }
-        if (device_settings.enable_keyboard) {
-          process_keyboard();
-        }
-      }
-    }
-  } catch (const std::exception &err) {
-    std::println(std::cerr, "Error : {}", err.what());
-    std::terminate();
-  }
-  if (texture)
-    SDL_DestroyTexture(texture);
-  if (renderer)
-    SDL_DestroyRenderer(renderer);
-  if (window)
-    SDL_DestroyWindow(window);
-}
 
 void NPCemu::reset() {
   dut.reset = 1;
@@ -95,16 +30,15 @@ void NPCemu::reset() {
   dut.reset = 0;
   dut.eval();
 
-  init_ioe();
   syncCPUState();
 }
 
 void NPCemu::step() {
   addr_t pc = dut.io_pc;
-  if (pc < memOffset) {
+  if (pc < Devices::memOffset) {
     log_and_throw<std::logic_error>("pc : {:08x} out of range", pc);
   }
-  dut.io_instr = M[(pc - memOffset) / 4];
+  dut.io_instr = M[(pc - Devices::memOffset) / 4];
 
   uint32_t rs1 = (dut.io_instr >> 15) & 0x1f;
 
@@ -247,23 +181,23 @@ void NPCemu::writeMemory(int waddr, int wdata, char wmask) {
     if ((wmask >> i) & 0x1) {
       uint32_t mask32 =
           (uint32_t)((1ull << (8ull * (i + 1))) - (1ull << (8ull * i)));
-      uint32_t addr = (uint32_t)(waddr - memOffset) >> 2;
-      if (addr < M.size() && waddr >= memOffset) {
+      uint32_t addr = (uint32_t)(waddr - Devices::memOffset) >> 2;
+      if (addr < M.size() && waddr >= Devices::memOffset) {
         M[addr] &= ~mask32;
         M[addr] |= wdata & mask32;
-      } else if (waddr >= deviceBase) {
-        writeMMIO(waddr & ~0x3, mask32, wdata);
+      } else if (waddr >= Devices::deviceBase && devices) {
+        devices->writeMMIO(waddr & ~0x3, mask32, wdata);
       }
     }
   }
 }
 uint32_t NPCemu::readMemory(int raddr) {
   raddr &= ~0x3;
-  uint32_t addr = (uint32_t)(raddr - PC_Init) >> 2;
-  if (addr < M.size() && raddr >= PC_Init)
+  uint32_t addr = (uint32_t)(raddr - Devices::PC_Init) >> 2;
+  if (addr < M.size() && raddr >= Devices::PC_Init)
     return M[addr];
-  if (raddr >= deviceBase) {
-    auto ret = readMMIO(raddr);
+  if (raddr >= Devices::deviceBase && devices) {
+    auto ret = devices->readMMIO(raddr);
     if (!ret.has_value()) {
       return 0xdeafbeef;
     }
@@ -273,26 +207,4 @@ uint32_t NPCemu::readMemory(int raddr) {
   return 0xdeafbeef;
 }
 
-void NPCemu::update_RTC() {
-  using namespace std::chrono;
-  auto now_tick = steady_clock().now();
-  uint64_t duration = static_cast<uint64_t>(
-      duration_cast<microseconds>(now_tick - RTC.last_time).count());
-  // uint64_t start_time =
-  //     RTC.RTC_reg[0] | (static_cast<uint64_t>(RTC.RTC_reg[1]) << 32);
-  uint64_t now_time = duration;
-
-  RTC.RTC_reg[0] = static_cast<uint32_t>(now_time & 0xFFFFFFFF);
-  RTC.RTC_reg[1] = static_cast<uint32_t>(now_time >> 32);
-  // RTC.last_time = now_tick;
-  // std::print("!!{}\r", now_time);
-}
-
-NPCemu::~NPCemu() {
-  device_running = false;
-  device_alive = false;
-  device_update_thread.join();
-
-  SDL_CloseAudio();
-  SDL_Quit();
-}
+NPCemu::~NPCemu() {}

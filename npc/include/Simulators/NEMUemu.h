@@ -11,7 +11,6 @@ public:
   void reset() override final;
   void step() override final;
   unsigned long long instrCount() override final;
-  void pause(bool is_paused) override final {}
   void writeMemory(int waddr, int wdata, char wmask) override final;
   uint32_t readMemory(int raddr) override final;
   uint32_t getGPR(int idx) override final;

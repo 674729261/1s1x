@@ -1,28 +1,27 @@
+#include <Device/Device.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_audio.h>
-#include <Simulators/NPCemu.h>
 #include <cstdint>
-#include <format>
 #include <my_utils.h>
 #include <print>
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 
-void NPCemu::ensure_vga_enabled() {
+void Devices::ensure_vga_enabled() {
   if (!device_settings.enable_vga) {
     log_and_throw<std::logic_error>(
         "Accessing audio MMIO when vga is disabled");
   }
 }
 
-void NPCemu::vga_update_screen() {
+void Devices::vga_update_screen() {
   if (VideoBase.sync) {
     update_screen();
     VideoBase.sync = 0;
   }
 }
 
-void NPCemu::update_screen() {
+void Devices::update_screen() {
   uint8_t *ptr_vmem = VideoBase.front_ptr.load();
   SDL_UpdateTexture(texture, NULL, ptr_vmem, ScreenWidth * sizeof(uint32_t));
   SDL_RenderClear(renderer);
@@ -30,7 +29,7 @@ void NPCemu::update_screen() {
   SDL_RenderPresent(renderer);
 }
 
-void NPCemu::init_vga() {
+void Devices::init_vga() {
   SDL_Init(SDL_INIT_VIDEO);
   SDL_CreateWindowAndRenderer(ScreenWidth * 2, ScreenHeight * 2, 0, &window,
                               &renderer);

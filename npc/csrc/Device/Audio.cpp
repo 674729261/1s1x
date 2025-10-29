@@ -1,3 +1,4 @@
+#include <Device/Device.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_audio.h>
 #include <Simulators/NPCemu.h>
@@ -9,13 +10,6 @@
 #include <stdexcept>
 static AudioBase_t *curAudioBase;
 
-void NPCemu::ensure_audio_enabled() {
-  if (!device_settings.enable_audio) {
-    log_and_throw<std::logic_error>(
-        "Accessing audio MMIO when audio is disabled");
-  }
-}
-
 static void fill_audio_callback(void *udata, Uint8 *stream, int len) {
   SDL_memset(stream, 0, len);
   static int last_pos = 0;
@@ -25,22 +19,22 @@ static void fill_audio_callback(void *udata, Uint8 *stream, int len) {
   uint32_t cnt = curAudioBase->reg_ctl.reg_count;
   if (len > cnt)
     len = cnt;
-  if (last_pos + len <= NPCemu::SoundBufferSize) {
+  if (last_pos + len <= Devices::SoundBufferSize) {
     SDL_MixAudio(stream, static_cast<uint8_t *>(udata) + last_pos, len,
                  SDL_MIX_MAXVOLUME);
     last_pos += len;
   } else {
     SDL_MixAudio(stream, static_cast<uint8_t *>(udata) + last_pos,
-                 NPCemu::SoundBufferSize - last_pos, SDL_MIX_MAXVOLUME);
-    SDL_MixAudio(stream + NPCemu::SoundBufferSize - last_pos,
+                 Devices::SoundBufferSize - last_pos, SDL_MIX_MAXVOLUME);
+    SDL_MixAudio(stream + Devices::SoundBufferSize - last_pos,
                  static_cast<uint8_t *>(udata),
-                 len - NPCemu::SoundBufferSize + last_pos, SDL_MIX_MAXVOLUME);
-    last_pos = len - NPCemu::SoundBufferSize + last_pos;
+                 len - Devices::SoundBufferSize + last_pos, SDL_MIX_MAXVOLUME);
+    last_pos = len - Devices::SoundBufferSize + last_pos;
   }
 
   curAudioBase->reg_ctl.reg_count -= len;
 }
-void NPCemu::init_audio() {
+void Devices::init_audio() {
 
   if (SDL_InitSubSystem(SDL_INIT_AUDIO)) {
     log_and_throw<std::runtime_error>("Could not initialize SDL - {}\n",
@@ -71,4 +65,11 @@ void NPCemu::init_audio() {
   }
   curAudioBase = &AudioBase;
   SDL_PauseAudio(0);
+}
+
+void Devices::ensure_audio_enabled() {
+  if (!device_settings.enable_audio) {
+    log_and_throw<std::logic_error>(
+        "Accessing audio MMIO when audio is disabled");
+  }
 }
