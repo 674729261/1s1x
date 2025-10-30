@@ -2,9 +2,6 @@
 #include "VCPU.h"
 #include "VCPU___024root.h"
 #include "my_utils.h"
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_audio.h>
-#include <SDL2/SDL_error.h>
 #include <Simulators/NPCemu.h>
 #include <Simulators/RISCV32.h>
 #include <cstdint>
@@ -186,7 +183,7 @@ void NPCemu::writeMemory(int waddr, int wdata, char wmask) {
         M[addr] &= ~mask32;
         M[addr] |= wdata & mask32;
       } else if (waddr >= Devices::deviceBase && devices) {
-        // devices->writeMMIO(waddr & ~0x3, mask32, wdata);
+        devices->writeMMIO(waddr & ~0x3, mask32, wdata);
       }
     }
   }
@@ -197,8 +194,8 @@ uint32_t NPCemu::readMemory(int raddr) {
   if (addr < M.size() && raddr >= Devices::PC_Init)
     return M[addr];
   if (raddr >= Devices::deviceBase && devices) {
-    // auto ret = devices->readMMIO(raddr);
-    // return ret.value_or(0xdeadbeef);
+    auto ret = devices->readMMIO(raddr);
+    return ret.value_or(0xdeadbeef);
   }
 
   return 0xdeafbeef;
