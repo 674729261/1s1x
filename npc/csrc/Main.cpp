@@ -32,8 +32,8 @@ int main(int argc, char *argv[]) {
                         config.itracer, config.mtracer, config.sz_irb,
                         config.use_ftracer, config.path_elf);
 
-  if (config.difftest)
-    monitor.addReference(nemu);
+  if (config.difftest) { // monitor.addReference(nemu);
+  }
   try {
     result = monitor.start();
 
@@ -43,9 +43,6 @@ int main(int argc, char *argv[]) {
   }
 
   emu = nullptr;
-  println(cerr, "!!");
-  nemu = nullptr;
-  println(cerr, "??");
 
   spdlog::shutdown();
   return result;
