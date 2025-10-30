@@ -28,7 +28,6 @@ int main(int argc, char *argv[]) {
 
   emu = make_shared<NPCemu>(config.mem_size, config.image_path);
   int result;
-
   SingleMonitor monitor(emu, config.device_settings, config.batch_mode,
                         config.itracer, config.mtracer, config.sz_irb,
                         config.use_ftracer, config.path_elf);
@@ -44,6 +43,10 @@ int main(int argc, char *argv[]) {
   }
 
   emu = nullptr;
+  println(cerr, "!!");
+  nemu = nullptr;
+  println(cerr, "??");
+
   spdlog::shutdown();
   return result;
 }
