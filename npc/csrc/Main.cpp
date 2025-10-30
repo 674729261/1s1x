@@ -28,22 +28,21 @@ int main(int argc, char *argv[]) {
 
   emu = make_shared<NPCemu>(config.mem_size, config.image_path);
   int result;
-  {
-    SingleMonitor monitor(emu, config.device_settings, config.batch_mode,
-                          config.itracer, config.mtracer, config.sz_irb,
-                          config.use_ftracer, config.path_elf);
 
-    if (config.difftest)
-      monitor.addReference(nemu);
-    try {
-      result = monitor.start();
+  SingleMonitor monitor(emu, config.device_settings, config.batch_mode,
+                        config.itracer, config.mtracer, config.sz_irb,
+                        config.use_ftracer, config.path_elf);
 
-    } catch (const std::exception &err) {
-      std::println(std::cerr, "Error : {}", err.what());
-      std::terminate();
-    }
+  if (config.difftest)
+    monitor.addReference(nemu);
+  try {
+    result = monitor.start();
+
+  } catch (const std::exception &err) {
+    std::println(std::cerr, "Error : {}", err.what());
+    std::terminate();
   }
-  println(cerr, "!!!!");
+
   emu = nullptr;
   spdlog::shutdown();
   return result;

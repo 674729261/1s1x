@@ -2,7 +2,9 @@
 #include <cstdint>
 #include <dlfcn.h>
 #include <format>
+#include <iostream>
 #include <my_utils.h>
+#include <print>
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 NEMUemu::NEMUemu(size_t MemSize, std::string_view programe)
@@ -54,8 +56,10 @@ uint32_t NEMUemu::getPC() {
   return cpu.pc;
 }
 NEMUemu::~NEMUemu() {
+  std::println(std::cerr, "!!");
   if (loaded_lib != nullptr)
     dlclose(loaded_lib);
+  std::println(std::cerr, "??");
 }
 uint32_t NEMUemu::readMemory(int raddr) {
   log_and_throw<std::logic_error>("Can not read NEMUemu memory");
