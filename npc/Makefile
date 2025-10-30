@@ -20,7 +20,7 @@ VERILATOR_LDLAGS = -flto=auto -fipa-pta
 
 
 CXXFLAGS += -CFLAGS "$(VERILATOR_CFLAGS)"  -LDFLAGS "-lSDL2"
-VERILATORFLAGS += --noassert --no-coverage --x-assign fast --x-initial fast -O3 --no-trace --threads 1 --cc --exe --build -j 8 
+VERILATORFLAGS += --noassert --no-coverage --x-assign fast --x-initial fast -O3 --no-trace --threads 2 --cc --exe --build -j 8 
 VERILATOR_DISABLE_WARNINGS += -Wno-UNUSEDSIGNAL -Wno-DECLFILENAME -Wno-SYNCASYNCNET
 
 
