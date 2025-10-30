@@ -1,7 +1,7 @@
 #include <Device/Device.h>
 #include <iostream>
 #include <memory>
-#include <signal.h>
+
 void Devices::init_ioe() {
   if (device_settings.enable_audio) {
     AudioBase.sbuf = std::make_unique_for_overwrite<uint8_t[]>(SoundBufferSize);
@@ -30,8 +30,7 @@ void Devices::device_update_loop() {
   if (device_settings.enable_keyboard) {
     init_keyboard();
   }
-  signal(SIGINT, SIG_DFL);
-  signal(SIGTERM, SIG_DFL);
+
   using namespace std::chrono;
   auto last = steady_clock::now();
   try {

@@ -96,7 +96,12 @@ int SingleMonitor::start() {
         devices->pause(false);
         auto n_inst = emus.front()->instrCount();
         auto start = steady_clock::now();
-        emus.front()->simulate(-1);
+        // emus.front()->simulate(-1);
+
+        while (emus.front()->getEMUState() == RISCV32::Interrupt::NONE &&
+               !devices->is_shutdown())
+          emus.front()->step();
+
         auto end = steady_clock::now();
         n_inst = emus.front()->instrCount() - n_inst;
         double elapsed = duration_cast<nanoseconds>(end - start).count();
@@ -194,7 +199,7 @@ void SingleMonitor::simulate(unsigned long cnt) {
         return;
       }
     }
-    if (diff_fault.first >= 0 || triggered ||
+    if (diff_fault.first >= 0 || triggered || devices->is_shutdown() ||
         emus.front()->getEMUState() != RISCV32::Interrupt::NONE)
       break;
   }

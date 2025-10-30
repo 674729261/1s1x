@@ -53,11 +53,11 @@ public:
   virtual uint32_t readMemory(int raddr) = 0;
   virtual void reset() = 0;
   virtual void step() = 0;
-  Interrupt simulate(unsigned long steps) {
-    while (steps-- && EMUstate == Interrupt::NONE)
-      step();
-    return EMUstate;
-  }
+  // Interrupt simulate(unsigned long steps) {
+  //   while (steps-- && EMUstate == Interrupt::NONE)
+  //     step();
+  //   return EMUstate;
+  // }
   virtual unsigned long long instrCount() = 0;
   virtual void syncCPUState() = 0;
   Interrupt getEMUState() { return EMUstate; }

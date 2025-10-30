@@ -1,5 +1,7 @@
 #include <Device/Device.h>
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_events.h>
+#include <atomic>
 #include <cstdint>
 #include <print>
 #include <spdlog/spdlog.h>
@@ -37,6 +39,11 @@ void Devices::process_keyboard() {
   SDL_Event event;
   while (SDL_PollEvent(&event)) {
     switch (event.type) {
+    case SDL_QUIT: {
+      shutdown.store(true);
+      break;
+    }
+
     case SDL_KEYDOWN:
     case SDL_KEYUP: {
       uint8_t k = event.key.keysym.scancode;
