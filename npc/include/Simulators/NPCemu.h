@@ -45,8 +45,8 @@ public:
   ~NPCemu();
 
 private:
-  TOP_NAME dut;
-
+  std::unique_ptr<VerilatedContext> context;
+  std::unique_ptr<TOP_NAME> dut;
   int trapped;
   unsigned long long inst_count;
 
