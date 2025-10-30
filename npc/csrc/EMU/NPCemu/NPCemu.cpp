@@ -186,7 +186,7 @@ void NPCemu::writeMemory(int waddr, int wdata, char wmask) {
         M[addr] &= ~mask32;
         M[addr] |= wdata & mask32;
       } else if (waddr >= Devices::deviceBase && devices) {
-        devices->writeMMIO(waddr & ~0x3, mask32, wdata);
+        // devices->writeMMIO(waddr & ~0x3, mask32, wdata);
       }
     }
   }
@@ -197,11 +197,8 @@ uint32_t NPCemu::readMemory(int raddr) {
   if (addr < M.size() && raddr >= Devices::PC_Init)
     return M[addr];
   if (raddr >= Devices::deviceBase && devices) {
-    auto ret = devices->readMMIO(raddr);
-    if (!ret.has_value()) {
-      return 0xdeafbeef;
-    }
-    return ret.value();
+    // auto ret = devices->readMMIO(raddr);
+    // return ret.value_or(0xdeadbeef);
   }
 
   return 0xdeafbeef;
