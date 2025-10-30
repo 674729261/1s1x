@@ -99,7 +99,7 @@ int SingleMonitor::start() {
         // emus.front()->simulate(-1);
 
         while (emus.front()->getEMUState() == RISCV32::Interrupt::NONE &&
-               !devices->is_shutdown())
+               !devices->is_quit())
           emus.front()->step();
 
         auto end = steady_clock::now();
@@ -151,11 +151,12 @@ bool SingleMonitor::process_trap() {
   return (gpr_a0 == 0);
 }
 
-void SingleMonitor::simulate(unsigned long cnt) {
+void SingleMonitor::simulate(unsigned long long cnt) {
   using namespace std::chrono;
+  devices->reset_quit();
   int n_inst = emus.front()->instrCount();
   auto start = steady_clock::now();
-  unsigned long max_display_inst = itracer;
+  unsigned long long max_display_inst = itracer;
   max_display_inst = std::min(max_display_inst, cnt);
 
   bool triggered = false;
@@ -199,7 +200,7 @@ void SingleMonitor::simulate(unsigned long cnt) {
         return;
       }
     }
-    if (diff_fault.first >= 0 || triggered || devices->is_shutdown() ||
+    if (diff_fault.first >= 0 || triggered || devices->is_quit() ||
         emus.front()->getEMUState() != RISCV32::Interrupt::NONE)
       break;
   }

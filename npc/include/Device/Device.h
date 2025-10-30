@@ -18,8 +18,7 @@ public:
 
   Devices(DeviceSettings ds)
       : KeyboardBase{}, AudioBase{}, VideoBase{}, RTC{}, renderer(nullptr),
-        texture(nullptr), window(nullptr), shutdown(false),
-        device_settings(ds) {}
+        texture(nullptr), window(nullptr), quit(false), device_settings(ds) {}
 
   void writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata);
   std::optional<uint32_t> readMMIO(int raddr);
@@ -42,7 +41,8 @@ public:
   void ensure_audio_enabled();
   void ensure_vga_enabled();
 
-  bool is_shutdown() { return shutdown.load(); }
+  bool is_quit() { return quit.load(); }
+  void reset_quit() { quit.store(false); }
 
   const DeviceSettings device_settings;
 
@@ -57,7 +57,7 @@ private:
   AudioBase_t AudioBase;
   VideoBase_t VideoBase;
 
-  std::atomic<bool> shutdown;
+  std::atomic<bool> quit;
 
   SDL_Renderer *renderer;
   SDL_Texture *texture;
