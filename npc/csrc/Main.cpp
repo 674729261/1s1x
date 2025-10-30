@@ -38,6 +38,7 @@ int main(int argc, char *argv[]) {
     std::println(std::cerr, "Error : {}", err.what());
     std::terminate();
   }
+  println(std::cerr, "!!!!");
   emu = nullptr;
   spdlog::shutdown();
   return result;
