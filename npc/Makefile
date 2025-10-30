@@ -13,7 +13,7 @@ SVSRC = $(shell cat $(SV_FILELIST) | sed 's|^|generated_svsrc/|g' | tr '\n' ' ')
 
 VERILATOR = verilator
 
-VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -O3 -I$(NPC_HOME)/include -std=c++23 \
+VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -Ofast -I$(NPC_HOME)/include -std=c++23 \
 -march=native -mtune=native \
 -funroll-loops -flto=auto -ffast-math -fno-math-errno -funsafe-math-optimizations 
 VERILATOR_LDLAGS = -flto=auto -fipa-pta 
@@ -30,7 +30,7 @@ npc: $(SV_FILELIST) $(LIBCAPSTONE) $(SO_PATH_NEMU)
 	$(VERILATOR)  $(VERILATORFLAGS) \
 	--top-module $(TOPNAME)  \
 	-CFLAGS -DTOP_NAME="\"V$(TOPNAME)\"" \
-	--MAKEFLAGS "OPT_FAST=\"-O3 -march=native -mtune=native\"" \
+	--MAKEFLAGS "OPT_FAST=\"-Ofast -march=native -mtune=native\"" \
 	$(CXXFLAGS) -Wall $(CSRC) $(SVSRC) $(VSRC) $(VERILATOR_DISABLE_WARNINGS) 
 
 sbt: $(SV_FILELIST)
