@@ -42,6 +42,5 @@ int main(int argc, char *argv[]) {
 
   emu = nullptr;
   spdlog::shutdown();
-  println(std::cerr, "!!!!");
   return result;
 }
