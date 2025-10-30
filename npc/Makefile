@@ -15,7 +15,7 @@ VERILATOR = verilator
 
 VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -O0 -g -I$(NPC_HOME)/include -std=c++23 -march=native -mtune=native \
 # -funroll-loops -flto=auto -ffast-math -fno-math-errno -funsafe-math-optimizations 
-VERILATOR_LDLAGS = -flto=auto -fipa-pta 
+VERILATOR_LDLAGS = 
 
 
 CXXFLAGS += -CFLAGS "$(VERILATOR_CFLAGS)" -CFLAGS -DTOP_NAME="\"V$(TOPNAME)\"" -LDFLAGS "-lSDL2"
