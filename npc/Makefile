@@ -46,9 +46,9 @@ sim: npc
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
 	$(BIN) --image $(PROG) --mem_size $(MEM_SIZE) --log $(LOG_FILE) --itracer 8 --difftest --inst_ringbuffer 16 $(NPC_FLAGS) --batch
 
-sim_full_speed: VERILATOR_CFLAGS+=-DNDEBUG -fstrict-aliasing \
--frename-registers -fomit-frame-pointer
-sim_full_speed: VERILATOR_LDLAGS+=-fuse-linker-plugin
+# sim_full_speed: VERILATOR_CFLAGS+=-DNDEBUG -fstrict-aliasing \
+# -frename-registers -fomit-frame-pointer
+# sim_full_speed: VERILATOR_LDLAGS+=-fuse-linker-plugin
 sim_full_speed: npc
 	$(call git_commit, "sim RTL full speed") # DO NOT REMOVE THIS LINE!!!
 	$(BIN) --image $(PROG) --mem_size $(MEM_SIZE) --log $(LOG_FILE) $(NPC_FLAGS) --enable_audio --enable_vga --enable_keyboard

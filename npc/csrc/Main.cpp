@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
                         config.use_ftracer, config.path_elf);
 
   if (config.difftest) {
-    // monitor.addReference(nemu);
+    monitor.addReference(nemu);
   }
   try {
     result = monitor.start();

@@ -113,7 +113,7 @@ Config setup(argparse::ArgumentParser &program) {
 
   if (ret.difftest) {
     try {
-      // nemu = make_shared<NEMUemu>(ret.mem_size, ret.image_path);
+      nemu = make_shared<NEMUemu>(ret.mem_size, ret.image_path);
     } catch (const std::exception &err) {
       println(cerr, "Load ref failed: {}", err.what());
       throw err;
