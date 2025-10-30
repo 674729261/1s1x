@@ -98,8 +98,7 @@ int SingleMonitor::start() {
         auto start = steady_clock::now();
         // emus.front()->simulate(-1);
 
-        while (emus.front()->getEMUState() == RISCV32::Interrupt::NONE &&
-               !devices->is_quit())
+        while (emus.front()->getEMUState() == RISCV32::Interrupt::NONE)
           emus.front()->step();
         if (devices->is_quit())
           state = CommandState::QUIT;
