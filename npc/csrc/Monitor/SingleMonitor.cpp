@@ -101,7 +101,7 @@ int SingleMonitor::start() {
         while (emus.front()->getEMUState() == RISCV32::Interrupt::NONE &&
                !devices->is_quit())
           emus.front()->step();
-        if (!devices->is_quit())
+        if (devices->is_quit())
           state = CommandState::QUIT;
         auto end = steady_clock::now();
         n_inst = emus.front()->instrCount() - n_inst;
