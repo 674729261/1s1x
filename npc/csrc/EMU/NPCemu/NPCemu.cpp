@@ -35,6 +35,8 @@ void NPCemu::reset() {
 }
 
 void NPCemu::step() {
+  if (EMUstate != Interrupt::NONE)
+    return;
   addr_t pc = dut->io_pc;
   if (pc < Devices::memOffset) {
     log_and_throw<std::logic_error>("pc : {:08x} out of range", pc);
