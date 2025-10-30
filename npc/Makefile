@@ -13,7 +13,7 @@ SVSRC = $(shell cat $(SV_FILELIST) | sed 's|^|generated_svsrc/|g' | tr '\n' ' ')
 
 VERILATOR = verilator
 
-VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -O3 -I$(NPC_HOME)/include -std=c++23 -march=native -mtune=native \
+VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -O0 -g -I$(NPC_HOME)/include -std=c++23 -march=native -mtune=native \
 -funroll-loops -flto=auto -ffast-math -fno-math-errno -funsafe-math-optimizations 
 VERILATOR_LDLAGS = -flto=auto -fipa-pta 
 
