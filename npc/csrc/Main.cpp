@@ -1,5 +1,7 @@
 #include "Setup.h"
 #include <Monitor/SingleMonitor.h>
+#include <iostream>
+#include <print>
 
 using std::cerr;
 using std::make_shared;
@@ -41,6 +43,7 @@ int main(int argc, char *argv[]) {
       std::terminate();
     }
   }
+  println(cerr, "!!!!");
   emu = nullptr;
   spdlog::shutdown();
   return result;
