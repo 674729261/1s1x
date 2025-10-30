@@ -19,10 +19,9 @@
 #include <utility>
 #include <vector>
 
-using std::print, std::println;
+using std::println;
 using std::regex, std::sregex_token_iterator;
 using std::string;
-using std::vector;
 
 SingleMonitor::SingleMonitor(std::shared_ptr<RISCV32> emu,
                              Devices::DeviceSettings ds, bool batch,
