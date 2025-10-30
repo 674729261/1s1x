@@ -15,8 +15,8 @@
 #include <string_view>
 NPCemu::NPCemu(size_t MemSize, std::string_view program)
     : RISCV32(MemSize, program, Devices::PC_Init), trapped(0), inst_count(0) {
-  // context = std::make_unique<VerilatedContext>();
-  dut = std::make_unique<VCPU>();
+  context = std::make_unique<VerilatedContext>();
+  dut = std::make_unique<VCPU>(context.get());
 }
 
 RISCV32::addr_t NPCemu::getPC() { return getGPR(32); }
