@@ -13,9 +13,9 @@ SVSRC = $(shell cat $(SV_FILELIST) | sed 's|^|generated_svsrc/|g' | tr '\n' ' ')
 
 VERILATOR = verilator
 
-VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -O3 -g -I$(NPC_HOME)/include -std=c++23\
-# -funroll-loops -flto=auto -ffast-math -fno-math-errno -funsafe-math-optimizations 
-VERILATOR_LDLAGS = 
+VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -O3 -I$(NPC_HOME)/include -std=c++23 -march=native -mtune=native \
+-funroll-loops -flto=auto -ffast-math -fno-math-errno -funsafe-math-optimizations 
+VERILATOR_LDLAGS = -flto=auto -fipa-pta 
 
 
 CXXFLAGS += -CFLAGS "$(VERILATOR_CFLAGS)" -CFLAGS -DTOP_NAME="\"V$(TOPNAME)\"" -LDFLAGS "-lSDL2"
@@ -44,7 +44,7 @@ TIME_STAMP ?= $(shell date +"%Y_%m_%d_%H_%M_%S")
 LOG_FILE ?= "log/$(TIME_STAMP).log"
 sim: npc
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
-	$(BIN) --image $(PROG) --mem_size $(MEM_SIZE) --log $(LOG_FILE) $(NPC_FLAGS) 
+	$(BIN) --image $(PROG) --mem_size $(MEM_SIZE) --log $(LOG_FILE) --itracer 8 --difftest --inst_ringbuffer 16 $(NPC_FLAGS) 
 
 sim_full_speed: VERILATOR_CFLAGS+=-DNDEBUG -fstrict-aliasing \
 -frename-registers -fomit-frame-pointer
