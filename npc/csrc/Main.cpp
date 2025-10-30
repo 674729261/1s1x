@@ -43,8 +43,6 @@ int main(int argc, char *argv[]) {
     std::terminate();
   }
 
-  emu = nullptr;
-
   spdlog::shutdown();
   return result;
 }
