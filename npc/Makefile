@@ -30,7 +30,7 @@ npc: $(SV_FILELIST) $(LIBCAPSTONE) $(SO_PATH_NEMU)
 	$(VERILATOR)  $(VERILATORFLAGS) \
 	--top-module $(TOPNAME)  \
 	-CFLAGS -DTOP_NAME="\"V$(TOPNAME)\"" \
-	--MAKEFLAGS "OPT_FAST=\"-Ofast -march=native -mtune=native\"" \
+	--MAKEFLAGS "-j12 OPT_FAST=\"-Ofast -march=native -mtune=native\"" \
 	$(CXXFLAGS) -Wall $(CSRC) $(SVSRC) $(VSRC) $(VERILATOR_DISABLE_WARNINGS) 
 
 sbt: $(SV_FILELIST)
