@@ -64,12 +64,12 @@ int SingleMonitor::start() {
         tracer->set_display(false);
         devices->pause(false);
         auto n_inst = emus.front()->instrCount();
-        auto start = steady_clock::now();
         // emus.front()->simulate(-1);
-
-        while (emus.front()->getEMUState() == RISCV32::Interrupt::NONE &&
+        auto &main_emu = *emus.front();
+        auto start = steady_clock::now();
+        while (main_emu.getEMUState() == RISCV32::Interrupt::NONE &&
                !devices->is_quit()) {
-          emus.front()->step();
+          main_emu.step();
         }
 
         auto end = steady_clock::now();
