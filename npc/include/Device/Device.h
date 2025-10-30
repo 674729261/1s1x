@@ -41,7 +41,7 @@ public:
   void ensure_audio_enabled();
   void ensure_vga_enabled();
 
-  bool is_quit() { return quit.load(std::memory_order_relaxed); }
+  bool is_quit() { return quit.load(std::memory_order_acquire); }
   void reset_quit() { quit.store(false); }
 
   const DeviceSettings device_settings;
