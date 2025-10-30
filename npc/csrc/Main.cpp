@@ -40,7 +40,7 @@ int main(int argc, char *argv[]) {
     std::terminate();
   }
 
-  emu = nullptr;
+  // emu = nullptr;
   spdlog::shutdown();
   println(std::cerr, "!!!!");
   return result;
