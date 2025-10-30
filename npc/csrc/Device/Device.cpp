@@ -80,6 +80,6 @@ Devices::~Devices() {
   device_alive = false;
   device_update_thread.join();
 
-  // SDL_CloseAudio();
-  // SDL_Quit();
+  SDL_CloseAudio();
+  SDL_Quit();
 }

@@ -73,12 +73,12 @@ SingleMonitor::SingleMonitor(std::shared_ptr<RISCV32> emu,
   emus.front()->tie_tracer(tracer);
 
   devices = std::make_shared<Devices>(ds);
-  devices->init_ioe();
+  // devices->init_ioe();
 }
 
 void SingleMonitor::addReference(std::shared_ptr<RISCV32> ref) {
   emus.push_back(ref);
-  ref->tie_devices(devices);
+  // ref->tie_devices(devices);
 }
 
 int SingleMonitor::start() {
