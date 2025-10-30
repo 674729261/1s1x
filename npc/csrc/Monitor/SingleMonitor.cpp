@@ -87,34 +87,31 @@ int SingleMonitor::start() {
   using namespace std::chrono;
   for (auto &e : emus)
     e->reset();
-
-  if (batch) {
-    tracer->set_display(false);
-    devices->pause(false);
-    auto n_inst = emus.front()->instrCount();
-    auto start = steady_clock::now();
-    // emus.front()->simulate(-1);
-
-    while (emus.front()->getEMUState() == RISCV32::Interrupt::NONE &&
-           !devices->is_quit())
-      emus.front()->step();
-
-    auto end = steady_clock::now();
-    n_inst = emus.front()->instrCount() - n_inst;
-    double elapsed = duration_cast<nanoseconds>(end - start).count();
-    spdlog::info("Average speed : {:.1f} inst/s",
-                 1'000'000'000.0 * n_inst / elapsed);
-
-    devices->pause(true);
-    return CommandState::NONE;
-  }
-
   CommandState state = CommandState::NONE;
   bool finished = false;
-
   try {
     while (true) {
-      state = query_command();
+      if (batch) {
+        tracer->set_display(false);
+        devices->pause(false);
+        auto n_inst = emus.front()->instrCount();
+        auto start = steady_clock::now();
+        // emus.front()->simulate(-1);
+
+        while (emus.front()->getEMUState() == RISCV32::Interrupt::NONE &&
+               !devices->is_quit())
+          emus.front()->step();
+        if (!devices->is_quit())
+          state = CommandState::QUIT;
+        auto end = steady_clock::now();
+        n_inst = emus.front()->instrCount() - n_inst;
+        double elapsed = duration_cast<nanoseconds>(end - start).count();
+        spdlog::info("Average speed : {:.1f} inst/s",
+                     1'000'000'000.0 * n_inst / elapsed);
+
+        devices->pause(true);
+      } else
+        state = query_command();
       if (!finished &&
           emus.front()->getEMUState() == RISCV32::Interrupt::EBREAK) {
         finished = true;
