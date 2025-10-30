@@ -101,18 +101,15 @@ int SingleMonitor::start() {
         while (emus.front()->getEMUState() == RISCV32::Interrupt::NONE &&
                !devices->is_quit()) {
           emus.front()->step();
-          emus.front()->step();
-          emus.front()->step();
-          emus.front()->step();
         }
-        if (devices->is_quit())
-          state = CommandState::QUIT;
+
         auto end = steady_clock::now();
         n_inst = emus.front()->instrCount() - n_inst;
         double elapsed = duration_cast<nanoseconds>(end - start).count();
         spdlog::info("Average speed : {:.1f} inst/s",
                      1'000'000'000.0 * n_inst / elapsed);
-
+        if (devices->is_quit())
+          state = CommandState::QUIT;
         devices->pause(true);
       } else
         state = query_command();
