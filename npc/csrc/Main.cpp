@@ -34,11 +34,12 @@ int main(int argc, char *argv[]) {
     monitor.addReference(nemu);
   try {
     result = monitor.start();
+    println(std::cerr, "!!!!");
   } catch (const std::exception &err) {
     std::println(std::cerr, "Error : {}", err.what());
     std::terminate();
   }
-  println(std::cerr, "!!!!");
+
   emu = nullptr;
   spdlog::shutdown();
   return result;
