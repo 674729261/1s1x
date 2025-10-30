@@ -23,7 +23,6 @@ CXXFLAGS += -CFLAGS "$(VERILATOR_CFLAGS)"  -LDFLAGS "-lSDL2"
 VERILATORFLAGS += --noassert --no-coverage --x-assign fast --x-initial fast -O3 --no-trace --threads 1 --cc --exe --build -j 8 
 VERILATOR_DISABLE_WARNINGS += -Wno-UNUSEDSIGNAL -Wno-DECLFILENAME -Wno-SYNCASYNCNET
 
-OPT_FAST_FLAGS = -O3
 
 -include scripts/*.mk
 
@@ -31,7 +30,7 @@ npc: $(SV_FILELIST) $(LIBCAPSTONE) $(SO_PATH_NEMU)
 	$(VERILATOR)  $(VERILATORFLAGS) \
 	--top-module $(TOPNAME)  \
 	-CFLAGS -DTOP_NAME="\"V$(TOPNAME)\"" \
-	--MAKEFLAGS OPT_FAST="$(OPT_FAST_FLAGS)" \
+	--MAKEFLAGS OPT_FAST="-O3" \
 	$(CXXFLAGS) -Wall $(CSRC) $(SVSRC) $(VSRC) $(VERILATOR_DISABLE_WARNINGS) 
 
 sbt: $(SV_FILELIST)
