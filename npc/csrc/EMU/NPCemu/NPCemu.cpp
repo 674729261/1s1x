@@ -48,9 +48,9 @@ void NPCemu::step() {
   dut.clock = 1;
   dut.eval();
   inst_count++;
-  // if (trapped) [[unlikely]] {
-  //   EMUstate = RISCV32::Interrupt::EBREAK;
-  // }
+  if (trapped) [[unlikely]] {
+    EMUstate = RISCV32::Interrupt::EBREAK;
+  }
 }
 
 void NPCemu::syncCPUState() {
