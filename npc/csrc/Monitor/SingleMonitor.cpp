@@ -70,14 +70,6 @@ int SingleMonitor::start() {
         while (main_emu.getEMUState() == RISCV32::Interrupt::NONE &&
                !devices->is_quit()) {
           main_emu.step();
-          main_emu.step();
-          main_emu.step();
-          main_emu.step();
-          main_emu.step();
-          main_emu.step();
-          main_emu.step();
-          main_emu.step();
-          main_emu.step();
         }
 
         auto end = steady_clock::now();
