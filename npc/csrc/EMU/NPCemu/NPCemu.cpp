@@ -33,15 +33,19 @@ void NPCemu::reset() {
 
 void NPCemu::step() {
   addr_t pc = dut.io_pc;
-  // if (pc < Devices::memOffset) [[unlikely]] {
-  //   log_and_throw<std::logic_error>("pc : {:08x} out of range", pc);
-  // }
+#ifndef DISABLE_ADDR_CHECK
+  if (pc < Devices::memOffset) [[unlikely]] {
+    log_and_throw<std::logic_error>("pc : {:08x} out of range", pc);
+  }
+#endif
   dut.io_instr = M[(pc - Devices::memOffset) / 4];
 
   uint32_t rs1 = (dut.io_instr >> 15) & 0x1f;
 
-  // if (tracer) [[unlikely]]
-  //   tracer->flush_instruction(dut.io_pc, dut.io_instr, getGPR(rs1));
+#ifndef DISABLE_ALL_TRACER
+  if (tracer) [[unlikely]]
+    tracer->flush_instruction(dut.io_pc, dut.io_instr, getGPR(rs1));
+#endif
 
   dut.clock = 0;
   dut.eval();
