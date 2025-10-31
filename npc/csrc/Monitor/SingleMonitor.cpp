@@ -37,9 +37,10 @@ SingleMonitor::SingleMonitor(std::shared_ptr<RISCV32> emu,
   if (repl.history_load(tmp_path))
     spdlog::info("Loaded {} history commands from {}", repl.history_size(),
                  tmp_path.string());
-
-  tracer = std::make_shared<Tracer>(ftracer, elf_path, irb);
-  emus.front()->tie_tracer(tracer);
+  if (ftracer || elf_path != "" || irb) {
+    tracer = std::make_shared<Tracer>(ftracer, elf_path, irb);
+    emus.front()->tie_tracer(tracer);
+  }
 
   devices = std::make_shared<Devices>(ds);
 

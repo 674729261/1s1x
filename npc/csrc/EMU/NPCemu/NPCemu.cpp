@@ -43,9 +43,10 @@ void NPCemu::step() {
   uint32_t rs1 = (dut.io_instr >> 15) & 0x1f;
 
 #ifndef DISABLE_ALL_TRACER
-  if (tracer) [[unlikely]]
+  if (tracer) [[unlikely]] {
     log_and_throw<std::logic_error>("Ft");
-  tracer->flush_instruction(dut.io_pc, dut.io_instr, getGPR(rs1));
+    tracer->flush_instruction(dut.io_pc, dut.io_instr, getGPR(rs1));
+  }
 #endif
 
   dut.clock = 0;
