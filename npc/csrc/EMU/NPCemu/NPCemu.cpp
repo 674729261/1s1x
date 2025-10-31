@@ -41,7 +41,7 @@ void NPCemu::step() {
   uint32_t rs1 = (dut.io_instr >> 15) & 0x1f;
 
   if (tracer) [[unlikely]]
-    tracer->register_instruction(dut.io_pc, dut.io_instr, getGPR(rs1));
+    tracer->flush_instruction(dut.io_pc, dut.io_instr, getGPR(rs1));
 
   dut.clock = 0;
   dut.eval();
