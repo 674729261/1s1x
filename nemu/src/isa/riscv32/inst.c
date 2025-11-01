@@ -164,10 +164,6 @@ static word_t *csr_id(int csr) {
     return &cpu.csr_mepc;
   case 0x342:
     return &cpu.csr_mcause;
-  case 0xf11:
-    return &cpu.csr_mvendorid;
-  case 0xf12:
-    return &cpu.csr_marchid;
   }
   panic("Unknown csr id 0x%x", csr);
 }
