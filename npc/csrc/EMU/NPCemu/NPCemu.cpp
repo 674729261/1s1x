@@ -1,7 +1,6 @@
 #include "VCPU.h"
 #include "VCPU___024root.h"
 #include "my_utils.h"
-#include "spdlog/spdlog.h"
 #include "verilated.h"
 #include <Simulators/NPCemu.h>
 #include <Simulators/RISCV32.h>
