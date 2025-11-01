@@ -55,8 +55,11 @@ uint32_t NEMUemu::getPC() {
   return cpu.pc;
 }
 NEMUemu::~NEMUemu() {
+  println(std::cerr, "???");
+
   if (loaded_lib != nullptr)
     dlclose(loaded_lib);
+  println(std::cerr, "!!!");
 }
 
 unsigned long long NEMUemu::instrCount() { return inst_count; }

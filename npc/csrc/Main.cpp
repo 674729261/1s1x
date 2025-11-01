@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
     std::println(std::cerr, "Error : {}", err.what());
     std::terminate();
   }
-  println(cerr, "!!!");
+
   spdlog::shutdown();
   return result;
 }
