@@ -13,16 +13,18 @@ SVSRC = $(shell cat $(SV_FILELIST) | sed 's|^|generated_svsrc/|g' | tr '\n' ' ')
 
 VERILATOR = verilator
 
-VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -Ofast -I$(NPC_HOME)/include -std=c++23 \
+VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -Ofast   \
 -march=native -mtune=native \
 -funroll-loops -flto=auto -ffast-math -fno-math-errno -funsafe-math-optimizations 
 VERILATOR_LDLAGS = -flto=auto -fipa-pta 
 
 
-CXXFLAGS += -CFLAGS "$(VERILATOR_CFLAGS)"  -LDFLAGS "-lSDL2"
+CXXFLAGS += -CFLAGS "$(VERILATOR_CFLAGS) -std=c++23 -I$(NPC_HOME)/include"  -LDFLAGS "-lSDL2" 
 VERILATORFLAGS += --noassert --no-coverage --x-assign fast --x-initial fast -O3 --no-trace --threads 1 --cc --exe --build -j 8 
 VERILATOR_DISABLE_WARNINGS += -Wno-UNUSEDSIGNAL -Wno-DECLFILENAME -Wno-SYNCASYNCNET
 
+
+FAST_FLAGS = -Ofast -march=native -mtune=native
 
 -include scripts/*.mk
 
@@ -30,7 +32,7 @@ npc: $(SV_FILELIST) $(LIBCAPSTONE) $(SO_PATH_NEMU)
 	$(VERILATOR)  $(VERILATORFLAGS) \
 	--top-module $(TOPNAME)  \
 	-CFLAGS -DTOP_NAME="\"V$(TOPNAME)\"" \
-	--MAKEFLAGS "-j12 OPT_FAST=\"-Ofast -march=native -mtune=native\"" \
+	--MAKEFLAGS "-j12 OPT_FAST=\"$(FAST_FLAGS)\"" \
 	$(CXXFLAGS) -Wall $(CSRC) $(SVSRC) $(VSRC) $(VERILATOR_DISABLE_WARNINGS) 
 
 sbt: $(SV_FILELIST)
@@ -61,6 +63,18 @@ sim_ftracer: npc
 	$(call git_commit, "sim RTL ftracer") # DO NOT REMOVE THIS LINE!!!
 	$(BIN) --elf $(ELF) --image $(PROG) --mem_size $(MEM_SIZE) --log $(LOG_FILE) $(NPC_FLAGS)
 
+valgrind: FAST_FLAGS = -O0 -g
+valgrind: VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -O0 -g
+valgrind: npc
+	valgrind ./obj_dir/VCPU --image $(PROG) --mem_size 134217728 --log $(LOG_FILE) --itracer 8 --difftest --inst_ringbuffer 16  
+
+
+
+gdb: FAST_FLAGS = -O0 -g
+gdb: VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -O0 -g
+gdb: npc
+	gdb --args ./obj_dir/VCPU --image $(PROG) --mem_size 134217728 --log $(LOG_FILE) --itracer 8 --difftest --inst_ringbuffer 16 
+
 
 clean:
 	rm -rf obj_dir
@@ -71,6 +85,6 @@ clean_log:
 	rm -rf log/*
 
 
-.PHONY: npc sim sim_full_speed sim_ftracer clean sbt
+.PHONY: npc sim sim_full_speed sim_ftracer clean sbt gdb valgrind
 
 include ../Makefile
