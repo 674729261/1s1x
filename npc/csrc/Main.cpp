@@ -44,6 +44,6 @@ int main(int argc, char *argv[]) {
     std::terminate();
   }
 
-  spdlog::shutdown();
+  // spdlog::shutdown();
   return result;
 }
