@@ -43,6 +43,8 @@ int main(int argc, char *argv[]) {
     std::println(std::cerr, "Error : {}", err.what());
     std::terminate();
   }
+  nemu = nullptr;
+  println(cerr, "!!!");
 
   spdlog::shutdown();
   return result;
