@@ -31,14 +31,15 @@ class RamLoadData extends RawModule {
   h := Cat(Fill(16, short(15)), short)
   h_out := Mux(io.is_unsigned, hu, h)
 
-  byte := Mux4Cell(
-    io.lower2bit,
-    v3 = io.word(31, 24),
-    v2 = io.word(23, 16),
-    v1 = io.word(15, 8),
-    v0 = io.word(7, 0)
-  )
-  //   MuxLookup(io.lower2bit, 0.U(8.W))(
+  byte :=
+    Mux4Cell(
+      io.lower2bit,
+      v3 = io.word(31, 24),
+      v2 = io.word(23, 16),
+      v1 = io.word(15, 8),
+      v0 = io.word(7, 0)
+    )
+  // MuxLookup(io.lower2bit, 0.U(8.W))(
   //   Seq(
   //     "b00".U(2.W) -> io.word(7, 0),
   //     "b01".U(2.W) -> io.word(15, 8),
