@@ -49,7 +49,7 @@ void NPCemu::step() {
   }
 
   dut.clock = 1;
-  spdlog::info("Test : {}", dut.io_test_);
+  spdlog::info("Test : {:08x}", dut.io_test_);
   dut.eval();
   if (dut.io_wen && dut.io_valid) {
     devices->writeMemory(dut.io_waddr, dut.io_wdata, dut.io_wmask);
