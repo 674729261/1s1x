@@ -55,6 +55,7 @@ uint32_t NEMUemu::getPC() {
   return cpu.pc;
 }
 NEMUemu::~NEMUemu() {
+  spdlog::error("!!!??");
   if (loaded_lib != nullptr)
     dlclose(loaded_lib);
   spdlog::error("!!!");
