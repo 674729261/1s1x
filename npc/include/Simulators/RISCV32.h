@@ -7,7 +7,6 @@
 #include <memory>
 #include <string>
 #include <string_view>
-#include <vector>
 class RISCV32 {
 public:
   RISCV32() : EMUstate(Interrupt::NONE) {}
