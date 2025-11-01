@@ -3,6 +3,7 @@
 #include <Device/Keyboard.h>
 #include <Device/VGA.h>
 #include <SDL2/SDL.h>
+#include <atomic>
 #include <cstdint>
 #include <lockfree/spsc/queue.hpp>
 #include <memory>
@@ -16,7 +17,8 @@ public:
   };
 
   Devices(DeviceSettings ds)
-      : KeyboardBase{}, AudioBase{}, VideoBase{}, RTC{}, device_settings(ds) {}
+      : KeyboardBase{}, AudioBase{}, VideoBase{}, RTC{}, renderer(nullptr),
+        texture(nullptr), window(nullptr), quit(false), device_settings(ds) {}
 
   void writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata);
   std::optional<uint32_t> readMMIO(int raddr);
@@ -39,6 +41,9 @@ public:
   void ensure_audio_enabled();
   void ensure_vga_enabled();
 
+  bool is_quit() { return quit.load(std::memory_order_acquire); }
+  void reset_quit() { quit.store(false); }
+
   const DeviceSettings device_settings;
 
   ~Devices();
@@ -51,6 +56,8 @@ private:
   KeyboardBase_t KeyboardBase;
   AudioBase_t AudioBase;
   VideoBase_t VideoBase;
+
+  std::atomic<bool> quit;
 
   SDL_Renderer *renderer;
   SDL_Texture *texture;

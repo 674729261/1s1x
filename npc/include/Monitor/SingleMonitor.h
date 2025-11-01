@@ -59,7 +59,7 @@ private:
   bool process_trap();
   std::pair<int, int> check_diff();
   std::pair<int, int> diff_fault{-1, -1};
-  void simulate(unsigned long cnt);
+  void simulate(unsigned long long cnt);
 
   CommandState query_command(this SingleMonitor &self);
   CommandState help(const std::vector<std::string> &params);

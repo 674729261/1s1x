@@ -18,7 +18,7 @@ Tracer::Tracer(bool ftracer, std::string_view elf_path, size_t rb_size) {
   //     log_and_throw<std::runtime_error>("Failed to load libcapstone");
 }
 
-void Tracer::register_instruction(uint32_t pc, uint32_t inst, uint32_t rs1) {
+void Tracer::flush_instruction(uint32_t pc, uint32_t inst, uint32_t rs1) {
   if (inst_ringbuf) {
     inst_ringbuf->insert(pc, inst);
   }

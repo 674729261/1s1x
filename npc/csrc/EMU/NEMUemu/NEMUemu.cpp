@@ -3,6 +3,7 @@
 #include <dlfcn.h>
 #include <format>
 #include <my_utils.h>
+#include <print>
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 NEMUemu::NEMUemu(size_t MemSize, std::string_view programe)

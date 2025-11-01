@@ -45,8 +45,8 @@ public:
   ~NPCemu();
 
 private:
+  VerilatedContext context;
   TOP_NAME dut;
-
   int trapped;
   unsigned long long inst_count;
 

@@ -19,40 +19,9 @@
 #include <utility>
 #include <vector>
 
-using std::print, std::println;
+using std::println;
 using std::regex, std::sregex_token_iterator;
 using std::string;
-using std::vector;
-
-const SingleMonitor::CommandItem SingleMonitor::command_list[] = {
-    {.command = "help",
-     .func = &SingleMonitor::help,
-     .description = "Show descriptions of all commands"},
-    {.command = "s",
-     .func = &SingleMonitor::step,
-     .description = "Step several cycles; s [cnt=1]"},
-    {.command = "c",
-     .func = &SingleMonitor::run,
-     .description = "Continue the program"},
-    {.command = "q",
-     .func = &SingleMonitor::quit,
-     .description = "Quit the simulation"},
-    {.command = "info",
-     .func = &SingleMonitor::info,
-     .description = "Check registers"},
-    {.command = "x",
-     .func = &SingleMonitor::scan,
-     .description = "Scan memory; x [size] [addr]"},
-    {.command = "p",
-     .func = &SingleMonitor::p,
-     .description = "Print infomation; p <expr>"},
-    {.command = "w",
-     .func = &SingleMonitor::w,
-     .description = "Setup a watcher; w <expr>"},
-    {.command = "d",
-     .func = &SingleMonitor::d,
-     .description = "Remove a watcher; d [index]"},
-};
 
 SingleMonitor::SingleMonitor(std::shared_ptr<RISCV32> emu,
                              Devices::DeviceSettings ds, bool batch,
@@ -68,17 +37,20 @@ SingleMonitor::SingleMonitor(std::shared_ptr<RISCV32> emu,
   if (repl.history_load(tmp_path))
     spdlog::info("Loaded {} history commands from {}", repl.history_size(),
                  tmp_path.string());
-
   tracer = std::make_shared<Tracer>(ftracer, elf_path, irb);
-  emus.front()->tie_tracer(tracer);
+  if (ftracer || elf_path != "" || irb) {
+    emus.front()->tie_tracer(tracer);
+  }
 
   devices = std::make_shared<Devices>(ds);
-  emus.front()->tie_devices(devices);
+
   devices->init_ioe();
+  emu->tie_devices(devices);
 }
 
 void SingleMonitor::addReference(std::shared_ptr<RISCV32> ref) {
   emus.push_back(ref);
+  ref->tie_devices(devices);
 }
 
 int SingleMonitor::start() {
@@ -93,14 +65,21 @@ int SingleMonitor::start() {
         tracer->set_display(false);
         devices->pause(false);
         auto n_inst = emus.front()->instrCount();
+        // emus.front()->simulate(-1);
+        auto &main_emu = *emus.front();
         auto start = steady_clock::now();
-        emus.front()->simulate(-1);
+        while (main_emu.getEMUState() == RISCV32::Interrupt::NONE &&
+               !devices->is_quit()) {
+          main_emu.step();
+        }
+
         auto end = steady_clock::now();
         n_inst = emus.front()->instrCount() - n_inst;
         double elapsed = duration_cast<nanoseconds>(end - start).count();
         spdlog::info("Average speed : {:.1f} inst/s",
                      1'000'000'000.0 * n_inst / elapsed);
-
+        if (devices->is_quit())
+          state = CommandState::QUIT;
         devices->pause(true);
       } else
         state = query_command();
@@ -144,11 +123,12 @@ bool SingleMonitor::process_trap() {
   return (gpr_a0 == 0);
 }
 
-void SingleMonitor::simulate(unsigned long cnt) {
+void SingleMonitor::simulate(unsigned long long cnt) {
   using namespace std::chrono;
+  devices->reset_quit();
   int n_inst = emus.front()->instrCount();
   auto start = steady_clock::now();
-  unsigned long max_display_inst = itracer;
+  unsigned long long max_display_inst = itracer;
   max_display_inst = std::min(max_display_inst, cnt);
 
   bool triggered = false;
@@ -192,7 +172,7 @@ void SingleMonitor::simulate(unsigned long cnt) {
         return;
       }
     }
-    if (diff_fault.first >= 0 || triggered ||
+    if (diff_fault.first >= 0 || triggered || devices->is_quit() ||
         emus.front()->getEMUState() != RISCV32::Interrupt::NONE)
       break;
   }
@@ -204,228 +184,4 @@ void SingleMonitor::simulate(unsigned long cnt) {
                emus.front()->getPC());
   spdlog::info("Average speed : {:.1f} inst/s",
                1'000'000'000.0 * n_inst / elapsed);
-}
-
-SingleMonitor::CommandState
-SingleMonitor::query_command(this SingleMonitor &self) {
-  string command = self.repl.input("(NPCemu)");
-  self.repl.history_add(command);
-  regex del(R"(\s+)");
-
-  sregex_token_iterator it(command.begin(), command.end(), del, -1);
-  sregex_token_iterator end;
-  vector<string> params;
-  string head;
-  while (it != end) {
-    if (head.empty())
-      head = *it;
-    else
-      params.push_back(*it);
-    it++;
-  }
-  if (!head.empty()) {
-    for (const auto &item : command_list) {
-      if (item.command == head) {
-        return (self.*item.func)(params);
-      }
-    }
-    println("Invalid command : {}", head);
-  }
-  return CommandState::NONE;
-}
-
-SingleMonitor::CommandState SingleMonitor::help(const vector<string> &params) {
-  for (const auto &item : command_list) {
-    println("{:<10} - {}", item.command, item.description);
-  }
-  return CommandState::NONE;
-}
-
-SingleMonitor::CommandState SingleMonitor::step(const vector<string> &params) {
-  if (params.size() > 1) {
-    println("Too many arguments. Useage : s [cnt=1]");
-    return CommandState::NONE;
-  }
-  int cnt = 1;
-  if (params.size() == 1) {
-    auto ret = to_number<int>(params.front());
-    if (!ret.has_value())
-      return CommandState::NONE;
-    if (ret.value() <= 0) {
-      println("Number of cycles must be positive : {}", params.front());
-      return CommandState::NONE;
-    }
-    cnt = ret.value();
-  }
-  if (emus.front()->getEMUState() != RISCV32::Interrupt::NONE) {
-    println("Program has been terminated");
-    return CommandState::NONE;
-  }
-  simulate(cnt);
-  return CommandState::NONE;
-}
-SingleMonitor::CommandState SingleMonitor::run(const vector<string> &params) {
-  if (!params.empty()) {
-    println("Too many arguments. Useage : c");
-    return CommandState::NONE;
-  }
-  if (emus.front()->getEMUState() != RISCV32::Interrupt::NONE) {
-    println("Program has been terminated");
-    return CommandState::NONE;
-  }
-  simulate(-1);
-  return CommandState::NONE;
-}
-
-SingleMonitor::CommandState SingleMonitor::quit(const vector<string> &params) {
-  if (!params.empty()) {
-    println("Too many arguments. Useage : q");
-    return CommandState::NONE;
-  }
-  return CommandState::QUIT;
-}
-SingleMonitor::CommandState
-SingleMonitor::info(const std::vector<std::string> &params) {
-  if (params.size() != 1) {
-    println("Useage : info {{r}}");
-    return CommandState::NONE;
-  }
-  if (params.front() == "r") {
-    for (int i = 0; i < 32; i++) {
-      print("{:3} = {:08x} ", emus.front()->gpr_names[i],
-            emus.front()->getGPR(i));
-      if (i % 8 == 7)
-        println();
-    }
-  } else if (params.front() == "w") {
-    println("{:-^50}", "");
-    for (const auto &wat : watchers) {
-      println("{:>5}|{:>#10x}|{:<}", wat.id, wat.last,
-              wat.expression.stringify());
-    }
-    println("{:-^50}", "");
-    println("{} watcher(s)", watchers.size());
-  } else
-    println("Useage : info {{r}}");
-  return CommandState::NONE;
-}
-
-SingleMonitor::CommandState
-SingleMonitor::scan(const std::vector<std::string> &params) {
-  if (params.size() < 2) {
-    println("Useage : x [size] [addr]");
-    return CommandState::NONE;
-  }
-  int sz;
-  uint32_t addr;
-  auto ret = to_number<int>(params.front());
-  if (!ret.has_value())
-    return CommandState::NONE;
-  if (ret.value() < 0) {
-    println("Size must be non-negative : {}", params.front());
-    return CommandState::NONE;
-  }
-  string str = "";
-  for (int i = 1; i < params.size(); i++)
-    str = str + " " + params[i];
-  sz = ret.value();
-  auto ret2 = Expression::evalExpression(*emus.front(), str);
-  if (!ret2.has_value())
-    return CommandState::NONE;
-  if (ret2.value() < 0 || ret2.value() >= UINT32_MAX) {
-    println("Address must be non-negative and less than {:x} : {} ", UINT32_MAX,
-            params[1]);
-    return CommandState::NONE;
-  }
-  addr = ret2.value();
-  addr &= ~0x3;
-  for (int i = 0; i < sz; i++) {
-    println("{:08x} : {:08x}", addr + i * 4,
-            emus.front()->readMemory(addr + i * 4));
-  }
-  return CommandState::NONE;
-}
-
-SingleMonitor::CommandState
-SingleMonitor::p(const std::vector<std::string> &params) {
-  string str = "";
-  for (const string &s : params)
-    str = str + " " + s;
-  auto result = Expression::evalExpression(*emus.front(), str);
-  if (result.has_value())
-    println("{:#010x}", result.value());
-  return CommandState::NONE;
-}
-
-SingleMonitor::CommandState
-SingleMonitor::w(const std::vector<std::string> &params) {
-  static int id = 0;
-  string str = "";
-  for (const string &s : params)
-    str = str + " " + s;
-  auto result = Watcher::generateWatcher(*emus.front(), str);
-
-  if (result.has_value()) {
-    watchers.push_back(std::move(result.value()));
-    watchers.back().id = id++;
-    println("Setup watcher #{}, now = {:#010x}", watchers.size() - 1,
-            result.value().last);
-  }
-  return CommandState::NONE;
-}
-SingleMonitor::CommandState
-SingleMonitor::d(const std::vector<std::string> &params) {
-  if (params.size() < 1) {
-    println("Useage : d [index]");
-    return CommandState::NONE;
-  }
-  auto id = to_number<int>(params.front());
-  if (!id.has_value()) {
-    println("Invalid index : {} ", params.front());
-    return CommandState::NONE;
-  }
-  for (auto iter = watchers.begin(); iter != watchers.end(); iter++) {
-    if (iter->id == id.value()) {
-      watchers.erase(iter);
-      return CommandState::NONE;
-    }
-  }
-  println("Invalid index : {} ", params.front());
-  return CommandState::NONE;
-}
-
-SingleMonitor::~SingleMonitor() {
-  auto tmp_path =
-      std::filesystem::temp_directory_path().append("NPCemu_history.txt");
-  repl.history_save(tmp_path);
-}
-
-std::optional<SingleMonitor::Watcher>
-SingleMonitor::Watcher::generateWatcher(RISCV32 &dut, std::string_view expr) {
-  auto e = Expression::generateExpression(expr);
-  uint32_t value;
-  if (!e.has_value())
-    return std::nullopt;
-
-  try {
-    value = e->eval(dut);
-  } catch (std::logic_error e) {
-    println("{}", e.what());
-    println("Evaluation failed", e.what());
-    return std::nullopt;
-  }
-  SingleMonitor::Watcher ret{std::move(e.value()), value};
-  return ret;
-}
-
-std::pair<int, int> SingleMonitor::check_diff() {
-
-  for (int i = 1; i < emus.size(); i++) {
-    for (int j = 0; j < 33; j++) {
-      if (emus.front()->getGPR(j) != emus[i]->getGPR(j)) {
-        return {i, j};
-      }
-    }
-  }
-  return {-1, -1};
 }

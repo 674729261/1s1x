@@ -103,7 +103,7 @@ void Devices::writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata) {
 
   if (waddr == VGAControlRegsPort + sizeof(uint32_t)) {
     ensure_vga_enabled();
-    uint32_t tmp = VideoBase.sync;
+    uint32_t tmp = VideoBase.sync.load();
     if (!tmp) {
       write_mask(tmp, mask32, wdata);
       if (tmp) {
@@ -111,7 +111,7 @@ void Devices::writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata) {
         uint8_t *f = VideoBase.front_ptr;
         std::copy(f, f + Devices::VMemSize, VideoBase.back_ptr);
       }
-      VideoBase.sync = tmp;
+      VideoBase.sync.store(tmp);
     }
     return;
   }

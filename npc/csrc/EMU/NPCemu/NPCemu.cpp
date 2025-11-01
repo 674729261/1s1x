@@ -2,9 +2,7 @@
 #include "VCPU.h"
 #include "VCPU___024root.h"
 #include "my_utils.h"
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_audio.h>
-#include <SDL2/SDL_error.h>
+#include "verilated.h"
 #include <Simulators/NPCemu.h>
 #include <Simulators/RISCV32.h>
 #include <cstdint>
@@ -15,8 +13,8 @@
 #include <stdexcept>
 #include <string_view>
 NPCemu::NPCemu(size_t MemSize, std::string_view program)
-    : RISCV32(MemSize, program, Devices::PC_Init), dut("DUT"), trapped(0),
-      inst_count(0) {}
+    : RISCV32(MemSize, program, Devices::PC_Init), trapped(0), context(),
+      dut(&context), inst_count(0) {}
 
 RISCV32::addr_t NPCemu::getPC() { return getGPR(32); }
 
@@ -35,33 +33,27 @@ void NPCemu::reset() {
 
 void NPCemu::step() {
   addr_t pc = dut.io_pc;
-  if (pc < Devices::memOffset) {
+#ifndef DISABLE_ADDR_CHECK
+  if (pc < Devices::memOffset) [[unlikely]] {
     log_and_throw<std::logic_error>("pc : {:08x} out of range", pc);
   }
+#endif
   dut.io_instr = M[(pc - Devices::memOffset) / 4];
 
   uint32_t rs1 = (dut.io_instr >> 15) & 0x1f;
 
-  if (tracer) [[unlikely]]
-    tracer->register_instruction(dut.io_pc, dut.io_instr, getGPR(rs1));
-
-  // uint32_t cur_inst = dut.io_instr;
-  // if (display) {
-  //   Capstone::capstone.disassemble(pc, (uint8_t *)&cur_inst, 4);
-  // }
-  // if (record_inst) {
-  //   InstRingBuffer::instRingBuffer.insert(dut.io_pc, cur_inst);
-  // }
-  // if (sy_tab) {
-  //   record_ftracer(cur_inst, sy_tab);
-  // }
+#ifndef DISABLE_ALL_TRACER
+  if (tracer) [[unlikely]] {
+    tracer->flush_instruction(dut.io_pc, dut.io_instr, getGPR(rs1));
+  }
+#endif
 
   dut.clock = 0;
   dut.eval();
   dut.clock = 1;
   dut.eval();
   inst_count++;
-  if (trapped) {
+  if (trapped) [[unlikely]] {
     EMUstate = RISCV32::Interrupt::EBREAK;
   }
 }
@@ -198,10 +190,7 @@ uint32_t NPCemu::readMemory(int raddr) {
     return M[addr];
   if (raddr >= Devices::deviceBase && devices) {
     auto ret = devices->readMMIO(raddr);
-    if (!ret.has_value()) {
-      return 0xdeafbeef;
-    }
-    return ret.value();
+    return ret.value_or(0xdeadbeef);
   }
 
   return 0xdeafbeef;
