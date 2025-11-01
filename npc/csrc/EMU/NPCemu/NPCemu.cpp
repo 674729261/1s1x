@@ -42,10 +42,14 @@ void NPCemu::step() {
   }
 #endif
 
+  dut.clock = 0;
+  dut.eval();
   if (dut.io_valid) {
     dut.io_rdata = devices->readMemory(dut.io_raddr);
   }
-  dut.eval_step();
+
+  dut.clock = 1;
+  dut.eval();
   if (dut.io_wen && dut.io_valid) {
     devices->writeMemory(dut.io_waddr, dut.io_wdata, dut.io_wmask);
   }

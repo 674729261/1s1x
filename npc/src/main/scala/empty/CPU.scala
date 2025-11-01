@@ -91,14 +91,16 @@ class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
 
   val should_branch = Wire(Bool())
   should_branch := instDecoder.io.is_branch && branch.io.jump
-  printf(p"instDecoder.io.is_jalr = ${Hexadecimal(instDecoder.io.is_jalr)}")
-  printf(p"alu.io.out = ${Hexadecimal(alu.io.out)}")
-  printf(
-    p"instDecoder.io.is_alu_a_pc = ${Hexadecimal(instDecoder.io.is_alu_a_pc)}"
-  )
-  printf(
-    p"instDecoder.io.is_alu_b_reg = ${Hexadecimal(instDecoder.io.is_alu_b_reg)}"
-  )
+  when(pc >= "h80000100".U(32.W)) {
+    printf(p"instDecoder.io.is_jalr = ${Hexadecimal(instDecoder.io.is_jalr)}")
+    printf(p"alu.io.out = ${Hexadecimal(alu.io.out)}")
+    printf(
+      p"instDecoder.io.is_alu_a_pc = ${Hexadecimal(instDecoder.io.is_alu_a_pc)}"
+    )
+    printf(
+      p"instDecoder.io.is_alu_b_reg = ${Hexadecimal(instDecoder.io.is_alu_b_reg)}"
+    )
+  }
   dynamic_pc_next := MuxCase(
     static_pc_next,
     Seq(
