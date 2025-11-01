@@ -7,20 +7,20 @@ using std::string;
 shared_ptr<NPCemu> emu;
 shared_ptr<NEMUemu> nemu;
 static bool mtracer;
-extern "C" void trap(int signal) { emu->trapped = signal; }
-extern "C" int pmem_read(int raddr, int clk, int valid) {
-  if (clk == 1 && valid)
-    return emu->readMemory(raddr);
+// extern "C" void trap(int signal) { emu->trapped = signal; }
+// extern "C" int pmem_read(int raddr, int clk, int valid) {
+//   if (clk == 1 && valid)
+//     return emu->readMemory(raddr);
 
-  return 0;
-}
-extern "C" void pmem_write(int waddr, int wdata, char wmask) {
-  emu->writeMemory(waddr, wdata, wmask);
-  if (mtracer) {
-    println("Write to memory : {:#010x}, data : {:#010x}, mask : {:#010x}",
-            (uint32_t)waddr, (uint32_t)wdata, (uint32_t)wmask);
-  }
-}
+//   return 0;
+// }
+// extern "C" void pmem_write(int waddr, int wdata, char wmask) {
+//   emu->writeMemory(waddr, wdata, wmask);
+//   if (mtracer) {
+//     println("Write to memory : {:#010x}, data : {:#010x}, mask : {:#010x}",
+//             (uint32_t)waddr, (uint32_t)wdata, (uint32_t)wmask);
+//   }
+// }
 
 void register_argparse(argparse::ArgumentParser &program) {
   program.add_argument("-i", "--image")

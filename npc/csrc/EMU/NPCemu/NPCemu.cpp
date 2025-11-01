@@ -50,10 +50,22 @@ void NPCemu::step() {
 
   dut.clock = 0;
   dut.eval();
+  if (dut.io_valid) {
+    dut.io_rdata = readMemory(dut.io_raddr);
+  }
   dut.clock = 1;
   dut.eval();
+  if (dut.io_wen && dut.io_valid) {
+    writeMemory(dut.io_waddr, dut.io_wdata, dut.io_wmask);
+    // extern bool mtracer;
+    // if (mtracer) {
+    //   println("Write to memory : {:#010x}, data : {:#010x}, mask : {:#010x}",
+    //           (uint32_t)dut.io_waddr, (uint32_t)dut.io_wdata,
+    //           (uint32_t)dut.io_wmask);
+    // }
+  }
   inst_count++;
-  if (trapped) [[unlikely]] {
+  if (dut.io_ebreak) [[unlikely]] {
     EMUstate = RISCV32::Interrupt::EBREAK;
   }
 }

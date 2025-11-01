@@ -38,9 +38,9 @@ public:
 
   void syncCPUState() override final;
 
-  friend void trap(int signal);
-  friend int pmem_read(int raddr);
-  friend void pmem_write(int waddr, int wdata, char wmask);
+  // friend void trap(int signal);
+  // friend int pmem_read(int raddr);
+  // friend void pmem_write(int waddr, int wdata, char wmask);
 
   ~NPCemu();
 
