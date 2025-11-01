@@ -96,7 +96,7 @@ class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
     Seq(
       should_branch -> alu.io.out,
       instDecoder.io.is_jal -> alu.io.out,
-      instDecoder.io.is_jalr -> "h80000000".U(32.W),
+      instDecoder.io.is_jalr -> alu.io.out,
       instDecoder.io.is_ecall -> csrBank.io.mtvec,
       instDecoder.io.is_mret -> csrBank.io.mepc
     )
