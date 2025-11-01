@@ -6,7 +6,7 @@ using std::shared_ptr, std::make_shared;
 using std::string;
 shared_ptr<NPCemu> emu;
 shared_ptr<NEMUemu> nemu;
-static bool mtracer;
+bool mtracer;
 // extern "C" void trap(int signal) { emu->trapped = signal; }
 // extern "C" int pmem_read(int raddr, int clk, int valid) {
 //   if (clk == 1 && valid)
@@ -113,7 +113,7 @@ Config setup(argparse::ArgumentParser &program) {
 
   if (ret.difftest) {
     try {
-      nemu = make_shared<NEMUemu>(ret.mem_size, ret.image_path);
+      nemu = make_shared<NEMUemu>();
     } catch (const std::exception &err) {
       println(cerr, "Load ref failed: {}", err.what());
       throw err;

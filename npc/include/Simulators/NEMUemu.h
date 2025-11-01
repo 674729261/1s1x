@@ -4,15 +4,14 @@
 
 class NEMUemu : public RISCV32 {
 public:
-  NEMUemu(size_t MemSize, std::string_view programe);
+  NEMUemu();
 
   addr_t getPC() override final;
 
   void reset() override final;
   void step() override final;
   unsigned long long instrCount() override final;
-  void writeMemory(int waddr, int wdata, char wmask) override final;
-  uint32_t readMemory(int raddr) override final;
+
   uint32_t getGPR(int idx) override final;
 
   void syncCPUState() override final;

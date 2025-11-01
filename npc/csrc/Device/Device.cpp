@@ -1,6 +1,65 @@
 #include <Device/Device.h>
+#include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <memory>
+#include <my_utils.h>
+
+Devices::Devices(Devices::DeviceSettings ds, size_t MemSize,
+                 std::string_view program)
+    : KeyboardBase{}, AudioBase{}, VideoBase{}, RTC{}, renderer(nullptr),
+      texture(nullptr), window(nullptr), quit(false), device_settings(ds) {
+  using std::ifstream;
+  using std::ios;
+  M.resize(MemSize / 4);
+  std::filesystem::path program_path = program;
+  std::ifstream prog_file(program_path, ios::in | ios::binary);
+  if (!prog_file.good()) {
+    log_and_throw<std::runtime_error>("Failed to open program file {}",
+                                      program);
+  }
+  uint32_t size_prog = 0;
+  prog_file.seekg(0, ios::end);
+  size_prog = prog_file.tellg();
+  prog_file.seekg(0, ios::beg);
+  if (size_prog > MemSize * sizeof(uint32_t))
+    log_and_throw<std::logic_error>(
+        "Program size is bigger than memory size {}", MemSize);
+
+  prog_file.read(reinterpret_cast<char *>(M.data()), size_prog);
+
+  spdlog::info("Loaded {} words", size_prog);
+  // cpu.pc = init_pc;
+  prog_file.close();
+}
+
+void Devices::writeMemory(int waddr, int wdata, char wmask) {
+  for (int i = 0; i < 4; i++) {
+    if ((wmask >> i) & 0x1) {
+      uint32_t mask32 =
+          (uint32_t)((1ull << (8ull * (i + 1))) - (1ull << (8ull * i)));
+      uint32_t addr = (uint32_t)(waddr - Devices::memOffset) >> 2;
+      if (addr < M.size() && waddr >= Devices::memOffset) {
+        M[addr] &= ~mask32;
+        M[addr] |= wdata & mask32;
+      } else if (waddr >= Devices::deviceBase) {
+        writeMMIO(waddr & ~0x3, mask32, wdata);
+      }
+    }
+  }
+}
+uint32_t Devices::readMemory(int raddr) {
+  raddr &= ~0x3;
+  uint32_t addr = (uint32_t)(raddr - Devices::PC_Init) >> 2;
+  if (addr < M.size() && raddr >= Devices::PC_Init)
+    return M[addr];
+  if (raddr >= Devices::deviceBase) {
+    auto ret = readMMIO(raddr);
+    return ret.value_or(0xdeadbeef);
+  }
+
+  return 0xdeafbeef;
+}
 
 void Devices::init_ioe() {
   if (device_settings.enable_audio) {

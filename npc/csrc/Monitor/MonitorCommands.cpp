@@ -1,3 +1,4 @@
+#include "Device/Device.h"
 #include <Expression/Expression.h>
 #include <Monitor/SingleMonitor.h>
 #include <Simulators/RISCV32.h>
@@ -173,7 +174,7 @@ SingleMonitor::scan(const std::vector<std::string> &params) {
   for (int i = 1; i < params.size(); i++)
     str = str + " " + params[i];
   sz = ret.value();
-  auto ret2 = Expression::evalExpression(*emus.front(), str);
+  auto ret2 = Expression::evalExpression(*emus.front(), *devices, str);
   if (!ret2.has_value())
     return CommandState::NONE;
   if (ret2.value() < 0 || ret2.value() >= UINT32_MAX) {
@@ -184,8 +185,7 @@ SingleMonitor::scan(const std::vector<std::string> &params) {
   addr = ret2.value();
   addr &= ~0x3;
   for (int i = 0; i < sz; i++) {
-    println("{:08x} : {:08x}", addr + i * 4,
-            emus.front()->readMemory(addr + i * 4));
+    println("{:08x} : {:08x}", addr + i * 4, devices->readMemory(addr + i * 4));
   }
   return CommandState::NONE;
 }
@@ -195,7 +195,7 @@ SingleMonitor::p(const std::vector<std::string> &params) {
   string str = "";
   for (const string &s : params)
     str = str + " " + s;
-  auto result = Expression::evalExpression(*emus.front(), str);
+  auto result = Expression::evalExpression(*emus.front(), *devices, str);
   if (result.has_value())
     println("{:#010x}", result.value());
   return CommandState::NONE;
@@ -207,7 +207,7 @@ SingleMonitor::w(const std::vector<std::string> &params) {
   string str = "";
   for (const string &s : params)
     str = str + " " + s;
-  auto result = Watcher::generateWatcher(*emus.front(), str);
+  auto result = Watcher::generateWatcher(*emus.front(), *devices, str);
 
   if (result.has_value()) {
     watchers.push_back(std::move(result.value()));
@@ -246,14 +246,15 @@ SingleMonitor::~SingleMonitor() {
 }
 
 std::optional<SingleMonitor::Watcher>
-SingleMonitor::Watcher::generateWatcher(RISCV32 &dut, std::string_view expr) {
+SingleMonitor::Watcher::generateWatcher(RISCV32 &dut, Devices &devices,
+                                        std::string_view expr) {
   auto e = Expression::generateExpression(expr);
   uint32_t value;
   if (!e.has_value())
     return std::nullopt;
 
   try {
-    value = e->eval(dut);
+    value = e->eval(dut, devices);
   } catch (std::logic_error e) {
     println("{}", e.what());
     println("Evaluation failed", e.what());

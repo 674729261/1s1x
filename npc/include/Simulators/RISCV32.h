@@ -3,7 +3,6 @@
 #include "Device/Device.h"
 #include <array>
 #include <cassert>
-#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -11,7 +10,7 @@
 #include <vector>
 class RISCV32 {
 public:
-  RISCV32() = delete;
+  RISCV32() : EMUstate(Interrupt::NONE) {}
 
   using addr_t = uint32_t;
   struct CPU_State {
@@ -24,7 +23,6 @@ public:
     EBREAK, // Hit trap
   };
 
-  RISCV32(size_t MemSize, std::string_view program, addr_t init_pc);
   static constexpr std::array<std::string, 33> gpr_names = {
       "$0", "ra", "sp", "gp", "tp",  "t0",  "t1", "t2", "s0", "s1", "a0",
       "a1", "a2", "a3", "a4", "a5",  "a6",  "a7", "s2", "s3", "s4", "s5",
@@ -49,8 +47,8 @@ public:
   }
 
   virtual addr_t getPC() = 0;
-  virtual void writeMemory(int waddr, int wdata, char wmask) = 0;
-  virtual uint32_t readMemory(int raddr) = 0;
+  // virtual void writeMemory(int waddr, int wdata, char wmask) = 0;
+  // virtual uint32_t readMemory(int raddr) = 0;
   virtual void reset() = 0;
   virtual void step() = 0;
   // Interrupt simulate(unsigned long steps) {

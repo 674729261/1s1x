@@ -8,6 +8,7 @@
 #include <lockfree/spsc/queue.hpp>
 #include <memory>
 #include <thread>
+#include <vector>
 class Devices {
 public:
   struct DeviceSettings {
@@ -16,9 +17,10 @@ public:
     bool enable_keyboard;
   };
 
-  Devices(DeviceSettings ds)
-      : KeyboardBase{}, AudioBase{}, VideoBase{}, RTC{}, renderer(nullptr),
-        texture(nullptr), window(nullptr), quit(false), device_settings(ds) {}
+  Devices(DeviceSettings ds, size_t MemSize, std::string_view program);
+
+  void writeMemory(int waddr, int wdata, char wmask);
+  uint32_t readMemory(int raddr);
 
   void writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata);
   std::optional<uint32_t> readMMIO(int raddr);
@@ -49,6 +51,8 @@ public:
   ~Devices();
 
 private:
+  std::vector<uint32_t> M;
+
   struct {
     uint32_t RTC_reg[2];
     std::chrono::steady_clock::time_point last_time;

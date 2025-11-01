@@ -23,7 +23,8 @@ using std::println;
 using std::regex, std::sregex_token_iterator;
 using std::string;
 
-SingleMonitor::SingleMonitor(std::shared_ptr<RISCV32> emu,
+SingleMonitor::SingleMonitor(std::shared_ptr<RISCV32> emu, size_t MemSize,
+                             std::string_view program,
                              Devices::DeviceSettings ds, bool batch,
                              unsigned long itracer, bool mtracer,
                              unsigned long irb, bool ftracer,
@@ -42,7 +43,7 @@ SingleMonitor::SingleMonitor(std::shared_ptr<RISCV32> emu,
     emus.front()->tie_tracer(tracer);
   }
 
-  devices = std::make_shared<Devices>(ds);
+  devices = std::make_shared<Devices>(ds, MemSize, program);
 
   devices->init_ioe();
   emu->tie_devices(devices);
@@ -154,7 +155,7 @@ void SingleMonitor::simulate(unsigned long long cnt) {
 
     for (auto &wat : watchers) {
       try {
-        uint32_t value = wat.expression.eval(*emus.front());
+        uint32_t value = wat.expression.eval(*emus.front(), *devices);
         if (value != wat.last) {
           println("Watcher #{}@{:#010x} : {}", wat.id, emus.front()->getPC(),
                   wat.expression.stringify());

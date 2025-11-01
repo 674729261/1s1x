@@ -1,3 +1,4 @@
+#include "Device/Device.h"
 #include <Expression/Expression.h>
 #include <Simulators/RISCV32.h>
 #include <cassert>
@@ -176,10 +177,11 @@ Expression::generateExpression(std::string_view expr) {
   return expression;
 }
 
-uint32_t Expression::eval(RISCV32 &dut) const {
-  return eval_sub(dut, 0, tokens.size() - 1);
+uint32_t Expression::eval(RISCV32 &dut, Devices &devices) const {
+  return eval_sub(dut, devices, 0, tokens.size() - 1);
 }
-uint32_t Expression::eval_sub(RISCV32 &dut, int l, int r) const {
+uint32_t Expression::eval_sub(RISCV32 &dut, Devices &devices, int l,
+                              int r) const {
 
   if (l > r)
     throw std::logic_error("Invalid expression");
@@ -192,26 +194,26 @@ uint32_t Expression::eval_sub(RISCV32 &dut, int l, int r) const {
     return -1;
   }
   if (parentheses[l] == r)
-    return eval_sub(dut, l + 1, r - 1);
+    return eval_sub(dut, devices, l + 1, r - 1);
   int pos_main = main_token(dut, l, r);
   if (pos_main == -1) {
     switch (tokens[l].type) {
     case '+':
-      return eval_sub(dut, l + 1, r);
+      return eval_sub(dut, devices, l + 1, r);
     case '-':
-      return -eval_sub(dut, l + 1, r);
+      return -eval_sub(dut, devices, l + 1, r);
     case '~':
-      return ~eval_sub(dut, l + 1, r);
+      return ~eval_sub(dut, devices, l + 1, r);
     case '!':
-      return !eval_sub(dut, l + 1, r);
+      return !eval_sub(dut, devices, l + 1, r);
     case '*':
-      return dut.readMemory(eval_sub(dut, l + 1, r));
+      return devices.readMemory(eval_sub(dut, devices, l + 1, r));
     default:
       log_and_throw<std::logic_error>("Invalid expression : {}", stringify());
     }
   }
-  uint32_t LHS = eval_sub(dut, l, pos_main - 1);
-  uint32_t RHS = eval_sub(dut, pos_main + 1, r);
+  uint32_t LHS = eval_sub(dut, devices, l, pos_main - 1);
+  uint32_t RHS = eval_sub(dut, devices, pos_main + 1, r);
   switch (tokens[pos_main].type) {
   case '+':
     return LHS + RHS;
@@ -278,7 +280,7 @@ std::string Expression::stringify() const {
   return ret;
 }
 
-optional<uint32_t> Expression::evalExpression(RISCV32 &dut,
+optional<uint32_t> Expression::evalExpression(RISCV32 &dut, Devices &devices,
                                               std::string_view expr) {
   auto e = generateExpression(expr);
   uint32_t value;
@@ -286,7 +288,7 @@ optional<uint32_t> Expression::evalExpression(RISCV32 &dut,
     return std::nullopt;
 
   try {
-    value = e->eval(dut);
+    value = e->eval(dut, devices);
   } catch (std::logic_error e) {
     println("{}", e.what());
     println("Evaluation failed", e.what());
