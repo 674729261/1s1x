@@ -57,6 +57,7 @@ uint32_t NEMUemu::getPC() {
 NEMUemu::~NEMUemu() {
   if (loaded_lib != nullptr)
     dlclose(loaded_lib);
+  spdlog::info("!!!");
 }
 
 unsigned long long NEMUemu::instrCount() { return inst_count; }
