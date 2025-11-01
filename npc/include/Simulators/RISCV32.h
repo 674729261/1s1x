@@ -9,7 +9,7 @@
 #include <string_view>
 class RISCV32 {
 public:
-  RISCV32() : EMUstate(Interrupt::NONE), tracer(nullptr), devices(nullptr) {}
+  RISCV32() : EMUstate(Interrupt::NONE) {}
 
   using addr_t = uint32_t;
   struct CPU_State {
