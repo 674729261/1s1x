@@ -8,7 +8,7 @@
 package empty
 
 import chisel3._
-import chiseltest._
+import chisel3.simulator.EphemeralSimulator._
 import org.scalatest.flatspec.AnyFlatSpec
 
 import scala.util.Random
@@ -40,10 +40,10 @@ class __RamWriteTester_test() extends Module {
   test.b3 := io.out(31, 24)
 }
 
-class RamWriteTester extends AnyFlatSpec with ChiselScalatestTester {
+class RamWriteTester extends AnyFlatSpec {
   behavior of "RamWriter"
   it should "work correctly" in {
-    test(new __RamWriteTester_test) { dut =>
+    simulate(new __RamWriteTester_test) { dut =>
       dut.io.word.poke("h12345678".U(32.W))
       dut.io.is_word.poke(true.B)
       dut.io.out.expect("h12345678".U(32.W))

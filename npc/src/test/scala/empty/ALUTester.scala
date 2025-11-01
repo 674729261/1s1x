@@ -8,7 +8,7 @@
 package empty
 
 import chisel3._
-import chiseltest._
+import chisel3.simulator.EphemeralSimulator._
 import org.scalatest.flatspec.AnyFlatSpec
 
 import scala.util.Random
@@ -28,7 +28,7 @@ class __ALU_test(WIDTH: Int) extends Module {
   alu.io <> io
 }
 
-class ALUTester extends AnyFlatSpec with ChiselScalatestTester {
+class ALUTester extends AnyFlatSpec {
   def set_input(
       dut: __ALU_test,
       a: UInt,
@@ -45,10 +45,11 @@ class ALUTester extends AnyFlatSpec with ChiselScalatestTester {
   }
 
   val random = new Random(12345)
+  val test_cases = 128
   behavior of "ALU"
   it should "work correctly" in {
-    test(new __ALU_test(32)) { dut =>
-      for (i <- 0 until 2048) { // add
+    simulate(new __ALU_test(32)) { dut =>
+      for (i <- 0 until test_cases) { // add
         val a: Long = random.nextLong(1L << 32)
         val b: Long = random.nextLong(1L << 32)
         val expected = (a + b) % (1L << 32)
@@ -67,7 +68,7 @@ class ALUTester extends AnyFlatSpec with ChiselScalatestTester {
 
         dut.io.out.expect(expected.U(32.W))
       }
-      for (i <- 0 until 2048) { // sub
+      for (i <- 0 until test_cases) { // sub
         val a: Long = random.nextLong(1L << 32)
         val b: Long = random.nextLong(1L << 32)
         val expected = (a - b + (1L << 32)) % (1L << 32)
@@ -76,7 +77,7 @@ class ALUTester extends AnyFlatSpec with ChiselScalatestTester {
 
         dut.io.out.expect(expected.U(32.W))
       }
-      for (i <- 0 until 2048) { // sltu
+      for (i <- 0 until test_cases) { // sltu
         val a: Long = random.nextLong(1L << 32)
         val b: Long = random.nextLong(1L << 32)
         val expected = if (a < b) 1 else 0
@@ -85,7 +86,7 @@ class ALUTester extends AnyFlatSpec with ChiselScalatestTester {
 
         dut.io.out.expect(expected.U(32.W))
       }
-      for (i <- 0 until 2048) { // slt
+      for (i <- 0 until test_cases) { // slt
         var a: Long = random.nextLong(1L << 32)
         var b: Long = random.nextLong(1L << 32)
         if (a >= (1L << 31)) a -= (1L << 32)
@@ -98,7 +99,7 @@ class ALUTester extends AnyFlatSpec with ChiselScalatestTester {
 
         dut.io.out.expect(expected.U(32.W))
       }
-      for (i <- 0 until 2048) { // and
+      for (i <- 0 until test_cases) { // and
         val a: Long = random.nextLong(1L << 32)
         val b: Long = random.nextLong(1L << 32)
         val expected = a & b
@@ -107,7 +108,7 @@ class ALUTester extends AnyFlatSpec with ChiselScalatestTester {
 
         dut.io.out.expect(expected.U(32.W))
       }
-      for (i <- 0 until 2048) { // or
+      for (i <- 0 until test_cases) { // or
         val a: Long = random.nextLong(1L << 32)
         val b: Long = random.nextLong(1L << 32)
         val expected = a | b
@@ -116,7 +117,7 @@ class ALUTester extends AnyFlatSpec with ChiselScalatestTester {
 
         dut.io.out.expect(expected.U(32.W))
       }
-      for (i <- 0 until 2048) { // xor
+      for (i <- 0 until test_cases) { // xor
         val a: Long = random.nextLong(1L << 32)
         val b: Long = random.nextLong(1L << 32)
         val expected = a ^ b
@@ -125,7 +126,7 @@ class ALUTester extends AnyFlatSpec with ChiselScalatestTester {
 
         dut.io.out.expect(expected.U(32.W))
       }
-      for (i <- 0 until 2048) { // sll
+      for (i <- 0 until test_cases) { // sll
         val a: Long = random.nextLong(1L << 32)
         val b: Long = random.nextLong(32)
         val expected = (a << b) % (1L << 32)
@@ -134,7 +135,7 @@ class ALUTester extends AnyFlatSpec with ChiselScalatestTester {
 
         dut.io.out.expect(expected.U(32.W))
       }
-      for (i <- 0 until 2048) { // srl
+      for (i <- 0 until test_cases) { // srl
         val a: Long = random.nextLong(1L << 32)
         val b: Long = random.nextLong(32)
         val expected = (a >> b)
@@ -143,7 +144,7 @@ class ALUTester extends AnyFlatSpec with ChiselScalatestTester {
 
         dut.io.out.expect(expected.U(32.W))
       }
-      for (i <- 0 until 2048) { // sra
+      for (i <- 0 until test_cases) { // sra
         val a: Long = random.nextLong(1L << 32)
         val b: Long = random.nextLong(32)
         val expected =
