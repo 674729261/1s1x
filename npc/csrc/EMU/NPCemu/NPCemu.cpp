@@ -1,4 +1,3 @@
-#include "Device/Device.h"
 #include "VCPU.h"
 #include "VCPU___024root.h"
 #include "my_utils.h"
@@ -8,13 +7,11 @@
 #include <cstdint>
 #include <format>
 #include <lockfree/lockfree.hpp>
-#include <optional>
 #include <print>
+NPCemu::NPCemu()
 #include <stdexcept>
-#include <string_view>
-NPCemu::NPCemu(size_t MemSize, std::string_view program)
-    : RISCV32(MemSize, program, Devices::PC_Init), trapped(0), context(),
-      dut(&context), inst_count(0) {}
+    : RISCV32(), trapped(0), context(), dut(&context), inst_count(0) {
+}
 
 RISCV32::addr_t NPCemu::getPC() { return getGPR(32); }
 
@@ -33,12 +30,8 @@ void NPCemu::reset() {
 
 void NPCemu::step() {
   addr_t pc = dut.io_pc;
-#ifndef DISABLE_ADDR_CHECK
-  if (pc < Devices::memOffset) [[unlikely]] {
-    log_and_throw<std::logic_error>("pc : {:08x} out of range", pc);
-  }
-#endif
-  dut.io_instr = M[(pc - Devices::memOffset) / 4];
+
+  dut.io_instr = devices->get_instruction(pc);
 
   uint32_t rs1 = (dut.io_instr >> 15) & 0x1f;
 
@@ -50,10 +43,16 @@ void NPCemu::step() {
 
   dut.clock = 0;
   dut.eval();
+  if (dut.io_valid) {
+    dut.io_rdata = devices->readMemory(dut.io_raddr);
+  }
   dut.clock = 1;
   dut.eval();
+  if (dut.io_wen && dut.io_valid) {
+    devices->writeMemory(dut.io_waddr, dut.io_wdata, dut.io_wmask);
+  }
   inst_count++;
-  if (trapped) [[unlikely]] {
+  if (dut.io_ebreak) [[unlikely]] {
     EMUstate = RISCV32::Interrupt::EBREAK;
   }
 }
@@ -167,33 +166,5 @@ uint32_t NPCemu::getGPR(int idx) {
 }
 
 unsigned long long NPCemu::instrCount() { return inst_count; }
-
-void NPCemu::writeMemory(int waddr, int wdata, char wmask) {
-  for (int i = 0; i < 4; i++) {
-    if ((wmask >> i) & 0x1) {
-      uint32_t mask32 =
-          (uint32_t)((1ull << (8ull * (i + 1))) - (1ull << (8ull * i)));
-      uint32_t addr = (uint32_t)(waddr - Devices::memOffset) >> 2;
-      if (addr < M.size() && waddr >= Devices::memOffset) {
-        M[addr] &= ~mask32;
-        M[addr] |= wdata & mask32;
-      } else if (waddr >= Devices::deviceBase && devices) {
-        devices->writeMMIO(waddr & ~0x3, mask32, wdata);
-      }
-    }
-  }
-}
-uint32_t NPCemu::readMemory(int raddr) {
-  raddr &= ~0x3;
-  uint32_t addr = (uint32_t)(raddr - Devices::PC_Init) >> 2;
-  if (addr < M.size() && raddr >= Devices::PC_Init)
-    return M[addr];
-  if (raddr >= Devices::deviceBase && devices) {
-    auto ret = devices->readMMIO(raddr);
-    return ret.value_or(0xdeadbeef);
-  }
-
-  return 0xdeafbeef;
-}
 
 NPCemu::~NPCemu() {}

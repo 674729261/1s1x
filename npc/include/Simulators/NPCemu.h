@@ -6,11 +6,8 @@
 #include <Device/Keyboard.h>
 #include <Device/VGA.h>
 #include <VCPU.h>
-#include <cstddef>
 #include <cstdint>
 #include <lockfree/spsc/queue.hpp>
-#include <memory>
-#include <string_view>
 
 extern "C" void trap(int signal);
 extern "C" int pmem_read(int raddr, int clk, int valid);
@@ -24,7 +21,7 @@ class ProgSymTab;
 
 class NPCemu : public RISCV32 {
 public:
-  NPCemu(size_t MemSize, std::string_view programe);
+  NPCemu();
 
   addr_t getPC() override final;
 
@@ -32,15 +29,15 @@ public:
   void step() override final;
   unsigned long long instrCount() override final;
 
-  void writeMemory(int waddr, int wdata, char wmask) override final;
-  uint32_t readMemory(int raddr) override final;
+  // void writeMemory(int waddr, int wdata, char wmask) override final;
+  // uint32_t readMemory(int raddr) override final;
   uint32_t getGPR(int idx) override final;
 
   void syncCPUState() override final;
 
-  friend void trap(int signal);
-  friend int pmem_read(int raddr);
-  friend void pmem_write(int waddr, int wdata, char wmask);
+  // friend void trap(int signal);
+  // friend int pmem_read(int raddr);
+  // friend void pmem_write(int waddr, int wdata, char wmask);
 
   ~NPCemu();
 
@@ -51,5 +48,5 @@ private:
   unsigned long long inst_count;
 
 private:
-  void record_ftracer(uint32_t cur_inst, std::shared_ptr<ProgSymTab> sy_tab);
+  // void record_ftracer(uint32_t cur_inst, std::shared_ptr<ProgSymTab> sy_tab);
 };

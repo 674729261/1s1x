@@ -30,4 +30,7 @@ image: image-dep
 run: insert-arg
 	$(MAKE) -C $(NPC_HOME) sim_full_speed PROG=$(IMAGE).bin NPC_FLAGS="--batch"
 
+run_difftest: insert-arg
+	$(MAKE) -C $(NPC_HOME) sim PROG=$(IMAGE).bin NPC_FLAGS="--batch"
+
 .PHONY: insert-arg

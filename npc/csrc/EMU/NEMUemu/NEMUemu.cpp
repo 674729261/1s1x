@@ -6,8 +6,7 @@
 #include <print>
 #include <spdlog/spdlog.h>
 #include <stdexcept>
-NEMUemu::NEMUemu(size_t MemSize, std::string_view programe)
-    : RISCV32(MemSize, programe, PC_Init) {
+NEMUemu::NEMUemu() : RISCV32() {
   loaded_lib = dlopen(STR(SO_PATH_NEMU), RTLD_LAZY);
   if (loaded_lib == nullptr) {
     log_and_throw<std::runtime_error>("Failed to load library from {}",
@@ -26,7 +25,8 @@ NEMUemu::NEMUemu(size_t MemSize, std::string_view programe)
 
 void NEMUemu::reset() {
   difftest_init(1145);
-  difftest_memcpy(PC_Init, M.data(), sizeof(uint32_t) * M.size(), 1);
+  difftest_memcpy(PC_Init, devices->M.data(),
+                  sizeof(uint32_t) * devices->M.size(), 1);
 }
 
 void NEMUemu::step() {
@@ -57,12 +57,6 @@ uint32_t NEMUemu::getPC() {
 NEMUemu::~NEMUemu() {
   if (loaded_lib != nullptr)
     dlclose(loaded_lib);
-}
-uint32_t NEMUemu::readMemory(int raddr) {
-  log_and_throw<std::logic_error>("Can not read NEMUemu memory");
-}
-void NEMUemu::writeMemory(int waddr, int wdata, char wmask) {
-  log_and_throw<std::logic_error>("Can not write NEMUemu memory");
 }
 
 unsigned long long NEMUemu::instrCount() { return inst_count; }
