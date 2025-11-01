@@ -1,3 +1,4 @@
+#include "capstone/capstone.h"
 #include <Capstone.h>
 #include <cstddef>
 #include <cstdint>
@@ -39,6 +40,16 @@ bool Capstone::load_libcapstone() {
     loaded_lib = nullptr;
     return false;
   }
+  cs_close_dl = (csclose_fn_type)dlsym(loaded_lib, "cs_close");
+  if (cs_close_dl == nullptr) {
+    spdlog::error("Failed to load symbol cs_disasm from {}",
+                  STR(SO_PATH_CAPSTONE));
+    dlclose(loaded_lib);
+    cs_open_dl = nullptr;
+    loaded_lib = nullptr;
+    cs_disasm_dl = nullptr;
+    return false;
+  }
   cs_free_dl = (csfree_fn_type)dlsym(loaded_lib, "cs_free");
   if (cs_disasm_dl == nullptr) {
     spdlog::error("Failed to load symbol cs_free from {}",
@@ -49,6 +60,7 @@ bool Capstone::load_libcapstone() {
     cs_disasm_dl = nullptr;
     return false;
   }
+
   int ret = cs_open_dl(CS_ARCH_RISCV, CS_MODE_RISCV32, &handle);
   if (ret != 0) {
     dlclose(loaded_lib);
@@ -84,6 +96,8 @@ std::string Capstone::disassemble(uint64_t pc, uint8_t *code, int nbyte,
 }
 
 Capstone::~Capstone() {
+  if (handle)
+    cs_close_dl(&handle);
   if (loaded_lib)
     dlclose(loaded_lib);
 }

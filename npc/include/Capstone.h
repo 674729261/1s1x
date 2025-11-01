@@ -21,9 +21,10 @@ private:
                                     size_t count, cs_insn **insn);
   using csfree_fn_type = void (*)(cs_insn *insn, size_t count);
   using cserr_fn_type = cs_err (*)(cs_arch arch, cs_mode mode, csh *handle);
-
+  using csclose_fn_type = cs_err (*)(csh *);
   void *loaded_lib;
   disasm_fn_type cs_disasm_dl;
   csfree_fn_type cs_free_dl;
+  csclose_fn_type cs_close_dl;
   csh handle;
 };
