@@ -13,8 +13,7 @@
 #include <vector>
 class SingleMonitor {
 public:
-  SingleMonitor(std::shared_ptr<RISCV32> dut, size_t MemSize,
-                std::string_view program, Devices::DeviceSettings ds,
+  SingleMonitor(std::shared_ptr<RISCV32> dut, Devices::DeviceSettings ds,
                 bool batch = false, unsigned long itracer = 16,
                 bool mtracer = false, unsigned long irb = 16,
                 bool ftracer = false, std::string_view elf_path = "");
@@ -25,8 +24,8 @@ public:
 
   class Watcher {
   public:
-    static std::optional<Watcher>
-    generateWatcher(RISCV32 &dut, Devices &devices, std::string_view expr);
+    static std::optional<Watcher> generateWatcher(RISCV32 &dut,
+                                                  std::string_view expr);
     Expression expression;
     uint32_t last;
     int id;

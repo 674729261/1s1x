@@ -13,47 +13,37 @@ import ujson.Arr
 import upickle.default
 import _root_.empty.empty.Branch
 
-// class Memory extends BlackBox {
-//   val io = IO(new Bundle {
-//     val clk = Input(Bool())
-//     val valid = Input(Bool())
-//     val wen = Input(Bool())
-//     val waddr = Input(UInt(32.W))
-//     val raddr = Input(UInt(32.W))
-//     val wmask = Input(UInt(4.W))
-//     val wdata = Input(UInt(32.W))
-//     val rdata = Output(UInt(32.W))
-//   })
-// }
+class Memory extends BlackBox {
+  val io = IO(new Bundle {
+    val clk = Input(Bool())
+    val valid = Input(Bool())
+    val wen = Input(Bool())
+    val waddr = Input(UInt(32.W))
+    val raddr = Input(UInt(32.W))
+    val wmask = Input(UInt(4.W))
+    val wdata = Input(UInt(32.W))
+    val rdata = Output(UInt(32.W))
+  })
+}
 
-// class Trap extends BlackBox {
-//   val io = IO(new Bundle {
-//     val clk = Input(Bool())
-//     val ebreak = Input(Bool())
-//   })
-// }
+class Trap extends BlackBox {
+  val io = IO(new Bundle {
+    val clk = Input(Bool())
+    val ebreak = Input(Bool())
+  })
+}
 
 class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
   val io = IO(new Bundle {
     val instr = Input(UInt(32.W))
     val pc = Output(UInt(32.W))
-
-    val ebreak = Output(Bool())
-    val valid = Output(Bool())
-    val raddr = Output(UInt(32.W))
-    val wen = Output(Bool())
-    val waddr = Output(UInt(32.W))
-    val wdata = Output(UInt(32.W))
-    val wmask = Output(UInt(4.W))
-
-    val rdata = Input(UInt(32.W))
   })
 
   def signExt32(in: UInt, bits: Int): UInt = {
     Cat(Fill(32 - bits, in(bits - 1)), in)
   }
 
-  // val Trapper = Module(new Trap)
+  val Trapper = Module(new Trap)
   val static_pc_next = Wire(UInt(32.W))
   val dynamic_pc_next = Wire(UInt(32.W))
   val pc = RegNext(next = Cat(dynamic_pc_next(31, 1), 0.U(1.W)), init = init_pc)
@@ -67,7 +57,7 @@ class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
   val alu = Module(new ALU(32))
   val branch = Module(new Branch(32))
 
-  // val memory_proxy = Module(new Memory)
+  val memory_proxy = Module(new Memory)
   val ramWriter = Module(new RamWriteData)
   val ramLoader = Module(new RamLoadData)
 
@@ -85,9 +75,8 @@ class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
     csr_raw_datasrc
   )
 
-  // Trapper.io.clk := clock.asBool
-  // Trapper.io.ebreak := instDecoder.io.is_ebreak
-  io.ebreak := instDecoder.io.is_ebreak
+  Trapper.io.clk := clock.asBool
+  Trapper.io.ebreak := instDecoder.io.is_ebreak
 
   dynamic_pc_next := MuxCase(
     static_pc_next,
@@ -133,20 +122,13 @@ class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
     )
   )
 
-  // memory_proxy.io.clk := clock.asBool
-  // memory_proxy.io.raddr := Cat(alu.io.out(31, 2), "b00".U(2.W))
-  // memory_proxy.io.valid := instDecoder.io.is_ram_valid
-  // memory_proxy.io.wen := instDecoder.io.is_ram_wen
-  // memory_proxy.io.waddr := alu.io.out
-  // memory_proxy.io.wdata := ramWriter.io.out
-  // memory_proxy.io.wmask := ramWriter.io.mask
-
-  io.raddr := Cat(alu.io.out(31, 2), "b00".U(2.W))
-  io.valid := instDecoder.io.is_ram_valid
-  io.wen := instDecoder.io.is_ram_wen
-  io.waddr := alu.io.out
-  io.wdata := ramWriter.io.out
-  io.wmask := ramWriter.io.mask
+  memory_proxy.io.clk := clock.asBool
+  memory_proxy.io.raddr := Cat(alu.io.out(31, 2), "b00".U(2.W))
+  memory_proxy.io.valid := instDecoder.io.is_ram_valid
+  memory_proxy.io.wen := instDecoder.io.is_ram_wen
+  memory_proxy.io.waddr := alu.io.out
+  memory_proxy.io.wdata := ramWriter.io.out
+  memory_proxy.io.wmask := ramWriter.io.mask
 
   ramWriter.io.word := gpr.io.rdata2
   ramWriter.io.is_word := instDecoder.io.is_ram_word
@@ -158,9 +140,7 @@ class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
   ramLoader.io.is_half := instDecoder.io.is_ram_half
   ramLoader.io.is_word := instDecoder.io.is_ram_word
   ramLoader.io.is_unsigned := instDecoder.io.is_load_unsigned
-  // ramLoader.io.word := memory_proxy.io.rdata
-  ramLoader.io.word := io.rdata
-
+  ramLoader.io.word := memory_proxy.io.rdata
   ramLoader.io.lower2bit := alu.io.out(1, 0)
 
 }

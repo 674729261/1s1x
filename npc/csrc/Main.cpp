@@ -26,10 +26,9 @@ int main(int argc, char *argv[]) {
     std::terminate();
   }
 
-  emu = make_shared<NPCemu>();
+  emu = make_shared<NPCemu>(config.mem_size, config.image_path);
   int result;
-  SingleMonitor monitor(emu, config.mem_size, config.image_path,
-                        config.device_settings, config.batch_mode,
+  SingleMonitor monitor(emu, config.device_settings, config.batch_mode,
                         config.itracer, config.mtracer, config.sz_irb,
                         config.use_ftracer, config.path_elf);
 

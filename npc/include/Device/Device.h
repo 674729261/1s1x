@@ -1,5 +1,4 @@
 #pragma once
-#include "my_utils.h"
 #include <Device/Audio.h>
 #include <Device/Keyboard.h>
 #include <Device/VGA.h>
@@ -9,7 +8,6 @@
 #include <lockfree/spsc/queue.hpp>
 #include <memory>
 #include <thread>
-#include <vector>
 class Devices {
 public:
   struct DeviceSettings {
@@ -17,19 +15,10 @@ public:
     bool enable_audio;
     bool enable_keyboard;
   };
-  friend class NEMUemu;
-  Devices(DeviceSettings ds, size_t MemSize, std::string_view program);
 
-  void writeMemory(int waddr, int wdata, char wmask);
-  uint32_t readMemory(int raddr);
-  uint32_t get_instruction(uint32_t pc) {
-#ifndef DISABLE_ADDR_CHECK
-    if (pc < Devices::memOffset) [[unlikely]] {
-      log_and_throw<std::logic_error>("pc : {:08x} out of range", pc);
-    }
-#endif
-    return M[(pc - Devices::memOffset) >> 2];
-  }
+  Devices(DeviceSettings ds)
+      : KeyboardBase{}, AudioBase{}, VideoBase{}, RTC{}, renderer(nullptr),
+        texture(nullptr), window(nullptr), quit(false), device_settings(ds) {}
 
   void writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata);
   std::optional<uint32_t> readMMIO(int raddr);
@@ -60,8 +49,6 @@ public:
   ~Devices();
 
 private:
-  std::vector<uint32_t> M;
-
   struct {
     uint32_t RTC_reg[2];
     std::chrono::steady_clock::time_point last_time;

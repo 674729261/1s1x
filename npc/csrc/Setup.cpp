@@ -6,21 +6,21 @@ using std::shared_ptr, std::make_shared;
 using std::string;
 shared_ptr<NPCemu> emu;
 shared_ptr<NEMUemu> nemu;
-bool mtracer;
-// extern "C" void trap(int signal) { emu->trapped = signal; }
-// extern "C" int pmem_read(int raddr, int clk, int valid) {
-//   if (clk == 1 && valid)
-//     return emu->readMemory(raddr);
+static bool mtracer;
+extern "C" void trap(int signal) { emu->trapped = signal; }
+extern "C" int pmem_read(int raddr, int clk, int valid) {
+  if (clk == 1 && valid)
+    return emu->readMemory(raddr);
 
-//   return 0;
-// }
-// extern "C" void pmem_write(int waddr, int wdata, char wmask) {
-//   emu->writeMemory(waddr, wdata, wmask);
-//   if (mtracer) {
-//     println("Write to memory : {:#010x}, data : {:#010x}, mask : {:#010x}",
-//             (uint32_t)waddr, (uint32_t)wdata, (uint32_t)wmask);
-//   }
-// }
+  return 0;
+}
+extern "C" void pmem_write(int waddr, int wdata, char wmask) {
+  emu->writeMemory(waddr, wdata, wmask);
+  if (mtracer) {
+    println("Write to memory : {:#010x}, data : {:#010x}, mask : {:#010x}",
+            (uint32_t)waddr, (uint32_t)wdata, (uint32_t)wmask);
+  }
+}
 
 void register_argparse(argparse::ArgumentParser &program) {
   program.add_argument("-i", "--image")
@@ -113,7 +113,7 @@ Config setup(argparse::ArgumentParser &program) {
 
   if (ret.difftest) {
     try {
-      nemu = make_shared<NEMUemu>();
+      nemu = make_shared<NEMUemu>(ret.mem_size, ret.image_path);
     } catch (const std::exception &err) {
       println(cerr, "Load ref failed: {}", err.what());
       throw err;

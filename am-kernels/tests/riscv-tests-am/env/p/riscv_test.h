@@ -169,8 +169,8 @@
         .align  6;                                                      \
         .weak stvec_handler;                                            \
         .weak mtvec_handler;                                            \
-        .globl main;                                                  \
-main:
+        .globl _main;                                                  \
+_main:
 
 //-----------------------------------------------------------------------
 // End Macro
