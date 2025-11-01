@@ -131,11 +131,18 @@ class DecoderTester extends AnyFlatSpec with ChiselScalatestTester {
       dut.io.imm.expect("b11111111111111111111101010101010".U(32.W))
 
       // csrrw
-      dut.io.inst.poke("b101010101010_10101_000_01010_1110111".U(32.W))
+      dut.io.inst.poke("b101010101010_10101_000_01010_1110011".U(32.W))
       dut.io.rs1.expect("b10101".U(5.W))
       dut.io.rd.expect("b01010".U(5.W))
       dut.io.is_csrop.expect(true.B)
       dut.io.csr.expect("b101010101010".U(12.W))
+
+      // jalr zero, t1, -4
+      dut.io.inst.poke("hffc30067".U(32.W))
+      dut.io.rs1.expect("b00110".U(5.W))
+      dut.io.rd.expect("b00000".U(5.W))
+      dut.io.is_jalr.expect(true.B)
+      dut.io.imm.expect("b11111111111111111111111111111100".U(32.W))
     }
   }
 }

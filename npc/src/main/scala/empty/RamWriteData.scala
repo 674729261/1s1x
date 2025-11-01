@@ -66,24 +66,26 @@ class RamWriteData extends RawModule {
     Seq(
       io.is_word -> "b1111".U(4.W),
       io.is_half -> Mux(io.lower2bit(1), "b1100".U(4.W), "b0011".U(4.W)),
-      io.is_byte -> Mux4Cell(
-        io.lower2bit,
-        v3 = "b1000".U(4.W),
-        v2 = "b0100".U(4.W),
-        v1 = "b0010".U(4.W),
-        v0 = "b0001".U(4.W)
-      )
-      //   MuxLookup(io.lower2bit, "b1111".U(4.W))(
-      //   Seq(
-      //     "b00".U(2.W) -> "b0001".U(4.W),
-      //     "b01".U(2.W) -> "b0010".U(4.W),
-      //     "b10".U(2.W) -> "b0100".U(4.W),
-      //     "b11".U(2.W) -> "b1000".U(4.W)
-      //   )
-      // )
+      io.is_byte ->
+        // Mux4Cell(
+        //   io.lower2bit,
+        //   v3 = "b1000".U(4.W),
+        //   v2 = "b0100".U(4.W),
+        //   v1 = "b0010".U(4.W),
+        //   v0 = "b0001".U(4.W)
+        // )
+        MuxLookup(io.lower2bit, "b1111".U(4.W))(
+          Seq(
+            "b00".U(2.W) -> "b0001".U(4.W),
+            "b01".U(2.W) -> "b0010".U(4.W),
+            "b10".U(2.W) -> "b0100".U(4.W),
+            "b11".U(2.W) -> "b1000".U(4.W)
+          )
+        )
     )
   )
 
   io.out := out_t.asUInt
+  // io.out := Cat(out_t(3), out_t(2), out_t(1), out_t(0))
 
 }

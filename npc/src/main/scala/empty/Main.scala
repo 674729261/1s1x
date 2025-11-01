@@ -9,9 +9,14 @@ object AddMain extends App {
     new CPU(init_pc = "h80000000".U(32.W)),
     Array(
       "--target-dir",
-      "generated_svsrc"
+      "generated_svsrc/ALL_IN_ONE"
     ),
-    Array("--disable-all-randomization", "--disable-layers=Verification")
+    Array(
+      "--disable-all-randomization",
+      "--split-verilog",
+      "-o",
+      "generated_svsrc"
+    )
   )
 
 }

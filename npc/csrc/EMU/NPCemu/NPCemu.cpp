@@ -47,7 +47,8 @@ void NPCemu::step() {
   if (dut.io_valid) {
     dut.io_rdata = devices->readMemory(dut.io_raddr);
   }
-  spdlog::info(" alu_b : {:08x}", dut.rootp->CPU__DOT____Vcellinp__alu__io_B);
+  // spdlog::info(" is_jalr : {:08x}",
+  // dut.rootp->CPU__DOT___instDecoder_io_is_alu_force_add);
 
   dut.clock = 1;
   dut.eval();
