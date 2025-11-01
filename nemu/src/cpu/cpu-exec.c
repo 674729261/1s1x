@@ -30,7 +30,9 @@
  */
 #define MAX_INST_TO_PRINT 10
 
-CPU_state cpu = {.csr_mstatus = 0x1800};
+CPU_state cpu = {.csr_mstatus = 0x1800,
+                 .csr_marchid = 0x17eb198,
+                 .csr_mvendorid = 0x79737978};
 uint64_t g_nr_guest_inst = 0;
 static uint64_t g_timer = 0; // unit: us
 static bool g_print_step = false;
