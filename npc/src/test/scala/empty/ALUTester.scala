@@ -45,10 +45,11 @@ class ALUTester extends AnyFlatSpec {
   }
 
   val random = new Random(12345)
+  val test_cases = 128
   behavior of "ALU"
   it should "work correctly" in {
     simulate(new __ALU_test(32)) { dut =>
-      for (i <- 0 until 128) { // add
+      for (i <- 0 until test_cases) { // add
         val a: Long = random.nextLong(1L << 32)
         val b: Long = random.nextLong(1L << 32)
         val expected = (a + b) % (1L << 32)
@@ -67,7 +68,7 @@ class ALUTester extends AnyFlatSpec {
 
         dut.io.out.expect(expected.U(32.W))
       }
-      for (i <- 0 until 128) { // sub
+      for (i <- 0 until test_cases) { // sub
         val a: Long = random.nextLong(1L << 32)
         val b: Long = random.nextLong(1L << 32)
         val expected = (a - b + (1L << 32)) % (1L << 32)
@@ -76,7 +77,7 @@ class ALUTester extends AnyFlatSpec {
 
         dut.io.out.expect(expected.U(32.W))
       }
-      for (i <- 0 until 128) { // sltu
+      for (i <- 0 until test_cases) { // sltu
         val a: Long = random.nextLong(1L << 32)
         val b: Long = random.nextLong(1L << 32)
         val expected = if (a < b) 1 else 0
@@ -85,7 +86,7 @@ class ALUTester extends AnyFlatSpec {
 
         dut.io.out.expect(expected.U(32.W))
       }
-      for (i <- 0 until 128) { // slt
+      for (i <- 0 until test_cases) { // slt
         var a: Long = random.nextLong(1L << 32)
         var b: Long = random.nextLong(1L << 32)
         if (a >= (1L << 31)) a -= (1L << 32)
@@ -98,7 +99,7 @@ class ALUTester extends AnyFlatSpec {
 
         dut.io.out.expect(expected.U(32.W))
       }
-      for (i <- 0 until 128) { // and
+      for (i <- 0 until test_cases) { // and
         val a: Long = random.nextLong(1L << 32)
         val b: Long = random.nextLong(1L << 32)
         val expected = a & b
@@ -107,7 +108,7 @@ class ALUTester extends AnyFlatSpec {
 
         dut.io.out.expect(expected.U(32.W))
       }
-      for (i <- 0 until 128) { // or
+      for (i <- 0 until test_cases) { // or
         val a: Long = random.nextLong(1L << 32)
         val b: Long = random.nextLong(1L << 32)
         val expected = a | b
@@ -116,7 +117,7 @@ class ALUTester extends AnyFlatSpec {
 
         dut.io.out.expect(expected.U(32.W))
       }
-      for (i <- 0 until 128) { // xor
+      for (i <- 0 until test_cases) { // xor
         val a: Long = random.nextLong(1L << 32)
         val b: Long = random.nextLong(1L << 32)
         val expected = a ^ b
@@ -125,7 +126,7 @@ class ALUTester extends AnyFlatSpec {
 
         dut.io.out.expect(expected.U(32.W))
       }
-      for (i <- 0 until 128) { // sll
+      for (i <- 0 until test_cases) { // sll
         val a: Long = random.nextLong(1L << 32)
         val b: Long = random.nextLong(32)
         val expected = (a << b) % (1L << 32)
@@ -134,7 +135,7 @@ class ALUTester extends AnyFlatSpec {
 
         dut.io.out.expect(expected.U(32.W))
       }
-      for (i <- 0 until 128) { // srl
+      for (i <- 0 until test_cases) { // srl
         val a: Long = random.nextLong(1L << 32)
         val b: Long = random.nextLong(32)
         val expected = (a >> b)
@@ -143,7 +144,7 @@ class ALUTester extends AnyFlatSpec {
 
         dut.io.out.expect(expected.U(32.W))
       }
-      for (i <- 0 until 128) { // sra
+      for (i <- 0 until test_cases) { // sra
         val a: Long = random.nextLong(1L << 32)
         val b: Long = random.nextLong(32)
         val expected =

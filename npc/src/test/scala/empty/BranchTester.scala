@@ -29,10 +29,11 @@ class __Branch_test(WIDTH: Int) extends Module {
 
 class BranchTester extends AnyFlatSpec {
   val random = new Random(12345)
+  val test_cases = 128
   behavior of "Branch"
   it should "work correctly" in {
     simulate(new __Branch_test(32)) { dut =>
-      for (i <- 0 until 128) {
+      for (i <- 0 until test_cases) {
         val A = random.nextLong(1L << 32)
         val B = random.nextLong(1L << 32)
         dut.io.A.poke(A.U(32.W))
