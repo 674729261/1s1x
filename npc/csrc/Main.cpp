@@ -25,8 +25,7 @@ int main(int argc, char *argv[]) {
     std::println(std::cerr, "Error : {}", err.what());
     std::terminate();
   }
-  nemu = nullptr;
-  println(cerr, "!!!");
+
   emu = make_shared<NPCemu>();
   int result;
   SingleMonitor monitor(emu, config.mem_size, config.image_path,
