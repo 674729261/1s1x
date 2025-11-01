@@ -47,6 +47,8 @@ class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
     val wmask = Output(UInt(4.W))
 
     val rdata = Input(UInt(32.W))
+
+    val test_ = Output(UInt(32.W))
   })
 
   def signExt32(in: UInt, bits: Int): UInt = {
@@ -91,16 +93,8 @@ class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
 
   val should_branch = Wire(Bool())
   should_branch := instDecoder.io.is_branch && branch.io.jump
-  when(pc >= "h80000100".U(32.W)) {
-    printf(p"instDecoder.io.is_jalr = ${Hexadecimal(instDecoder.io.is_jalr)}")
-    printf(p"alu.io.out = ${Hexadecimal(alu.io.out)}")
-    printf(
-      p"instDecoder.io.is_alu_a_pc = ${Hexadecimal(instDecoder.io.is_alu_a_pc)}"
-    )
-    printf(
-      p"instDecoder.io.is_alu_b_reg = ${Hexadecimal(instDecoder.io.is_alu_b_reg)}"
-    )
-  }
+
+  io.test_ := Cat(0.U(31.W), instDecoder.io.is_jalr)
   dynamic_pc_next := MuxCase(
     static_pc_next,
     Seq(
