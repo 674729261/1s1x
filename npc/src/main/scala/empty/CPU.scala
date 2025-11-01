@@ -92,11 +92,11 @@ class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
   val should_branch = Wire(Bool())
   should_branch := instDecoder.io.is_branch && branch.io.jump
   dynamic_pc_next := MuxCase(
-    "h80000000".U(32.W),
+    static_pc_next,
     Seq(
       should_branch -> alu.io.out,
       instDecoder.io.is_jal -> alu.io.out,
-      instDecoder.io.is_jalr -> alu.io.out,
+      instDecoder.io.is_jalr -> "h80000000".U(32.W),
       instDecoder.io.is_ecall -> csrBank.io.mtvec,
       instDecoder.io.is_mret -> csrBank.io.mepc
     )
