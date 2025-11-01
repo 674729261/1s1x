@@ -22,6 +22,8 @@ private:
   const addr_t PC_Init = 0x80000000u;
   const addr_t memOffset = 0x80000000u;
 
+  std::vector<uint32_t> M;
+
   unsigned long long inst_count;
   bool need_sync;
 

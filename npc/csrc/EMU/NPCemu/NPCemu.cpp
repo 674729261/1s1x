@@ -9,9 +9,10 @@
 #include <format>
 #include <lockfree/lockfree.hpp>
 #include <print>
-#include <stdexcept>
 NPCemu::NPCemu()
-    : RISCV32(), trapped(0), context(), dut(&context), inst_count(0) {}
+#include <stdexcept>
+    : RISCV32(), trapped(0), context(), dut(&context), inst_count(0) {
+}
 
 RISCV32::addr_t NPCemu::getPC() { return getGPR(32); }
 
@@ -30,12 +31,8 @@ void NPCemu::reset() {
 
 void NPCemu::step() {
   addr_t pc = dut.io_pc;
-#ifndef DISABLE_ADDR_CHECK
-  if (pc < Devices::memOffset) [[unlikely]] {
-    log_and_throw<std::logic_error>("pc : {:08x} out of range", pc);
-  }
-#endif
-  dut.io_instr = M[(pc - Devices::memOffset) / 4];
+
+  dut.io_instr = devices->get_instruction(pc);
 
   uint32_t rs1 = (dut.io_instr >> 15) & 0x1f;
 

@@ -25,7 +25,8 @@ NEMUemu::NEMUemu() : RISCV32() {
 
 void NEMUemu::reset() {
   difftest_init(1145);
-  difftest_memcpy(PC_Init, M.data(), sizeof(uint32_t) * M.size(), 1);
+  difftest_memcpy(PC_Init, devices->M.data(),
+                  sizeof(uint32_t) * devices->M.size(), 1);
 }
 
 void NEMUemu::step() {

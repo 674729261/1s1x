@@ -66,7 +66,6 @@ public:
   void tie_devices(std::shared_ptr<Devices> d) { devices = d; }
 
 protected:
-  std::vector<uint32_t> M;
   CPU_State cpu;
   Interrupt EMUstate;
 
