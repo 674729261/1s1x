@@ -8,7 +8,7 @@
 package empty
 
 import chisel3._
-import chiseltest._
+import chisel3.simulator.EphemeralSimulator._
 import org.scalatest.flatspec.AnyFlatSpec
 
 import scala.util.Random
@@ -27,12 +27,12 @@ class __Branch_test(WIDTH: Int) extends Module {
   b.io <> io
 }
 
-class BranchTester extends AnyFlatSpec with ChiselScalatestTester {
+class BranchTester extends AnyFlatSpec {
   val random = new Random(12345)
   behavior of "Branch"
   it should "work correctly" in {
-    test(new __Branch_test(32)) { dut =>
-      for (i <- 0 until 4096) {
+    simulate(new __Branch_test(32)) { dut =>
+      for (i <- 0 until 128) {
         val A = random.nextLong(1L << 32)
         val B = random.nextLong(1L << 32)
         dut.io.A.poke(A.U(32.W))

@@ -89,10 +89,14 @@ class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
   // Trapper.io.ebreak := instDecoder.io.is_ebreak
   io.ebreak := instDecoder.io.is_ebreak
 
+  val should_branch = Wire(Bool())
+  should_branch := instDecoder.io.is_branch && branch.io.jump
   dynamic_pc_next := MuxCase(
     static_pc_next,
     Seq(
-      ((instDecoder.io.is_branch && branch.io.jump) || instDecoder.io.is_jal || instDecoder.io.is_jalr) -> alu.io.out,
+      should_branch -> alu.io.out,
+      instDecoder.io.is_jal -> alu.io.out,
+      instDecoder.io.is_jalr -> alu.io.out,
       instDecoder.io.is_ecall -> csrBank.io.mtvec,
       instDecoder.io.is_mret -> csrBank.io.mepc
     )

@@ -8,7 +8,7 @@
 package empty
 
 import chisel3._
-import chiseltest._
+import chisel3.simulator.EphemeralSimulator._
 import org.scalatest.flatspec.AnyFlatSpec
 
 import scala.util.Random
@@ -68,10 +68,10 @@ class __DecoderInstr_test() extends Module {
   alu.io <> io
 }
 
-class DecoderTester extends AnyFlatSpec with ChiselScalatestTester {
+class DecoderTester extends AnyFlatSpec {
   behavior of "DecodeInstr"
   it should "work correctly" in {
-    test(new __DecoderInstr_test) { dut =>
+    simulate(new __DecoderInstr_test) { dut =>
       // addi
       dut.io.inst.poke("b101010101100_00111_000_11110_0010011".U(32.W))
       dut.io.imm.expect("b11111111111111111111101010101100".U(32.W))
@@ -143,6 +143,11 @@ class DecoderTester extends AnyFlatSpec with ChiselScalatestTester {
       dut.io.rd.expect("b00000".U(5.W))
       dut.io.is_jalr.expect(true.B)
       dut.io.imm.expect("b11111111111111111111111111111100".U(32.W))
+      dut.io.is_csrop.expect(false.B)
+      dut.io.is_branch.expect(false.B)
+      dut.io.is_alu_a_pc.expect(false.B)
+      dut.io.is_alu_b_reg.expect(false.B)
+      dut.io.is_jal.expect(false.B)
     }
   }
 }
