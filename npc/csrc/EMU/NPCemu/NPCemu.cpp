@@ -48,6 +48,7 @@ void NPCemu::step() {
     dut.io_rdata = devices->readMemory(dut.io_raddr);
   }
   spdlog::info(" alu_b : {:08x}", dut.rootp->CPU__DOT____Vcellinp__alu__io_B);
+
   dut.clock = 1;
   dut.eval();
   if (dut.io_wen && dut.io_valid) {
