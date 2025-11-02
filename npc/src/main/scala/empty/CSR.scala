@@ -51,6 +51,7 @@ class CSR extends Module {
     Seq(
       is_mvendorid -> csr_mvendorid,
       is_marchid -> csr_marchid,
+      is_mcycle -> csr_mcycle,
       is_mstatus -> csr_mstatus,
       is_mcause -> csr_mcause,
       is_mtvec -> csr_mtvec,

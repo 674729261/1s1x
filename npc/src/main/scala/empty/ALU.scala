@@ -29,13 +29,20 @@ class ALU(WIDTH: Int) extends RawModule {
 
   })
 
-  val adder = Module(new Adder(32))
+  val adder = Module(new Adder(WIDTH))
 
   // add
   adder.io.A := io.A
   adder.io.B := io.B
   adder.io.Cin := false.B
   io.out := adder.io.out
+
+  var log_width = 0;
+  var upper = 1;
+  while (upper < WIDTH) {
+    upper *= 2
+    log_width += 1
+  }
   when(~io.is_force_add) {
     switch(io.funct3) {
       is("b000".U(3.W)) { // add / sub / slt
@@ -49,24 +56,26 @@ class ALU(WIDTH: Int) extends RawModule {
         adder.io.Cin := true.B
         io.out := Cat(
           0.U(31.W),
-          (io.A(31) & ~io.B(31)) | // - < +
-            ((~(io.A(31) ^ io.B(31))) & adder.io.out(31)) // A - B < 0
+          (io.A(WIDTH - 1) & ~io.B(WIDTH - 1)) | // - < +
+            ((~(io.A(WIDTH - 1) ^ io.B(WIDTH - 1))) & adder.io.out(
+              WIDTH - 1
+            )) // A - B < 0
         )
       }
       is("b011".U(3.W)) { // sltu
         adder.io.B := ~io.B
         adder.io.Cin := true.B
-        io.out := Cat(0.U(31.W), ~adder.io.Cout)
+        io.out := Cat(0.U((WIDTH - 1).W), ~adder.io.Cout)
       }
 
       is("b001".U(3.W)) { // sll
-        io.out := io.A << io.B(4, 0)
+        io.out := io.A << io.B(log_width - 1, 0)
       }
       is("b101".U(3.W)) { // srl / sra
         when(io.is_sub_sra) { // sra
-          io.out := (io.A.asSInt >> io.B(4, 0)).asUInt
+          io.out := (io.A.asSInt >> io.B(log_width - 1, 0)).asUInt
         }.otherwise { // srl
-          io.out := io.A >> io.B(4, 0)
+          io.out := io.A >> io.B(log_width - 1, 0)
         }
       }
 
