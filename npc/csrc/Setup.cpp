@@ -6,7 +6,7 @@ using std::shared_ptr, std::make_shared;
 using std::string;
 shared_ptr<NPCemu> emu;
 shared_ptr<NEMUemu> nemu;
-bool mtracer;
+// bool mtracer;
 // extern "C" void trap(int signal) { emu->trapped = signal; }
 // extern "C" int pmem_read(int raddr, int clk, int valid) {
 //   if (clk == 1 && valid)
@@ -82,7 +82,7 @@ Config setup(argparse::ArgumentParser &program) {
   ret.itracer = 0;
   if (program.is_used("--itracer"))
     ret.itracer = program.get<unsigned long>("--itracer");
-  ret.mtracer = ::mtracer = program.get<bool>("--mtracer");
+  ret.mtracer = program.get<bool>("--mtracer");
   spdlog::info("Image path  : {}", ret.image_path);
   spdlog::info("Memory size : {}", ret.mem_size);
   ret.difftest = program.get<bool>("--difftest");

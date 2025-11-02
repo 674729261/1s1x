@@ -67,7 +67,7 @@ valgrind: FAST_FLAGS = -O0 -g
 valgrind: VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -O0 -g
 valgrind: npc
 	valgrind --leak-check=full --show-leak-kinds=all \
-	 ./obj_dir/VCPU --image $(PROG) --mem_size 134217728 --log $(LOG_FILE) --itracer 8 --inst_ringbuffer 16  
+	 ./obj_dir/VCPU --image $(PROG) --mem_size 134217728 --log $(LOG_FILE) --itracer 8 --inst_ringbuffer 16 --batch 
 
 
 
