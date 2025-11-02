@@ -18,11 +18,10 @@ public:
     bool enable_keyboard;
   };
   friend class NEMUemu;
-  Devices(DeviceSettings ds, size_t MemSize, std::string_view program,
-          bool mtracer);
+  Devices(DeviceSettings ds, size_t MemSize, std::string_view program);
 
-  void writeMemory(uint32_t waddr, uint32_t wdata, uint32_t wmask);
-  uint32_t readMemory(uint32_t raddr);
+  void writeMemory(int waddr, int wdata, char wmask);
+  uint32_t readMemory(int raddr);
   uint32_t get_instruction(uint32_t pc) {
 #ifndef DISABLE_ADDR_CHECK
     if (pc < Devices::memOffset) [[unlikely]] {
@@ -62,7 +61,6 @@ public:
 
 private:
   std::vector<uint32_t> M;
-  bool mtracer;
 
   struct {
     uint32_t RTC_reg[2];
