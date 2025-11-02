@@ -6,9 +6,10 @@
 #include <my_utils.h>
 
 Devices::Devices(Devices::DeviceSettings ds, size_t MemSize,
-                 std::string_view program)
+                 std::string_view program, bool mtracer)
     : KeyboardBase{}, AudioBase{}, VideoBase{}, RTC{}, renderer(nullptr),
-      texture(nullptr), window(nullptr), quit(false), device_settings(ds) {
+      texture(nullptr), window(nullptr), quit(false), device_settings(ds),
+      mtracer(mtracer) {
   using std::ifstream;
   using std::ios;
   M.resize(MemSize / 4);
@@ -33,7 +34,11 @@ Devices::Devices(Devices::DeviceSettings ds, size_t MemSize,
   prog_file.close();
 }
 
-void Devices::writeMemory(int waddr, int wdata, char wmask) {
+void Devices::writeMemory(uint32_t waddr, uint32_t wdata, uint32_t wmask) {
+  if (mtracer) {
+    println("Write to memory : {:#010x}, data : {:#010x}, mask : {:#010x}",
+            (uint32_t)waddr, (uint32_t)wdata, (uint32_t)wmask);
+  }
   for (int i = 0; i < 4; i++) {
     if ((wmask >> i) & 0x1) {
       uint32_t mask32 =
@@ -48,7 +53,10 @@ void Devices::writeMemory(int waddr, int wdata, char wmask) {
     }
   }
 }
-uint32_t Devices::readMemory(int raddr) {
+uint32_t Devices::readMemory(uint32_t raddr) {
+  if (mtracer) {
+    println("Reading memory memory : {:#010x}", (uint32_t)raddr);
+  }
   raddr &= ~0x3;
   uint32_t addr = (uint32_t)(raddr - Devices::PC_Init) >> 2;
   if (addr < M.size() && raddr >= Devices::PC_Init)
