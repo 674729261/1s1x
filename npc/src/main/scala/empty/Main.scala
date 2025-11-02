@@ -14,4 +14,13 @@ object AddMain extends App {
     Array("--disable-all-randomization", "--disable-layers=Verification")
   )
 
+  ChiselStage.emitSystemVerilogFile(
+    new ALU(WIDTH = 4),
+    Array(
+      "--target-dir",
+      "generated_svsrc/ALU4BIT"
+    ),
+    Array("--disable-all-randomization", "--disable-layers=Verification")
+  )
+
 }
