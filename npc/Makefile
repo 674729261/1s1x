@@ -39,7 +39,7 @@ sbt: $(SV_FILELIST)
 
 $(SV_FILELIST): $(CHISELSRC)
 	sbt run 
-	bash -c "find generated_svsrc/ -name *.sv -exec sed -i 's+src/main/scala/empty/++g' {} \\;"
+# 	bash -c "find generated_svsrc/ -name *.sv -exec sed -i 's+src/main/scala/empty/++g' {} \\;"
 
 
 
