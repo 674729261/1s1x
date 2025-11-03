@@ -37,11 +37,13 @@ class CSR extends Module {
   val csr_mcause =
     RegEnable(
       Mux(io.interruption, io.new_cause, io.wdata),
+      0.U(32.W),
       (io.wen && is_mcause) || io.interruption
     )
-  val csr_mtvec = RegEnable(io.wdata, io.wen && is_mtvec)
+  val csr_mtvec = RegEnable(io.wdata, 0.U(32.W), io.wen && is_mtvec)
   val csr_mepc = RegEnable(
     Mux(io.interruption, io.cur_pc, io.wdata),
+    0.U(32.W),
     (io.wen && is_mepc) || io.interruption
   )
 

@@ -11,17 +11,7 @@ object AddMain extends App {
       "--target-dir",
       "generated_svsrc"
     ),
-    Array(
-      "--disable-all-randomization",
-      "--disable-layers=Verification",
-      "--lowering-options=" + List(
-        // make yosys happy
-        // see https://github.com/llvm/circt/blob/main/docs/VerilogGeneration.md
-        "disallowLocalVariables",
-        // "disallowPackedArrays",
-        "locationInfoStyle=wrapInAtSquareBracket"
-      ).reduce(_ + "," + _)
-    )
+    Array("--disable-all-randomization", "--disable-layers=Verification")
   )
 
   ChiselStage.emitSystemVerilogFile(
@@ -30,17 +20,7 @@ object AddMain extends App {
       "--target-dir",
       "generated_svsrc/ALU4BIT"
     ),
-    Array(
-      "--disable-all-randomization",
-      "--disable-layers=Verification",
-      "--lowering-options=" + List(
-        // make yosys happy
-        // see https://github.com/llvm/circt/blob/main/docs/VerilogGeneration.md
-        "disallowLocalVariables",
-        // "disallowPackedArrays",
-        "locationInfoStyle=wrapInAtSquareBracket"
-      ).reduce(_ + "," + _)
-    )
+    Array("--disable-all-randomization", "--disable-layers=Verification")
   )
 
 }
