@@ -17,7 +17,6 @@ class Branch(WIDTH: Int) extends RawModule {
   adder.io.A := io.A
   adder.io.B := ~io.B
   adder.io.Cin := true.B
-  adder.io.overflow := DontCare
 
   val is_lt = Wire(Bool())
   val is_eq = Wire(Bool())
