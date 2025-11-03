@@ -42,7 +42,7 @@ void ProgSymTab::init_and_parse(std::string_view elf_path) {
       for (unsigned int j = 0; j < symbols.get_symbols_num(); ++j) {
         symbols.get_symbol(j, name, value, size, bind, type, section_index,
                            other);
-        {
+        if (type == STT_FUNC) {
           pc_offset = std::min(pc_offset, static_cast<uint32_t>(value));
           max_addr = std::max(max_addr, static_cast<uint32_t>(value + size));
         }
