@@ -14,31 +14,12 @@ import org.scalatest.flatspec.AnyFlatSpec
 import scala.util.Random
 import _root_.empty.empty.Branch
 
-class __CSR_test() extends Module {
-  val io = IO(new Bundle {
-    val csr = Input(UInt(12.W))
-    val wen = Input(Bool())
-    val wdata = Input(UInt(32.W))
-    val rdata = Output(UInt(32.W))
-
-    val mepc = Output(UInt(32.W))
-    val mtvec = Output(UInt(32.W))
-
-    val cur_pc = Input(UInt(32.W))
-    val new_cause = Input(UInt(32.W))
-    val interruption = Input(Bool())
-  })
-
-  val b = Module(new CSR)
-  b.io <> io
-}
-
 class CSRTester extends AnyFlatSpec {
   val random = new Random(12345)
 
   behavior of "CSR"
   it should "work correctly" in {
-    simulate(new __CSR_test) { dut =>
+    simulate(new CSR) { dut =>
       dut.reset.poke(true.B)
       dut.clock.step()
       dut.reset.poke(false.B)

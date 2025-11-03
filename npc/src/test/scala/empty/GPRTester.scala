@@ -14,22 +14,6 @@ import org.scalatest.flatspec.AnyFlatSpec
 import scala.util.Random
 import _root_.empty.empty.Branch
 
-class __GPR_test() extends Module {
-  val io = IO(new Bundle {
-    val raddr1 = Input(UInt(5.W))
-    val raddr2 = Input(UInt(5.W))
-    val waddr = Input(UInt(5.W))
-    val wdata = Input(UInt(32.W))
-    val wen = Input(Bool())
-
-    val rdata1 = Output(UInt(32.W))
-    val rdata2 = Output(UInt(32.W))
-  })
-
-  val b = Module(new GPR(32))
-  b.io <> io
-}
-
 class GPRTester extends AnyFlatSpec {
   val random = new Random(12345)
   val test_cases = 16384
@@ -57,7 +41,7 @@ class GPRTester extends AnyFlatSpec {
 
   behavior of "GPR"
   it should "work correctly" in {
-    simulate(new __GPR_test) { dut =>
+    simulate(new GPR(32)) { dut =>
       dut.io.wen.poke(true.B)
       for (i <- 0 until 32) {
         dut.io.raddr1.poke(i.U(5.W))
