@@ -26,7 +26,7 @@ class __GPR_test() extends Module {
     val rdata2 = Output(UInt(32.W))
   })
 
-  val b = Module(new GPR)
+  val b = Module(new GPR(32))
   b.io <> io
 }
 
