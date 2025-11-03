@@ -64,8 +64,8 @@ sim_ftracer: npc
 	$(call git_commit, "sim RTL ftracer") # DO NOT REMOVE THIS LINE!!!
 	$(BIN) --elf $(ELF) --image $(PROG) --mem_size $(MEM_SIZE) --log $(LOG_FILE) $(NPC_FLAGS)
 
-valgrind: PROG ?= test_progs/add-riscv32e-npc.bin
-valgrind: ELF ?= test_progs/add-riscv32e-npc.elf
+valgrind: PROG = test_progs/add-riscv32e-npc.bin
+valgrind: ELF = test_progs/add-riscv32e-npc.elf
 valgrind: FAST_FLAGS = -O0 -g
 valgrind: VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -O0 -g
 valgrind: npc
