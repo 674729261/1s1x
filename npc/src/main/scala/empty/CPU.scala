@@ -63,7 +63,7 @@ class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
   static_pc_next := pc + 4.U(32.W)
 
   val instDecoder = Module(new DecodeInstr)
-  val gpr = Module(new GPR)
+  val gpr = Module(new GPR(32))
 
   val alu = Module(new ALU(32))
   val branch = Module(new Branch(32))
