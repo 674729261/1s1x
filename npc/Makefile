@@ -68,7 +68,7 @@ sim_swap: VERILATOR_CFLAGS+=-DNDEBUG -fstrict-aliasing \
 -frename-registers -fomit-frame-pointer \
 -DDISABLE_ALL_TRACER -DNO_DIFFTEST -DUSE_REF_AS_MAIN
 sim_swap: VERILATOR_LDLAGS+=-fuse-linker-plugin
-sim_swap:
+sim_swap: npc
 	$(call git_commit, "sim swap") # DO NOT REMOVE THIS LINE!!!
 	$(BIN) --image $(PROG) --mem_size $(MEM_SIZE) --log $(LOG_FILE) $(NPC_FLAGS) --enable_audio --enable_vga --enable_keyboard
 
