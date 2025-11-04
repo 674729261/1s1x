@@ -32,13 +32,13 @@ int main(int argc, char *argv[]) {
                         config.image_path, config.device_settings,
                         config.batch_mode, config.itracer, config.mtracer,
                         config.sz_irb, config.use_ftracer, config.path_elf);
-  monitor.addReference(std::make_shared<Ref>());
-  monitor.addReference(std::make_shared<Ref>());
-  monitor.addReference(std::make_shared<Ref>());
-  monitor.addReference(std::make_shared<Ref>());
-  if (config.difftest) {
 
-    monitor.addReference(config.swap ? emu : refemu);
+  if (config.difftest) {
+    monitor.addReference(std::make_shared<Ref>());
+    monitor.addReference(std::make_shared<Ref>());
+    monitor.addReference(std::make_shared<Ref>());
+    monitor.addReference(std::make_shared<Ref>());
+    // monitor.addReference(config.swap ? emu : refemu);
   }
   try {
     result = monitor.start();
