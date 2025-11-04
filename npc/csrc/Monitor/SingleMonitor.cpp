@@ -46,6 +46,8 @@ SingleMonitor::SingleMonitor(std::shared_ptr<RISCV32> emu, size_t MemSize,
   devices = std::make_shared<Devices>(ds, MemSize, program, mtracer);
 
   devices->init_ioe();
+  spdlog::debug("dev : {:x}", (uintptr_t)devices.get());
+  spdlog::debug("emu : {:x}", (uintptr_t)emu.get());
   emu->tie_devices(devices);
 }
 
