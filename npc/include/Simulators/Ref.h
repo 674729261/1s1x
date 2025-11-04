@@ -154,18 +154,18 @@ inline void Ref::step() {
                (int32_t)cpu.gpr[d.src1_id] < (int32_t)d.imm_I ? 1 : 0);
 
   try_this("0000000 ????? ????? 001 ????? 00100 11", slli,
-           cpu.gpr[d.dst_id] = cpu.gpr[d.src1_id] << d.imm_I);
+           cpu.gpr[d.dst_id] = cpu.gpr[d.src1_id] << (d.imm_I & 0x1F));
   try_this("0000000 ????? ????? 001 ????? 01100 11", sll,
            uint32_t shift = bits<4, 0>(cpu.gpr[d.src2_id]);
            cpu.gpr[d.dst_id] = cpu.gpr[d.src1_id] << shift);
   try_this("0000000 ????? ????? 101 ????? 00100 11", srli,
-           cpu.gpr[d.dst_id] = cpu.gpr[d.src1_id] >> d.imm_I);
+           cpu.gpr[d.dst_id] = cpu.gpr[d.src1_id] >> (d.imm_I & 0x1F));
   try_this("0000000 ????? ????? 101 ????? 01100 11", srl,
            uint32_t shift = bits<4, 0>(cpu.gpr[d.src2_id]);
            cpu.gpr[d.dst_id] = cpu.gpr[d.src1_id] >> shift);
   try_this("0100000 ????? ????? 101 ????? 00100 11", srai,
-           cpu.gpr[d.dst_id] =
-               (uint32_t)((int32_t)cpu.gpr[d.src1_id] >> (int32_t)d.imm_I));
+           cpu.gpr[d.dst_id] = (uint32_t)((int32_t)cpu.gpr[d.src1_id] >>
+                                          (int32_t)(d.imm_I & 0x1F)));
   try_this("0100000 ????? ????? 101 ????? 01100 11", sra,
            uint32_t shift = cpu.gpr[d.src2_id] & 0x1f;
            cpu.gpr[d.dst_id] =
