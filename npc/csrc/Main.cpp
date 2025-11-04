@@ -33,6 +33,11 @@ int main(int argc, char *argv[]) {
                         config.sz_irb, config.use_ftracer, config.path_elf);
 
   if (config.difftest) {
+    monitor.addReference(refemu);
+    monitor.addReference(refemu);
+    monitor.addReference(refemu);
+    monitor.addReference(refemu);
+    monitor.addReference(refemu);
     monitor.addReference(config.swap ? emu : refemu);
   }
   try {
