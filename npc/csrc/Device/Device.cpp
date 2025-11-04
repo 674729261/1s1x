@@ -9,7 +9,7 @@ Devices::Devices(Devices::DeviceSettings ds, size_t MemSize,
                  std::string_view program, bool mtracer)
     : KeyboardBase{}, AudioBase{}, VideoBase{}, RTC{}, renderer(nullptr),
       texture(nullptr), window(nullptr), quit(false), device_settings(ds),
-      mtracer(mtracer) {
+      mtracer(mtracer), operation({.used = false}) {
   using std::ifstream;
   using std::ios;
   M.resize(MemSize / 4);
@@ -37,6 +37,7 @@ Devices::Devices(Devices::DeviceSettings ds, size_t MemSize,
 void Devices::writeMemory(uint32_t waddr, uint32_t wdata, uint32_t wmask) {
   if (operation.used)
     return;
+  operation.used = true;
   if (mtracer) {
     println("Write to memory : {:#010x}, data : {:#010x}, mask : {:#010x}",
             (uint32_t)waddr, (uint32_t)wdata, (uint32_t)wmask);

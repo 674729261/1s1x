@@ -72,6 +72,7 @@ int SingleMonitor::start() {
         auto start = steady_clock::now();
         while (main_emu.getEMUState() == RISCV32::Interrupt::NONE &&
                !devices->is_quit()) {
+          devices->reset_op();
           main_emu.step();
         }
 
@@ -144,11 +145,13 @@ void SingleMonitor::simulate(unsigned long long cnt) {
         e->step();
       }
       max_display_inst--;
+      devices->reset_op();
       if (max_display_inst == 0)
         tracer->set_display(false);
     } else {
       for (auto &e : emus)
         e->step();
+      devices->reset_op();
     }
 
     if (emus.size() > 1)
