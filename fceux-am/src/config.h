@@ -1,7 +1,7 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
-// #define HAS_GUI
+#define HAS_GUI
 #define SIZE_OPT
 
 #define SOUND_NONE 0
@@ -29,7 +29,7 @@
 #define SOUND_CONFIG SOUND_LQ
 #define FUNC_IDX_MAX256
 #else
-#define NR_FRAMESKIP 0
+#define NR_FRAMESKIP 2
 #define SOUND_CONFIG SOUND_NONE
 #define FUNC_IDX_MAX16
 #endif
