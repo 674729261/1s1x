@@ -199,18 +199,12 @@ inline void Ref::step() {
   try_this("??????? ????? ????? ??? ????? 11011 11", jal,
            cpu.gpr[d.dst_id] = cpu.pc + 4;
            dnpc = cpu.pc + d.imm_J;
-#ifndef DISABLE_ALL_TRACER
-           if (tracer)
-               tracer->flush_instruction(cpu.pc, inst, cpu.gpr[d.src1_id])
-#endif
+
   );
   try_this("??????? ????? ????? 000 ????? 11001 11", jalr,
            cpu.gpr[d.dst_id] = cpu.pc + 4;
            dnpc = (cpu.gpr[d.src1_id] + d.imm_I) & (~0x1u);
-#ifndef DISABLE_ALL_TRACER
-           if (tracer)
-               tracer->flush_instruction(cpu.pc, inst, cpu.gpr[d.src1_id])
-#endif
+
   );
 
   try_this("??????? ????? ????? 001 ????? 11000 11", bne,
@@ -262,7 +256,10 @@ inline void Ref::step() {
                "Encountered invalid instruction {:#010x} @PC={:#010x}", inst,
                cpu.pc));
   END_PATTERN
-
+#ifndef DISABLE_ALL_TRACER
+  if (tracer)
+    tracer->flush_instruction(cpu.pc, inst, cpu.gpr[d.src1_id]);
+#endif
   cpu.pc = dnpc;
   cpu.gpr[0] = 0;
 }
