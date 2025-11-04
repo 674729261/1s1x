@@ -4,6 +4,7 @@
 #include "InstPattern/InstPattern.h"
 #include "my_utils.h"
 #include <Simulators/RISCV32.h>
+#include <algorithm>
 #include <cstdint>
 #include <stdexcept>
 class Ref : public RISCV32 {
@@ -17,6 +18,7 @@ public:
 
   void reset() override final {
     inst_count = 0;
+    std::fill(cpu.gpr.begin(), cpu.gpr.end(), 0);
     cpu.pc = Devices::PC_Init;
   };
   void step() override final;
