@@ -1,5 +1,4 @@
 #include "Setup.h"
-#include "Simulators/Ref.h"
 #include <Monitor/SingleMonitor.h>
 #include <iostream>
 #include <print>
@@ -29,13 +28,13 @@ int main(int argc, char *argv[]) {
 
   emu = make_shared<NPCemu>();
   int result;
-  SingleMonitor monitor(refemu, config.mem_size, config.image_path,
+  SingleMonitor monitor(emu, config.mem_size, config.image_path,
                         config.device_settings, config.batch_mode,
                         config.itracer, config.mtracer, config.sz_irb,
                         config.use_ftracer, config.path_elf);
 
   if (config.difftest) {
-    monitor.addReference(emu);
+    monitor.addReference(refemu);
   }
   try {
     result = monitor.start();

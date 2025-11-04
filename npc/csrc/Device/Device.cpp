@@ -1,4 +1,5 @@
 #include <Device/Device.h>
+#include <cstdint>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -13,6 +14,7 @@ Devices::Devices(Devices::DeviceSettings ds, size_t MemSize,
       mtracer(mtracer), operation({.used = false}) {
   using std::ifstream;
   using std::ios;
+
   M.resize(MemSize / 4);
   std::filesystem::path program_path = program;
   std::ifstream prog_file(program_path, ios::in | ios::binary);
@@ -74,20 +76,34 @@ void Devices::writeMemory(uint32_t waddr, uint32_t wdata, uint32_t wmask) {
 }
 
 uint32_t Devices::readMemory(uint32_t raddr) {
+  raddr &= ~0x3;
+  if (operation.used) {
+    if (operation.op.is_read != true || operation.op.addr != raddr)
+      log_and_throw<std::logic_error>(
+          "Different memory operation from ref\n"
+          "dut : {:6} addr={:#010x} data={:#010x} mask={:x}\n"
+          "ref : {:6} addr={:#10x}",
+          operation.op.is_read ? "read" : "write", operation.op.addr,
+          operation.op.wdata, operation.op.wmask, "read", raddr);
+    return operation.rdata;
+  }
+  operation.used = true;
+  operation.op.is_read = true;
+  operation.op.addr = raddr;
+
   if (mtracer) {
     println("Reading memory memory : {:#010x}", (uint32_t)raddr);
   }
+  uint32_t rdata = 0xdeadbeef;
 
-  raddr &= ~0x3;
   uint32_t addr = (uint32_t)(raddr - Devices::PC_Init) >> 2;
   if (addr < M.size() && raddr >= Devices::PC_Init) [[likely]]
-    return M[addr];
-  if (raddr >= Devices::deviceBase) {
-    auto ret = readMMIO(raddr);
-    return ret.value_or(0xdeadbeef);
-  }
+    rdata = M[addr];
+  else if (raddr >= Devices::deviceBase)
+    rdata = readMMIO(raddr).value_or(0xdeadbeef);
 
-  return 0xdeafbeef;
+  operation.rdata = rdata;
+  return rdata;
 }
 
 void Devices::init_ioe() {
