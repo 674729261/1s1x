@@ -76,6 +76,7 @@ void Devices::writeMemory(uint32_t waddr, uint32_t wdata, uint32_t wmask) {
 }
 
 uint32_t Devices::readMemory(uint32_t raddr) {
+  raddr &= ~0x3;
   if (operation.used) {
     if (operation.op.is_read != true || operation.op.addr != raddr)
       log_and_throw<std::logic_error>(
@@ -94,7 +95,7 @@ uint32_t Devices::readMemory(uint32_t raddr) {
     println("Reading memory memory : {:#010x}", (uint32_t)raddr);
   }
   uint32_t rdata = 0xdeadbeef;
-  raddr &= ~0x3;
+
   uint32_t addr = (uint32_t)(raddr - Devices::PC_Init) >> 2;
   if (addr < M.size() && raddr >= Devices::PC_Init) [[likely]]
     rdata = M[addr];
