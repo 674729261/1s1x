@@ -36,6 +36,7 @@ run_difftest: insert-arg
 	$(MAKE) -C $(NPC_HOME) sim PROG=$(IMAGE).bin NPC_FLAGS="--batch"
 
 run_swap: insert-arg
+	rm -rf $(NPC_HOME)/obj_dir
 	$(MAKE) -C $(NPC_HOME) sim_swap PROG=$(IMAGE).bin NPC_FLAGS="--batch"
 
 .PHONY: insert-arg
