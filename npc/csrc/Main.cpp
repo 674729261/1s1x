@@ -34,9 +34,6 @@ int main(int argc, char *argv[]) {
                         config.sz_irb, config.use_ftracer, config.path_elf);
 
   if (config.difftest) {
-    // monitor.addReference(std::make_shared<Ref>());
-    // monitor.addReference(std::make_shared<Ref>());
-
     monitor.addReference(config.swap ? emu : refemu);
   }
   try {
