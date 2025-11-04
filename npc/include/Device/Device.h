@@ -55,6 +55,7 @@ public:
 
   bool is_quit() { return quit.load(std::memory_order_acquire); }
   void reset_quit() { quit.store(false); }
+  void reset_op() { operation.used = false; }
 
   const DeviceSettings device_settings;
 
@@ -68,7 +69,11 @@ private:
     bool used;
     struct {
       bool is_read;
+      uint32_t addr;
+      uint32_t wdata;
+      uint32_t wmask;
     } op;
+    uint32_t rdata;
   } operation;
 
   struct {

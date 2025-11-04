@@ -35,6 +35,8 @@ Devices::Devices(Devices::DeviceSettings ds, size_t MemSize,
 }
 
 void Devices::writeMemory(uint32_t waddr, uint32_t wdata, uint32_t wmask) {
+  if (operation.used)
+    return;
   if (mtracer) {
     println("Write to memory : {:#010x}, data : {:#010x}, mask : {:#010x}",
             (uint32_t)waddr, (uint32_t)wdata, (uint32_t)wmask);
@@ -57,6 +59,7 @@ uint32_t Devices::readMemory(uint32_t raddr) {
   if (mtracer) {
     println("Reading memory memory : {:#010x}", (uint32_t)raddr);
   }
+
   raddr &= ~0x3;
   uint32_t addr = (uint32_t)(raddr - Devices::PC_Init) >> 2;
   if (addr < M.size() && raddr >= Devices::PC_Init) [[likely]]
