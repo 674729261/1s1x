@@ -45,6 +45,7 @@ constexpr std::array<uint32_t, 16> lookup_mask32 = {
 
 void Devices::writeMemory(uint32_t waddr, uint32_t wdata, uint32_t wmask) {
   uint32_t mask32 = lookup_mask32[wmask];
+#ifndef NO_DIFFTEST
   if (multiple_emu) [[unlikely]] {
     if (operation.used) {
       wdata &= mask32;
@@ -67,7 +68,7 @@ void Devices::writeMemory(uint32_t waddr, uint32_t wdata, uint32_t wmask) {
                       .wmask = wmask};
     }
   }
-
+#endif
   if (mtracer) {
     println("Write to memory : {:#010x}, data : {:#010x}, mask : {:#010x}",
             (uint32_t)waddr, (uint32_t)wdata, (uint32_t)wmask);
@@ -84,6 +85,7 @@ void Devices::writeMemory(uint32_t waddr, uint32_t wdata, uint32_t wmask) {
 
 uint32_t Devices::readMemory(uint32_t raddr) {
   raddr &= ~0x3;
+#ifndef NO_DIFFTEST
   if (multiple_emu) [[unlikely]] {
     if (operation.used) {
       if (operation.op.is_read != true || operation.op.addr != raddr)
@@ -99,6 +101,7 @@ uint32_t Devices::readMemory(uint32_t raddr) {
     operation.op.is_read = true;
     operation.op.addr = raddr;
   }
+#endif
   if (mtracer) {
     println("Reading memory memory : {:#010x}", (uint32_t)raddr);
   }
@@ -109,8 +112,9 @@ uint32_t Devices::readMemory(uint32_t raddr) {
     rdata = M[addr];
   else if (raddr >= Devices::deviceBase)
     rdata = readMMIO(raddr).value_or(0xdeadbeef);
-
+#ifndef NO_DIFFTEST
   operation.rdata = rdata;
+#endif
   return rdata;
 }
 

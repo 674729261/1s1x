@@ -54,7 +54,7 @@ sim: npc
 
 sim_full_speed: VERILATOR_CFLAGS+=-DNDEBUG -fstrict-aliasing \
 -frename-registers -fomit-frame-pointer \
--DDISABLE_ALL_TRACER
+-DDISABLE_ALL_TRACER -DNO_DIFFTEST
 sim_full_speed: VERILATOR_LDLAGS+=-fuse-linker-plugin
 sim_full_speed: npc
 	$(call git_commit, "sim RTL full speed") # DO NOT REMOVE THIS LINE!!!

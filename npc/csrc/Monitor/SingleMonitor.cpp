@@ -51,6 +51,10 @@ SingleMonitor::SingleMonitor(std::shared_ptr<RISCV32> emu, size_t MemSize,
 }
 
 void SingleMonitor::addReference(std::shared_ptr<RISCV32> ref) {
+#ifdef NO_DIFFTEST
+  log_and_throw<std::logic_error>(
+      "Can't add reference when NO_DIFFTEST is defined");
+#endif
   emus.push_back(ref);
   ref->tie_devices(devices);
   devices->set_multiple_emu();
@@ -73,7 +77,9 @@ int SingleMonitor::start() {
         auto start = steady_clock::now();
         while (main_emu.getEMUState() == RISCV32::Interrupt::NONE &&
                !devices->is_quit()) {
+#ifndef NO_DIFFTEST
           devices->reset_op();
+#endif
           main_emu.step();
         }
 
