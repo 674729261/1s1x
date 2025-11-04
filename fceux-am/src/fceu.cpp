@@ -170,7 +170,7 @@ static int RegisterBWrite(writefunc func) {
       return i;
   }
   // printf("%d\n", i);
-  // assert(i < FUNC_IDX_MAX);
+  assert(i < FUNC_IDX_MAX);
   return -1;
 }
 
