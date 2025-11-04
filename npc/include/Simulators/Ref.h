@@ -264,4 +264,5 @@ inline void Ref::step() {
   END_PATTERN
 
   cpu.pc = dnpc;
+  cpu.gpr[0] = 0;
 }
