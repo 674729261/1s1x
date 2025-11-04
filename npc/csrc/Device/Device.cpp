@@ -36,7 +36,12 @@ Devices::Devices(Devices::DeviceSettings ds, size_t MemSize,
 }
 
 void Devices::writeMemory(uint32_t waddr, uint32_t wdata, uint32_t wmask) {
+  uint32_t mask32 = 0;
+  for (int i = 0; i < 4; i++)
+    if (wmask & (1 << i))
+      mask32 |= (0xFF << (i * 8));
   if (operation.used) {
+    wdata &= mask32;
     if (operation.op !=
         OP::OP_record{
             .is_read = false, .addr = waddr, .wdata = wdata, .wmask = wmask})
@@ -49,8 +54,10 @@ void Devices::writeMemory(uint32_t waddr, uint32_t wdata, uint32_t wmask) {
     return;
   } else {
     operation.used = true;
-    operation.op = {
-        .is_read = false, .addr = waddr, .wdata = wdata, .wmask = wmask};
+    operation.op = {.is_read = false,
+                    .addr = waddr,
+                    .wdata = wdata & mask32,
+                    .wmask = wmask};
   }
   if (mtracer) {
     println("Write to memory : {:#010x}, data : {:#010x}, mask : {:#010x}",
