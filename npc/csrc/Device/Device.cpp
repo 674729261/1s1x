@@ -1,4 +1,5 @@
 #include <Device/Device.h>
+#include <array>
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
@@ -37,11 +38,13 @@ Devices::Devices(Devices::DeviceSettings ds, size_t MemSize,
   prog_file.close();
 }
 
+constexpr std::array<uint32_t, 16> lookup_mask32 = {
+    0x00000000, 0x000000FF, 0x0000FF00, 0x0000FFFF, 0x00FF0000, 0x00FF00FF,
+    0x00FFFF00, 0x00FFFFFF, 0xFF000000, 0xFF0000FF, 0xFF00FF00, 0xFF00FFFF,
+    0xFFFF0000, 0xFFFF00FF, 0xFFFFFF00, 0xFFFFFFFF};
+
 void Devices::writeMemory(uint32_t waddr, uint32_t wdata, uint32_t wmask) {
-  uint32_t mask32 = 0;
-  for (int i = 0; i < 4; i++)
-    if (wmask & (1 << i))
-      mask32 |= (0xFF << (i * 8));
+  uint32_t mask32 = lookup_mask32[wmask];
   if (operation.used) {
     wdata &= mask32;
     if (operation.op !=
