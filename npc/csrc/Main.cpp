@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
                         config.use_ftracer, config.path_elf);
 
   if (config.difftest) {
-    // monitor.addReference(refemu);
+    monitor.addReference(emu);
   }
   try {
     result = monitor.start();

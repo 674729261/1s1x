@@ -65,6 +65,13 @@ private:
   bool mtracer;
 
   struct {
+    bool used;
+    struct {
+      bool is_read;
+    } op;
+  } operation;
+
+  struct {
     uint32_t RTC_reg[2];
     std::chrono::steady_clock::time_point last_time;
   } RTC;

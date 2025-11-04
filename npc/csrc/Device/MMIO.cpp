@@ -76,6 +76,8 @@ std::optional<uint32_t> Devices::readMMIO(int raddr) {
 
 void Devices::writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata) {
   using namespace std::chrono;
+  if (operation.used)
+    return;
   // if (waddr >= RTCAddr && waddr < RTCAddrEnd) {
   if (uint32_t RTC_id = check_addr_range(waddr, RTCAddr, RTCAddrEnd);
       RTC_id != -1) {
