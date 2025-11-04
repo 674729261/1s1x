@@ -117,9 +117,10 @@ Config setup(argparse::ArgumentParser &program) {
       spdlog::info("Using capstone");
     }
   }
-  if (ret.swap)
+  if (ret.swap) {
     refemu = make_shared<Ref>();
-  else
+    spdlog::info("Simulators are swapped");
+  } else
     emu = make_shared<NPCemu>();
 
   if (ret.difftest) {
