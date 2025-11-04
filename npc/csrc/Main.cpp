@@ -27,14 +27,13 @@ int main(int argc, char *argv[]) {
 
   int result;
 
-  SingleMonitor monitor(emu, config.mem_size, config.image_path,
-                        config.device_settings, config.batch_mode,
-                        config.itracer, config.mtracer, config.sz_irb,
-                        config.use_ftracer, config.path_elf);
+  SingleMonitor monitor(config.swap ? refemu : emu, config.mem_size,
+                        config.image_path, config.device_settings,
+                        config.batch_mode, config.itracer, config.mtracer,
+                        config.sz_irb, config.use_ftracer, config.path_elf);
 
   if (config.difftest) {
-
-    monitor.addReference(refemu);
+    monitor.addReference(config.swap ? emu : refemu);
   }
   try {
     result = monitor.start();

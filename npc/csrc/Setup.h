@@ -1,6 +1,6 @@
 #pragma once
 #include "Device/Device.h"
-#include "Simulators/Ref.h"
+#include "Simulators/RISCV32.h"
 #include <Simulators/NEMUemu.h>
 #include <Simulators/NPCemu.h>
 #include <VCPU.h>
@@ -13,9 +13,9 @@
 #include <spdlog/spdlog.h>
 #include <string>
 
-extern std::shared_ptr<NPCemu> emu;
+extern std::shared_ptr<RISCV32> emu;
 // extern std::shared_ptr<NEMUemu> nemu;
-extern std::shared_ptr<Ref> refemu;
+extern std::shared_ptr<RISCV32> refemu;
 
 void register_argparse(argparse::ArgumentParser &program);
 void register_logger(argparse::ArgumentParser &program);
@@ -31,6 +31,7 @@ struct Config {
   bool use_ftracer;
   std::string path_elf;
   Devices::DeviceSettings device_settings;
+  bool swap;
 };
 
 Config setup(argparse::ArgumentParser &program);

@@ -6,9 +6,9 @@
 using std::println, std::cerr;
 using std::shared_ptr, std::make_shared;
 using std::string;
-shared_ptr<NPCemu> emu;
+shared_ptr<RISCV32> emu;
 // shared_ptr<NEMUemu> nemu;
-std::shared_ptr<Ref> refemu;
+std::shared_ptr<RISCV32> refemu;
 // bool mtracer;
 // extern "C" void trap(int signal) { emu->trapped = signal; }
 // extern "C" int pmem_read(int raddr, int clk, int valid) {
@@ -39,6 +39,8 @@ void register_argparse(argparse::ArgumentParser &program) {
   program.add_argument("-b", "--batch").help("Batch mode").flag();
   program.add_argument("-a", "--enable_audio").help("Enable audio").flag();
   program.add_argument("-v", "--enable_vga").help("Enable vga").flag();
+  program.add_argument("-s", "--swap").help("Use ref as main simulator").flag();
+
   program.add_argument("-k", "--enable_keyboard")
       .help("Enable keyboard")
       .flag();
@@ -92,6 +94,7 @@ Config setup(argparse::ArgumentParser &program) {
   ret.difftest = program.get<bool>("--difftest");
   ret.use_irb = program.is_used("--inst_ringbuffer");
   ret.sz_irb = 0;
+  ret.swap = program.get<bool>("--swap");
   if (ret.use_irb) {
     ret.sz_irb = program.get<unsigned long>("--inst_ringbuffer");
     if (ret.sz_irb <= 0) {
@@ -114,19 +117,17 @@ Config setup(argparse::ArgumentParser &program) {
       spdlog::info("Using capstone");
     }
   }
-#ifdef USE_REF_AS_MAIN
-  refemu = make_shared<Ref>();
-#else
-  emu = make_shared<NPCemu>();
-#endif
+  if (ret.swap)
+    refemu = make_shared<Ref>();
+  else
+    emu = make_shared<NPCemu>();
 
   if (ret.difftest) {
     try {
-#ifdef USE_REF_AS_MAIN
-      emu = make_shared<NPCemu>();
-#else
-      refemu = make_shared<Ref>();
-#endif
+      if (ret.swap)
+        emu = make_shared<NPCemu>();
+      else
+        refemu = make_shared<Ref>();
 
       spdlog::info("Using difftest");
     } catch (const std::exception &err) {
