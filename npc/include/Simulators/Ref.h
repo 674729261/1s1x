@@ -196,15 +196,16 @@ inline void Ref::step() {
            cpu.gpr[d.dst_id] =
                devices->readMemory(cpu.gpr[d.src1_id] + d.imm_I));
 
-  try_this(
-      "??????? ????? ????? ??? ????? 11011 11", jal, cpu.gpr[d.dst_id] = cpu.pc;
-      dnpc = cpu.pc + d.imm_J;
+  try_this("??????? ????? ????? ??? ????? 11011 11", jal,
+           cpu.gpr[d.dst_id] = cpu.pc + 4;
+           dnpc = cpu.pc + d.imm_J;
 #ifndef DISABLE_ALL_TRACER
-      if (tracer) tracer->flush_instruction(cpu.pc, inst, cpu.gpr[d.src1_id])
+           if (tracer)
+               tracer->flush_instruction(cpu.pc, inst, cpu.gpr[d.src1_id])
 #endif
   );
   try_this("??????? ????? ????? 000 ????? 11001 11", jalr,
-           cpu.gpr[d.dst_id] = cpu.pc;
+           cpu.gpr[d.dst_id] = cpu.pc + 4;
            dnpc = (cpu.gpr[d.src1_id] + d.imm_I) & (~0x1u);
 #ifndef DISABLE_ALL_TRACER
            if (tracer)
