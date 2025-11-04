@@ -1,7 +1,6 @@
 #include "Setup.h"
 #include "Simulators/Ref.h"
 #include "my_utils.h"
-#include "spdlog/spdlog.h"
 #include <stdexcept>
 using std::println, std::cerr;
 using std::shared_ptr, std::make_shared;
@@ -118,7 +117,6 @@ Config setup(argparse::ArgumentParser &program) {
   // if (ret.difftest) {
   try {
     refemu = make_shared<Ref>();
-    spdlog::info("Using difftest");
   } catch (const std::exception &err) {
     println(cerr, "Load ref failed: {}", err.what());
     throw err;

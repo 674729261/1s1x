@@ -43,7 +43,7 @@ void NPCemu::step() {
 
   dut.clock = 0;
   dut.eval();
-  if (!dut.io_wen && dut.io_valid) {
+  if (dut.io_valid) {
     dut.io_rdata = devices->readMemory(dut.io_raddr);
   }
 

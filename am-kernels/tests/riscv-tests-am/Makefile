@@ -1,4 +1,4 @@
-TEST_ISA ?= i #m a f d c
+TEST_ISA ?= i m #a f d c
 EXCLUDE_TEST ?= fence_i ma_data
 MAKECMDGOALS ?= run_difftest
 
