@@ -41,7 +41,7 @@ void Devices::writeMemory(uint32_t waddr, uint32_t wdata, uint32_t wmask) {
         OP::OP_record{
             .is_read = false, .addr = waddr, .wdata = wdata, .wmask = wmask})
       log_and_throw<std::logic_error>(
-          "Different memory operation from ref\n "
+          "Different memory operation from ref\n"
           "dut : {:6} addr={:#010x} data={:#010x} mask={:x}\n"
           "ref : {:6} addr={:#10x} data={:#010x} mask={:x}",
           operation.op.is_read ? "read" : "write", operation.op.addr,
