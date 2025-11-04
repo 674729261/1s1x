@@ -114,14 +114,14 @@ Config setup(argparse::ArgumentParser &program) {
     }
   }
 
-  if (ret.difftest) {
-    try {
-      refemu = make_shared<Ref>();
-    } catch (const std::exception &err) {
-      println(cerr, "Load ref failed: {}", err.what());
-      throw err;
-    }
+  // if (ret.difftest) {
+  try {
+    refemu = make_shared<Ref>();
+  } catch (const std::exception &err) {
+    println(cerr, "Load ref failed: {}", err.what());
+    throw err;
   }
+  // }
 
   if (program.get<bool>("--enable_audio")) {
     spdlog::info("Audio is enabled");
