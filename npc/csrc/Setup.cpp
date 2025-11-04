@@ -1,11 +1,13 @@
 #include "Setup.h"
+#include "Simulators/Ref.h"
 #include "my_utils.h"
 #include <stdexcept>
 using std::println, std::cerr;
 using std::shared_ptr, std::make_shared;
 using std::string;
 shared_ptr<NPCemu> emu;
-shared_ptr<NEMUemu> nemu;
+// shared_ptr<NEMUemu> nemu;
+std::shared_ptr<Ref> refemu;
 // bool mtracer;
 // extern "C" void trap(int signal) { emu->trapped = signal; }
 // extern "C" int pmem_read(int raddr, int clk, int valid) {
@@ -17,7 +19,8 @@ shared_ptr<NEMUemu> nemu;
 // extern "C" void pmem_write(int waddr, int wdata, char wmask) {
 //   emu->writeMemory(waddr, wdata, wmask);
 //   if (mtracer) {
-//     println("Write to memory : {:#010x}, data : {:#010x}, mask : {:#010x}",
+//     println("Write to memory : {:#010x}, data : {:#010x}, mask :
+//     {:#010x}",
 //             (uint32_t)waddr, (uint32_t)wdata, (uint32_t)wmask);
 //   }
 // }
@@ -113,7 +116,7 @@ Config setup(argparse::ArgumentParser &program) {
 
   if (ret.difftest) {
     try {
-      nemu = make_shared<NEMUemu>();
+      refemu = make_shared<Ref>();
     } catch (const std::exception &err) {
       println(cerr, "Load ref failed: {}", err.what());
       throw err;

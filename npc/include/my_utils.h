@@ -3,7 +3,9 @@
 #include "spdlog/spdlog.h"
 #include <cctype>
 #include <charconv>
+#include <cstdint>
 #include <format>
+#include <limits>
 #include <optional>
 #include <ostream>
 #include <print>
@@ -41,4 +43,29 @@ template <class ExceptionType, typename... Args>
                                 Args &&...args) {
   spdlog::error(fmt, std::forward<Args>(args)...);
   throw ExceptionType(std::format(fmt, std::forward<Args>(args)...));
+}
+
+template <typename F>
+concept Callable = requires(F f) { f(); };
+
+template <uint64_t Len, class T = uint32_t> constexpr T sign_ext(T raw) {
+  static_assert(Len > 0 && Len <= 32, "Len > 0 && Len <= 32");
+  struct {
+    int64_t x : Len;
+  } v = {.x = raw};
+  return v.x;
+}
+
+template <uint64_t High, uint64_t Low = High, class T = uint32_t>
+constexpr T bits(T raw) {
+
+  static_assert(High >= Low && High < std::numeric_limits<T>::digits &&
+                    Low >= 0,
+                "High > Low && High < bitwidth && Low >= 0");
+  if constexpr (High == std::numeric_limits<T>::digits - 1)
+    return raw >> Low;
+  else {
+    uint64_t high_mask = (1ull << (High + 1)) - 1;
+    return (raw & high_mask) >> Low;
+  }
 }

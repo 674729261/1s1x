@@ -1,5 +1,6 @@
 #pragma once
 #include "Device/Device.h"
+#include "Simulators/Ref.h"
 #include <Simulators/NEMUemu.h>
 #include <Simulators/NPCemu.h>
 #include <VCPU.h>
@@ -13,7 +14,9 @@
 #include <string>
 
 extern std::shared_ptr<NPCemu> emu;
-extern std::shared_ptr<NEMUemu> nemu;
+// extern std::shared_ptr<NEMUemu> nemu;
+extern std::shared_ptr<Ref> refemu;
+
 void register_argparse(argparse::ArgumentParser &program);
 void register_logger(argparse::ArgumentParser &program);
 struct Config {

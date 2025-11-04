@@ -1,4 +1,5 @@
 #include "Setup.h"
+#include "Simulators/Ref.h"
 #include <Monitor/SingleMonitor.h>
 #include <iostream>
 #include <print>
@@ -34,7 +35,7 @@ int main(int argc, char *argv[]) {
                         config.use_ftracer, config.path_elf);
 
   if (config.difftest) {
-    monitor.addReference(nemu);
+    monitor.addReference(refemu);
   }
   try {
     result = monitor.start();

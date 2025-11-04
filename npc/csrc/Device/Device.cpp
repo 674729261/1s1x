@@ -59,7 +59,7 @@ uint32_t Devices::readMemory(uint32_t raddr) {
   }
   raddr &= ~0x3;
   uint32_t addr = (uint32_t)(raddr - Devices::PC_Init) >> 2;
-  if (addr < M.size() && raddr >= Devices::PC_Init)
+  if (addr < M.size() && raddr >= Devices::PC_Init) [[likely]]
     return M[addr];
   if (raddr >= Devices::deviceBase) {
     auto ret = readMMIO(raddr);
