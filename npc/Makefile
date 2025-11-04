@@ -9,7 +9,8 @@ BIN = ./obj_dir/V$(TOPNAME)
 
 SV_FILELIST=generated_svsrc/filelist.f
 
-SVSRC = $(shell cat $(SV_FILELIST) | sed 's|^|generated_svsrc/|g' | tr '\n' ' ')
+SVSRC_FILES := $(shell cat $(SV_FILELIST))
+SVSRC := $(patsubst %,generated_svsrc/%,$(SVSRC_FILES))
 
 VERILATOR = verilator
 
@@ -46,7 +47,7 @@ $(SV_FILELIST): $(CHISELSRC)
 PROG ?= test_progs/typing.bin
 ELF ?= test_progs/typing.elf
 MEM_SIZE ?= 134217728
-TIME_STAMP ?= $(shell date +"%Y_%m_%d_%H_%M_%S")
+TIME_STAMP := $(shell date +"%Y_%m_%d_%H_%M_%S")
 LOG_FILE ?= "log/$(TIME_STAMP).log"
 sim: npc
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
