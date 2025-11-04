@@ -45,7 +45,7 @@ constexpr std::array<uint32_t, 16> lookup_mask32 = {
 
 void Devices::writeMemory(uint32_t waddr, uint32_t wdata, uint32_t wmask) {
   uint32_t mask32 = lookup_mask32[wmask];
-  if (operation.used) {
+  if (operation.used) [[unlikely]] {
     wdata &= mask32;
     if (operation.op !=
         OP::OP_record{
@@ -80,7 +80,7 @@ void Devices::writeMemory(uint32_t waddr, uint32_t wdata, uint32_t wmask) {
 
 uint32_t Devices::readMemory(uint32_t raddr) {
   raddr &= ~0x3;
-  if (operation.used) {
+  if (operation.used) [[unlikely]] {
     if (operation.op.is_read != true || operation.op.addr != raddr)
       log_and_throw<std::logic_error>(
           "Different memory operation from ref\n"
