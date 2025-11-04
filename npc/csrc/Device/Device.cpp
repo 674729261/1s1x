@@ -12,7 +12,7 @@ Devices::Devices(Devices::DeviceSettings ds, size_t MemSize,
                  std::string_view program, bool mtracer)
     : KeyboardBase{}, AudioBase{}, VideoBase{}, RTC{}, renderer(nullptr),
       texture(nullptr), window(nullptr), quit(false), device_settings(ds),
-      mtracer(mtracer), operation({.used = false}) {
+      mtracer(mtracer), operation({.used = false}), multiple_emu(false) {
   using std::ifstream;
   using std::ios;
 
@@ -45,25 +45,29 @@ constexpr std::array<uint32_t, 16> lookup_mask32 = {
 
 void Devices::writeMemory(uint32_t waddr, uint32_t wdata, uint32_t wmask) {
   uint32_t mask32 = lookup_mask32[wmask];
-  if (operation.used) [[unlikely]] {
-    wdata &= mask32;
-    if (operation.op !=
-        OP::OP_record{
-            .is_read = false, .addr = waddr, .wdata = wdata, .wmask = wmask})
-      log_and_throw<std::logic_error>(
-          "Different memory operation from ref\n"
-          "dut : {:6} addr={:#010x} data={:#010x} mask={:x}\n"
-          "ref : {:6} addr={:#10x} data={:#010x} mask={:x}",
-          operation.op.is_read ? "read" : "write", operation.op.addr,
-          operation.op.wdata, operation.op.wmask, "write", waddr, wdata, wmask);
-    return;
-  } else {
-    operation.used = true;
-    operation.op = {.is_read = false,
-                    .addr = waddr,
-                    .wdata = wdata & mask32,
-                    .wmask = wmask};
+  if (multiple_emu) [[unlikely]] {
+    if (operation.used) {
+      wdata &= mask32;
+      if (operation.op !=
+          OP::OP_record{
+              .is_read = false, .addr = waddr, .wdata = wdata, .wmask = wmask})
+        log_and_throw<std::logic_error>(
+            "Different memory operation from ref\n"
+            "dut : {:6} addr={:#010x} data={:#010x} mask={:x}\n"
+            "ref : {:6} addr={:#10x} data={:#010x} mask={:x}",
+            operation.op.is_read ? "read" : "write", operation.op.addr,
+            operation.op.wdata, operation.op.wmask, "write", waddr, wdata,
+            wmask);
+      return;
+    } else {
+      operation.used = true;
+      operation.op = {.is_read = false,
+                      .addr = waddr,
+                      .wdata = wdata & mask32,
+                      .wmask = wmask};
+    }
   }
+
   if (mtracer) {
     println("Write to memory : {:#010x}, data : {:#010x}, mask : {:#010x}",
             (uint32_t)waddr, (uint32_t)wdata, (uint32_t)wmask);
@@ -80,20 +84,21 @@ void Devices::writeMemory(uint32_t waddr, uint32_t wdata, uint32_t wmask) {
 
 uint32_t Devices::readMemory(uint32_t raddr) {
   raddr &= ~0x3;
-  if (operation.used) [[unlikely]] {
-    if (operation.op.is_read != true || operation.op.addr != raddr)
-      log_and_throw<std::logic_error>(
-          "Different memory operation from ref\n"
-          "dut : {:6} addr={:#010x} data={:#010x} mask={:x}\n"
-          "ref : {:6} addr={:#10x}",
-          operation.op.is_read ? "read" : "write", operation.op.addr,
-          operation.op.wdata, operation.op.wmask, "read", raddr);
-    return operation.rdata;
+  if (multiple_emu) [[unlikely]] {
+    if (operation.used) {
+      if (operation.op.is_read != true || operation.op.addr != raddr)
+        log_and_throw<std::logic_error>(
+            "Different memory operation from ref\n"
+            "dut : {:6} addr={:#010x} data={:#010x} mask={:x}\n"
+            "ref : {:6} addr={:#10x}",
+            operation.op.is_read ? "read" : "write", operation.op.addr,
+            operation.op.wdata, operation.op.wmask, "read", raddr);
+      return operation.rdata;
+    }
+    operation.used = true;
+    operation.op.is_read = true;
+    operation.op.addr = raddr;
   }
-  operation.used = true;
-  operation.op.is_read = true;
-  operation.op.addr = raddr;
-
   if (mtracer) {
     println("Reading memory memory : {:#010x}", (uint32_t)raddr);
   }

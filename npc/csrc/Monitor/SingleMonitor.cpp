@@ -53,6 +53,7 @@ SingleMonitor::SingleMonitor(std::shared_ptr<RISCV32> emu, size_t MemSize,
 void SingleMonitor::addReference(std::shared_ptr<RISCV32> ref) {
   emus.push_back(ref);
   ref->tie_devices(devices);
+  devices->set_multiple_emu();
 }
 
 int SingleMonitor::start() {

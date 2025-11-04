@@ -38,6 +38,8 @@ public:
   void update_RTC();
   void init_ioe();
 
+  void set_multiple_emu() { multiple_emu = true; }
+
   static void init_keymap();
 
   void device_update_loop();
@@ -64,6 +66,7 @@ public:
 private:
   std::vector<uint32_t> M;
   bool mtracer;
+  bool multiple_emu;
 
   struct OP {
     bool used;
