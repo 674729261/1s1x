@@ -199,8 +199,8 @@ inline void Ref::step() {
            cpu.gpr[d.dst_id] = cpu.pc + 4;
            dnpc = cpu.pc + d.imm_J);
   try_this("??????? ????? ????? 000 ????? 11001 11", jalr,
-           cpu.gpr[d.dst_id] = cpu.pc + 4;
-           dnpc = (cpu.gpr[d.src1_id] + d.imm_I) & (~0x1u));
+           dnpc = (cpu.gpr[d.src1_id] + d.imm_I) & (~0x1u);
+           cpu.gpr[d.dst_id] = cpu.pc + 4);
 
   try_this("??????? ????? ????? 001 ????? 11000 11", bne,
            if (cpu.gpr[d.src1_id] != cpu.gpr[d.src2_id]) dnpc =
