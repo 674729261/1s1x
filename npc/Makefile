@@ -73,7 +73,7 @@ sim_swap: VERILATOR_CFLAGS+=-DNDEBUG -fstrict-aliasing \
 sim_swap: VERILATOR_LDLAGS+=-fuse-linker-plugin
 sim_swap: npc
 	$(call git_commit, "sim swap") # DO NOT REMOVE THIS LINE!!!
-	$(BIN) --image $(PROG) --mem_size $(MEM_SIZE) --log $(LOG_FILE) $(NPC_FLAGS) --enable_audio --enable_vga --enable_keyboard
+	$(BIN) --image $(PROG) --mem_size $(MEM_SIZE) --log $(LOG_FILE) $(NPC_FLAGS) --swap --enable_audio --enable_vga --enable_keyboard
 
 valgrind: PROG = test_progs/add.bin
 valgrind: ELF = test_progs/add.elf
