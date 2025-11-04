@@ -4,6 +4,7 @@
 #include <iostream>
 #include <memory>
 #include <my_utils.h>
+#include <stdexcept>
 
 Devices::Devices(Devices::DeviceSettings ds, size_t MemSize,
                  std::string_view program, bool mtracer)
@@ -35,9 +36,21 @@ Devices::Devices(Devices::DeviceSettings ds, size_t MemSize,
 }
 
 void Devices::writeMemory(uint32_t waddr, uint32_t wdata, uint32_t wmask) {
-  if (operation.used)
+  if (operation.used) {
+    if (operation.op !=
+        OP::OP_record{
+            .is_read = false, .addr = waddr, .wdata = wdata, .wmask = wmask})
+      log_and_throw<std::logic_error>(
+          "Different memory operation from ref\n "
+          "dut : {:6} {:#10x} {:#10x} {:x}\ref : {:6} {:#10x} {:#10x} {:x}",
+          operation.op.is_read ? "read" : "write", operation.op.addr,
+          operation.op.wdata, operation.op.wmask, "write", waddr, wdata, wmask);
     return;
-  operation.used = true;
+  } else {
+    operation.used = true;
+    operation.op = {
+        .is_read = false, .addr = waddr, .wdata = wdata, .wmask = wmask};
+  }
   if (mtracer) {
     println("Write to memory : {:#010x}, data : {:#010x}, mask : {:#010x}",
             (uint32_t)waddr, (uint32_t)wdata, (uint32_t)wmask);

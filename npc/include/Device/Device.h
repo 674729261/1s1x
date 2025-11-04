@@ -65,13 +65,18 @@ private:
   std::vector<uint32_t> M;
   bool mtracer;
 
-  struct {
+  struct OP {
     bool used;
-    struct {
+    struct OP_record {
       bool is_read;
       uint32_t addr;
       uint32_t wdata;
       uint32_t wmask;
+
+      bool operator==(const OP_record &o) const {
+        return is_read == o.is_read && addr == o.addr && wdata == o.wdata &&
+               wmask == o.wmask;
+      }
     } op;
     uint32_t rdata;
   } operation;
