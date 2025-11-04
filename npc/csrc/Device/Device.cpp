@@ -69,10 +69,12 @@ void Devices::writeMemory(uint32_t waddr, uint32_t wdata, uint32_t wmask) {
     }
   }
 #endif
+#ifndef DISABLE_ALL_TRACER
   if (mtracer) {
     println("Write to memory : {:#010x}, data : {:#010x}, mask : {:#010x}",
             (uint32_t)waddr, (uint32_t)wdata, (uint32_t)wmask);
   }
+#endif
 
   uint32_t addr = (uint32_t)(waddr - Devices::memOffset) >> 2;
   if (addr < M.size() && waddr >= Devices::memOffset) {
@@ -102,9 +104,12 @@ uint32_t Devices::readMemory(uint32_t raddr) {
     operation.op.addr = raddr;
   }
 #endif
+
+#ifndef DISABLE_ALL_TRACER
   if (mtracer) {
     println("Reading memory memory : {:#010x}", (uint32_t)raddr);
   }
+#endif
   uint32_t rdata = 0xdeadbeef;
 
   uint32_t addr = (uint32_t)(raddr - Devices::PC_Init) >> 2;
