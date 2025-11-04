@@ -26,15 +26,25 @@ int main(int argc, char *argv[]) {
     std::terminate();
   }
 
-  emu = make_shared<NPCemu>();
   int result;
+#ifdef USE_REF_AS_MAIN
+  SingleMonitor monitor(refemu, config.mem_size, config.image_path,
+                        config.device_settings, config.batch_mode,
+                        config.itracer, config.mtracer, config.sz_irb,
+                        config.use_ftracer, config.path_elf);
+#else
   SingleMonitor monitor(emu, config.mem_size, config.image_path,
                         config.device_settings, config.batch_mode,
                         config.itracer, config.mtracer, config.sz_irb,
                         config.use_ftracer, config.path_elf);
+#endif
 
   if (config.difftest) {
+#ifdef USE_REF_AS_MAIN
+    monitor.addReference(emu);
+#else
     monitor.addReference(refemu);
+#endif
   }
   try {
     result = monitor.start();

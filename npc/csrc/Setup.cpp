@@ -114,10 +114,20 @@ Config setup(argparse::ArgumentParser &program) {
       spdlog::info("Using capstone");
     }
   }
+#ifdef USE_REF_AS_MAIN
+  refemu = make_shared<Ref>();
+#else
+  emu = make_shared<NPCemu>();
+#endif
 
   if (ret.difftest) {
     try {
+#ifdef USE_REF_AS_MAIN
+      emu = make_shared<NPCemu>();
+#else
       refemu = make_shared<Ref>();
+#endif
+
       spdlog::info("Using difftest");
     } catch (const std::exception &err) {
       println(cerr, "Load ref failed: {}", err.what());
