@@ -232,7 +232,7 @@ inline void Ref::step() {
   try_this("??????? ????? ????? 001 ????? 01000 11", sh,
            uint32_t addr = cpu.gpr[d.src1_id] + d.imm_S;
            uint32_t shift = addr & 0x3; devices->writeMemory(
-               addr, cpu.gpr[d.src2_id] << (shift * 8), 0x3 << (shift / 2)));
+               addr, cpu.gpr[d.src2_id] << (shift * 8), 0x3 << shift));
   try_this("??????? ????? ????? 010 ????? 01000 11", sw,
            devices->writeMemory(cpu.gpr[d.src1_id] + d.imm_S,
                                 cpu.gpr[d.src2_id], 0xF));
