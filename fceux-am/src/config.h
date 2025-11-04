@@ -30,7 +30,7 @@
 #define FUNC_IDX_MAX256
 #else
 #define NR_FRAMESKIP 0
-#define SOUND_CONFIG SOUND_NONE
+#define SOUND_CONFIG SOUND_HQ
 #define FUNC_IDX_MAX16
 #endif
 
