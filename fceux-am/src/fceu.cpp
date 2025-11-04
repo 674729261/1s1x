@@ -169,8 +169,8 @@ static int RegisterBWrite(writefunc func) {
     if (BWrite[i] == func)
       return i;
   }
-  printf("%d\n", i);
-  assert(i < FUNC_IDX_MAX);
+  // printf("%d\n", i);
+  // assert(i < FUNC_IDX_MAX);
   return -1;
 }
 
