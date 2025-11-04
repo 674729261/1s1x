@@ -69,7 +69,7 @@ sim_ftracer: npc
 
 sim_swap: VERILATOR_CFLAGS+=-DNDEBUG -fstrict-aliasing \
 -frename-registers -fomit-frame-pointer \
--DDISABLE_ALL_TRACER -DNO_DIFFTEST -DUSE_REF_AS_MAIN
+-DDISABLE_ALL_TRACER -DNO_DIFFTEST
 sim_swap: VERILATOR_LDLAGS+=-fuse-linker-plugin
 sim_swap: npc
 	$(call git_commit, "sim swap") # DO NOT REMOVE THIS LINE!!!
