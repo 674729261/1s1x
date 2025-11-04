@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
     // monitor.addReference(std::make_shared<Ref>());
     // monitor.addReference(std::make_shared<Ref>());
 
-    // monitor.addReference(config.swap ? emu : refemu);
+    monitor.addReference(config.swap ? emu : refemu);
   }
   try {
     result = monitor.start();
