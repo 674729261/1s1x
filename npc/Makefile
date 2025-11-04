@@ -1,3 +1,5 @@
+.DEFAULT_GOAL := sim
+
 CSRC = $(shell find csrc -name "*.cpp")
 CSRC += /usr/local/lib/libreplxx.a
 
