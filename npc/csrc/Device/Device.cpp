@@ -16,7 +16,7 @@ Devices::Devices(Devices::DeviceSettings ds, size_t MemSize,
   using std::ifstream;
   using std::ios;
 
-  M.resize(MemSize / sizeof(uint32_t));
+  M.resize(MemSize / 4);
   std::filesystem::path program_path = program;
   std::ifstream prog_file(program_path, ios::in | ios::binary);
   if (!prog_file.good()) {
@@ -158,7 +158,7 @@ void Devices::device_update_loop() {
     while (device_alive) {
       if (device_running) {
         auto now = steady_clock::now();
-        if (now - last < 16.67ms)
+        if (duration_cast<microseconds>(now - last).count() < 1'000'000 / 60)
           continue;
         last = now;
         if (device_settings.enable_vga) {
