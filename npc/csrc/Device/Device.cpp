@@ -158,7 +158,7 @@ void Devices::device_update_loop() {
     while (device_alive) {
       if (device_running) {
         auto now = steady_clock::now();
-        if (now - last < 1s / 60)
+        if (now - last < 1s)
           continue;
         last = now;
         if (device_settings.enable_vga) {
