@@ -1,4 +1,5 @@
 #include <Device/Device.h>
+#include <array>
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
@@ -35,6 +36,91 @@ Devices::Devices(Devices::DeviceSettings ds, size_t MemSize,
   spdlog::info("Loaded {} words", size_prog);
   // cpu.pc = init_pc;
   prog_file.close();
+}
+
+constexpr std::array<uint32_t, 16> lookup_mask32 = {
+    0x00000000, 0x000000FF, 0x0000FF00, 0x0000FFFF, 0x00FF0000, 0x00FF00FF,
+    0x00FFFF00, 0x00FFFFFF, 0xFF000000, 0xFF0000FF, 0xFF00FF00, 0xFF00FFFF,
+    0xFFFF0000, 0xFFFF00FF, 0xFFFFFF00, 0xFFFFFFFF};
+
+void Devices::writeMemory(uint32_t waddr, uint32_t wdata, uint32_t wmask) {
+  uint32_t mask32 = lookup_mask32[wmask];
+#ifndef NO_DIFFTEST
+  if (multiple_emu) [[unlikely]] {
+    if (operation.used) {
+      wdata &= mask32;
+      if (operation.op !=
+          OP::OP_record{
+              .is_read = false, .addr = waddr, .wdata = wdata, .wmask = wmask})
+        log_and_throw<std::logic_error>(
+            "Different memory operation from ref\n"
+            "dut : {:6} addr={:#010x} data={:#010x} mask={:x}\n"
+            "ref : {:6} addr={:#10x} data={:#010x} mask={:x}",
+            operation.op.is_read ? "read" : "write", operation.op.addr,
+            operation.op.wdata, operation.op.wmask, "write", waddr, wdata,
+            wmask);
+      return;
+    } else {
+      operation.used = true;
+      operation.op = {.is_read = false,
+                      .addr = waddr,
+                      .wdata = wdata & mask32,
+                      .wmask = wmask};
+    }
+  }
+#endif
+#ifndef DISABLE_ALL_TRACER
+  if (mtracer) {
+    println("Write to memory : {:#010x}, data : {:#010x}, mask : {:#010x}",
+            (uint32_t)waddr, (uint32_t)wdata, (uint32_t)wmask);
+  }
+#endif
+
+  uint32_t addr = (uint32_t)(waddr - Devices::memOffset) >> 2;
+  if (addr < M.size() && waddr >= Devices::memOffset) [[likely]] {
+    M[addr] &= ~mask32;
+    M[addr] |= wdata & mask32;
+  } else if (waddr >= Devices::deviceBase) {
+    writeMMIO(waddr & ~0x3, mask32, wdata);
+  }
+}
+
+uint32_t Devices::readMemory(uint32_t raddr) {
+  raddr &= ~0x3;
+#ifndef NO_DIFFTEST
+  if (multiple_emu) [[unlikely]] {
+    if (operation.used) {
+      if (operation.op.is_read != true || operation.op.addr != raddr)
+        log_and_throw<std::logic_error>(
+            "Different memory operation from ref\n"
+            "dut : {:6} addr={:#010x} data={:#010x} mask={:x}\n"
+            "ref : {:6} addr={:#10x}",
+            operation.op.is_read ? "read" : "write", operation.op.addr,
+            operation.op.wdata, operation.op.wmask, "read", raddr);
+      return operation.rdata;
+    }
+    operation.used = true;
+    operation.op.is_read = true;
+    operation.op.addr = raddr;
+  }
+#endif
+
+#ifndef DISABLE_ALL_TRACER
+  if (mtracer) {
+    println("Reading memory memory : {:#010x}", (uint32_t)raddr);
+  }
+#endif
+  uint32_t rdata = 0xdeadbeef;
+
+  uint32_t addr = (uint32_t)(raddr - Devices::PC_Init) >> 2;
+  if (addr < M.size() && raddr >= Devices::PC_Init) [[likely]]
+    rdata = M[addr];
+  else if (raddr >= Devices::deviceBase)
+    rdata = readMMIO(raddr).value_or(0xdeadbeef);
+#ifndef NO_DIFFTEST
+  operation.rdata = rdata;
+#endif
+  return rdata;
 }
 
 void Devices::init_ioe() {
