@@ -77,7 +77,7 @@ void Devices::writeMemory(uint32_t waddr, uint32_t wdata, uint32_t wmask) {
 #endif
 
   uint32_t addr = (uint32_t)(waddr - Devices::memOffset) >> 2;
-  if (addr < M.size() && waddr >= Devices::memOffset) {
+  if (addr < M.size() && waddr >= Devices::memOffset) [[likely]] {
     M[addr] &= ~mask32;
     M[addr] |= wdata & mask32;
   } else if (waddr >= Devices::deviceBase) {
