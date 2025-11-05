@@ -16,7 +16,7 @@ Devices::Devices(Devices::DeviceSettings ds, size_t MemSize,
   using std::ifstream;
   using std::ios;
 
-  M.resize(MemSize / 4);
+  M.resize(MemSize / sizeof(uint32_t));
   std::filesystem::path program_path = program;
   std::ifstream prog_file(program_path, ios::in | ios::binary);
   if (!prog_file.good()) {
@@ -42,51 +42,7 @@ constexpr std::array<uint32_t, 16> lookup_mask32 = {
     0x00000000, 0x000000FF, 0x0000FF00, 0x0000FFFF, 0x00FF0000, 0x00FF00FF,
     0x00FFFF00, 0x00FFFFFF, 0xFF000000, 0xFF0000FF, 0xFF00FF00, 0xFF00FFFF,
     0xFFFF0000, 0xFFFF00FF, 0xFFFFFF00, 0xFFFFFFFF};
-void Devices::writeMemoryByLen(uint32_t waddr, uint32_t wdata, int len) {
-  if (waddr - Devices::memOffset < M.size() * 4 && waddr >= Devices::memOffset)
-      [[likely]] {
-    switch (len) {
-    case 1: {
-      std::span<uint8_t> span_byte(reinterpret_cast<uint8_t *>(M.data()),
-                                   M.size() * 4);
-      span_byte[waddr] = wdata;
-      break;
-    }
-    case 2: {
-      std::span<uint16_t> span_short(reinterpret_cast<uint16_t *>(M.data()),
-                                     M.size() * 2);
-      span_short[waddr / 2] = wdata;
-      break;
-    }
-    case 4: {
-      M[waddr / 4] = wdata;
-      break;
-    }
-    default:
-      log_and_throw<std::logic_error>("Invalid memory write of length {}", len);
-    }
-  } else {
-    switch (len) {
-    case 1: {
-      writeMMIO(waddr & ~0x3, 0xFFu << (8 * (waddr & 0x3)),
-                wdata << (8 * (waddr & 0x3)));
 
-      break;
-    }
-    case 2: {
-      writeMMIO(waddr & ~0x3, 0xFFFFu << (8 * (waddr & 0x3)),
-                wdata << (8 * (waddr & 0x3)));
-      break;
-    }
-    case 4: {
-      writeMMIO(waddr & ~0x3, 0xFFFFFFFF, wdata);
-      break;
-    }
-    default:
-      log_and_throw<std::logic_error>("Invalid memory write of length {}", len);
-    }
-  }
-}
 void Devices::writeMemory(uint32_t waddr, uint32_t wdata, uint32_t wmask) {
   uint32_t mask32 = lookup_mask32[wmask];
 #ifndef NO_DIFFTEST

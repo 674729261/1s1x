@@ -22,7 +22,6 @@ public:
           bool mtracer);
 
   void writeMemory(uint32_t waddr, uint32_t wdata, uint32_t wmask);
-  void writeMemoryByLen(uint32_t waddr, uint32_t wdata, int len);
   uint32_t readMemory(uint32_t raddr);
   uint32_t get_instruction(uint32_t pc) {
 #ifndef DISABLE_ADDR_CHECK

@@ -225,24 +225,15 @@ inline void Ref::step() {
 
   try_this("??????? ????? ????? 000 ????? 01000 11", sb,
            uint32_t addr = cpu.gpr[d.src1_id] + d.imm_S;
-           devices->writeMemoryByLen(addr, cpu.gpr[d.src2_id], 1);
-           //  uint32_t shift = addr & 0x3; devices->writeMemory(
-           //      addr, cpu.gpr[d.src2_id] << (shift * 8), 1 << shift)
-  );
+           uint32_t shift = addr & 0x3; devices->writeMemory(
+               addr, cpu.gpr[d.src2_id] << (shift * 8), 1 << shift));
   try_this("??????? ????? ????? 001 ????? 01000 11", sh,
            uint32_t addr = cpu.gpr[d.src1_id] + d.imm_S;
-           devices->writeMemoryByLen(addr, cpu.gpr[d.src2_id], 2);
-           //  uint32_t shift = addr & 0x3; devices->writeMemory(
-           //      addr, cpu.gpr[d.src2_id] << (shift * 8), 0x3 << shift)
-  );
+           uint32_t shift = addr & 0x3; devices->writeMemory(
+               addr, cpu.gpr[d.src2_id] << (shift * 8), 0x3 << shift));
   try_this("??????? ????? ????? 010 ????? 01000 11", sw,
-           devices->writeMemoryByLen(cpu.gpr[d.src1_id] + d.imm_S,
-                                     cpu.gpr[d.src2_id], 4);
-
-           //  devices->writeMemory(
-           //   cpu.gpr[d.src1_id] + d.imm_S,
-           //                       cpu.gpr[d.src2_id], 0xF)
-  );
+           devices->writeMemory(cpu.gpr[d.src1_id] + d.imm_S,
+                                cpu.gpr[d.src2_id], 0xF));
 
   try_this("0000000 00001 00000 000 00000 11100 11", ebreak,
            EMUstate = RISCV32::Interrupt::EBREAK); // R(10) is $a0
