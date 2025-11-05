@@ -85,8 +85,8 @@ valgrind: npc
 
 
 
-gdb: FAST_FLAGS = -O3 -g
-gdb: VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -O3 -g
+gdb: FAST_FLAGS = -O0 -g
+gdb: VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -O0 -g
 gdb: npc
 	gdb --args ./obj_dir/VCPU --image $(PROG) --mem_size 134217728 --log $(LOG_FILE) --itracer 8 --difftest --inst_ringbuffer 16 
 

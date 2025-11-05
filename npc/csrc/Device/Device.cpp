@@ -68,12 +68,14 @@ void Devices::writeMemoryByLen(uint32_t waddr, uint32_t wdata, int len) {
   } else {
     switch (len) {
     case 1: {
-      writeMMIO(waddr & ~0x3, 0xFFu << (waddr & 0x3), wdata << (waddr & 0x3));
+      writeMMIO(waddr & ~0x3, 0xFFu << (8 * (waddr & 0x3)),
+                wdata << (8 * (waddr & 0x3)));
 
       break;
     }
     case 2: {
-      writeMMIO(waddr & ~0x3, 0xFFFFu << (waddr & 0x3), wdata << (waddr & 0x3));
+      writeMMIO(waddr & ~0x3, 0xFFFFu << (8 * (waddr & 0x3)),
+                wdata << (8 * (waddr & 0x3)));
       break;
     }
     case 4: {
