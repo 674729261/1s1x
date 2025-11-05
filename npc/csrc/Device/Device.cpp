@@ -43,25 +43,46 @@ constexpr std::array<uint32_t, 16> lookup_mask32 = {
     0x00FFFF00, 0x00FFFFFF, 0xFF000000, 0xFF0000FF, 0xFF00FF00, 0xFF00FFFF,
     0xFFFF0000, 0xFFFF00FF, 0xFFFFFF00, 0xFFFFFFFF};
 void Devices::writeMemoryByLen(uint32_t waddr, uint32_t wdata, int len) {
-  switch (len) {
-  case 1: {
-    std::span<uint8_t> span_byte(reinterpret_cast<uint8_t *>(M.data()),
-                                 M.size() * 4);
-    span_byte[waddr] = wdata;
-    break;
-  }
-  case 2: {
-    std::span<uint16_t> span_byte(reinterpret_cast<uint16_t *>(M.data()),
-                                  M.size() * 2);
-    span_byte[waddr / 2] = wdata;
-    break;
-  }
-  case 4: {
-    M[waddr / 4] = wdata;
-    break;
-  }
-  default:
-    log_and_throw<std::logic_error>("Invalid memory write of length {}", len);
+  if (waddr - Devices::memOffset < M.size() * 4 && waddr >= Devices::memOffset)
+      [[likely]] {
+    switch (len) {
+    case 1: {
+      std::span<uint8_t> span_byte(reinterpret_cast<uint8_t *>(M.data()),
+                                   M.size() * 4);
+      span_byte[waddr] = wdata;
+      break;
+    }
+    case 2: {
+      std::span<uint16_t> span_short(reinterpret_cast<uint16_t *>(M.data()),
+                                     M.size() * 2);
+      span_short[waddr / 2] = wdata;
+      break;
+    }
+    case 4: {
+      M[waddr / 4] = wdata;
+      break;
+    }
+    default:
+      log_and_throw<std::logic_error>("Invalid memory write of length {}", len);
+    }
+  } else {
+    switch (len) {
+    case 1: {
+      writeMMIO(waddr & ~0x3, 0xFFu << (waddr & 0x3), wdata << (waddr & 0x3));
+
+      break;
+    }
+    case 2: {
+      writeMMIO(waddr & ~0x3, 0xFFFFu << (waddr & 0x3), wdata << (waddr & 0x3));
+      break;
+    }
+    case 4: {
+      writeMMIO(waddr & ~0x3, 0xFFFFFFFF, wdata);
+      break;
+    }
+    default:
+      log_and_throw<std::logic_error>("Invalid memory write of length {}", len);
+    }
   }
 }
 void Devices::writeMemory(uint32_t waddr, uint32_t wdata, uint32_t wmask) {
