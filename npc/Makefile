@@ -11,8 +11,8 @@ BIN = ./obj_dir/V$(TOPNAME)
 
 SV_FILELIST=generated_svsrc/filelist.f
 
-SVSRC_FILES := $(shell cat $(SV_FILELIST))
-SVSRC := $(patsubst %,generated_svsrc/%,$(SVSRC_FILES))
+SVSRC_FILES = $(shell cat $(SV_FILELIST))
+SVSRC = $(patsubst %,generated_svsrc/%,$(SVSRC_FILES))
 
 VERILATOR = verilator
 
