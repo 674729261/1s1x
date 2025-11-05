@@ -1,6 +1,6 @@
 TEST_ISA ?= i #m a f d c
 EXCLUDE_TEST ?= fence_i ma_data
-MAKECMDGOALS ?= run_difftest
+MAKECMDGOALS = run_difftest
 
 SUPPORTED_AM_ISA = riscv64 riscv32 riscv64e riscv32e minirv
 AM_ISA = $(word 1, $(subst -, ,$(ARCH)))
