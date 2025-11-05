@@ -3,6 +3,7 @@
 #include "spdlog/spdlog.h"
 #include <cctype>
 #include <charconv>
+#include <concepts>
 #include <cstdint>
 #include <format>
 #include <limits>
@@ -45,11 +46,11 @@ template <class ExceptionType, typename... Args>
   throw ExceptionType(std::format(fmt, std::forward<Args>(args)...));
 }
 
-template <typename F>
-concept Callable = requires(F f) { f(); };
-
-template <uint64_t Len, class T = uint32_t> constexpr T sign_ext(T raw) {
-  static_assert(Len > 0 && Len <= 32, "Len > 0 && Len <= 32");
+template <uint64_t Len, class T = uint32_t>
+  requires std::unsigned_integral<T>
+constexpr T sign_ext(T raw) {
+  static_assert(Len > 0 && Len <= std::numeric_limits<T>::digits,
+                "Len > 0 && Len <= bitwidth");
   struct {
     int64_t x : Len;
   } v = {.x = raw};
@@ -57,6 +58,7 @@ template <uint64_t Len, class T = uint32_t> constexpr T sign_ext(T raw) {
 }
 
 template <uint64_t High, uint64_t Low = High, class T = uint32_t>
+  requires std::unsigned_integral<T>
 constexpr T bits(T raw) {
 
   static_assert(High >= Low && High < std::numeric_limits<T>::digits &&
