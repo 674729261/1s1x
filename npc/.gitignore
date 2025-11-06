@@ -18,6 +18,7 @@ obj_dir/**/*
 obj_dir
 project
 target
+test_run_dir
 .bloop
 .bsp
 .cache
