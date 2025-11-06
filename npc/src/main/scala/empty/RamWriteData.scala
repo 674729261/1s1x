@@ -62,7 +62,10 @@ class RamWriteData extends RawModule {
 
   out_t(0) := io.word(7, 0)
 
-  io.mask := Mux1H(
+  // val out_t = Wire(UInt(32.W))
+  // out_t := io.word << Cat(io.lower2bit, 0.U(3.W))
+
+  val mask_base = Mux1H(
     Seq(
       io.is_word -> "b1111".U(4.W),
       io.is_half -> Mux(io.lower2bit(1), "b1100".U(4.W), "b0011".U(4.W)),
@@ -84,6 +87,16 @@ class RamWriteData extends RawModule {
       // )
     )
   )
+
+  // val mask_base = Mux1H(
+  //   Seq(
+  //     io.is_word -> "b1111".U(4.W),
+  //     io.is_half -> "b0011".U(4.W),
+  //     io.is_byte -> "b0001".U(4.W)
+  //   )
+  // )
+
+  io.mask := mask_base
 
   io.out := out_t.asUInt
   // io.out := Cat(out_t(3), out_t(2), out_t(1), out_t(0))

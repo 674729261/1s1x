@@ -102,7 +102,7 @@ gdb: npc
 
 
 clean:
-	rm -rf obj_dir
+	rm -rf build
 	sbt clean
 	rm -rf generated_svsrc/*
 

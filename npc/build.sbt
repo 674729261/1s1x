@@ -39,3 +39,8 @@ libraryDependencies += "org.chipsalliance" %% "chisel" % chiselVersion
 // dependencyOverrides += "org.json4s" %% "json4s-jackson" % "4.0.7"
 // dependencyOverrides += "org.scalatest" %% "scalatest" % "3.2.10"
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.19" % Test
+
+// DO NOT EDIT! This file is auto-generated.
+
+// This plugin enables semantic information to be produced by sbt.
+// It also adds support for debugging using the Debug Adapter Protocol
