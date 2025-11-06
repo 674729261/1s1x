@@ -150,7 +150,8 @@ class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
   io.raddr := Cat(alu.io.out(31, 2), "b00".U(2.W))
   io.valid := instDecoder.io.is_ram_valid
   io.wen := instDecoder.io.is_ram_wen
-  io.waddr := Cat(alu.io.out(31, 2), "b00".U(2.W))
+  // io.waddr := Cat(alu.io.out(31, 2), "b00".U(2.W))
+  io.waddr := alu.io.out
   io.wdata := ramWriter.io.out
   io.wmask := ramWriter.io.mask
 
