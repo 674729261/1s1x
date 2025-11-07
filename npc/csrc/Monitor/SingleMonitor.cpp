@@ -81,7 +81,8 @@ int SingleMonitor::start() {
           int op_memory_cnt = devices->check_and_reset_op();
           if (op_memory_cnt != 0 && op_memory_cnt != emus.size()) {
             log_and_throw<std::logic_error>(
-                "Wrong memory access with difftest");
+                "Different memory access with difftest, total visit count : {}",
+                op_memory_cnt);
           }
 #endif
           main_emu.step();
@@ -159,7 +160,9 @@ void SingleMonitor::simulate(unsigned long long cnt) {
 #ifndef NO_DIFFTEST
       int op_memory_cnt = devices->check_and_reset_op();
       if (op_memory_cnt != 0 && op_memory_cnt != emus.size()) {
-        log_and_throw<std::logic_error>("Wrong memory access with difftest");
+        log_and_throw<std::logic_error>(
+            "Different memory access with difftest, total visit count : {}",
+            op_memory_cnt);
       }
 #endif
       if (max_display_inst == 0)
@@ -170,7 +173,9 @@ void SingleMonitor::simulate(unsigned long long cnt) {
 #ifndef NO_DIFFTEST
       int op_memory_cnt = devices->check_and_reset_op();
       if (op_memory_cnt != 0 && op_memory_cnt != emus.size()) {
-        log_and_throw<std::logic_error>("Wrong memory access with difftest");
+        log_and_throw<std::logic_error>(
+            "Different memory access with difftest, total visit count : {}",
+            op_memory_cnt);
       }
 #endif
     }
