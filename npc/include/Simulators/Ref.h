@@ -194,9 +194,8 @@ inline void Ref::step() {
            int shift = (addr & 0x3) * 8;
            cpu.gpr[d.dst_id] = (devices->readMemory(addr) >> shift) & 0xFFFF);
   try_this("??????? ????? ????? 010 ????? 00000 11", lw,
-           //  cpu.gpr[d.dst_id] =
-           //      devices->readMemory(cpu.gpr[d.src1_id] + d.imm_I)
-  );
+           cpu.gpr[d.dst_id] =
+               devices->readMemory(cpu.gpr[d.src1_id] + d.imm_I));
 
   try_this("??????? ????? ????? ??? ????? 11011 11", jal,
            cpu.gpr[d.dst_id] = cpu.pc + 4;
