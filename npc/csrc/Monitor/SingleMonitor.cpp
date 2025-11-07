@@ -78,6 +78,10 @@ int SingleMonitor::start() {
         while (main_emu.getEMUState() == RISCV32::Interrupt::NONE &&
                !devices->is_quit()) {
 #ifndef NO_DIFFTEST
+          main_emu.step();
+#else
+          for (auto &emu : emus)
+            emu->step();
           int op_memory_cnt = devices->check_and_reset_op();
           if (op_memory_cnt != 0 && op_memory_cnt != emus.size()) {
             log_and_throw<std::logic_error>(
@@ -85,7 +89,6 @@ int SingleMonitor::start() {
                 op_memory_cnt);
           }
 #endif
-          main_emu.step();
         }
 
         auto end = steady_clock::now();
