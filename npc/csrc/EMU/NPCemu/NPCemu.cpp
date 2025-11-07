@@ -52,6 +52,7 @@ void NPCemu::step() {
   dut.eval();
   if (dut.io_wen && dut.io_valid) {
     devices->writeMemory(dut.io_waddr, dut.io_wdata, dut.io_wmask);
+    println("{:#010x}", dut.io_pc);
   }
   inst_count++;
   if (dut.io_ebreak) [[unlikely]] {
