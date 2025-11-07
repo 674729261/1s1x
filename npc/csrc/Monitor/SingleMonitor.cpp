@@ -78,7 +78,11 @@ int SingleMonitor::start() {
         while (main_emu.getEMUState() == RISCV32::Interrupt::NONE &&
                !devices->is_quit()) {
 #ifndef NO_DIFFTEST
-          devices->reset_op();
+          int op_memory_cnt = devices->check_and_reset_op();
+          if (op_memory_cnt != 0 && op_memory_cnt != emus.size()) {
+            log_and_throw<std::logic_error>(
+                "Wrong memory access with difftest");
+          }
 #endif
           main_emu.step();
         }
@@ -152,13 +156,23 @@ void SingleMonitor::simulate(unsigned long long cnt) {
         e->step();
       }
       max_display_inst--;
-      devices->reset_op();
+#ifndef NO_DIFFTEST
+      int op_memory_cnt = devices->check_and_reset_op();
+      if (op_memory_cnt != 0 && op_memory_cnt != emus.size()) {
+        log_and_throw<std::logic_error>("Wrong memory access with difftest");
+      }
+#endif
       if (max_display_inst == 0)
         tracer->set_display(false);
     } else {
       for (auto &e : emus)
         e->step();
-      devices->reset_op();
+#ifndef NO_DIFFTEST
+      int op_memory_cnt = devices->check_and_reset_op();
+      if (op_memory_cnt != 0 && op_memory_cnt != emus.size()) {
+        log_and_throw<std::logic_error>("Wrong memory access with difftest");
+      }
+#endif
     }
 
     if (emus.size() > 1)

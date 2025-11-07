@@ -59,9 +59,10 @@ void Devices::writeMemory(uint32_t waddr, uint32_t wdata, uint32_t wmask) {
             operation.op.is_read ? "read" : "write", operation.op.addr,
             operation.op.wdata, operation.op.wmask, "write", waddr, wdata,
             wmask);
+      operation.used++;
       return;
     } else {
-      operation.used = true;
+      operation.used++;
       operation.op = {.is_read = false,
                       .addr = waddr,
                       .wdata = wdata & mask32,
@@ -97,9 +98,10 @@ uint32_t Devices::readMemory(uint32_t raddr) {
             "ref : {:6} addr={:#10x}",
             operation.op.is_read ? "read" : "write", operation.op.addr,
             operation.op.wdata, operation.op.wmask, "read", raddr);
+      operation.used++;
       return operation.rdata;
     }
-    operation.used = true;
+    operation.used++;
     operation.op.is_read = true;
     operation.op.addr = raddr;
   }

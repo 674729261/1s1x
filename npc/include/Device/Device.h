@@ -57,7 +57,11 @@ public:
 
   bool is_quit() { return quit.load(std::memory_order_acquire); }
   void reset_quit() { quit.store(false); }
-  void reset_op() { operation.used = false; }
+  int check_and_reset_op() {
+    int ret = operation.used;
+    operation.used = 0;
+    return ret;
+  }
 
   const DeviceSettings device_settings;
 
@@ -69,7 +73,7 @@ private:
   bool multiple_emu;
 
   struct OP {
-    bool used;
+    int used;
     struct OP_record {
       bool is_read;
       uint32_t addr;
