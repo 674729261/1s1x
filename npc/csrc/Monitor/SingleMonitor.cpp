@@ -84,6 +84,8 @@ int SingleMonitor::start() {
           for_each(emus, [](auto &e) { e->step(); });
           check_device();
           check_diff();
+          if (diff_fault.first >= 0)
+            break;
 #endif
         }
 
