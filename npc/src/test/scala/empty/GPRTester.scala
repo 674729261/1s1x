@@ -41,7 +41,7 @@ class GPRTester extends AnyFlatSpec {
 
   behavior of "GPR"
   it should "work correctly" in {
-    simulate(new GPR(32)) { dut =>
+    simulate(new GPR(32, 32)) { dut =>
       dut.io.wen.poke(true.B)
       for (i <- 0 until 32) {
         dut.io.raddr1.poke(i.U(5.W))

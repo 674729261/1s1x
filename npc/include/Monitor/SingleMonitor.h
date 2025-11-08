@@ -62,6 +62,9 @@ private:
   std::pair<int, int> diff_fault{-1, -1};
   void simulate(unsigned long long cnt);
 
+  void check_device();
+  bool check_watchers();
+
   CommandState query_command(this SingleMonitor &self);
   CommandState help(const std::vector<std::string> &params);
   CommandState step(const std::vector<std::string> &params);

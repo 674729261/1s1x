@@ -3,6 +3,7 @@
 #include <Monitor/SingleMonitor.h>
 #include <Simulators/RISCV32.h>
 #include <Tracer/Tracer.h>
+#include <algorithm>
 #include <chrono>
 #include <cstdint>
 #include <endian.h>
@@ -22,6 +23,7 @@
 using std::println;
 using std::regex, std::sregex_token_iterator;
 using std::string;
+using std::ranges::for_each;
 
 SingleMonitor::SingleMonitor(std::shared_ptr<RISCV32> emu, size_t MemSize,
                              std::string_view program,
@@ -62,8 +64,7 @@ void SingleMonitor::addReference(std::shared_ptr<RISCV32> ref) {
 
 int SingleMonitor::start() {
   using namespace std::chrono;
-  for (auto &e : emus)
-    e->reset();
+  for_each(emus, [](auto &e) { e->reset(); });
   CommandState state = CommandState::NONE;
   bool finished = false;
   try {
@@ -77,10 +78,15 @@ int SingleMonitor::start() {
         auto start = steady_clock::now();
         while (main_emu.getEMUState() == RISCV32::Interrupt::NONE &&
                !devices->is_quit()) {
-#ifndef NO_DIFFTEST
-          devices->reset_op();
-#endif
+#ifdef NO_DIFFTEST
           main_emu.step();
+#else
+          for_each(emus, [](auto &e) { e->step(); });
+          check_device();
+          diff_fault = check_diff();
+          if (diff_fault.first >= 0)
+            break;
+#endif
         }
 
         auto end = steady_clock::now();
@@ -105,7 +111,7 @@ int SingleMonitor::start() {
         }
       }
       if (diff_fault.first >= 0) {
-        spdlog::info("Reg {} differs with ref #{} @ PC = {:#010x}\nShould be "
+        spdlog::info("Reg {} differs with ref #{} @ PC = {:#010x}. Should be "
                      "{:#010x}, got {:#010x}",
                      RISCV32::gpr_names[diff_fault.second], diff_fault.first,
                      emus.front()->getPC(),
@@ -133,6 +139,40 @@ bool SingleMonitor::process_trap() {
   return (gpr_a0 == 0);
 }
 
+void SingleMonitor::check_device() {
+#ifndef NO_DIFFTEST
+  int op_memory_cnt = devices->check_and_reset_op();
+  if (op_memory_cnt != 0 && op_memory_cnt != emus.size()) {
+    log_and_throw<std::logic_error>(
+        "Different memory access with difftest, total visit count : {}",
+        op_memory_cnt);
+  }
+#endif
+}
+
+bool SingleMonitor::check_watchers() {
+  for (auto &wat : watchers) {
+    try {
+      uint32_t value = wat.expression.eval(*emus.front(), *devices);
+      if (value != wat.last) {
+        println("Watcher #{}@{:#010x} : {}", wat.id, emus.front()->getPC(),
+                wat.expression.stringify());
+        println("{:#010x} -> {:#010x}", wat.last, value);
+        wat.last = value;
+        return true;
+      }
+    } catch (EvaluationError e) {
+      spdlog::warn(
+          "Error encountered while evaluating watcher #{}@{:#010x} : {}, "
+          "error info : {}",
+          wat.id, emus.front()->getPC(), wat.expression.stringify(), e.what());
+      devices->pause(true);
+      return false;
+    }
+  }
+  return false;
+}
+
 void SingleMonitor::simulate(unsigned long long cnt) {
   using namespace std::chrono;
   devices->reset_quit();
@@ -148,42 +188,20 @@ void SingleMonitor::simulate(unsigned long long cnt) {
 
   while (cnt--) {
     if (max_display_inst > 0) [[unlikely]] {
-      for (auto &e : emus) {
-        e->step();
-      }
+      for_each(emus, [](auto &e) { e->step(); });
       max_display_inst--;
-      devices->reset_op();
+      check_device();
       if (max_display_inst == 0)
         tracer->set_display(false);
     } else {
-      for (auto &e : emus)
-        e->step();
-      devices->reset_op();
+      for_each(emus, [](auto &e) { e->step(); });
+      check_device();
     }
 
     if (emus.size() > 1)
       diff_fault = check_diff();
 
-    for (auto &wat : watchers) {
-      try {
-        uint32_t value = wat.expression.eval(*emus.front(), *devices);
-        if (value != wat.last) {
-          println("Watcher #{}@{:#010x} : {}", wat.id, emus.front()->getPC(),
-                  wat.expression.stringify());
-          println("{:#010x} -> {:#010x}", wat.last, value);
-          wat.last = value;
-          triggered = true;
-        }
-      } catch (std::logic_error e) {
-        spdlog::warn(
-            "Error encountered while evaluating watcher #{}@{:#010x} : {}, "
-            "error info : {}",
-            wat.id, emus.front()->getPC(), wat.expression.stringify(),
-            e.what());
-        devices->pause(true);
-        return;
-      }
-    }
+    triggered = check_watchers();
     if (diff_fault.first >= 0 || triggered || devices->is_quit() ||
         emus.front()->getEMUState() != RISCV32::Interrupt::NONE)
       break;

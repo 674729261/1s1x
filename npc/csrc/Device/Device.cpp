@@ -44,7 +44,7 @@ constexpr std::array<uint32_t, 16> lookup_mask32 = {
     0xFFFF0000, 0xFFFF00FF, 0xFFFFFF00, 0xFFFFFFFF};
 
 void Devices::writeMemory(uint32_t waddr, uint32_t wdata, uint32_t wmask) {
-  uint32_t mask32 = lookup_mask32[wmask];
+  uint32_t mask32 = lookup_mask32[wmask]; // extend 4bit mask to 32bit mask
 #ifndef NO_DIFFTEST
   if (multiple_emu) [[unlikely]] {
     if (operation.used) {
@@ -59,9 +59,10 @@ void Devices::writeMemory(uint32_t waddr, uint32_t wdata, uint32_t wmask) {
             operation.op.is_read ? "read" : "write", operation.op.addr,
             operation.op.wdata, operation.op.wmask, "write", waddr, wdata,
             wmask);
+      operation.used++;
       return;
     } else {
-      operation.used = true;
+      operation.used++;
       operation.op = {.is_read = false,
                       .addr = waddr,
                       .wdata = wdata & mask32,
@@ -97,9 +98,10 @@ uint32_t Devices::readMemory(uint32_t raddr) {
             "ref : {:6} addr={:#10x}",
             operation.op.is_read ? "read" : "write", operation.op.addr,
             operation.op.wdata, operation.op.wmask, "read", raddr);
+      operation.used++;
       return operation.rdata;
     }
-    operation.used = true;
+    operation.used++;
     operation.op.is_read = true;
     operation.op.addr = raddr;
   }
@@ -155,10 +157,11 @@ void Devices::device_update_loop() {
   using namespace std::chrono;
   auto last = steady_clock::now();
   try {
-    while (device_alive) {
+    while (device_alive) { // main device uodate loop, executed 60 times per
+                           // second.
       if (device_running) {
         auto now = steady_clock::now();
-        if (now - last < 16.67ms)
+        if (now - last < 16.667ms)
           continue;
         last = now;
         if (device_settings.enable_vga) {
