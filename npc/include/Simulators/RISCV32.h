@@ -55,9 +55,28 @@ public:
   //     step();
   //   return EMUstate;
   // }
+
+  /**
+   * @brief Get the number of instructions simulated since last reset.
+   *
+   * @return unsigned long long the number of instructions
+   */
   virtual unsigned long long instrCount() = 0;
+
+  /**
+   * @brief Refresh cached register state. Should be called before calling
+   * getGPR.
+   *
+   */
   virtual void syncCPUState() = 0;
   Interrupt getEMUState() { return EMUstate; }
+
+  /**
+   * @brief Get the value of register x_idx.
+   *
+   * @param idx the index of the register to get.
+   * @return uint32_t the value of the register
+   */
   virtual uint32_t getGPR(int idx) = 0;
   virtual ~RISCV32() = default;
 

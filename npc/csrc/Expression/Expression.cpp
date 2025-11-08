@@ -1,7 +1,6 @@
 #include "Device/Device.h"
 #include <Expression/Expression.h>
 #include <Simulators/RISCV32.h>
-#include <cassert>
 #include <format>
 #include <my_utils.h>
 #include <optional>
@@ -9,7 +8,6 @@
 #include <regex>
 #include <spdlog/spdlog.h>
 #include <stack>
-#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -180,11 +178,11 @@ Expression::generateExpression(std::string_view expr) {
 uint32_t Expression::eval(RISCV32 &dut, Devices &devices) const {
   return eval_sub(dut, devices, 0, tokens.size() - 1);
 }
+
 uint32_t Expression::eval_sub(RISCV32 &dut, Devices &devices, int l,
                               int r) const {
-
   if (l > r)
-    throw std::logic_error("Invalid expression");
+    log_and_throw<EvaluationError>("Invalid expression {}", stringify());
   if (l == r) {
     if (tokens[l].type == TK_NUMBER)
       return tokens[l].data.value;
@@ -209,7 +207,7 @@ uint32_t Expression::eval_sub(RISCV32 &dut, Devices &devices, int l,
     case '*':
       return devices.readMemory(eval_sub(dut, devices, l + 1, r));
     default:
-      log_and_throw<std::logic_error>("Invalid expression : {}", stringify());
+      log_and_throw<EvaluationError>("Invalid expression : {}", stringify());
     }
   }
   uint32_t LHS = eval_sub(dut, devices, l, pos_main - 1);
@@ -223,12 +221,12 @@ uint32_t Expression::eval_sub(RISCV32 &dut, Devices &devices, int l,
     return LHS * RHS;
   case '/':
     if (RHS == 0) {
-      log_and_throw<std::logic_error>("Division by zero : {}", stringify());
+      log_and_throw<EvaluationError>("Division by zero : {}", stringify());
     }
     return LHS / RHS;
   case '%':
     if (RHS == 0) {
-      log_and_throw<std::logic_error>("Division by zero : {}", stringify());
+      log_and_throw<EvaluationError>("Division by zero : {}", stringify());
     }
     return LHS % RHS;
   case '^':
@@ -254,7 +252,7 @@ uint32_t Expression::eval_sub(RISCV32 &dut, Devices &devices, int l,
   case TK_BOOL_OR:
     return LHS || RHS;
   default:
-    log_and_throw<std::logic_error>("Invalid expression : {}", stringify());
+    log_and_throw<EvaluationError>("Invalid expression : {}", stringify());
   }
 }
 int Expression::main_token(RISCV32 &, int l, int r) const {
@@ -289,7 +287,7 @@ optional<uint32_t> Expression::evalExpression(RISCV32 &dut, Devices &devices,
 
   try {
     value = e->eval(dut, devices);
-  } catch (std::logic_error e) {
+  } catch (EvaluationError e) {
     println("{}", e.what());
     println("Evaluation failed", e.what());
     return std::nullopt;

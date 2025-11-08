@@ -4,7 +4,6 @@
 #include <Simulators/RISCV32.h>
 #include <Tracer/Tracer.h>
 #include <cstdint>
-#include <endian.h>
 #include <filesystem>
 #include <my_utils.h>
 #include <ostream>

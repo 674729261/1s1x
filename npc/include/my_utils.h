@@ -10,6 +10,7 @@
 #include <optional>
 #include <ostream>
 #include <print>
+#include <stdexcept>
 #include <string_view>
 #include <utility>
 using std::optional;
@@ -38,6 +39,11 @@ template <class T> inline std::optional<T> to_number(std::string_view p) {
   }
   return ret;
 }
+
+class EvaluationError : public std::logic_error {
+public:
+  explicit EvaluationError(const std::string &msg) : std::logic_error(msg) {}
+};
 
 template <class ExceptionType, typename... Args>
 [[noreturn]] void log_and_throw(std::format_string<Args...> fmt,

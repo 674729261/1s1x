@@ -22,7 +22,7 @@ VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -Ofast   \
 VERILATOR_LDFLAGS = -flto=auto -fipa-pta 
 
 
-CXXFLAGS += -CFLAGS "$(VERILATOR_CFLAGS) -std=c++23 -I$(NPC_HOME)/include -static"  -LDFLAGS "-lSDL2" 
+CXXFLAGS += -CFLAGS "$(VERILATOR_CFLAGS) -std=c++23 -I$(NPC_HOME)/include"  -LDFLAGS "-lSDL2" 
 VERILATORFLAGS += --noassert --no-coverage --x-assign fast --x-initial fast -O3 --no-trace --threads 1 --cc --exe --build -j 8 
 VERILATOR_DISABLE_WARNINGS += -Wno-UNUSEDSIGNAL -Wno-DECLFILENAME -Wno-SYNCASYNCNET -Wno-PINCONNECTEMPTY
 

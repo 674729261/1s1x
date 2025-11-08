@@ -21,6 +21,10 @@ public:
   Devices(DeviceSettings ds, size_t MemSize, std::string_view program,
           bool mtracer);
 
+  void init_ioe();
+
+  void set_multiple_emu() { multiple_emu = true; }
+
   void writeMemory(uint32_t waddr, uint32_t wdata, uint32_t wmask);
   uint32_t readMemory(uint32_t raddr);
   uint32_t get_instruction(uint32_t pc) {
@@ -35,10 +39,39 @@ public:
   void writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata);
   std::optional<uint32_t> readMMIO(int raddr);
   void pause(bool is_paused);
-  void update_RTC();
-  void init_ioe();
 
-  void set_multiple_emu() { multiple_emu = true; }
+  /**
+   * @brief Check if SDL has received a QUIT event(when receiving SIGINT or user
+   * exit).
+   *
+   * @return true if received a QUIT
+   * @return false otherwise
+   */
+  bool is_quit() { return quit.load(std::memory_order_acquire); }
+
+  /**
+   * @brief Reset quit state.
+   *
+   */
+  void reset_quit() { quit.store(false); }
+
+  /**
+   * @brief Check the number of memory accesses since last call.
+   *
+   * @return int the number of memory accesses since last call
+   */
+  int check_and_reset_op() {
+    int ret = operation.used;
+    operation.used = 0;
+    return ret;
+  }
+
+  const DeviceSettings device_settings;
+
+  ~Devices();
+
+private:
+  void update_RTC();
 
   static void init_keymap();
 
@@ -54,18 +87,6 @@ public:
 
   void ensure_audio_enabled();
   void ensure_vga_enabled();
-
-  bool is_quit() { return quit.load(std::memory_order_acquire); }
-  void reset_quit() { quit.store(false); }
-  int check_and_reset_op() {
-    int ret = operation.used;
-    operation.used = 0;
-    return ret;
-  }
-
-  const DeviceSettings device_settings;
-
-  ~Devices();
 
 private:
   std::vector<uint32_t> M;

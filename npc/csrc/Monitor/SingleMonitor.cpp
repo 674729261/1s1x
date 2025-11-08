@@ -161,7 +161,7 @@ bool SingleMonitor::check_watchers() {
         wat.last = value;
         return true;
       }
-    } catch (std::logic_error e) {
+    } catch (EvaluationError e) {
       spdlog::warn(
           "Error encountered while evaluating watcher #{}@{:#010x} : {}, "
           "error info : {}",
