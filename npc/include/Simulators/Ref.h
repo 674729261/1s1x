@@ -97,7 +97,7 @@ inline void Ref::step() {
   try_this("??????? ????? ????? 000 ????? 00100 11", addi,
            cpu.gpr[d.dst_id] = cpu.gpr[d.src1_id] + d.imm_I);
   try_this("0000000 ????? ????? 000 ????? 01100 11", add,
-           cpu.gpr[d.dst_id] = cpu.gpr[d.src1_id] + cpu.gpr[d.src2_id] + 1);
+           cpu.gpr[d.dst_id] = cpu.gpr[d.src1_id] + cpu.gpr[d.src2_id]);
   try_this("0100000 ????? ????? 000 ????? 01100 11", sub,
            cpu.gpr[d.dst_id] = cpu.gpr[d.src1_id] - cpu.gpr[d.src2_id]);
   try_this("0000001 ????? ????? 000 ????? 01100 11", mul,
@@ -145,7 +145,7 @@ inline void Ref::step() {
            cpu.gpr[d.dst_id] = cpu.gpr[d.src1_id] | cpu.gpr[d.src2_id]);
   try_this("0000000 ????? ????? 010 ????? 01100 11", slt,
            cpu.gpr[d.dst_id] =
-               (int32_t)cpu.gpr[d.src1_id] < (int32_t)cpu.gpr[d.src2_id] ? 1
+               (int32_t)cpu.gpr[d.src1_id] > (int32_t)cpu.gpr[d.src2_id] ? 1
                                                                          : 0);
   try_this("0000000 ????? ????? 011 ????? 01100 11", sltu,
            cpu.gpr[d.dst_id] = cpu.gpr[d.src1_id] < cpu.gpr[d.src2_id] ? 1 : 0);
