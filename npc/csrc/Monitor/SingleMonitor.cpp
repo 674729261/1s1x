@@ -111,7 +111,7 @@ int SingleMonitor::start() {
         }
       }
       if (diff_fault.first >= 0) {
-        spdlog::info("Reg {} differs with ref #{} @ PC = {:#010x}\nShould be "
+        spdlog::info("Reg {} differs with ref #{} @ PC = {:#010x}. Should be "
                      "{:#010x}, got {:#010x}",
                      RISCV32::gpr_names[diff_fault.second], diff_fault.first,
                      emus.front()->getPC(),
