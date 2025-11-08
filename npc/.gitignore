@@ -11,6 +11,7 @@
 !*.hpp
 !*.scala
 !.gitignore
+!linecount.sh
 !build.sbt
 !README.md
 build/

@@ -1,5 +1,4 @@
 #pragma once
-
 #include "spdlog/spdlog.h"
 #include <cctype>
 #include <charconv>

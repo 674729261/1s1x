@@ -18,6 +18,16 @@ public:
     bool enable_keyboard;
   };
   friend class NEMUemu;
+
+  /**
+   * @brief Construct a new Devices object.
+   *
+   * @param ds define whether to enable VGA, Audio or keyboard
+   * @param MemSize the size of memory in bytes.
+   * @param program the path to the binary program file
+   * @param mtracer define thether to enable memory tracer to print each memory
+   * access
+   */
   Devices(DeviceSettings ds, size_t MemSize, std::string_view program,
           bool mtracer);
 
