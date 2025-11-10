@@ -6,7 +6,6 @@
 #include <stdio.h>
 
 static Context *ev_handler(Event e, Context *c) {
-  printf("5\n");
   switch (e.event) {
   case EVENT_YIELD: {
     rt_thread_t self = rt_thread_self();
@@ -27,7 +26,6 @@ static Context *ev_handler(Event e, Context *c) {
 void __am_cte_init() { cte_init(ev_handler); }
 
 void rt_hw_context_switch(rt_ubase_t from, rt_ubase_t to) {
-  printf("4\n");
   rt_thread_t self = rt_thread_self();
   self->from_context_p = from;
   self->to_context_p = to;
@@ -49,10 +47,8 @@ typedef struct {
 } wrapped_parameter;
 
 void wrapped_entry(void *param) {
-  printf("2\n");
   wrapped_parameter param_wrapped = *(wrapped_parameter *)param;
   param_wrapped.tentry(param_wrapped.arg);
-  printf("3\n");
   param_wrapped.texit();
 }
 rt_uint8_t *rt_hw_stack_init(void *tentry, void *parameter,
@@ -63,7 +59,7 @@ rt_uint8_t *rt_hw_stack_init(void *tentry, void *parameter,
   // context_addr->mstatus = 0x1800;
   // context_addr->gpr[1] = (uintptr_t)texit;
   // context_addr->gpr[10] = (uintptr_t)parameter;
-  printf("1\n");
+
   Area stk = {.end = stack_addr};
 
   wrapped_parameter *stk_ext =
