@@ -53,20 +53,20 @@ void wrapped_entry(void *param) {
 rt_uint8_t *rt_hw_stack_init(void *tentry, void *parameter,
                              rt_uint8_t *stack_addr, void *texit) {
   stack_addr = (rt_uint8_t *)((uintptr_t)stack_addr & ~(sizeof(uintptr_t) - 1));
-  // Context *context_addr = (Context *)(stack_addr - sizeof(Context));
-  // context_addr->mepc = (uintptr_t)tentry - 4;
-  // context_addr->mstatus = 0x1800;
-  // context_addr->gpr[1] = (uintptr_t)texit;
-  // context_addr->gpr[10] = (uintptr_t)parameter;
+  Context *context_addr = (Context *)(stack_addr - sizeof(Context));
+  context_addr->mepc = (uintptr_t)tentry - 4;
+  context_addr->mstatus = 0x1800;
+  context_addr->gpr[1] = (uintptr_t)texit;
+  context_addr->gpr[10] = (uintptr_t)parameter;
 
-  Area stk = {.end = stack_addr};
+  // Area stk = {.end = stack_addr};
 
-  wrapped_parameter *stk_ext =
-      (wrapped_parameter *)(stack_addr - sizeof(Context) -
-                            sizeof(wrapped_parameter));
-  stk_ext->texit = texit;
-  stk_ext->tentry = tentry;
-  stk_ext->arg = parameter;
-  Context *context_addr = kcontext(stk, wrapped_entry, stk_ext);
+  // wrapped_parameter *stk_ext =
+  //     (wrapped_parameter *)(stack_addr - sizeof(Context) -
+  //                           sizeof(wrapped_parameter));
+  // stk_ext->texit = texit;
+  // stk_ext->tentry = tentry;
+  // stk_ext->arg = parameter;
+  // Context *context_addr = kcontext(stk, wrapped_entry, stk_ext);
   return (rt_uint8_t *)context_addr;
 }
