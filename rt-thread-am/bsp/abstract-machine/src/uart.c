@@ -43,7 +43,7 @@ static int _uart_getc(struct rt_serial_device *serial) {
                          "check\nutest_list\nam_hello\nam_"
                          "snake\nam_am_tests a\nam_typing_"
                          "game\nam_bad_apple\nam_am_tests "
-                         "a\nam_bad_apple\nam_fceux_am mario\nclear\n";
+                         "a\nam_fceux_am mario\nclear\n";
   return (*p != '\0' ? *(p++) : -1);
 }
 

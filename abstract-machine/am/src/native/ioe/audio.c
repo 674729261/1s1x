@@ -56,6 +56,7 @@ void __am_audio_ctrl(AM_AUDIO_CTRL_T *ctrl) {
   s.userdata = NULL;
 
   count = 0;
+  SDL_CloseAudio();
   int ret = SDL_InitSubSystem(SDL_INIT_AUDIO);
   if (ret == 0) {
     SDL_OpenAudio(&s, NULL);
