@@ -13,10 +13,8 @@ static Context *ev_handler(Event e, Context *c) {
     c = *(Context **)self->to_context_p;
   } break;
   case EVENT_IRQ_TIMER:
-    printf("TIMER\n");
     break;
   case EVENT_IRQ_IODEV:
-    printf("IODEV\n");
     break;
 
   default:
