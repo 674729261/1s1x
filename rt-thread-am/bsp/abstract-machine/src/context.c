@@ -6,6 +6,7 @@
 #include <stdio.h>
 
 static Context *ev_handler(Event e, Context *c) {
+  printf("5\n");
   switch (e.event) {
   case EVENT_YIELD: {
     rt_thread_t self = rt_thread_self();
