@@ -3,10 +3,8 @@
 #include <klib.h>
 #include <rtthread.h>
 #include <stdint.h>
-#include <stdio.h>
 
 static Context *ev_handler(Event e, Context *c) {
-  printf("5\n");
   switch (e.event) {
   case EVENT_YIELD: {
     rt_thread_t self = rt_thread_self();
@@ -15,6 +13,8 @@ static Context *ev_handler(Event e, Context *c) {
     c = *(Context **)self->to_context_p;
   } break;
   case EVENT_IRQ_TIMER:
+    break;
+  case EVENT_IRQ_IODEV:
     break;
 
   default:
@@ -27,7 +27,6 @@ static Context *ev_handler(Event e, Context *c) {
 void __am_cte_init() { cte_init(ev_handler); }
 
 void rt_hw_context_switch(rt_ubase_t from, rt_ubase_t to) {
-  printf("4\n");
   rt_thread_t self = rt_thread_self();
   self->from_context_p = from;
   self->to_context_p = to;
@@ -50,14 +49,11 @@ typedef struct {
 
 void wrapped_entry(void *param) {
   wrapped_parameter param_wrapped = *(wrapped_parameter *)param;
-  printf("2\n");
   param_wrapped.tentry(param_wrapped.arg);
-  printf("3\n");
   param_wrapped.texit();
 }
 rt_uint8_t *rt_hw_stack_init(void *tentry, void *parameter,
                              rt_uint8_t *stack_addr, void *texit) {
-  printf("1\n");
   stack_addr = (rt_uint8_t *)((uintptr_t)stack_addr & ~(sizeof(uintptr_t) - 1));
   // Context *context_addr = (Context *)(stack_addr - sizeof(Context));
   // context_addr->mepc = (uintptr_t)tentry - 4;
@@ -73,7 +69,6 @@ rt_uint8_t *rt_hw_stack_init(void *tentry, void *parameter,
   stk_ext->texit = texit;
   stk_ext->tentry = tentry;
   stk_ext->arg = parameter;
-
   Context *context_addr = kcontext(stk, wrapped_entry, stk_ext);
   return (rt_uint8_t *)context_addr;
 }
