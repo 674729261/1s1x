@@ -40,17 +40,17 @@ int main() {
   bool has_audio = io_read(AM_AUDIO_CONFIG).present;
   bool has_keyboard = io_read(AM_INPUT_CONFIG).present;
 
+  uint64_t now = io_read(AM_TIMER_UPTIME).us;
+  uint64_t wait_time = now + 500000;
+  sleep_until(wait_time);
+  if (has_keyboard)
+    while (io_read(AM_INPUT_KEYBRD).keycode != AM_KEY_NONE)
+      ;
   if (has_audio) {
     io_write(AM_AUDIO_CTRL, AUDIO_FREQ, AUDIO_CHANNEL, 1024);
     audio_left = audio_len = &audio_payload_end - &audio_payload;
     sbuf.start = &audio_payload;
   }
-  uint64_t now = io_read(AM_TIMER_UPTIME).us;
-  uint64_t wait_time = now + 1000000;
-  sleep_until(wait_time);
-  if (has_keyboard)
-    while (io_read(AM_INPUT_KEYBRD).keycode != AM_KEY_NONE)
-      ;
   for (; f < fend; f++) {
     printf("\033[0;0H"); // reset cursor
     for (int y = 0; y < VIDEO_ROW; y++) {
