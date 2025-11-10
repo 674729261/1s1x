@@ -53,6 +53,7 @@ void wrapped_entry(void *param) {
 }
 rt_uint8_t *rt_hw_stack_init(void *tentry, void *parameter,
                              rt_uint8_t *stack_addr, void *texit) {
+  printf("1\n");
   stack_addr = (rt_uint8_t *)((uintptr_t)stack_addr & ~(sizeof(uintptr_t) - 1));
   // Context *context_addr = (Context *)(stack_addr - sizeof(Context));
   // context_addr->mepc = (uintptr_t)tentry - 4;
