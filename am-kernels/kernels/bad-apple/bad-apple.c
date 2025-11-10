@@ -51,6 +51,7 @@ int main() {
     audio_left = audio_len = &audio_payload_end - &audio_payload;
     sbuf.start = &audio_payload;
   }
+  now = io_read(AM_TIMER_UPTIME).us;
   for (; f < fend; f++) {
     printf("\033[0;0H"); // reset cursor
     for (int y = 0; y < VIDEO_ROW; y++) {
