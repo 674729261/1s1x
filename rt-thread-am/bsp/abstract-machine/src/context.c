@@ -26,6 +26,7 @@ static Context *ev_handler(Event e, Context *c) {
 void __am_cte_init() { cte_init(ev_handler); }
 
 void rt_hw_context_switch(rt_ubase_t from, rt_ubase_t to) {
+  printf("4\n");
   rt_thread_t self = rt_thread_self();
   self->from_context_p = from;
   self->to_context_p = to;
