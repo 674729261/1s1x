@@ -48,6 +48,7 @@ typedef struct {
 
 void wrapped_entry(void *param) {
   wrapped_parameter param_wrapped = *(wrapped_parameter *)param;
+  printf("2\n");
   param_wrapped.tentry(param_wrapped.arg);
   param_wrapped.texit();
 }
