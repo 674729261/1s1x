@@ -50,6 +50,7 @@ void wrapped_entry(void *param) {
   wrapped_parameter param_wrapped = *(wrapped_parameter *)param;
   printf("2\n");
   param_wrapped.tentry(param_wrapped.arg);
+  printf("3\n");
   param_wrapped.texit();
 }
 rt_uint8_t *rt_hw_stack_init(void *tentry, void *parameter,
