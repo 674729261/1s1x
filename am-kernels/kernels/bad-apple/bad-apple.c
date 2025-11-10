@@ -46,7 +46,8 @@ int main() {
     sbuf.start = &audio_payload;
   }
   uint64_t now = io_read(AM_TIMER_UPTIME).us;
-
+  uint64_t wait_time = now + 1000000;
+  sleep_until(wait_time);
   if (has_keyboard)
     while (io_read(AM_INPUT_KEYBRD).keycode != AM_KEY_NONE)
       ;

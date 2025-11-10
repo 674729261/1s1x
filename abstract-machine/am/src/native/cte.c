@@ -190,7 +190,6 @@ bool cte_init(Context *(*handler)(Event, Context *)) {
 
 Context *kcontext(Area kstack, void (*entry)(void *), void *arg) {
   Context *c = (Context *)kstack.end - 1;
-  printf("%d\n", sizeof(ucontext_t));
 
   __am_get_example_uc(c);
   AM_REG_PC(&c->uc) = (uintptr_t)__am_kcontext_start;
