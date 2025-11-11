@@ -13,6 +13,7 @@
  * See the Mulan PSL v2 for more details.
  ***************************************************************************************/
 
+#include <SDL2/SDL_video.h>
 #include <common.h>
 #include <device/map.h>
 #include <stdint.h>
@@ -73,10 +74,9 @@ static inline void update_screen() {
 #endif
 
 void vga_update_screen() {
-  uint32_t *sync_reg = vgactl_port_base + 1;
-  if (*sync_reg) {
+  if (vgactl_port_base[1]) {
     update_screen();
-    *sync_reg = 0;
+    vgactl_port_base[1] = 0;
   }
 }
 

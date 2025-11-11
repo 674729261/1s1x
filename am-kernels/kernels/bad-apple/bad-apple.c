@@ -1,6 +1,8 @@
 #include "amdev.h"
 #include <am.h>
 #include <klib-macros.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 
 #define FPS 30
@@ -88,5 +90,7 @@ int main() {
     now = next;
   }
   printf("\033[H\033[J");
+  while (io_read(AM_AUDIO_STATUS).count > 0)
+    ;
   return 0;
 }

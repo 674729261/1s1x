@@ -23,5 +23,6 @@ void audio_test() {
   }
 
   // wait until the audio finishes
-  while (io_read(AM_AUDIO_STATUS).count > 0);
+  while (io_read(AM_AUDIO_STATUS).count > 0)
+    ;
 }
