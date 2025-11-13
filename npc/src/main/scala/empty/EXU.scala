@@ -113,8 +113,8 @@ class EXU() extends Module with RequireAsyncReset {
       in.controls.is_gpr_wdata_from_ram -> fetch_port_in.mem_rdata,
       in.controls.is_gpr_wdata_from_snpc -> snpc,
       in.controls.is_gpr_wdata_from_imm -> in.fields.imm,
-      in.controls.is_gpr_wdata_from_alu -> alu.io.out
-      // in.controls.is_gpr_wdata_from_csr -> fetch_port_in.csr_rdata
+      in.controls.is_gpr_wdata_from_alu -> alu.io.out,
+      in.controls.is_gpr_wdata_from_csr -> fetch_port_in.csr_rdata
     )
   )
   out.write_info.is_rdata_from_csr := in.controls.is_gpr_wdata_from_csr
