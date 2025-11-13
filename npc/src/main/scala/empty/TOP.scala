@@ -72,7 +72,7 @@ class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
   io.wmask := ramWriter.io.mask
   io.waddr := wbu.out.mem_waddr
   io.raddr := exu.fetch_port_out.mem_raddr
-  io.valid := exu.fetch_port_out.mem_rvalid | wbu.out.mem_wen
+  io.valid := exu.fetch_port_out.mem_rvalid | wbu.out.mem_wen | wbu.out.csr_wen
   io.wen := wbu.out.mem_wen
 
   ramLoader.io.is_byte := exu.fetch_port_out.is_byte
