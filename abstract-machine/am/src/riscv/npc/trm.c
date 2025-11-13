@@ -25,8 +25,8 @@ void halt(int code) {
 }
 
 void _trm_init(uint32_t vendorid, uint32_t archid) {
-  // printf("\033[31mmvendorid\033[0m : %#010x\n\033[31mmarchid\033[0m : %d\n",
-  //        vendorid, archid);
+  printf("\033[31mmvendorid\033[0m : %#010x\n\033[31mmarchid\033[0m : %d\n",
+         vendorid, archid);
   int ret = main(mainargs);
   halt(ret);
 }
