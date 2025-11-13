@@ -116,4 +116,43 @@ class DecodeInstr extends RawModule {
   val imm_U = Wire(UInt(32.W))
   val imm_I = Wire(UInt(32.W))
 
+  imm_B := Cat(
+    Fill(20, inst(31)),
+    inst(7),
+    inst(30, 25),
+    inst(11, 8),
+    0.U(1.W)
+  )
+  imm_S := Cat(
+    Fill(20, inst(31)),
+    inst(31, 25),
+    inst(11, 7)
+  )
+  imm_J := Cat(
+    Fill(12, inst(31)),
+    inst(19, 12),
+    inst(20),
+    inst(30, 21),
+    0.U(1.W)
+  )
+
+  imm_U := Cat(
+    inst(31, 12),
+    0.U(12.W)
+  )
+  imm_I := Cat(
+    Fill(20, inst(31)),
+    inst(31, 20)
+  )
+
+  io.imm := Mux1H(
+    Seq(
+      is_B -> imm_B,
+      is_S -> imm_S,
+      is_J -> imm_J,
+      is_U -> imm_U,
+      is_I -> imm_I
+    )
+  )
+
 }
