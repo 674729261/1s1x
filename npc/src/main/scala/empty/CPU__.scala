@@ -33,7 +33,7 @@ import _root_.empty.empty.Branch
 //   })
 // }
 
-class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
+class CPU__(init_pc: UInt) extends Module with RequireAsyncReset {
   val io = IO(new Bundle {
     val instr = Input(UInt(32.W))
     val pc = Output(UInt(32.W))
