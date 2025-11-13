@@ -4,7 +4,6 @@ import chisel3._
 import chisel3.util._
 
 class CSR extends Module {
-
   val io = IO(new Bundle {
     val csr = Input(UInt(12.W))
     val wen = Input(Bool())
