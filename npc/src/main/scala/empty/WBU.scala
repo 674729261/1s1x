@@ -25,13 +25,6 @@ class WBU() extends Module with RequireAsyncReset {
     val gpr_wdata = Output(UInt(32.W))
     val gpr_wen = Output(Bool())
 
-    val mem_waddr = Output(UInt(32.W))
-    val mem_lower2bit = Output(UInt(2.W))
-    val mem_wdata = Output(UInt(32.W))
-    val mem_wen = Output(Bool())
-    val is_word = Output(Bool())
-    val is_half = Output(Bool())
-    val is_byte = Output(Bool())
   })
 
   out.ebreak := in.itype.is_ebreak
@@ -53,14 +46,6 @@ class WBU() extends Module with RequireAsyncReset {
       in.itype.is_mret -> in.write_info.csr_mepc
     )
   )
-
-  out.mem_wdata := in.write_info.mem_word
-  out.is_word := in.controls.is_ram_word
-  out.is_half := in.controls.is_ram_half
-  out.is_byte := in.controls.is_ram_byte
-  out.mem_lower2bit := in.write_info.mem_waddr(1, 0)
-  out.mem_waddr := in.write_info.mem_waddr
-  out.mem_wen := in.write_info.mem_wen
 
   out.gpr_waddr := in.write_info.gpr_waddr
   out.gpr_wdata := in.write_info.gpr_wdata

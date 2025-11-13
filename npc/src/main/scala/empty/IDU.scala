@@ -195,6 +195,14 @@ object decodeInstControlSignal {
   }
 }
 
+class Operands extends Bundle {
+  val src1 = UInt(32.W)
+  val src2 = UInt(32.W)
+  val csr = UInt(32.W)
+  val mtvec = UInt(32.W)
+  val mepc = UInt(32.W)
+}
+
 class IDU() extends Module with RequireAsyncReset {
   val in = IO(new Bundle {
     val pc = Input(UInt(32.W))
@@ -208,6 +216,24 @@ class IDU() extends Module with RequireAsyncReset {
     val fields = Output(new InstFields)
     val itype = Output(new InstType)
     val controls = Output(new ControlSignals)
+
+    val sources = Output(new Operands)
+  })
+
+  val fetch_port_out = IO(new Bundle {
+    val gpr_raddr1 = Output(UInt(5.W))
+    val gpr_raddr2 = Output(UInt(5.W))
+
+    val csr_raddr = Output(UInt(12.W))
+  })
+
+  val fetch_port_in = IO(new Bundle {
+    val gpr_rdata1 = Input(UInt(32.W))
+    val gpr_rdata2 = Input(UInt(32.W))
+    val csr_rdata = Input(UInt(32.W))
+
+    val csr_mtvec = Input(UInt(32.W))
+    val csr_mepc = Input(UInt(32.W))
   })
 
   out.inst := in.inst
@@ -231,4 +257,13 @@ class IDU() extends Module with RequireAsyncReset {
     imm_type
   )
 
+  fetch_port_out.csr_raddr := fields.csr
+  fetch_port_out.gpr_raddr1 := fields.rs1
+  fetch_port_out.gpr_raddr2 := fields.rs2
+
+  out.sources.csr := fetch_port_in.csr_rdata
+  out.sources.src1 := fetch_port_in.gpr_rdata1
+  out.sources.src2 := fetch_port_in.gpr_rdata2
+  out.sources.mtvec := fetch_port_in.csr_mtvec
+  out.sources.mepc := fetch_port_in.csr_mepc
 }
