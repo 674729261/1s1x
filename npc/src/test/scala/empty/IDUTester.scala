@@ -82,6 +82,16 @@ class IDUTester extends AnyFlatSpec {
       dut.out.fields.rd.expect("b01010".U(5.W))
       dut.out.itype.is_csrop.expect(true.B)
       dut.out.controls.is_csr_visit.expect(true.B)
+      dut.out.controls.is_csr_masked.expect(false.B)
+      dut.out.fields.csr.expect("b101010101010".U(12.W))
+
+      // csrrs
+      dut.in.inst.poke("b101010101010_10101_010_01010_1110011".U(32.W))
+      dut.out.fields.rs1.expect("b10101".U(5.W))
+      dut.out.fields.rd.expect("b01010".U(5.W))
+      dut.out.itype.is_csrop.expect(true.B)
+      dut.out.controls.is_csr_visit.expect(true.B)
+      dut.out.controls.is_csr_masked.expect(true.B)
       dut.out.fields.csr.expect("b101010101010".U(12.W))
 
       // jalr zero, t1, -4
