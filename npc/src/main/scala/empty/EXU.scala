@@ -125,8 +125,8 @@ class EXU() extends Module with RequireAsyncReset {
   out.write_info.mem_wen := in.controls.is_ram_wen
   out.write_info.csr_wdata := Mux(
     in.controls.is_csr_masked,
-    fetch_port_in.csr_rdata | fetch_port_in.csr_rdata,
-    fetch_port_in.csr_rdata
+    fetch_port_in.gpr_rdata1 | fetch_port_in.csr_rdata,
+    fetch_port_in.gpr_rdata1
   )
   out.write_info.csr_wen := in.controls.is_csr_visit
   out.write_info.csr_addr := in.fields.csr
