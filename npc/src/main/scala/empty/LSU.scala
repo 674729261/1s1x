@@ -51,9 +51,9 @@ class LSU() extends Module with RequireAsyncReset {
   fetch_port_out.is_word := in.controls.is_ram_word
   fetch_port_out.is_half := in.controls.is_ram_half
   fetch_port_out.is_byte := in.controls.is_ram_byte
-  fetch_port_out.mem_lower2bit := in.write_info.mem_waddr(1, 0)
-  fetch_port_out.mem_waddr := in.write_info.mem_waddr
-  fetch_port_out.mem_wen := in.write_info.mem_wen
+  fetch_port_out.mem_lower2bit := in.write_info.alu_out(1, 0)
+  fetch_port_out.mem_waddr := in.write_info.alu_out
+  fetch_port_out.mem_wen := in.controls.is_ram_wen
 
   out.pc := in.pc
   out.controls := in.controls

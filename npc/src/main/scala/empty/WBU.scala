@@ -30,25 +30,16 @@ class WBU() extends Module with RequireAsyncReset {
   out.ebreak := in.itype.is_ebreak
 
   out.csr_waddr := in.write_info.csr_addr
-  out.csr_wen := in.write_info.csr_wen
+  out.csr_wen := in.controls.is_csr_visit
   out.csr_cur_pc := in.pc
   out.csr_mcause := 11.U(32.W)
   out.csr_interruption := in.itype.is_ecall
   out.csr_wdata := in.write_info.csr_wdata
 
-  out.dnpc := MuxCase(
-    in.pc + 4.U(32.W),
-    Seq(
-      in.write_info.should_branch -> in.write_info.alu_out,
-      in.itype.is_jal -> in.write_info.alu_out,
-      in.itype.is_jalr -> in.write_info.alu_out,
-      in.itype.is_ecall -> in.write_info.csr_mtvec,
-      in.itype.is_mret -> in.write_info.csr_mepc
-    )
-  )
+  out.dnpc := in.write_info.dnpc
 
   out.gpr_waddr := in.write_info.gpr_waddr
   out.gpr_wdata := in.write_info.gpr_wdata
-  out.gpr_wen := in.write_info.gpr_wen
+  out.gpr_wen := in.controls.is_gpr_wen
 
 }

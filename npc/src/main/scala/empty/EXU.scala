@@ -6,18 +6,12 @@ import empty.ALU
 class WriteInfo extends Bundle {
   val gpr_waddr = (UInt(5.W))
   val gpr_wdata = (UInt(32.W))
-  val gpr_wen = (Bool())
-  val mem_waddr = (UInt(32.W))
   val mem_word = (UInt(32.W))
-  val mem_lower2bit = (UInt(2.W))
-  val mem_wen = (Bool())
   val csr_addr = (UInt(12.W))
   val csr_wdata = (UInt(32.W))
-  val csr_mtvec = (UInt(32.W))
-  val csr_mepc = (UInt(32.W))
-  val csr_wen = (UInt(32.W))
 
-  val should_branch = (Bool())
+  val dnpc = UInt(32.W)
+
   val alu_out = (UInt(32.W))
 
 }
@@ -25,7 +19,6 @@ class WriteInfo extends Bundle {
 class EXU() extends Module with RequireAsyncReset {
   val in = IO(new Bundle {
     val pc = Input(UInt(32.W))
-    val inst = Input(UInt(32.W))
 
     val fields = Input(new InstFields)
     val itype = Input(new InstType)
@@ -69,7 +62,6 @@ class EXU() extends Module with RequireAsyncReset {
 
   val snpc = in.pc + 4.U(32.W)
 
-  out.write_info.gpr_wen := in.controls.is_gpr_wen
   out.write_info.gpr_wdata := Mux1H(
     Seq(
       // in.controls.is_gpr_wdata_from_ram -> fetch_port_in.mem_rdata,
@@ -80,19 +72,26 @@ class EXU() extends Module with RequireAsyncReset {
     )
   )
 
-  out.write_info.mem_waddr := alu.io.out
   out.write_info.mem_word := in.sources.src2
-  out.write_info.mem_lower2bit := alu.io.out(1, 0)
-  out.write_info.mem_wen := in.controls.is_ram_wen
   out.write_info.csr_wdata := Mux(
     in.controls.is_csr_masked,
     in.sources.src1 | in.sources.csr,
     in.sources.src1
   )
-  out.write_info.csr_wen := in.controls.is_csr_visit
   out.write_info.csr_addr := in.fields.csr
-  out.write_info.csr_mtvec := in.sources.mtvec
-  out.write_info.csr_mepc := in.sources.mepc
-  out.write_info.should_branch := in.itype.is_branch && branch.io.jump
+
+  val should_branch = in.itype.is_branch && branch.io.jump
+
+  out.write_info.dnpc := MuxCase(
+    in.pc + 4.U(32.W),
+    Seq(
+      should_branch -> alu.io.out,
+      in.itype.is_jal -> alu.io.out,
+      in.itype.is_jalr -> alu.io.out,
+      in.itype.is_ecall -> in.sources.mtvec,
+      in.itype.is_mret -> in.sources.mepc
+    )
+  )
+  // out.write_info.should_branch := in.itype.is_branch && branch.io.jump
 
 }
