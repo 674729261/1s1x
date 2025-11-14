@@ -33,6 +33,36 @@ class BranchTester extends AnyFlatSpec {
   behavior of "Branch"
   it should "work correctly" in {
     simulate(new __Branch_test(32)) { dut =>
+      dut.io.A.poke("h80000000".U(32.W))
+      dut.io.B.poke("h80000000".U(32.W))
+      dut.io.funct3.poke("b000".U(3.W))
+      dut.io.jump.expect(true.B)
+      dut.io.funct3.poke("b001".U(3.W))
+      dut.io.jump.expect(false.B)
+      dut.io.funct3.poke("b100".U(3.W))
+      dut.io.jump.expect(false.B)
+      dut.io.funct3.poke("b101".U(3.W))
+      dut.io.jump.expect(true.B)
+      dut.io.funct3.poke("b110".U(3.W))
+      dut.io.jump.expect(false.B)
+      dut.io.funct3.poke("b111".U(3.W))
+      dut.io.jump.expect(true.B)
+
+      dut.io.A.poke("h7FFFFFFF".U(32.W))
+      dut.io.B.poke("h80000000".U(32.W))
+      dut.io.funct3.poke("b000".U(3.W))
+      dut.io.jump.expect(false.B)
+      dut.io.funct3.poke("b001".U(3.W))
+      dut.io.jump.expect(true.B)
+      dut.io.funct3.poke("b100".U(3.W))
+      dut.io.jump.expect(false.B)
+      dut.io.funct3.poke("b101".U(3.W))
+      dut.io.jump.expect(true.B)
+      dut.io.funct3.poke("b110".U(3.W))
+      dut.io.jump.expect(true.B)
+      dut.io.funct3.poke("b111".U(3.W))
+      dut.io.jump.expect(false.B)
+
       for (i <- 0 until test_cases) {
         val A = random.nextLong(1L << 32)
         val B = random.nextLong(1L << 32)
