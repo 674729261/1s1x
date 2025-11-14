@@ -92,6 +92,5 @@ class EXU() extends Module with RequireAsyncReset {
       in.itype.is_mret -> in.sources.mepc
     )
   )
-  // out.write_info.should_branch := in.itype.is_branch && branch.io.jump
 
 }
