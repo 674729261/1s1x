@@ -90,7 +90,7 @@ valgrind: VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -O0 -g
 valgrind: MDIR = $(NPC_HOME)/build/valgrind/
 valgrind: npc
 	valgrind --leak-check=full --show-leak-kinds=all \
-	 $(BIN) --image $(PROG) --mem_size 134217728 --log $(LOG_FILE) --itracer 8 --inst_ringbuffer 16 --elf $(ELF)  --batch 
+	 $(BIN) --image $(PROG) --mem_size 134217728 --log $(LOG_FILE) --itracer 8 --inst_ringbuffer 16 --difftest --elf $(ELF)  --batch 
 
 
 

@@ -211,7 +211,6 @@ class IDU() extends Module with RequireAsyncReset {
 
   val out = IO(new Bundle {
     val pc = Output(UInt(32.W))
-    val inst = Output(UInt(32.W))
 
     val fields = Output(new InstFields)
     val itype = Output(new InstType)
@@ -236,7 +235,6 @@ class IDU() extends Module with RequireAsyncReset {
     val csr_mepc = Input(UInt(32.W))
   })
 
-  out.inst := in.inst
   out.pc := in.pc
 
   val imm_type = Wire(new ImmType)
