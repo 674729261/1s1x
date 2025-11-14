@@ -21,12 +21,8 @@ class Branch(WIDTH: Int) extends RawModule {
 
   val is_lt = Wire(Bool())
   val is_eq = Wire(Bool())
-  is_lt := Cat(
-    0.U((WIDTH - 1).W),
-    adder.io.out(WIDTH - 1) ^ adder.io.overflow
-  )
-  // is_lt := (io.A(31) & ~io.B(31)) | // - < +
-  //   ((~(io.A(31) ^ io.B(31))) & adder.io.out(31)) // A - B < 0
+  is_lt := (io.A(31) & ~io.B(31)) | // - < +
+    ((~(io.A(31) ^ io.B(31))) & adder.io.out(31)) // A - B < 0
   is_eq := adder.io.out === 0.U(32.W)
 
   val is_unsigned = io.funct3(1)
