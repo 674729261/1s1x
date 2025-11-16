@@ -8,7 +8,7 @@ using std::shared_ptr, std::make_shared;
 using std::string;
 shared_ptr<RISCV32> emu;
 // shared_ptr<NEMUemu> nemu;
-std::shared_ptr<RISCV32> refemu;
+shared_ptr<RISCV32> refemu;
 // bool mtracer;
 // extern "C" void trap(int signal) { emu->trapped = signal; }
 // extern "C" int pmem_read(int raddr, int clk, int valid) {
