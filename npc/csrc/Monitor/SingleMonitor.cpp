@@ -17,6 +17,7 @@
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 #include <string>
+#include <thread>
 #include <utility>
 #include <vector>
 
@@ -70,6 +71,7 @@ int SingleMonitor::start() {
   try {
     while (true) {
       if (batch) {
+        std::this_thread::sleep_for(0.5s);
         tracer->set_display(false);
         devices->pause(false);
         auto n_inst = emus.front()->instrCount();
