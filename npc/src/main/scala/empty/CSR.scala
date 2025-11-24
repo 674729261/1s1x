@@ -16,6 +16,7 @@ class CSR extends Module {
     val cur_pc = Input(UInt(32.W))
     val new_cause = Input(UInt(32.W))
     val interruption = Input(Bool())
+    val ok_to_step = Input(Bool())
   })
 
   val is_mvendorid = io.csr === 0xf11.U(12.W)
@@ -31,7 +32,11 @@ class CSR extends Module {
 
   val mcycle_nxt = Wire(UInt(32.W))
   val csr_mcycle = RegNext(mcycle_nxt, 0.U(32.W))
-  mcycle_nxt := Mux(io.wen && is_mcycle, io.wdata, csr_mcycle + 1.U(32.W))
+  mcycle_nxt := Mux(
+    io.wen && is_mcycle,
+    io.wdata,
+    Mux(io.ok_to_step, csr_mcycle + 1.U(32.W), csr_mcycle)
+  )
 
   val csr_mstatus = RegEnable(io.wdata, "h1800".U(32.W), io.wen && is_mstatus)
   val csr_mcause =

@@ -2,22 +2,18 @@ package empty.empty
 import chisel3._
 import chisel3.util._
 
+class MessageLSU2WBU extends Bundle {
+  val pc = (UInt(32.W))
+  val controls = (new ControlSignals)
+  val itype = (new InstType)
+  val write_info = (new WriteInfo)
+}
+
 class LSU() extends Module with RequireAsyncReset {
 
-  val in = IO(new Bundle {
-    val pc = Input(UInt(32.W))
-    val controls = Input(new ControlSignals)
-    val itype = Input(new InstType)
+  val in = IO(Input(new MessageEXU2LSU))
 
-    val write_info = Input(new WriteInfo)
-  })
-
-  val out = IO(new Bundle {
-    val pc = Output(UInt(32.W))
-    val controls = Output(new ControlSignals)
-    val itype = Output(new InstType)
-    val write_info = Output(new WriteInfo)
-  })
+  val out = IO(Output(new MessageLSU2WBU))
 
   val fetch_port_out = IO(new Bundle {
     val mem_raddr = Output(UInt(32.W))

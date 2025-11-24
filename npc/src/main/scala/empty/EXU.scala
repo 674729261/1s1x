@@ -16,24 +16,18 @@ class WriteInfo extends Bundle {
 
 }
 
+class MessageEXU2LSU extends Bundle {
+  val pc = (UInt(32.W))
+  val controls = (new ControlSignals)
+  val itype = (new InstType)
+
+  val write_info = (new WriteInfo)
+}
+
 class EXU() extends Module with RequireAsyncReset {
-  val in = IO(new Bundle {
-    val pc = Input(UInt(32.W))
+  val in = IO(Input(new MessageIDU2EXU))
 
-    val fields = Input(new InstFields)
-    val itype = Input(new InstType)
-    val controls = Input(new ControlSignals)
-    val sources = Input(new Operands)
-
-  })
-
-  val out = IO(new Bundle {
-    val pc = Output(UInt(32.W))
-    val controls = Output(new ControlSignals)
-    val itype = Output(new InstType)
-
-    val write_info = Output(new WriteInfo)
-  })
+  val out = IO(Output(new MessageEXU2LSU))
 
   out.pc := in.pc
   out.controls := in.controls

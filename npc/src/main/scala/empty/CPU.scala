@@ -7,6 +7,16 @@ import empty.EXU
 import empty.WBU
 import _root_.empty.empty.LSU
 
+object StageConnect {
+  def apply[T <: Data](left: DecoupledIO[T], right: DecoupledIO[T]) = {
+    val arch = "multi"
+    if (arch == "single") { right.bits := left.bits }
+    else if (arch == "multi") { right <> left }
+    else if (arch == "pipeline") { right <> RegEnable(left, left.fire) }
+    else if (arch == "ooo") { right <> Queue(left, 16) }
+  }
+}
+
 class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
   val io = IO(new Bundle {
     val instr = Input(UInt(32.W))
@@ -22,6 +32,8 @@ class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
 
     val rdata = Input(UInt(32.W))
 
+    val ok_to_step = Output(Bool())
+
   })
 
   val ifu = Module(new IFU)
@@ -35,6 +47,9 @@ class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
   val csrBank = Module(new CSR)
   val ramWriter = Module(new RamWriteData)
   val ramLoader = Module(new RamLoadData)
+
+  io.ok_to_step := true.B
+  csrBank.io.ok_to_step := io.ok_to_step
 
   io.pc := pc
 

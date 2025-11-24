@@ -203,21 +203,20 @@ class Operands extends Bundle {
   val mepc = UInt(32.W)
 }
 
+class MessageIDU2EXU extends Bundle {
+  val pc = (UInt(32.W))
+
+  val fields = (new InstFields)
+  val itype = (new InstType)
+  val controls = (new ControlSignals)
+
+  val sources = (new Operands)
+}
+
 class IDU() extends Module with RequireAsyncReset {
-  val in = IO(new Bundle {
-    val pc = Input(UInt(32.W))
-    val inst = Input(UInt(32.W))
-  })
+  val in = IO(Input(new MessageIFU2IDU))
 
-  val out = IO(new Bundle {
-    val pc = Output(UInt(32.W))
-
-    val fields = Output(new InstFields)
-    val itype = Output(new InstType)
-    val controls = Output(new ControlSignals)
-
-    val sources = Output(new Operands)
-  })
+  val out = IO(Output(new MessageIDU2EXU))
 
   val fetch_port_out = IO(new Bundle {
     val gpr_raddr1 = Output(UInt(5.W))

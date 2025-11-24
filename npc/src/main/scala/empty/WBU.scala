@@ -3,12 +3,7 @@ import chisel3._
 import chisel3.util._
 
 class WBU() extends Module with RequireAsyncReset {
-  val in = IO(new Bundle {
-    val pc = Input(UInt(32.W))
-    val controls = Input(new ControlSignals)
-    val itype = Input(new InstType)
-    val write_info = Input(new WriteInfo)
-  })
+  val in = IO(Input(new MessageLSU2WBU))
 
   val out = IO(new Bundle {
     val ebreak = Output(Bool())

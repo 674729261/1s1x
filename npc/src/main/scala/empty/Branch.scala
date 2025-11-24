@@ -10,6 +10,7 @@ class Branch(WIDTH: Int) extends RawModule {
     val B = Input(UInt(WIDTH.W))
     val funct3 = Input(UInt(3.W))
     val jump = Output(Bool())
+
   })
 
   val adder = Module(new Adder(32))
