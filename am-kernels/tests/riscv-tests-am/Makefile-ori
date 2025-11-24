@@ -1,4 +1,4 @@
-NAME = or
-SRCS = isa/rv32ui/or.S
+NAME = ori
+SRCS = isa/rv32ui/ori.S
 INC_PATH += /home/shitful/1s1x/ysyx-workbench/am-kernels/tests/riscv-tests-am/env/p 	/home/shitful/1s1x/ysyx-workbench/am-kernels/tests/riscv-tests-am/isa/macros/scalar
 include /home/shitful/1s1x/ysyx-workbench/abstract-machine/Makefile
