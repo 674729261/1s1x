@@ -37,12 +37,13 @@ int main(int argc, char *argv[]) {
   }
   try {
     result = monitor.start();
-    println("ENd");
+
   } catch (const std::exception &err) {
     std::println(std::cerr, "Error : {}", err.what());
     std::terminate();
   }
 
   spdlog::shutdown();
+  println("ENd");
   return result;
 }
