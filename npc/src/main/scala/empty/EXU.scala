@@ -90,6 +90,6 @@ class EXU() extends Module with RequireAsyncReset {
       in.bits.itype.is_mret -> in.bits.sources.mepc
     )
   )
-  in.ready := true.B
-  out.valid := true.B
+  out.valid := in.valid
+  in.ready := out.valid
 }

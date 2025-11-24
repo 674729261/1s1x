@@ -25,7 +25,7 @@ class WBU() extends Module with RequireAsyncReset {
   out.ebreak := in.bits.itype.is_ebreak
 
   out.csr_waddr := in.bits.write_info.csr_addr
-  out.csr_wen := in.bits.controls.is_csr_visit
+  out.csr_wen := in.bits.controls.is_csr_visit && in.valid
   out.csr_cur_pc := in.bits.pc
   out.csr_mcause := 11.U(32.W)
   out.csr_interruption := in.bits.itype.is_ecall
@@ -35,8 +35,8 @@ class WBU() extends Module with RequireAsyncReset {
 
   out.gpr_waddr := in.bits.write_info.gpr_waddr
   out.gpr_wdata := in.bits.write_info.gpr_wdata
-  out.gpr_wen := in.bits.controls.is_gpr_wen
+  out.gpr_wen := in.bits.controls.is_gpr_wen && in.valid
 
-  in.ready := true.B
+  in.ready := in.valid
 
 }

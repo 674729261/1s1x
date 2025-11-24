@@ -52,7 +52,7 @@ class LSU() extends Module with RequireAsyncReset {
   fetch_port_out.is_byte := in.bits.controls.is_ram_byte
   fetch_port_out.mem_lower2bit := in.bits.write_info.alu_out(1, 0)
   fetch_port_out.mem_waddr := in.bits.write_info.alu_out
-  fetch_port_out.mem_wen := in.bits.controls.is_ram_wen
+  fetch_port_out.mem_wen := in.bits.controls.is_ram_wen && in.valid
 
   out.bits.pc := in.bits.pc
   out.bits.controls := in.bits.controls
@@ -62,6 +62,6 @@ class LSU() extends Module with RequireAsyncReset {
   when(in.bits.controls.is_gpr_wdata_from_ram) {
     out.bits.write_info.gpr_wdata := fetch_port_in.mem_rdata
   }
-  in.ready := true.B
-  out.valid := true.B
+  out.valid := in.valid
+  in.ready := out.valid
 }

@@ -26,6 +26,6 @@ class IFU() extends Module with RequireAsyncReset {
       sWAIT -> Mux(out.ready, sIDLE, sWAIT)
     )
   )
-  out.valid := true.B
+  out.valid := state === sWAIT
 
 }
