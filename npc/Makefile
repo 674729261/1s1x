@@ -59,7 +59,7 @@ LOG_FILE ?= "log/$(TIME_STAMP).log"
 
 sim: npc
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
-	$(BIN) --image $(PROG) --mem_size $(MEM_SIZE) --log $(LOG_FILE) --itracer 8 --difftest --inst_ringbuffer 16 $(NPC_FLAGS) 
+	$(BIN) --image $(PROG) --mem_size $(MEM_SIZE) --log $(LOG_FILE) --itracer 8 --difftest --inst_ringbuffer 16 $(NPC_FLAGS) --enable_audio --enable_vga --enable_keyboard 
 
 sim_full_speed: VERILATOR_CFLAGS+=-DNDEBUG -fstrict-aliasing \
 -frename-registers -fomit-frame-pointer \

@@ -6,6 +6,7 @@
 #include <iostream>
 #include <memory>
 #include <my_utils.h>
+#include <print>
 #include <stdexcept>
 
 Devices::Devices(Devices::DeviceSettings ds, size_t MemSize,
@@ -202,8 +203,9 @@ void Devices::update_RTC() {
 Devices::~Devices() {
   device_running = false;
   device_alive = false;
+  println("!!");
   device_update_thread.join();
-
+  println("??");
   SDL_CloseAudio();
   SDL_Quit();
 }
