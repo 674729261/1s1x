@@ -67,8 +67,8 @@ int SingleMonitor::start() {
   using namespace std::chrono;
   for_each(emus, [](auto &e) { e->reset(); });
   CommandState state = CommandState::NONE;
-  bool finished = false;
   try {
+    bool finished = false;
     while (true) {
       if (batch) {
         tracer->set_display(false);
