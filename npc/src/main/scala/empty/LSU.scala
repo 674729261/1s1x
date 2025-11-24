@@ -43,7 +43,7 @@ class LSU() extends Module with RequireAsyncReset {
     in.bits.write_info.alu_out(31, 2),
     "b00".U(2.W)
   )
-  fetch_port_out.mem_valid := in.bits.controls.is_ram_valid
+  fetch_port_out.mem_valid := in.bits.controls.is_ram_valid && in.valid
   fetch_port_out.mem_rlower2bit := in.bits.write_info.alu_out(1, 0)
 
   fetch_port_out.mem_wdata := in.bits.write_info.mem_word
