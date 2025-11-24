@@ -56,10 +56,10 @@ class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
   ifu.in.pc := pc
   ifu.in.inst_fetch := io.instr
 
-  idu.in <> ifu.out
-  exu.in <> idu.out
-  lsu.in <> exu.out
-  wbu.in <> lsu.out
+  StageConnect(idu.in, ifu.out)
+  StageConnect(exu.in, idu.out)
+  StageConnect(lsu.in, exu.out)
+  StageConnect(wbu.in, lsu.out)
 
   idu.fetch_port_in.csr_rdata := csrBank.io.rdata
   idu.fetch_port_in.csr_mepc := csrBank.io.mepc
