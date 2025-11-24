@@ -203,9 +203,10 @@ void Devices::update_RTC() {
 Devices::~Devices() {
   device_running = false;
   device_alive = false;
+  println("{}", device_update_thread.joinable());
   if (device_update_thread.joinable())
     device_update_thread.join();
-
+  println("!!");
   SDL_CloseAudio();
   SDL_Quit();
 }
