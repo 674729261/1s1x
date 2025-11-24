@@ -41,7 +41,6 @@ void NPCemu::step() {
   }
 #endif
   do {
-    std::println("{}", dut.io_ok_to_step);
     dut.clock = 0;
     dut.eval();
     if (!dut.io_wen && dut.io_valid) {
