@@ -164,7 +164,6 @@ void Devices::device_update_loop() {
         auto now = steady_clock::now();
         if (now - last < 16.667ms)
           continue;
-        print("{}\r", device_alive.load());
         last = now;
         if (device_settings.enable_vga) {
           vga_update_screen();
@@ -204,8 +203,8 @@ void Devices::update_RTC() {
 Devices::~Devices() {
   device_running = false;
   device_alive = false;
-
-  device_update_thread.join();
+  if (device_update_thread.joinable())
+    device_update_thread.join();
 
   SDL_CloseAudio();
   SDL_Quit();
