@@ -33,7 +33,7 @@ class WBU() extends Module with RequireAsyncReset {
   out.csr_interruption := in.bits.itype.is_ecall
   out.csr_wdata := in.bits.write_info.csr_wdata
 
-  out.dnpc := in.bits.write_info.dnpc
+  out.dnpc := Mux(in.valid, in.bits.write_info.dnpc, in.bits.pc)
 
   out.gpr_waddr := in.bits.write_info.gpr_waddr
   out.gpr_wdata := in.bits.write_info.gpr_wdata
