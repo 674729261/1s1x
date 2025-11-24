@@ -22,7 +22,7 @@ class IFU() extends Module with RequireAsyncReset {
   val state = RegInit(sIDLE)
   state := MuxLookup(state, sIDLE)(
     Seq(
-      sIDLE -> Mux(out.valid, sWAIT, sIDLE),
+      sIDLE -> sWAIT,
       sWAIT -> Mux(out.ready, sIDLE, sWAIT)
     )
   )

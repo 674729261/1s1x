@@ -63,5 +63,5 @@ class LSU() extends Module with RequireAsyncReset {
     out.bits.write_info.gpr_wdata := fetch_port_in.mem_rdata
   }
   out.valid := in.valid
-  in.ready := out.valid
+  in.ready := in.valid
 }

@@ -91,5 +91,5 @@ class EXU() extends Module with RequireAsyncReset {
     )
   )
   out.valid := in.valid
-  in.ready := out.valid
+  in.ready := in.valid
 }
