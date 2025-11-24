@@ -1,6 +1,7 @@
 package empty.empty
 import chisel3._
 import chisel3.util._
+import ujson.True
 
 class InstFields extends Bundle {
   val rs1 = (UInt(5.W))
@@ -214,9 +215,9 @@ class MessageIDU2EXU extends Bundle {
 }
 
 class IDU() extends Module with RequireAsyncReset {
-  val in = IO(Input(new MessageIFU2IDU))
+  val in = IO(Flipped(DecoupledIO(new MessageIFU2IDU)))
 
-  val out = IO(Output(new MessageIDU2EXU))
+  val out = IO(DecoupledIO(new MessageIDU2EXU))
 
   val fetch_port_out = IO(new Bundle {
     val gpr_raddr1 = Output(UInt(5.W))
@@ -234,21 +235,21 @@ class IDU() extends Module with RequireAsyncReset {
     val csr_mepc = Input(UInt(32.W))
   })
 
-  out.pc := in.pc
+  out.bits.pc := in.bits.pc
 
   val imm_type = Wire(new ImmType)
   val fields = Wire(new InstFields)
   val inst_type = Wire(new InstType)
   val control_signals = Wire(new ControlSignals)
-  out.fields := fields
-  out.itype := inst_type
-  out.controls := control_signals
+  out.bits.fields := fields
+  out.bits.itype := inst_type
+  out.bits.controls := control_signals
 
-  imm_type := decodeImmType(in.inst, inst_type)
-  fields := decodeInstFields(in.inst, imm_type)
-  inst_type := decodeInstType(in.inst, fields)
+  imm_type := decodeImmType(in.bits.inst, inst_type)
+  fields := decodeInstFields(in.bits.inst, imm_type)
+  inst_type := decodeInstType(in.bits.inst, fields)
   control_signals := decodeInstControlSignal(
-    in.inst,
+    in.bits.inst,
     inst_type,
     fields,
     imm_type
@@ -258,9 +259,12 @@ class IDU() extends Module with RequireAsyncReset {
   fetch_port_out.gpr_raddr1 := fields.rs1
   fetch_port_out.gpr_raddr2 := fields.rs2
 
-  out.sources.csr := fetch_port_in.csr_rdata
-  out.sources.src1 := fetch_port_in.gpr_rdata1
-  out.sources.src2 := fetch_port_in.gpr_rdata2
-  out.sources.mtvec := fetch_port_in.csr_mtvec
-  out.sources.mepc := fetch_port_in.csr_mepc
+  out.bits.sources.csr := fetch_port_in.csr_rdata
+  out.bits.sources.src1 := fetch_port_in.gpr_rdata1
+  out.bits.sources.src2 := fetch_port_in.gpr_rdata2
+  out.bits.sources.mtvec := fetch_port_in.csr_mtvec
+  out.bits.sources.mepc := fetch_port_in.csr_mepc
+
+  in.ready := true.B
+  out.valid := true.B
 }

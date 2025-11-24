@@ -25,66 +25,71 @@ class MessageEXU2LSU extends Bundle {
 }
 
 class EXU() extends Module with RequireAsyncReset {
-  val in = IO(Input(new MessageIDU2EXU))
+  val in = IO(Flipped(DecoupledIO(new MessageIDU2EXU)))
 
-  val out = IO(Output(new MessageEXU2LSU))
+  val out = IO(DecoupledIO(new MessageEXU2LSU))
 
-  out.pc := in.pc
-  out.controls := in.controls
-  out.itype := in.itype
+  out.bits.pc := in.bits.pc
+  out.bits.controls := in.bits.controls
+  out.bits.itype := in.bits.itype
 
   val alu = Module(new ALU(32))
   val branch = Module(new Branch(32))
 
-  alu.io.A := Mux(in.controls.is_alu_a_pc, in.pc, in.sources.src1)
-  alu.io.B := Mux(
-    in.controls.is_alu_b_reg,
-    in.sources.src2,
-    in.fields.imm
+  alu.io.A := Mux(
+    in.bits.controls.is_alu_a_pc,
+    in.bits.pc,
+    in.bits.sources.src1
   )
-  alu.io.funct3 := in.fields.funct3
-  alu.io.is_sub_sra := in.controls.is_alu_sub_sra
-  alu.io.is_force_add := in.controls.is_alu_force_add
+  alu.io.B := Mux(
+    in.bits.controls.is_alu_b_reg,
+    in.bits.sources.src2,
+    in.bits.fields.imm
+  )
+  alu.io.funct3 := in.bits.fields.funct3
+  alu.io.is_sub_sra := in.bits.controls.is_alu_sub_sra
+  alu.io.is_force_add := in.bits.controls.is_alu_force_add
 
-  out.write_info.alu_out := alu.io.out
+  out.bits.write_info.alu_out := alu.io.out
 
-  branch.io.A := in.sources.src1
-  branch.io.B := in.sources.src2
-  branch.io.funct3 := in.fields.funct3
+  branch.io.A := in.bits.sources.src1
+  branch.io.B := in.bits.sources.src2
+  branch.io.funct3 := in.bits.fields.funct3
 
-  out.write_info.gpr_waddr := in.fields.rd
+  out.bits.write_info.gpr_waddr := in.bits.fields.rd
 
-  val snpc = in.pc + 4.U(32.W)
+  val snpc = in.bits.pc + 4.U(32.W)
 
-  out.write_info.gpr_wdata := Mux1H(
+  out.bits.write_info.gpr_wdata := Mux1H(
     Seq(
-      // in.controls.is_gpr_wdata_from_ram -> fetch_port_in.mem_rdata,
-      in.controls.is_gpr_wdata_from_snpc -> snpc,
-      in.controls.is_gpr_wdata_from_imm -> in.fields.imm,
-      in.controls.is_gpr_wdata_from_alu -> alu.io.out,
-      in.controls.is_gpr_wdata_from_csr -> in.sources.csr
+      // in.bits.controls.is_gpr_wdata_from_ram -> fetch_port_in.bits.mem_rdata,
+      in.bits.controls.is_gpr_wdata_from_snpc -> snpc,
+      in.bits.controls.is_gpr_wdata_from_imm -> in.bits.fields.imm,
+      in.bits.controls.is_gpr_wdata_from_alu -> alu.io.out,
+      in.bits.controls.is_gpr_wdata_from_csr -> in.bits.sources.csr
     )
   )
 
-  out.write_info.mem_word := in.sources.src2
-  out.write_info.csr_wdata := Mux(
-    in.controls.is_csr_masked,
-    in.sources.src1 | in.sources.csr,
-    in.sources.src1
+  out.bits.write_info.mem_word := in.bits.sources.src2
+  out.bits.write_info.csr_wdata := Mux(
+    in.bits.controls.is_csr_masked,
+    in.bits.sources.src1 | in.bits.sources.csr,
+    in.bits.sources.src1
   )
-  out.write_info.csr_addr := in.fields.csr
+  out.bits.write_info.csr_addr := in.bits.fields.csr
 
-  val should_branch = in.itype.is_branch && branch.io.jump
+  val should_branch = in.bits.itype.is_branch && branch.io.jump
 
-  out.write_info.dnpc := MuxCase(
-    in.pc + 4.U(32.W),
+  out.bits.write_info.dnpc := MuxCase(
+    in.bits.pc + 4.U(32.W),
     Seq(
       should_branch -> alu.io.out,
-      in.itype.is_jal -> alu.io.out,
-      in.itype.is_jalr -> alu.io.out,
-      in.itype.is_ecall -> in.sources.mtvec,
-      in.itype.is_mret -> in.sources.mepc
+      in.bits.itype.is_jal -> alu.io.out,
+      in.bits.itype.is_jalr -> alu.io.out,
+      in.bits.itype.is_ecall -> in.bits.sources.mtvec,
+      in.bits.itype.is_mret -> in.bits.sources.mepc
     )
   )
-
+  in.ready := true.B
+  out.valid := true.B
 }

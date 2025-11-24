@@ -13,13 +13,19 @@ class IFU() extends Module with RequireAsyncReset {
     val inst_fetch = Input(UInt(32.W))
   })
 
-  val out = IO(Output(new MessageIFU2IDU))
-  out.inst := in.inst_fetch
-  out.pc := in.pc
+  val out = IO(DecoupledIO(new MessageIFU2IDU))
+  out.bits.inst := in.inst_fetch
+  out.bits.pc := in.pc
 
   val sIDLE :: sWAIT :: Nil = Enum(2)
 
   val state = RegInit(sIDLE)
-  state := Mux(state === sIDLE, sWAIT, sIDLE)
+  state := MuxLookup(state, sIDLE)(
+    Seq(
+      sIDLE -> Mux(out.valid, sWAIT, sIDLE),
+      sWAIT -> Mux(out.ready, sIDLE, sWAIT)
+    )
+  )
+  out.valid := true.B
 
 }
