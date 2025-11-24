@@ -1,6 +1,7 @@
 #include <Device/Device.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_audio.h>
+#include <SDL2/SDL_error.h>
 #include <cstdint>
 #include <my_utils.h>
 #include <print>
@@ -31,6 +32,7 @@ void Devices::update_screen() {
 
 void Devices::init_vga() {
   SDL_Init(SDL_INIT_VIDEO);
+  std::println("{}", SDL_GetError());
   SDL_CreateWindowAndRenderer(ScreenWidth * 2, ScreenHeight * 2, 0, &window,
                               &renderer);
   SDL_SetWindowTitle(window, "RISCV32-NPC");
