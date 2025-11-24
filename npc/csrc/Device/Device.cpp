@@ -158,12 +158,13 @@ void Devices::device_update_loop() {
   using namespace std::chrono;
   auto last = steady_clock::now();
   try {
-    while (device_alive) { // main device uodate loop, executed 60 times per
+    while (device_alive) { // main device update loop, executed 60 times per
                            // second.
       if (device_running) {
         auto now = steady_clock::now();
         if (now - last < 16.667ms)
           continue;
+        print("{}\r", device_alive.load());
         last = now;
         if (device_settings.enable_vga) {
           vga_update_screen();
@@ -203,9 +204,9 @@ void Devices::update_RTC() {
 Devices::~Devices() {
   device_running = false;
   device_alive = false;
-  println("!!");
+
   device_update_thread.join();
-  println("??");
+
   SDL_CloseAudio();
   SDL_Quit();
 }
