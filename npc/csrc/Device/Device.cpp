@@ -148,7 +148,7 @@ void Devices::init_ioe() {
   std::promise<void> init_promise;
   std::future<void> init_future = init_promise.get_future();
   device_update_thread =
-      std::thread(&Devices::device_update_loop, this, init_promise);
+      std::thread(&Devices::device_update_loop, this, std::move(init_promise));
   try {
     init_future.get();
   } catch (const std::exception &e) {
