@@ -1,4 +1,4 @@
-NAME = srli
-SRCS = isa/rv32ui/srli.S
+NAME = sub
+SRCS = isa/rv32ui/sub.S
 INC_PATH += /home/shitful/1s1x/ysyx-workbench/am-kernels/tests/riscv-tests-am/env/p 	/home/shitful/1s1x/ysyx-workbench/am-kernels/tests/riscv-tests-am/isa/macros/scalar
 include /home/shitful/1s1x/ysyx-workbench/abstract-machine/Makefile
