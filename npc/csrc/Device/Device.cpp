@@ -144,17 +144,19 @@ void Devices::init_ioe() {
   }
   device_alive = true;
   device_running = true;
+  println("!!!!?");
   device_update_thread = std::thread(&Devices::device_update_loop, this);
 }
 void Devices::pause(bool is_paused) { device_running = !is_paused; }
 void Devices::device_update_loop() {
+  println("!!!");
   if (device_settings.enable_vga) {
     init_vga();
   }
   if (device_settings.enable_keyboard) {
     init_keyboard();
   }
-
+  println("!!!!");
   using namespace std::chrono;
   auto last = steady_clock::now();
   try {
@@ -204,8 +206,8 @@ Devices::~Devices() {
   device_running = false;
   device_alive = false;
   println("{}", device_update_thread.joinable());
-  if (device_update_thread.joinable())
-    device_update_thread.join();
+
+  device_update_thread.join();
   println("!!");
   SDL_CloseAudio();
   SDL_Quit();
