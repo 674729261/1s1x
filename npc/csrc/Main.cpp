@@ -44,6 +44,6 @@ int main(int argc, char *argv[]) {
   }
 
   spdlog::shutdown();
-  println("ENd");
+
   return result;
 }
