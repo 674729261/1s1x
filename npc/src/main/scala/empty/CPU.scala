@@ -48,9 +48,6 @@ class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
   val ramWriter = Module(new RamWriteData)
   val ramLoader = Module(new RamLoadData)
 
-  io.ok_to_step := true.B
-  csrBank.io.ok_to_step := io.ok_to_step
-
   io.pc := pc
 
   ifu.in.pc := pc
@@ -60,6 +57,9 @@ class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
   StageConnect(exu.in, idu.out)
   StageConnect(lsu.in, exu.out)
   StageConnect(wbu.in, lsu.out)
+
+  io.ok_to_step := wbu.out.ok_to_step
+  csrBank.io.ok_to_step := io.ok_to_step
 
   idu.fetch_port_in.csr_rdata := csrBank.io.rdata
   idu.fetch_port_in.csr_mepc := csrBank.io.mepc

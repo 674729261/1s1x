@@ -20,6 +20,8 @@ class WBU() extends Module with RequireAsyncReset {
     val gpr_wdata = Output(UInt(32.W))
     val gpr_wen = Output(Bool())
 
+    val ok_to_step = Output(Bool())
+
   })
 
   out.ebreak := in.bits.itype.is_ebreak
@@ -38,5 +40,5 @@ class WBU() extends Module with RequireAsyncReset {
   out.gpr_wen := in.bits.controls.is_gpr_wen && in.valid
 
   in.ready := in.valid
-
+  out.ok_to_step := in.valid
 }
