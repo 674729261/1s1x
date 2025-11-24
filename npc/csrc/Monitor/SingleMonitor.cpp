@@ -129,7 +129,6 @@ int SingleMonitor::start() {
   }
   if (irb > 0)
     tracer->show_history_instructions();
-  println("ret");
   return state;
 }
 
