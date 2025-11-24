@@ -1,4 +1,4 @@
-NAME = sltiu
-SRCS = isa/rv32ui/sltiu.S
+NAME = sltu
+SRCS = isa/rv32ui/sltu.S
 INC_PATH += /home/shitful/1s1x/ysyx-workbench/am-kernels/tests/riscv-tests-am/env/p 	/home/shitful/1s1x/ysyx-workbench/am-kernels/tests/riscv-tests-am/isa/macros/scalar
 include /home/shitful/1s1x/ysyx-workbench/abstract-machine/Makefile
