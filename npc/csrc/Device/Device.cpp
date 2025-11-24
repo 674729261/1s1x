@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
+#include <future>
 #include <iostream>
 #include <memory>
 #include <my_utils.h>
@@ -144,23 +145,33 @@ void Devices::init_ioe() {
   }
   device_alive = true;
   device_running = true;
-  println("!!!!?");
-  device_update_thread = std::thread(&Devices::device_update_loop, this);
+  std::promise<void> init_promise;
+  std::future<void> init_future = init_promise.get_future();
+  device_update_thread =
+      std::thread(&Devices::device_update_loop, this, init_promise);
+  try {
+    init_future.get();
+  } catch (const std::exception &e) {
+    println(std::cerr, "Main: init failed: {}", e.what());
+    device_alive = false;
+    device_running = false;
+    device_update_thread.join();
+  }
 }
 void Devices::pause(bool is_paused) { device_running = !is_paused; }
-void Devices::device_update_loop() {
-  println("!!!");
-  if (device_settings.enable_vga) {
-    init_vga();
-  }
-  println("!!!!");
-  if (device_settings.enable_keyboard) {
-    init_keyboard();
-  }
-  println("!!!!");
-  using namespace std::chrono;
-  auto last = steady_clock::now();
+void Devices::device_update_loop(std::promise<void> init_promise) {
   try {
+    if (device_settings.enable_vga) {
+      init_vga();
+    }
+
+    if (device_settings.enable_keyboard) {
+      init_keyboard();
+    }
+    init_promise.set_value();
+    using namespace std::chrono;
+    auto last = steady_clock::now();
+
     while (device_alive) { // main device update loop, executed 60 times per
                            // second.
       if (device_running) {
@@ -178,7 +189,7 @@ void Devices::device_update_loop() {
     }
   } catch (const std::exception &err) {
     std::println(std::cerr, "Error : {}", err.what());
-    std::terminate();
+    init_promise.set_exception(std::current_exception());
   }
   if (texture)
     SDL_DestroyTexture(texture);
@@ -206,10 +217,8 @@ void Devices::update_RTC() {
 Devices::~Devices() {
   device_running = false;
   device_alive = false;
-  println("{}", device_update_thread.joinable());
 
   device_update_thread.join();
-  println("!!");
   SDL_CloseAudio();
   SDL_Quit();
 }

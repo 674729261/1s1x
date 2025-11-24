@@ -6,6 +6,7 @@
 #include <SDL2/SDL.h>
 #include <atomic>
 #include <cstdint>
+#include <future>
 #include <lockfree/spsc/queue.hpp>
 #include <memory>
 #include <thread>
@@ -85,7 +86,7 @@ private:
 
   static void init_keymap();
 
-  void device_update_loop();
+  void device_update_loop(std::promise<void> init_promise);
 
   void init_audio();
   void init_keyboard();
@@ -97,6 +98,8 @@ private:
 
   void ensure_audio_enabled();
   void ensure_vga_enabled();
+
+  std::mutex inited;
 
 private:
   std::vector<uint32_t> M;

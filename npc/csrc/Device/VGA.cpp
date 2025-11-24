@@ -36,7 +36,6 @@ void Devices::init_vga() {
   SDL_CreateWindowAndRenderer(ScreenWidth * 2, ScreenHeight * 2, 0, &window,
                               &renderer);
   SDL_SetWindowTitle(window, "RISCV32-NPC");
-  std::println("??{}!!", SDL_GetError());
   texture =
       SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888,
                         SDL_TEXTUREACCESS_STATIC, ScreenWidth, ScreenHeight);
