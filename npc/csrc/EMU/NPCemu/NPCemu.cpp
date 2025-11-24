@@ -40,19 +40,20 @@ void NPCemu::step() {
     tracer->flush_instruction(dut.io_pc, dut.io_instr, getGPR(rs1));
   }
 #endif
+  do {
+    dut.clock = 0;
+    dut.eval();
+    if (!dut.io_wen && dut.io_valid) {
+      dut.io_rdata = devices->readMemory(dut.io_raddr);
+    }
 
-  dut.clock = 0;
-  dut.eval();
-  if (!dut.io_wen && dut.io_valid) {
-    dut.io_rdata = devices->readMemory(dut.io_raddr);
-  }
+    dut.clock = 1;
 
-  dut.clock = 1;
-
-  dut.eval();
-  if (dut.io_wen && dut.io_valid) {
-    devices->writeMemory(dut.io_waddr, dut.io_wdata, dut.io_wmask);
-  }
+    dut.eval();
+    if (dut.io_wen && dut.io_valid) {
+      devices->writeMemory(dut.io_waddr, dut.io_wdata, dut.io_wmask);
+    }
+  } while (dut.io_ok_to_step);
   inst_count++;
   if (dut.io_ebreak) [[unlikely]] {
     EMUstate = RISCV32::Interrupt::EBREAK;
