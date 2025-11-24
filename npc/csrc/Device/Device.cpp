@@ -153,6 +153,7 @@ void Devices::device_update_loop() {
   if (device_settings.enable_vga) {
     init_vga();
   }
+  println("!!!!");
   if (device_settings.enable_keyboard) {
     init_keyboard();
   }
