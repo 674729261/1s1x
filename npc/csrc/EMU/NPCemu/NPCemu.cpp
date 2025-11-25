@@ -63,7 +63,7 @@ void NPCemu::step() {
           dut.rootp->CPU__DOT___lsu_out_bits_itype_is_ebreak);
 
     println();
-    if (dut.io_instr == 0x00100073)
+    if (dut.io_ebreak)
       std::terminate();
   }
   inst_count++;
