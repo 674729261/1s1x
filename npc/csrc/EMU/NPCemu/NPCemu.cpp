@@ -47,9 +47,7 @@ void NPCemu::step() {
     ready_to_step = dut.io_ok_to_step;
     dut.clock = 0;
     dut.eval();
-
     dut.clock = 1;
-
     dut.eval();
     if (dut.io_valid) {
       if (dut.io_wen) {

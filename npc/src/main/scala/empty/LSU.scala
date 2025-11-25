@@ -71,6 +71,6 @@ class LSU() extends Module with RequireAsyncReset {
       sWAIT -> Mux(out.ready, sIDLE, sWAIT)
     )
   )
-  out.valid := in.valid
-  in.ready := in.valid
+  out.valid := state === sWAIT
+  in.ready := out.ready
 }
