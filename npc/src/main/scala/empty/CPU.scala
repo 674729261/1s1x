@@ -63,10 +63,10 @@ class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
   StageConnect(lsu.in, exu.out)
   StageConnect(wbu.in, lsu.out)
 
-  val ok_to_step_reg = RegInit(false.B)
-  ok_to_step_reg := wbu.out.ok_to_step
+  // val ok_to_step_reg = RegInit(false.B)
+  // ok_to_step_reg := wbu.out.ok_to_step
 
-  io.ok_to_step := ok_to_step_reg
+  io.ok_to_step := wbu.out.ok_to_step
   csrBank.io.ok_to_step := wbu.out.ok_to_step
 
   idu.fetch_port_in.csr_rdata := csrBank.io.rdata

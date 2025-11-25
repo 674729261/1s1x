@@ -29,6 +29,7 @@ void NPCemu::reset() {
 }
 
 void NPCemu::step() {
+  bool ready_to_step = false;
   do {
     dut.clock = 0;
     dut.eval();
