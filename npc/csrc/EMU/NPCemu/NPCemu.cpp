@@ -53,7 +53,7 @@ void NPCemu::step() {
       uint32_t rs1 = (dut.io_inst_bus_instr >> 15) & 0x1f;
 
 #ifndef DISABLE_ALL_TRACER
-      if (tracer) [[unlikely]] {
+      if (dut.io_inst_bus_ifu_respValid && tracer) [[unlikely]] {
         tracer->flush_instruction(dut.io_inst_bus_ifu_addr,
                                   dut.io_inst_bus_instr, getGPR(rs1));
       }
