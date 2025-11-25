@@ -57,6 +57,7 @@ void NPCemu::step() {
                              dut.io_mem_wmask);
       } else {
         dut.io_mem_rdata = devices->readMemory(dut.io_mem_raddr);
+        dut.io_mem_respValid = 1;
       }
     }
     if (dut.io_ebreak)
