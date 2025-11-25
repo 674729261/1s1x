@@ -266,6 +266,6 @@ class IDU() extends Module with RequireAsyncReset {
   out.bits.sources.mepc := fetch_port_in.csr_mepc
 
   out.valid := in.valid
-  in.ready := out.valid
+  in.ready := in.valid
 
 }
