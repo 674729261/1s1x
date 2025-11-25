@@ -55,7 +55,7 @@ void NPCemu::step() {
       }
 #endif
     }
-    print("Inst : {}\r", dut.io_instr);
+    print("Inst : {:08x}\r", dut.io_instr);
   } while (!dut.io_ok_to_step);
   inst_count++;
   if (dut.io_ebreak) [[unlikely]] {
