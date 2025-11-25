@@ -9,6 +9,7 @@
 #include <format>
 #include <lockfree/lockfree.hpp>
 #include <print>
+#include <random>
 NPCemu::NPCemu()
 #include <stdexcept>
     : RISCV32(), proxy(), trapped(0), context(), dut(&context), inst_count(0) {
@@ -28,7 +29,8 @@ void NPCemu::reset() {
 
   syncCPUState();
 }
-
+static std::mt19937 gen(12345);
+static std::uniform_int_distribution<int> dist(1, 20);
 void NPCemu::step() {
   bool ready_to_step = false, is_ebreak = false;
   while (!ready_to_step) {
@@ -49,6 +51,7 @@ void NPCemu::step() {
     }
 
     if (dut.io_mem_reqValid) {
+      int delay = dist(gen);
       if (dut.io_mem_wen) {
         proxy.register_event(
             [waddr = dut.io_mem_waddr, wdata = dut.io_mem_wdata,
@@ -57,9 +60,9 @@ void NPCemu::step() {
               devices.writeMemory(waddr, wdata, wmask);
               resp = 1;
             },
-            4000);
+            delay);
         proxy.register_event([&resp = dut.io_mem_respValid] { resp = 0; },
-                             4001);
+                             delay + 1);
       } else {
         proxy.register_event(
             [raddr = dut.io_mem_raddr, &devices = *devices.get(),
@@ -67,9 +70,9 @@ void NPCemu::step() {
               rdata = devices.readMemory(raddr);
               resp = 1;
             },
-            4000);
+            delay);
         proxy.register_event([&resp = dut.io_mem_respValid] { resp = 0; },
-                             4001);
+                             delay + 1);
       }
     }
     dut.clock = 1;
