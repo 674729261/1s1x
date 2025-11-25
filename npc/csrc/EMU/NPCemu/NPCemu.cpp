@@ -11,7 +11,7 @@
 #include <print>
 NPCemu::NPCemu()
 #include <stdexcept>
-    : RISCV32(), trapped(0), context(), dut(&context), inst_count(0) {
+    : RISCV32(), proxy(), trapped(0), context(), dut(&context), inst_count(0) {
 }
 
 RISCV32::addr_t NPCemu::getPC() { return getGPR(32); }
@@ -53,13 +53,27 @@ void NPCemu::step() {
     dut.eval();
     if (dut.io_mem_reqValid) {
       if (dut.io_mem_wen) {
-        devices->writeMemory(dut.io_mem_waddr, dut.io_mem_wdata,
-                             dut.io_mem_wmask);
+        proxy.register_event(
+            [waddr = dut.io_mem_waddr, wdata = dut.io_mem_wdata,
+             wmask = dut.io_mem_wmask, &devices = *devices.get(),
+             &resp = dut.io_mem_respValid] {
+              devices.writeMemory(waddr, wdata, wmask);
+              resp = 1;
+            },
+            4);
+        proxy.register_event([&resp = dut.io_mem_respValid] { resp = 0; }, 5);
       } else {
-        dut.io_mem_rdata = devices->readMemory(dut.io_mem_raddr);
-        dut.io_mem_respValid = 1;
+        proxy.register_event(
+            [raddr = dut.io_mem_raddr, &devices = *devices.get(),
+             &resp = dut.io_mem_respValid] {
+              devices.readMemory(raddr);
+              resp = 1;
+            },
+            4);
+        proxy.register_event([&resp = dut.io_mem_respValid] { resp = 0; }, 5);
       }
     }
+    proxy.update_one_cycle();
     if (dut.io_ebreak)
       is_ebreak = true;
     // std::print("!");
