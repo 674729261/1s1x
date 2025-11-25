@@ -1,6 +1,7 @@
 #include <Device/Device.h>
 #include <array>
 #include <cstdint>
+#include <exception>
 #include <filesystem>
 #include <fstream>
 #include <future>
@@ -160,6 +161,7 @@ void Devices::init_ioe() {
 }
 void Devices::pause(bool is_paused) { device_running = !is_paused; }
 void Devices::device_update_loop(std::promise<void> init_promise) {
+
   try {
     if (device_settings.enable_vga) {
       init_vga();
@@ -168,10 +170,15 @@ void Devices::device_update_loop(std::promise<void> init_promise) {
     if (device_settings.enable_keyboard) {
       init_keyboard();
     }
-    init_promise.set_value();
-    using namespace std::chrono;
-    auto last = steady_clock::now();
-
+  } catch (const std::exception &err) {
+    std::println(std::cerr, "Error : {}", err.what());
+    init_promise.set_exception(std::current_exception());
+    std::terminate();
+  }
+  init_promise.set_value();
+  using namespace std::chrono;
+  auto last = steady_clock::now();
+  try {
     while (device_alive) { // main device update loop, executed 60 times per
                            // second.
       if (device_running) {
@@ -189,7 +196,6 @@ void Devices::device_update_loop(std::promise<void> init_promise) {
     }
   } catch (const std::exception &err) {
     std::println(std::cerr, "Error : {}", err.what());
-    init_promise.set_exception(std::current_exception());
   }
   if (texture)
     SDL_DestroyTexture(texture);
