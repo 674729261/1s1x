@@ -56,7 +56,8 @@ void NPCemu::step() {
 #endif
     }
 
-    print("Inst : {:08x}  {}\r", dut.io_instr,
+    print("Inst : {:08x}  {} {} {}\r", dut.io_instr, dut.io_ebreak,
+          dut.io_ok_to_step,
           dut.rootp->CPU__DOT___lsu_out_bits_itype_is_ebreak);
     if ((dut.io_instr & 0xFF) == 0x73)
       println();
