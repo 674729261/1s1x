@@ -18,6 +18,7 @@ class LSU() extends Module with RequireAsyncReset {
   val fetch_port_out = IO(new Bundle {
     val mem_raddr = Output(UInt(32.W))
     val mem_rlower2bit = Output(UInt(32.W))
+    val mem_valid = Output(Bool())
     val is_word = Output(Bool())
     val is_half = Output(Bool())
     val is_byte = Output(Bool())
@@ -27,27 +28,20 @@ class LSU() extends Module with RequireAsyncReset {
     val mem_lower2bit = Output(UInt(2.W))
     val mem_wdata = Output(UInt(32.W))
     val mem_wen = Output(Bool())
-    val mem_reqValid = Output(Bool())
-
   })
 
   val fetch_port_in = IO(new Bundle {
     val mem_rdata = Input(UInt(32.W))
-    val mem_respValid = Input(Bool())
   })
-
-  val should_mem_access = Wire(Bool())
 
   val sIDLE :: sWAIT :: Nil = Enum(2)
   val state = RegInit(sIDLE)
   state := MuxLookup(state, sIDLE)(
     Seq(
-      sIDLE -> Mux(should_mem_access, sWAIT, sIDLE),
-      sWAIT -> Mux(fetch_port_in.mem_respValid, sIDLE, sWAIT)
+      sIDLE -> Mux(in.valid, sWAIT, sIDLE),
+      sWAIT -> Mux(out.ready, sIDLE, sWAIT)
     )
   )
-
-  fetch_port_out.mem_reqValid := should_mem_access && state === sIDLE
 
   fetch_port_out.is_byte := in.bits.controls.is_ram_byte
   fetch_port_out.is_half := in.bits.controls.is_ram_half
@@ -58,7 +52,7 @@ class LSU() extends Module with RequireAsyncReset {
     in.bits.write_info.alu_out(31, 2),
     "b00".U(2.W)
   )
-  should_mem_access := in.bits.controls.is_ram_valid && in.valid
+  fetch_port_out.mem_valid := in.bits.controls.is_ram_valid && in.valid && state === sIDLE
   fetch_port_out.mem_rlower2bit := in.bits.write_info.alu_out(1, 0)
 
   fetch_port_out.mem_wdata := in.bits.write_info.mem_word
@@ -78,6 +72,6 @@ class LSU() extends Module with RequireAsyncReset {
     out.bits.write_info.gpr_wdata := fetch_port_in.mem_rdata
   }
 
-  out.valid := (in.valid && !in.bits.controls.is_ram_valid) || (fetch_port_in.mem_respValid && state === sWAIT)
+  out.valid := state === sWAIT
   in.ready := out.ready
 }
