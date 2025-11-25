@@ -54,7 +54,7 @@ void NPCemu::step() {
     dut.eval();
     println("ok ?2 {}", dut.io_ok_to_step);
     dut.clock = 1;
-
+    proxy.update_one_cycle();
     if (dut.io_mem_reqValid) {
       if (dut.io_mem_wen) {
         proxy.register_event(
@@ -79,7 +79,7 @@ void NPCemu::step() {
     }
     println("resp : {}", dut.io_mem_respValid);
     dut.eval();
-    proxy.update_one_cycle();
+
     println("ok ?3 {}", dut.io_ok_to_step);
     if (dut.io_ebreak)
       is_ebreak = true;
