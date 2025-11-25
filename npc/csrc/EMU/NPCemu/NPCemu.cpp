@@ -27,7 +27,7 @@ void NPCemu::reset() {
   // dut.eval();
 
   syncCPUState();
-  std::println("PC = {:08x}, {}, {}", dut.io_pc, dut.io_ifu_addr,
+  std::println("PC = {:08x}, {:08x}, {}", dut.io_pc, dut.io_ifu_addr,
                dut.io_ifu_valid);
 }
 
