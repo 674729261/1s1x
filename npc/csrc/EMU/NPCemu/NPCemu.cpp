@@ -5,6 +5,7 @@
 #include <Simulators/NPCemu.h>
 #include <Simulators/RISCV32.h>
 #include <cstdint>
+#include <exception>
 #include <format>
 #include <lockfree/lockfree.hpp>
 #include <print>
@@ -60,7 +61,8 @@ void NPCemu::step() {
     print("{}, Inst : {:08x}  {} {} {}\r", (int)ready_to_step, dut.io_instr,
           dut.io_ebreak, dut.io_ok_to_step,
           dut.rootp->CPU__DOT___lsu_out_bits_itype_is_ebreak);
-    // if ((dut.io_instr & 0xFF) == 0x73)
+    if ((dut.io_instr & 0xFF) == 0x73)
+      std::terminate();
     println();
   }
   inst_count++;
