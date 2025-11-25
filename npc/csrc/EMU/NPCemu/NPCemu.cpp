@@ -37,7 +37,7 @@ void NPCemu::step() {
     // addr_t pc = dut.io_pc;
     if (dut.io_inst_bus_ifu_reqValid) {
       {
-        int delay = 4000; // dist(gen);
+        int delay = dist(gen);
         proxy.register_event(
             [pc = dut.io_inst_bus_ifu_addr, &devices = *devices.get(),
              &bus_instr = dut.io_inst_bus_instr,
@@ -93,14 +93,14 @@ void NPCemu::step() {
     dut.eval();
     if (dut.io_ebreak)
       is_ebreak = true;
-    std::print("!");
+    // std::print("!");
     // println("ok ! {}", ready_to_step);
   }
   inst_count++;
   if (is_ebreak) [[unlikely]] {
     EMUstate = RISCV32::Interrupt::EBREAK;
   }
-  std::println();
+  // std::println();
 }
 
 void NPCemu::syncCPUState() {
