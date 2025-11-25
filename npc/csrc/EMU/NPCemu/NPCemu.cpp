@@ -49,15 +49,6 @@ void NPCemu::step() {
         proxy.register_event(
             [&resp = dut.io_inst_bus_ifu_respValid] { resp = 0; }, delay + 1);
       }
-
-      uint32_t rs1 = (dut.io_inst_bus_instr >> 15) & 0x1f;
-
-#ifndef DISABLE_ALL_TRACER
-      if (dut.io_inst_bus_ifu_respValid && tracer) [[unlikely]] {
-        tracer->flush_instruction(dut.io_inst_bus_ifu_addr,
-                                  dut.io_inst_bus_instr, getGPR(rs1));
-      }
-#endif
     }
 
     if (dut.io_mem_reqValid) {
@@ -88,6 +79,15 @@ void NPCemu::step() {
     dut.clock = 1;
     dut.eval();
     proxy.update_one_cycle();
+
+    uint32_t rs1 = (dut.io_inst_bus_instr >> 15) & 0x1f;
+
+#ifndef DISABLE_ALL_TRACER
+    if (dut.io_inst_bus_ifu_respValid && tracer) [[unlikely]] {
+      tracer->flush_instruction(dut.io_inst_bus_ifu_addr, dut.io_inst_bus_instr,
+                                getGPR(rs1));
+    }
+#endif
     dut.clock = 0;
     dut.eval();
     if (dut.io_ebreak)
