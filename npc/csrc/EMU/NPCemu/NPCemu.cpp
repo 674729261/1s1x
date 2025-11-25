@@ -31,6 +31,7 @@ void NPCemu::reset() {
 void NPCemu::step() {
   bool ready_to_step = false;
   do {
+    ready_to_step = dut.io_ok_to_step;
     dut.clock = 0;
     dut.eval();
     if (!dut.io_wen && dut.io_valid) {
@@ -61,7 +62,7 @@ void NPCemu::step() {
           dut.rootp->CPU__DOT___lsu_out_bits_itype_is_ebreak);
     if ((dut.io_instr & 0xFF) == 0x73)
       println();
-  } while (!dut.io_ok_to_step);
+  } while (!ready_to_step);
   inst_count++;
   if (dut.io_ebreak) [[unlikely]] {
     EMUstate = RISCV32::Interrupt::EBREAK;
