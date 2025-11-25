@@ -27,6 +27,7 @@ void NPCemu::reset() {
   // dut.eval();
 
   syncCPUState();
+  std::println("PC = {}", dut.io_pc);
 }
 
 void NPCemu::step() {
