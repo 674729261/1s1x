@@ -84,7 +84,7 @@ void NPCemu::step() {
   if (is_ebreak) [[unlikely]] {
     EMUstate = RISCV32::Interrupt::EBREAK;
   }
-  std::println();
+  // std::println();
 }
 
 void NPCemu::syncCPUState() {
