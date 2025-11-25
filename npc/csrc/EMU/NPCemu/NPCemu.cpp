@@ -33,7 +33,6 @@ void NPCemu::step() {
   bool ready_to_step = false, is_ebreak = false;
   while (!ready_to_step) {
     ready_to_step = dut.io_ok_to_step;
-    println("ok ?0 {}", dut.io_ok_to_step);
     // addr_t pc = dut.io_pc;
     if (dut.io_inst_bus_ifu_valid) {
       dut.io_inst_bus_instr =
@@ -49,12 +48,8 @@ void NPCemu::step() {
 #endif
     }
 
-    dut.clock = 0;
-    println("ok ?1 {}", dut.io_ok_to_step);
-    dut.eval();
-    println("ok ?2 {}", dut.io_ok_to_step);
     dut.clock = 1;
-    proxy.update_one_cycle();
+
     if (dut.io_mem_reqValid) {
       if (dut.io_mem_wen) {
         proxy.register_event(
@@ -77,10 +72,10 @@ void NPCemu::step() {
         proxy.register_event([&resp = dut.io_mem_respValid] { resp = 0; }, 5);
       }
     }
-    println("resp : {}", dut.io_mem_respValid);
     dut.eval();
-
-    println("ok ?3 {}", dut.io_ok_to_step);
+    proxy.update_one_cycle();
+    dut.clock = 0;
+    dut.eval();
     if (dut.io_ebreak)
       is_ebreak = true;
     // std::print("!");
