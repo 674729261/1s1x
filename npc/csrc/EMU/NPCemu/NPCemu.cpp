@@ -54,7 +54,7 @@ void NPCemu::step() {
         tracer->flush_instruction(dut.io_ifu_addr, dut.io_instr, getGPR(rs1));
       }
 #endif
-      println("EB = {}", dut.io_ebreak);
+      print("EB = {}\r", dut.io_ebreak);
     }
   } while (!dut.io_ok_to_step);
   inst_count++;
