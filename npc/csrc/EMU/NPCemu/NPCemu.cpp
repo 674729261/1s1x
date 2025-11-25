@@ -55,7 +55,10 @@ void NPCemu::step() {
       }
 #endif
     }
+
     print("Inst : {:08x}\r", dut.io_instr);
+    if ((dut.io_instr & 0xFF) == 0x73)
+      println();
   } while (!dut.io_ok_to_step);
   inst_count++;
   if (dut.io_ebreak) [[unlikely]] {
