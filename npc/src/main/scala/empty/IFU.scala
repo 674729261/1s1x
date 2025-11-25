@@ -13,6 +13,11 @@ class IFU() extends Module with RequireAsyncReset {
     val inst_fetch = Input(UInt(32.W))
   })
 
+  val fetch_port_out = IO(new Bundle {
+    val ifu_addr = Output(UInt(32.W))
+    val ifu_valid = Output(Bool())
+  })
+
   val out = IO(DecoupledIO(new MessageIFU2IDU))
   out.bits.inst := in.inst_fetch
   out.bits.pc := in.pc
@@ -26,6 +31,8 @@ class IFU() extends Module with RequireAsyncReset {
       sWAIT -> Mux(out.ready, sIDLE, sWAIT)
     )
   )
-  out.valid := true.B // state === sWAIT
+  fetch_port_out.ifu_addr := Mux(state === sIDLE, in.pc, 0.U(32.W))
+  fetch_port_out.ifu_valid := state === sIDLE
+  out.valid := state === sWAIT
 
 }

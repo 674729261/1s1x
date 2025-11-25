@@ -22,6 +22,9 @@ class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
     val instr = Input(UInt(32.W))
     val pc = Output(UInt(32.W))
 
+    val ifu_addr = Output(UInt(32.W))
+    val ifu_valid = Output(Bool())
+
     val ebreak = Output(Bool())
     val valid = Output(Bool())
     val raddr = Output(UInt(32.W))
@@ -52,6 +55,8 @@ class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
 
   ifu.in.pc := pc
   ifu.in.inst_fetch := io.instr
+  io.ifu_addr := ifu.fetch_port_out.ifu_addr
+  io.ifu_valid := ifu.fetch_port_out.ifu_valid
 
   StageConnect(idu.in, ifu.out)
   StageConnect(exu.in, idu.out)
