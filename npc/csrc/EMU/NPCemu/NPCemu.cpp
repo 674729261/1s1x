@@ -52,8 +52,9 @@ void NPCemu::step() {
     dut.clock = 0;
     println("ok ?1 {}", dut.io_ok_to_step);
     dut.eval();
-    dut.clock = 1;
     println("ok ?2 {}", dut.io_ok_to_step);
+    dut.clock = 1;
+
     dut.eval();
     if (dut.io_mem_reqValid) {
       if (dut.io_mem_wen) {
