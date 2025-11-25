@@ -27,13 +27,23 @@ void NPCemu::reset() {
   // dut.eval();
 
   syncCPUState();
-  std::println("PC = {:08x}, {:08x}, {}", dut.io_pc, dut.io_ifu_addr,
-               dut.io_ifu_valid);
 }
 
 void NPCemu::step() {
   bool ready_to_step = false;
   while (!ready_to_step) {
+    // addr_t pc = dut.io_pc;
+    if (dut.io_ifu_valid) {
+      dut.io_instr = devices->get_instruction(dut.io_ifu_addr);
+
+      uint32_t rs1 = (dut.io_instr >> 15) & 0x1f;
+
+#ifndef DISABLE_ALL_TRACER
+      if (tracer) [[unlikely]] {
+        tracer->flush_instruction(dut.io_ifu_addr, dut.io_instr, getGPR(rs1));
+      }
+#endif
+    }
     ready_to_step = dut.io_ok_to_step;
     dut.clock = 0;
     dut.eval();
@@ -46,18 +56,6 @@ void NPCemu::step() {
     dut.eval();
     if (dut.io_wen && dut.io_valid) {
       devices->writeMemory(dut.io_waddr, dut.io_wdata, dut.io_wmask);
-    }
-    addr_t pc = dut.io_pc;
-    if (dut.io_ifu_valid) {
-      dut.io_instr = devices->get_instruction(dut.io_ifu_addr);
-
-      uint32_t rs1 = (dut.io_instr >> 15) & 0x1f;
-
-#ifndef DISABLE_ALL_TRACER
-      if (tracer) [[unlikely]] {
-        tracer->flush_instruction(dut.io_ifu_addr, dut.io_instr, getGPR(rs1));
-      }
-#endif
     }
   }
   inst_count++;
