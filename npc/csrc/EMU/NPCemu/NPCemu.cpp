@@ -31,7 +31,8 @@ void NPCemu::reset() {
 
 void NPCemu::step() {
   bool ready_to_step = false, is_ebreak = false;
-  do {
+  while (!ready_to_step) {
+    ready_to_step = dut.io_ok_to_step;
     println("ok ? {}", ready_to_step);
     // addr_t pc = dut.io_pc;
     if (dut.io_inst_bus_ifu_valid) {
@@ -78,7 +79,7 @@ void NPCemu::step() {
     if (dut.io_ebreak)
       is_ebreak = true;
     // std::print("!");
-  } while (!dut.io_ok_to_step);
+  }
   inst_count++;
   if (is_ebreak) [[unlikely]] {
     EMUstate = RISCV32::Interrupt::EBREAK;
