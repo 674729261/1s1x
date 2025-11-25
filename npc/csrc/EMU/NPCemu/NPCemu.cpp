@@ -48,8 +48,6 @@ void NPCemu::step() {
 #endif
     }
 
-    dut.clock = 1;
-
     if (dut.io_mem_reqValid) {
       if (dut.io_mem_wen) {
         proxy.register_event(
@@ -64,14 +62,15 @@ void NPCemu::step() {
       } else {
         proxy.register_event(
             [raddr = dut.io_mem_raddr, &devices = *devices.get(),
-             &resp = dut.io_mem_respValid] {
-              devices.readMemory(raddr);
+             &resp = dut.io_mem_respValid, &rdata = dut.io_mem_rdata] {
+              rdata = devices.readMemory(raddr);
               resp = 1;
             },
             4);
         proxy.register_event([&resp = dut.io_mem_respValid] { resp = 0; }, 5);
       }
     }
+    dut.clock = 1;
     dut.eval();
     proxy.update_one_cycle();
     dut.clock = 0;
