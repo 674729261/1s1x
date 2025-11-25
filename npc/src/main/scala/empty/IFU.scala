@@ -24,17 +24,17 @@ class IFU() extends Module with RequireAsyncReset {
   out.bits.inst := in.instr
   out.bits.pc := in.pc
 
-  val sIDLE :: sWAIT :: Nil = Enum(2)
+  val sIDLE :: sWAIT_RESP :: sWAIT_READY :: Nil = Enum(3)
 
   val state = RegInit(sIDLE)
   state := MuxLookup(state, sIDLE)(
     Seq(
-      sIDLE -> sWAIT,
-      sWAIT -> Mux(in.ifu_respValid, sIDLE, sWAIT)
+      sIDLE -> sWAIT_RESP,
+      sWAIT_RESP -> Mux(out.ready, sIDLE, sWAIT_RESP)
     )
   )
   fetch_port_out.ifu_addr := Mux(state === sIDLE, in.pc, 0.U(32.W))
   fetch_port_out.ifu_reqValid := state === sIDLE
-  out.valid := in.ifu_respValid && state === sWAIT
+  out.valid := in.ifu_respValid && state === sWAIT_RESP
 
 }
