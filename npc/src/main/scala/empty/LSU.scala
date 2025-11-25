@@ -62,6 +62,15 @@ class LSU() extends Module with RequireAsyncReset {
   when(in.bits.controls.is_gpr_wdata_from_ram) {
     out.bits.write_info.gpr_wdata := fetch_port_in.mem_rdata
   }
+
+  val sIDLE :: sWAIT :: Nil = Enum(2)
+  val state = RegInit(sIDLE)
+  state := MuxLookup(state, sIDLE)(
+    Seq(
+      sIDLE -> sWAIT,
+      sWAIT -> Mux(out.ready, sIDLE, sWAIT)
+    )
+  )
   out.valid := in.valid
   in.ready := in.valid
 }
