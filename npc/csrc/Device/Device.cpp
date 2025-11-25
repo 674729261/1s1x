@@ -195,7 +195,7 @@ void Devices::device_update_loop(std::promise<void> init_promise) {
       }
     }
   } catch (const std::exception &err) {
-    std::println(std::cerr, "Error : {}", err.what());
+    std::println(std::cerr, "Error!! : {}", err.what());
   }
   if (texture)
     SDL_DestroyTexture(texture);
