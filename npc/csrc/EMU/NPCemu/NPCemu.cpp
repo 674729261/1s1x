@@ -41,9 +41,18 @@ void NPCemu::step() {
         proxy.register_event(
             [pc = dut.io_inst_bus_ifu_addr, &devices = *devices.get(),
              &bus_instr = dut.io_inst_bus_instr,
-             &resp = dut.io_inst_bus_ifu_respValid] {
+             &resp = dut.io_inst_bus_ifu_respValid, &tracer = this->tracer,
+             this] {
               bus_instr = devices.get_instruction(pc);
               resp = 1;
+
+              uint32_t rs1 = (bus_instr >> 15) & 0x1f;
+
+#ifndef DISABLE_ALL_TRACER
+              if (tracer) [[unlikely]] {
+                tracer->flush_instruction(pc, bus_instr, getGPR(rs1));
+              }
+#endif
             },
             delay);
         proxy.register_event(
@@ -80,14 +89,6 @@ void NPCemu::step() {
     dut.eval();
     proxy.update_one_cycle();
 
-    uint32_t rs1 = (dut.io_inst_bus_instr >> 15) & 0x1f;
-
-#ifndef DISABLE_ALL_TRACER
-    if (dut.io_inst_bus_ifu_respValid && tracer) [[unlikely]] {
-      tracer->flush_instruction(dut.io_inst_bus_ifu_addr, dut.io_inst_bus_instr,
-                                getGPR(rs1));
-    }
-#endif
     dut.clock = 0;
     dut.eval();
     if (dut.io_ebreak)
