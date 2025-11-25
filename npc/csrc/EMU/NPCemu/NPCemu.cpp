@@ -37,7 +37,7 @@ void NPCemu::step() {
     // addr_t pc = dut.io_pc;
     if (dut.io_inst_bus_ifu_reqValid) {
       {
-        int delay = dist(gen);
+        int delay = 4000; // dist(gen);
         proxy.register_event(
             [pc = dut.io_inst_bus_ifu_addr, &devices = *devices.get(),
              &bus_instr = dut.io_inst_bus_instr,
