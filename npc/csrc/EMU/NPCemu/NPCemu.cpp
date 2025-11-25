@@ -35,9 +35,20 @@ void NPCemu::step() {
   while (!ready_to_step) {
     ready_to_step = dut.io_ok_to_step;
     // addr_t pc = dut.io_pc;
-    if (dut.io_inst_bus_ifu_valid) {
-      dut.io_inst_bus_instr =
-          devices->get_instruction(dut.io_inst_bus_ifu_addr);
+    if (dut.io_inst_bus_ifu_reqValid) {
+      {
+        int delay = dist(gen);
+        proxy.register_event(
+            [pc = dut.io_inst_bus_ifu_addr, &devices = *devices.get(),
+             &bus_instr = dut.io_inst_bus_instr,
+             &resp = dut.io_inst_bus_ifu_respValid] {
+              bus_instr = devices.get_instruction(pc);
+              resp = 1;
+            },
+            delay);
+        proxy.register_event(
+            [&resp = dut.io_inst_bus_ifu_respValid] { resp = 0; }, delay + 1);
+      }
 
       uint32_t rs1 = (dut.io_inst_bus_instr >> 15) & 0x1f;
 
