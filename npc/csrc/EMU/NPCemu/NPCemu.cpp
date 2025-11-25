@@ -77,8 +77,9 @@ void NPCemu::step() {
         proxy.register_event([&resp = dut.io_mem_respValid] { resp = 0; }, 5);
       }
     }
-    proxy.update_one_cycle();
     dut.eval();
+    proxy.update_one_cycle();
+
     println("ok ?3 {}", dut.io_ok_to_step);
     if (dut.io_ebreak)
       is_ebreak = true;
