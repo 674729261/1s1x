@@ -33,14 +33,16 @@ void NPCemu::step() {
   bool ready_to_step = false, is_ebreak = false;
   while (!ready_to_step) {
     // addr_t pc = dut.io_pc;
-    if (dut.io_ifu_valid) {
-      dut.io_instr = devices->get_instruction(dut.io_ifu_addr);
+    if (dut.io_inst_bus_ifu_valid) {
+      dut.io_inst_bus_instr =
+          devices->get_instruction(dut.io_inst_bus_ifu_addr);
 
-      uint32_t rs1 = (dut.io_instr >> 15) & 0x1f;
+      uint32_t rs1 = (dut.io_inst_bus_instr >> 15) & 0x1f;
 
 #ifndef DISABLE_ALL_TRACER
       if (tracer) [[unlikely]] {
-        tracer->flush_instruction(dut.io_ifu_addr, dut.io_instr, getGPR(rs1));
+        tracer->flush_instruction(dut.io_inst_bus_ifu_addr,
+                                  dut.io_inst_bus_instr, getGPR(rs1));
       }
 #endif
     }
@@ -49,11 +51,12 @@ void NPCemu::step() {
     dut.eval();
     dut.clock = 1;
     dut.eval();
-    if (dut.io_valid) {
-      if (dut.io_wen) {
-        devices->writeMemory(dut.io_waddr, dut.io_wdata, dut.io_wmask);
+    if (dut.io_mem_reqValid) {
+      if (dut.io_mem_wen) {
+        devices->writeMemory(dut.io_mem_waddr, dut.io_mem_wdata,
+                             dut.io_mem_wmask);
       } else {
-        dut.io_rdata = devices->readMemory(dut.io_raddr);
+        dut.io_mem_rdata = devices->readMemory(dut.io_mem_raddr);
       }
     }
     if (dut.io_ebreak)
