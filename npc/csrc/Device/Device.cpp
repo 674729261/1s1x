@@ -171,7 +171,7 @@ void Devices::device_update_loop(std::promise<void> init_promise) {
       init_keyboard();
     }
   } catch (const std::exception &err) {
-    std::println(std::cerr, "Error : {}", err.what());
+    std::println(std::cerr, "Error!! : {}", err.what());
     init_promise.set_exception(std::current_exception());
     std::terminate();
   }
@@ -195,7 +195,7 @@ void Devices::device_update_loop(std::promise<void> init_promise) {
       }
     }
   } catch (const std::exception &err) {
-    std::println(std::cerr, "Error!! : {}", err.what());
+    std::println(std::cerr, "Error : {}", err.what());
   }
   if (texture)
     SDL_DestroyTexture(texture);
