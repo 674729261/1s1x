@@ -54,8 +54,8 @@ void NPCemu::step() {
         tracer->flush_instruction(dut.io_ifu_addr, dut.io_instr, getGPR(rs1));
       }
 #endif
-      print("EB = {}\r", dut.io_ebreak);
     }
+    print("Inst : {}\r", dut.io_instr);
   } while (!dut.io_ok_to_step);
   inst_count++;
   if (dut.io_ebreak) [[unlikely]] {
