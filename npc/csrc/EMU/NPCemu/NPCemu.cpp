@@ -9,9 +9,10 @@
 #include <format>
 #include <lockfree/lockfree.hpp>
 #include <print>
+#include <random>
 NPCemu::NPCemu()
 #include <stdexcept>
-    : RISCV32(), trapped(0), context(), dut(&context), inst_count(0) {
+    : RISCV32(), proxy(), trapped(0), context(), dut(&context), inst_count(0) {
 }
 
 RISCV32::addr_t NPCemu::getPC() { return getGPR(32); }
@@ -28,37 +29,61 @@ void NPCemu::reset() {
 
   syncCPUState();
 }
-
+static std::mt19937 gen(12345);
+static std::uniform_int_distribution<int> dist(1, 20);
 void NPCemu::step() {
   bool ready_to_step = false, is_ebreak = false;
   while (!ready_to_step) {
+    ready_to_step = dut.io_ok_to_step;
     // addr_t pc = dut.io_pc;
-    if (dut.io_ifu_valid) {
-      dut.io_instr = devices->get_instruction(dut.io_ifu_addr);
+    if (dut.io_inst_bus_ifu_valid) {
+      dut.io_inst_bus_instr =
+          devices->get_instruction(dut.io_inst_bus_ifu_addr);
 
-      uint32_t rs1 = (dut.io_instr >> 15) & 0x1f;
+      uint32_t rs1 = (dut.io_inst_bus_instr >> 15) & 0x1f;
 
 #ifndef DISABLE_ALL_TRACER
       if (tracer) [[unlikely]] {
-        tracer->flush_instruction(dut.io_ifu_addr, dut.io_instr, getGPR(rs1));
+        tracer->flush_instruction(dut.io_inst_bus_ifu_addr,
+                                  dut.io_inst_bus_instr, getGPR(rs1));
       }
 #endif
     }
-    ready_to_step = dut.io_ok_to_step;
-    dut.clock = 0;
-    dut.eval();
-    dut.clock = 1;
-    dut.eval();
-    if (dut.io_valid) {
-      if (dut.io_wen) {
-        devices->writeMemory(dut.io_waddr, dut.io_wdata, dut.io_wmask);
+
+    if (dut.io_mem_reqValid) {
+      int delay = dist(gen);
+      if (dut.io_mem_wen) {
+        proxy.register_event(
+            [waddr = dut.io_mem_waddr, wdata = dut.io_mem_wdata,
+             wmask = dut.io_mem_wmask, &devices = *devices.get(),
+             &resp = dut.io_mem_respValid] {
+              devices.writeMemory(waddr, wdata, wmask);
+              resp = 1;
+            },
+            delay);
+        proxy.register_event([&resp = dut.io_mem_respValid] { resp = 0; },
+                             delay + 1);
       } else {
-        dut.io_rdata = devices->readMemory(dut.io_raddr);
+        proxy.register_event(
+            [raddr = dut.io_mem_raddr, &devices = *devices.get(),
+             &resp = dut.io_mem_respValid, &rdata = dut.io_mem_rdata] {
+              rdata = devices.readMemory(raddr);
+              resp = 1;
+            },
+            delay);
+        proxy.register_event([&resp = dut.io_mem_respValid] { resp = 0; },
+                             delay + 1);
       }
     }
+    dut.clock = 1;
+    dut.eval();
+    proxy.update_one_cycle();
+    dut.clock = 0;
+    dut.eval();
     if (dut.io_ebreak)
       is_ebreak = true;
     // std::print("!");
+    // println("ok ! {}", ready_to_step);
   }
   inst_count++;
   if (is_ebreak) [[unlikely]] {
