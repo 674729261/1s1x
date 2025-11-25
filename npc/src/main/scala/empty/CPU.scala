@@ -17,23 +17,32 @@ object StageConnect {
   }
 }
 
+class MemAccessBus extends Bundle {
+  val raddr = Output(UInt(32.W))
+  val wen = Output(Bool())
+  val waddr = Output(UInt(32.W))
+  val wdata = Output(UInt(32.W))
+  val wmask = Output(UInt(4.W))
+  val rdata = Input(UInt(32.W))
+
+  val reqValid = Output(Bool())
+  val respValid = Input(Bool())
+}
+
+class InstBus extends Bundle {
+  val ifu_addr = Output(UInt(32.W))
+  val ifu_valid = Output(Bool())
+  val instr = Input(UInt(32.W))
+}
 class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
   val io = IO(new Bundle {
-    val instr = Input(UInt(32.W))
+
     val pc = Output(UInt(32.W))
 
-    val ifu_addr = Output(UInt(32.W))
-    val ifu_valid = Output(Bool())
+    val inst_bus = new InstBus
 
     val ebreak = Output(Bool())
-    val valid = Output(Bool())
-    val raddr = Output(UInt(32.W))
-    val wen = Output(Bool())
-    val waddr = Output(UInt(32.W))
-    val wdata = Output(UInt(32.W))
-    val wmask = Output(UInt(4.W))
-
-    val rdata = Input(UInt(32.W))
+    val mem = new MemAccessBus
 
     val ok_to_step = Output(Bool())
 
@@ -54,9 +63,9 @@ class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
   io.pc := pc
 
   ifu.in.pc := pc
-  ifu.in.inst_fetch := io.instr
-  io.ifu_addr := ifu.fetch_port_out.ifu_addr
-  io.ifu_valid := ifu.fetch_port_out.ifu_valid
+  ifu.in.inst_fetch := io.inst_bus.instr
+  io.inst_bus.ifu_addr := ifu.fetch_port_out.ifu_addr
+  io.inst_bus.ifu_valid := ifu.fetch_port_out.ifu_valid
 
   StageConnect(idu.in, ifu.out)
   StageConnect(exu.in, idu.out)
@@ -76,6 +85,7 @@ class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
   idu.fetch_port_in.gpr_rdata2 := gpr.io.rdata2
 
   lsu.fetch_port_in.mem_rdata := ramLoader.io.out
+  lsu.fetch_port_in.mem_respValid := io.mem.respValid
 
   gpr.io.raddr1 := idu.fetch_port_out.gpr_raddr1
   gpr.io.raddr2 := idu.fetch_port_out.gpr_raddr2
@@ -95,19 +105,19 @@ class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
   ramWriter.io.is_half := lsu.fetch_port_out.is_half
   ramWriter.io.is_byte := lsu.fetch_port_out.is_byte
   ramWriter.io.lower2bit := lsu.fetch_port_out.mem_lower2bit
-  io.wdata := ramWriter.io.out
-  io.wmask := ramWriter.io.mask
-  io.waddr := lsu.fetch_port_out.mem_waddr
-  io.raddr := lsu.fetch_port_out.mem_raddr
-  io.valid := lsu.fetch_port_out.mem_valid
-  io.wen := lsu.fetch_port_out.mem_wen
+  io.mem.wdata := ramWriter.io.out
+  io.mem.wmask := ramWriter.io.mask
+  io.mem.waddr := lsu.fetch_port_out.mem_waddr
+  io.mem.raddr := lsu.fetch_port_out.mem_raddr
+  io.mem.reqValid := lsu.fetch_port_out.mem_reqValid
+  io.mem.wen := lsu.fetch_port_out.mem_wen
 
   ramLoader.io.is_byte := lsu.fetch_port_out.is_byte
   ramLoader.io.is_half := lsu.fetch_port_out.is_half
   ramLoader.io.is_word := lsu.fetch_port_out.is_word
   ramLoader.io.is_unsigned := lsu.fetch_port_out.is_unsigned
   // ramLoader.io.word := memory_proxy.io.rdata
-  ramLoader.io.word := io.rdata
+  ramLoader.io.word := io.mem.rdata
 
   ramLoader.io.lower2bit := lsu.fetch_port_out.mem_rlower2bit
 
