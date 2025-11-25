@@ -30,7 +30,7 @@ void NPCemu::reset() {
 }
 
 void NPCemu::step() {
-  bool ready_to_step = false;
+  bool ready_to_step = false, is_ebreak = false;
   while (!ready_to_step) {
     // addr_t pc = dut.io_pc;
     if (dut.io_ifu_valid) {
@@ -57,9 +57,11 @@ void NPCemu::step() {
     if (dut.io_wen && dut.io_valid) {
       devices->writeMemory(dut.io_waddr, dut.io_wdata, dut.io_wmask);
     }
+    if (dut.io_ebreak)
+      is_ebreak = true;
   }
   inst_count++;
-  if (dut.io_ebreak) [[unlikely]] {
+  if (is_ebreak) [[unlikely]] {
     EMUstate = RISCV32::Interrupt::EBREAK;
   }
 }
