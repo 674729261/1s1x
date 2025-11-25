@@ -57,8 +57,9 @@ void NPCemu::step() {
               devices.writeMemory(waddr, wdata, wmask);
               resp = 1;
             },
-            4);
-        proxy.register_event([&resp = dut.io_mem_respValid] { resp = 0; }, 5);
+            4000);
+        proxy.register_event([&resp = dut.io_mem_respValid] { resp = 0; },
+                             4001);
       } else {
         proxy.register_event(
             [raddr = dut.io_mem_raddr, &devices = *devices.get(),
@@ -66,8 +67,9 @@ void NPCemu::step() {
               rdata = devices.readMemory(raddr);
               resp = 1;
             },
-            4);
-        proxy.register_event([&resp = dut.io_mem_respValid] { resp = 0; }, 5);
+            4000);
+        proxy.register_event([&resp = dut.io_mem_respValid] { resp = 0; },
+                             4001);
       }
     }
     dut.clock = 1;
