@@ -5,7 +5,6 @@
 #include <Simulators/NPCemu.h>
 #include <Simulators/RISCV32.h>
 #include <cstdint>
-#include <exception>
 #include <format>
 #include <lockfree/lockfree.hpp>
 #include <print>
