@@ -24,7 +24,7 @@ class WBU() extends Module with RequireAsyncReset {
 
   })
 
-  out.ebreak := in.bits.itype.is_ebreak
+  out.ebreak := in.bits.itype.is_ebreak && in.valid
 
   out.csr_waddr := in.bits.write_info.csr_addr
   out.csr_wen := in.bits.controls.is_csr_visit && in.valid
