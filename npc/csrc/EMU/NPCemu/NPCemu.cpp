@@ -33,7 +33,7 @@ void NPCemu::step() {
   bool ready_to_step = false, is_ebreak = false;
   while (!ready_to_step) {
     ready_to_step = dut.io_ok_to_step;
-    println("ok ? {}", ready_to_step);
+    println("ok ? {}", dut.io_ok_to_step);
     // addr_t pc = dut.io_pc;
     if (dut.io_inst_bus_ifu_valid) {
       dut.io_inst_bus_instr =
