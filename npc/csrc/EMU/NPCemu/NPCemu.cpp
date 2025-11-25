@@ -79,7 +79,7 @@ void NPCemu::step() {
     if (dut.io_ebreak)
       is_ebreak = true;
     // std::print("!");
-    println("ok ! {}", ready_to_step);
+    // println("ok ! {}", ready_to_step);
   }
   inst_count++;
   if (is_ebreak) [[unlikely]] {
