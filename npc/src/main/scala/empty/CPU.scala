@@ -110,5 +110,8 @@ class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
   ramLoader.io.word := io.rdata
 
   ramLoader.io.lower2bit := lsu.fetch_port_out.mem_rlower2bit
-  io.ebreak := wbu.out.ebreak
+
+  val ebreak_reg = RegInit(false.B)
+  ebreak_reg := ebreak_reg | wbu.out.ebreak
+  io.ebreak := ebreak_reg
 }
