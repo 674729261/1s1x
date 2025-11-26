@@ -1,6 +1,9 @@
 package empty.empty
 import chisel3._
 import chisel3.util._
+import empty.RamWriteData
+import empty.RamLoadData
+import empty.MemAccessBus
 
 class MessageLSU2WBU extends Bundle {
   val pc = (UInt(32.W))
@@ -15,26 +18,10 @@ class LSU() extends Module with RequireAsyncReset {
 
   val out = IO(DecoupledIO(new MessageLSU2WBU))
 
-  val fetch_port_out = IO(new Bundle {
-    val mem_raddr = Output(UInt(32.W))
-    val mem_rlower2bit = Output(UInt(32.W))
-    val is_word = Output(Bool())
-    val is_half = Output(Bool())
-    val is_byte = Output(Bool())
-    val is_unsigned = Output(Bool())
+  val fetch_port = IO(new MemAccessBus)
 
-    val mem_waddr = Output(UInt(32.W))
-    val mem_lower2bit = Output(UInt(2.W))
-    val mem_wdata = Output(UInt(32.W))
-    val mem_wen = Output(Bool())
-    val mem_reqValid = Output(Bool())
-
-  })
-
-  val fetch_port_in = IO(new Bundle {
-    val mem_rdata = Input(UInt(32.W))
-    val mem_respValid = Input(Bool())
-  })
+  val ramWriter = Module(new RamWriteData)
+  val ramLoader = Module(new RamLoadData)
 
   val should_mem_access = Wire(Bool())
 
@@ -43,31 +30,36 @@ class LSU() extends Module with RequireAsyncReset {
   state := MuxLookup(state, sIDLE)(
     Seq(
       sIDLE -> Mux(should_mem_access, sWAIT, sIDLE),
-      sWAIT -> Mux(fetch_port_in.mem_respValid, sIDLE, sWAIT)
+      sWAIT -> Mux(fetch_port.respValid, sIDLE, sWAIT)
     )
   )
 
-  fetch_port_out.mem_reqValid := should_mem_access && state === sIDLE
+  ramLoader.io.word := fetch_port.rdata
+  ramLoader.io.is_byte := in.bits.controls.is_ram_byte
+  ramLoader.io.is_half := in.bits.controls.is_ram_half
+  ramLoader.io.is_word := in.bits.controls.is_ram_word
+  ramLoader.io.is_unsigned := in.bits.controls.is_load_unsigned
+  // ramLoader.io.word := memory_proxy.io.rdata
+  ramLoader.io.lower2bit := in.bits.write_info.alu_out(1, 0)
 
-  fetch_port_out.is_byte := in.bits.controls.is_ram_byte
-  fetch_port_out.is_half := in.bits.controls.is_ram_half
-  fetch_port_out.is_word := in.bits.controls.is_ram_word
-  fetch_port_out.is_unsigned := in.bits.controls.is_load_unsigned
+  ramWriter.io.word := in.bits.write_info.mem_word
+  ramWriter.io.is_word := in.bits.controls.is_ram_word
+  ramWriter.io.is_half := in.bits.controls.is_ram_half
+  ramWriter.io.is_byte := in.bits.controls.is_ram_byte
+  ramWriter.io.lower2bit := in.bits.write_info.alu_out(1, 0)
 
-  fetch_port_out.mem_raddr := Cat(
+  fetch_port.reqValid := should_mem_access && state === sIDLE
+
+  fetch_port.raddr := Cat(
     in.bits.write_info.alu_out(31, 2),
     "b00".U(2.W)
   )
   should_mem_access := in.bits.controls.is_ram_valid && in.valid
-  fetch_port_out.mem_rlower2bit := in.bits.write_info.alu_out(1, 0)
 
-  fetch_port_out.mem_wdata := in.bits.write_info.mem_word
-  fetch_port_out.is_word := in.bits.controls.is_ram_word
-  fetch_port_out.is_half := in.bits.controls.is_ram_half
-  fetch_port_out.is_byte := in.bits.controls.is_ram_byte
-  fetch_port_out.mem_lower2bit := in.bits.write_info.alu_out(1, 0)
-  fetch_port_out.mem_waddr := in.bits.write_info.alu_out
-  fetch_port_out.mem_wen := in.bits.controls.is_ram_wen && in.valid && state === sIDLE
+  fetch_port.wdata := in.bits.write_info.mem_word
+  fetch_port.waddr := in.bits.write_info.alu_out
+  fetch_port.wen := in.bits.controls.is_ram_wen && in.valid && state === sIDLE
+  fetch_port.wmask := ramWriter.io.mask
 
   out.bits.pc := in.bits.pc
   out.bits.controls := in.bits.controls
@@ -75,9 +67,9 @@ class LSU() extends Module with RequireAsyncReset {
 
   out.bits.write_info := in.bits.write_info
   when(in.bits.controls.is_gpr_wdata_from_ram) {
-    out.bits.write_info.gpr_wdata := fetch_port_in.mem_rdata
+    out.bits.write_info.gpr_wdata := ramLoader.io.out
   }
 
-  out.valid := (in.valid && !in.bits.controls.is_ram_valid) || (fetch_port_in.mem_respValid && state === sWAIT)
+  out.valid := (in.valid && !in.bits.controls.is_ram_valid) || (fetch_port.respValid && state === sWAIT)
   in.ready := out.ready
 }

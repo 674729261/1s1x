@@ -26,7 +26,9 @@ class MemAccessBus extends Bundle {
   val rdata = Input(UInt(32.W))
 
   val reqValid = Output(Bool())
+  // val reqReady = Input(Bool())
   val respValid = Input(Bool())
+  // val respReady = Output(Bool())
 }
 
 class InstBus extends Bundle {
@@ -58,16 +60,11 @@ class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
   val pc = RegNext(next = Cat(wbu.out.dnpc(31, 1), 0.U(1.W)), init = init_pc)
   val gpr = Module(new GPR(CNT = 32, BITWIDTH = 32))
   val csrBank = Module(new CSR)
-  val ramWriter = Module(new RamWriteData)
-  val ramLoader = Module(new RamLoadData)
 
   io.pc := pc
 
   ifu.in.pc := pc
-  ifu.in.instr := io.inst_bus.instr
-  ifu.in.ifu_respValid := io.inst_bus.ifu_respValid
-  io.inst_bus.ifu_addr := ifu.fetch_port_out.ifu_addr
-  io.inst_bus.ifu_reqValid := ifu.fetch_port_out.ifu_reqValid
+  ifu.fetch_port <> io.inst_bus
 
   StageConnect(idu.in, ifu.out)
   StageConnect(exu.in, idu.out)
@@ -86,8 +83,7 @@ class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
   idu.fetch_port_in.gpr_rdata1 := gpr.io.rdata1
   idu.fetch_port_in.gpr_rdata2 := gpr.io.rdata2
 
-  lsu.fetch_port_in.mem_rdata := ramLoader.io.out
-  lsu.fetch_port_in.mem_respValid := io.mem.respValid
+  lsu.fetch_port <> io.mem
 
   gpr.io.raddr1 := idu.fetch_port_out.gpr_raddr1
   gpr.io.raddr2 := idu.fetch_port_out.gpr_raddr2
@@ -101,27 +97,6 @@ class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
   csrBank.io.wdata := wbu.out.csr_wdata
   csrBank.io.new_cause := wbu.out.csr_mcause
   csrBank.io.wen := wbu.out.csr_wen
-
-  ramWriter.io.word := lsu.fetch_port_out.mem_wdata
-  ramWriter.io.is_word := lsu.fetch_port_out.is_word
-  ramWriter.io.is_half := lsu.fetch_port_out.is_half
-  ramWriter.io.is_byte := lsu.fetch_port_out.is_byte
-  ramWriter.io.lower2bit := lsu.fetch_port_out.mem_lower2bit
-  io.mem.wdata := ramWriter.io.out
-  io.mem.wmask := ramWriter.io.mask
-  io.mem.waddr := lsu.fetch_port_out.mem_waddr
-  io.mem.raddr := lsu.fetch_port_out.mem_raddr
-  io.mem.reqValid := lsu.fetch_port_out.mem_reqValid
-  io.mem.wen := lsu.fetch_port_out.mem_wen
-
-  ramLoader.io.is_byte := lsu.fetch_port_out.is_byte
-  ramLoader.io.is_half := lsu.fetch_port_out.is_half
-  ramLoader.io.is_word := lsu.fetch_port_out.is_word
-  ramLoader.io.is_unsigned := lsu.fetch_port_out.is_unsigned
-  // ramLoader.io.word := memory_proxy.io.rdata
-  ramLoader.io.word := io.mem.rdata
-
-  ramLoader.io.lower2bit := lsu.fetch_port_out.mem_rlower2bit
 
   // val ebreak_reg = RegInit(false.B)
   // ebreak_reg := ebreak_reg | wbu.out.ebreak
