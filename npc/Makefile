@@ -6,7 +6,7 @@ CSRC += /usr/local/lib/libreplxx.a
 VSRC = $(wildcard vsrc/*.v)
 VSRC += $(wildcard vsrc/*.sv)
 CHISELSRC += $(wildcard src/main/scala/empty/*.scala)
-TOPNAME = __npc_top
+TOPNAME = npc_top
 BIN = $(MDIR)/V$(TOPNAME)
 
 SV_FILELIST=generated_svsrc/filelist.f
