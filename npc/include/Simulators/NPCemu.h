@@ -2,6 +2,7 @@
 
 #include "RISCV32.h"
 #include "my_utils.h"
+#include "verilated.h"
 #include <Device/Audio.h>
 #include <Device/Device.h>
 #include <Device/Keyboard.h>
@@ -43,16 +44,23 @@ public:
   void fetch_inst(Devices &devices) {
 
     if (dut.io_inst_bus_reqValid) {
+      struct {
+        uint32_t pc;
+        Devices &devices;
+        decltype(dut.io_inst_bus_instr) &bus_instr;
+        decltype(dut.io_inst_bus_respValid) &resp;
+      } pack = {.pc = dut.io_inst_bus_ifu_addr,
+                .devices = devices,
+                .bus_instr = dut.io_inst_bus_instr,
+                .resp = dut.io_inst_bus_respValid};
 
       int delay = dist(gen);
       register_event(
-          [pc = dut.io_inst_bus_ifu_addr, &devices = devices,
-           &bus_instr = dut.io_inst_bus_instr,
-           &resp = dut.io_inst_bus_respValid, this] {
-            println("addr : {:08x}", pc);
-            bus_instr = devices.get_instruction(pc);
-            resp = 1;
-            println("inst : {:08x}", bus_instr);
+          [pack] {
+            println("addr : {:08x}", pack.pc);
+            pack.bus_instr = pack.devices.get_instruction(pack.pc);
+            pack.resp = 1;
+            println("inst : {:08x}", pack.bus_instr);
           },
           delay);
       register_event([&resp = dut.io_inst_bus_respValid] { resp = 0; },
