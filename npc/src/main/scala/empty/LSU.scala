@@ -26,13 +26,12 @@ class LSU() extends Module with RequireAsyncReset {
 
   val should_mem_access = Wire(Bool())
 
-  val sIDLE :: sWAIT_REQREADY :: sWAIT_RESP :: sWAIT :: Nil = Enum(4)
+  val sIDLE :: sWAIT_RESP :: sWAIT :: Nil = Enum(3)
   val state = RegInit(sIDLE)
   state := MuxLookup(state, sIDLE)(
     Seq(
-      sIDLE -> Mux(in.valid && should_mem_access, sWAIT_REQREADY, sIDLE),
-      sWAIT_REQREADY -> Mux(
-        fetch_port.reqReady,
+      sIDLE -> Mux(
+        should_mem_access && fetch_port.reqReady,
         sWAIT_RESP,
         sIDLE
       ),
@@ -60,7 +59,7 @@ class LSU() extends Module with RequireAsyncReset {
   ramWriter.io.is_byte := in.bits.controls.is_ram_byte
   ramWriter.io.lower2bit := in.bits.write_info.alu_out(1, 0)
 
-  fetch_port.reqValid := should_mem_access && state === sWAIT_REQREADY
+  fetch_port.reqValid := should_mem_access && state === sIDLE
 
   fetch_port.raddr := Cat(
     in.bits.write_info.alu_out(31, 2),
@@ -83,5 +82,5 @@ class LSU() extends Module with RequireAsyncReset {
   }
 
   out.valid := (in.valid && !in.bits.controls.is_ram_valid) || state === sWAIT
-  in.ready := state === sIDLE
+  in.ready := out.ready
 }
