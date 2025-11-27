@@ -35,7 +35,11 @@ class LSU() extends Module with RequireAsyncReset {
         sWAIT_RESP,
         sIDLE
       ),
-      sWAIT_RESP -> Mux(fetch_port.respValid, sWAIT, sWAIT_RESP),
+      sWAIT_RESP -> Mux(
+        fetch_port.respValid,
+        Mux(out.ready, sIDLE, sWAIT),
+        sWAIT_RESP
+      ),
       sWAIT -> Mux(out.ready, sIDLE, sWAIT)
     )
   )
@@ -45,7 +49,7 @@ class LSU() extends Module with RequireAsyncReset {
 
   fetch_port.respReady := state === sWAIT_RESP
 
-  ramLoader.io.word := rdata_reg
+  ramLoader.io.word := Mux(state === sWAIT_RESP, rdata_reg, rdata_reg)
   ramLoader.io.is_byte := in.bits.controls.is_ram_byte
   ramLoader.io.is_half := in.bits.controls.is_ram_half
   ramLoader.io.is_word := in.bits.controls.is_ram_word
@@ -81,6 +85,6 @@ class LSU() extends Module with RequireAsyncReset {
     out.bits.write_info.gpr_wdata := ramLoader.io.out
   }
 
-  out.valid := (in.valid && !in.bits.controls.is_ram_valid) || state === sWAIT
+  out.valid := (in.valid && !in.bits.controls.is_ram_valid) || (state === sWAIT_RESP && fetch_port.respValid) || state === sWAIT
   in.ready := out.ready
 }
