@@ -10,7 +10,7 @@
 #include <print>
 NPCemu::NPCemu()
 #include <stdexcept>
-    : RISCV32(), proxy(dut, devices), trapped(0), context(), dut(&context),
+    : RISCV32(), proxy(dut), trapped(0), context(), dut(&context),
       inst_count(0) {
 }
 
@@ -38,8 +38,8 @@ void NPCemu::step() {
   while (!ready_to_step) {
     ready_to_step = dut.io_ok_to_step;
     // addr_t pc = dut.io_pc;
-    proxy.fetch_inst();
-    proxy.fetch_ram();
+    proxy.fetch_inst(*devices);
+    proxy.fetch_ram(*devices);
     dut.clock = 1;
     dut.eval();
     proxy.update_one_cycle();

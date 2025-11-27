@@ -29,7 +29,7 @@ class ProgSymTab;
 
 class FetchProxy {
 public:
-  FetchProxy(TOP_NAME &dut, std::shared_ptr<Devices> devices)
+  FetchProxy(TOP_NAME &dut, std::shared_ptr<Devices> devices = nullptr)
       : dut(dut), current_time(0), sub_id(0), gen(1234), dist(1, 20) {}
   void update_one_cycle() {
     current_time++;
@@ -39,12 +39,12 @@ public:
     }
   }
 
-  void fetch_inst() {
+  void fetch_inst(Devices &devices) {
     if (dut.io_inst_bus_reqValid) {
       {
         int delay = dist(gen);
         register_event(
-            [pc = dut.io_inst_bus_ifu_addr, &devices = *devices.get(),
+            [pc = dut.io_inst_bus_ifu_addr, &devices = devices,
              &bus_instr = dut.io_inst_bus_instr,
              &resp = dut.io_inst_bus_respValid, this] {
               bus_instr = devices.get_instruction(pc);
@@ -57,13 +57,13 @@ public:
     }
   }
 
-  void fetch_ram() {
+  void fetch_ram(Devices &devices) {
     if (dut.io_mem_reqValid) {
       int delay = dist(gen);
       if (dut.io_mem_wen) {
         register_event(
             [waddr = dut.io_mem_waddr, wdata = dut.io_mem_wdata,
-             wmask = dut.io_mem_wmask, &devices = *devices.get(),
+             wmask = dut.io_mem_wmask, &devices = devices,
              &resp = dut.io_mem_respValid] {
               devices.writeMemory(waddr, wdata, wmask);
               resp = 1;
@@ -72,7 +72,7 @@ public:
         register_event([&resp = dut.io_mem_respValid] { resp = 0; }, delay + 1);
       } else {
         register_event(
-            [raddr = dut.io_mem_raddr, &devices = *devices.get(),
+            [raddr = dut.io_mem_raddr, &devices = devices,
              &resp = dut.io_mem_respValid, &rdata = dut.io_mem_rdata] {
               rdata = devices.readMemory(raddr);
               resp = 1;
@@ -102,7 +102,6 @@ private:
 
 private:
   TOP_NAME &dut;
-  std::shared_ptr<Devices> devices;
   struct Request {
     long long event_time, sub_id;
     std::function<void()> func;
