@@ -43,7 +43,6 @@ public:
 
   void fetch_inst(Devices &devices, TOP_NAME &dut) {
     if (dut.io_inst_bus_reqValid) {
-      println("Get : {:08x}", dut.io_inst_bus_ifu_addr);
       struct {
         uint32_t pc;
         Devices &devices;
@@ -70,23 +69,34 @@ public:
 
   void fetch_ram(Devices &devices, TOP_NAME &dut) {
     if (dut.io_mem_reqValid) {
+      struct {
+        uint32_t raddr;
+        uint32_t waddr;
+        uint32_t wdata;
+        uint32_t wmask;
+        Devices &devices = devices;
+        decltype(dut.io_mem_rdata) rdata;
+        decltype(dut.io_mem_respValid) resp;
+      } pack = {.waddr = dut.io_inst_bus_ifu_addr,
+                .wdata = dut.io_mem_wdata,
+                .wmask = dut.io_mem_wmask,
+                .devices = devices,
+                .rdata = dut.io_mem_rdata,
+                .resp = dut.io_mem_respValid};
       int delay = dist(gen);
       if (dut.io_mem_wen) {
         register_event(
-            [waddr = dut.io_mem_waddr, wdata = dut.io_mem_wdata,
-             wmask = dut.io_mem_wmask, &devices = devices,
-             &resp = dut.io_mem_respValid] {
-              devices.writeMemory(waddr, wdata, wmask);
-              resp = 1;
+            [pack] {
+              pack.devices.writeMemory(pack.waddr, pack.wdata, pack.wmask);
+              pack.resp = 1;
             },
             delay);
         register_event([&resp = dut.io_mem_respValid] { resp = 0; }, delay + 1);
       } else {
         register_event(
-            [raddr = dut.io_mem_raddr, &devices = devices,
-             &resp = dut.io_mem_respValid, &rdata = dut.io_mem_rdata] {
-              rdata = devices.readMemory(raddr);
-              resp = 1;
+            [pack] {
+              pack.rdata = pack.devices.readMemory(pack.raddr);
+              pack.resp = 1;
             },
             delay);
         register_event([&resp = dut.io_mem_respValid] { resp = 0; }, delay + 1);
