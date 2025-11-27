@@ -65,7 +65,7 @@ class LSU() extends Module with RequireAsyncReset {
 
   fetch_port.wdata := in.bits.write_info.mem_word
   fetch_port.waddr := in.bits.write_info.alu_out
-  fetch_port.wen := in.bits.controls.is_ram_wen && in.valid && state === sIDLE
+  fetch_port.wen := in.bits.controls.is_ram_wen
   fetch_port.wmask := ramWriter.io.mask
 
   out.bits.pc := in.bits.pc
