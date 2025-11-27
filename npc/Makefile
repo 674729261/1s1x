@@ -6,7 +6,7 @@ CSRC += /usr/local/lib/libreplxx.a
 VSRC = $(wildcard vsrc/*.v)
 VSRC += $(wildcard vsrc/*.sv)
 CHISELSRC += $(wildcard src/main/scala/empty/*.scala)
-TOPNAME = CPU
+TOPNAME = __npc_top
 BIN = $(MDIR)/V$(TOPNAME)
 
 SV_FILELIST=generated_svsrc/filelist.f
@@ -35,7 +35,7 @@ MDIR = $(NPC_HOME)/build/default/
 npc: $(SV_FILELIST) $(LIBCAPSTONE) $(SO_PATH_NEMU)
 	mkdir -p $(MDIR) || true
 	$(VERILATOR)  $(VERILATORFLAGS) \
-	--top-module $(TOPNAME)  \
+	--top-module $(TOPNAME) --public-flat-rw  \
 	-CFLAGS -DTOP_NAME="\"V$(TOPNAME)\"" \
 	--MAKEFLAGS "-j12 OPT_FAST=\"$(FAST_FLAGS)\"" \
 	$(CXXFLAGS) -Wall $(CSRC) $(SVSRC) $(VSRC) $(VERILATOR_DISABLE_WARNINGS) \
