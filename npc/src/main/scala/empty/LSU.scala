@@ -29,10 +29,11 @@ class LSU() extends Module with RequireAsyncReset {
   val state = RegInit(sIDLE)
   state := MuxLookup(state, sIDLE)(
     Seq(
-      sIDLE -> Mux(should_mem_access, sWAIT, sIDLE),
+      sIDLE -> Mux(should_mem_access && fetch_port.reqReady, sWAIT, sIDLE),
       sWAIT -> Mux(fetch_port.respValid, sIDLE, sWAIT)
     )
   )
+  fetch_port.respReady := fetch_port.respValid
 
   ramLoader.io.word := fetch_port.rdata
   ramLoader.io.is_byte := in.bits.controls.is_ram_byte

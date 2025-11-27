@@ -64,6 +64,7 @@ private:
 
   void check_device();
   bool check_watchers();
+  void flush_inst(RISCV32 &e);
 
   CommandState query_command(this SingleMonitor &self);
   CommandState help(const std::vector<std::string> &params);

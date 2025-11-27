@@ -11,7 +11,8 @@
 #include <random>
 NPCemu::NPCemu()
 #include <stdexcept>
-    : RISCV32(), proxy(), trapped(0), context(), dut(&context), inst_count(0) {
+    : RISCV32(), proxy(dut, devices), trapped(0), context(), dut(&context),
+      inst_count(0) {
 }
 
 RISCV32::addr_t NPCemu::getPC() { return getGPR(32); }
@@ -24,67 +25,19 @@ void NPCemu::reset() {
   dut.eval();
   dut.clock = 0;
   dut.reset = 0;
+  proxy.clear();
   // dut.eval();
 
   syncCPUState();
 }
-static std::mt19937 gen(12345);
-static std::uniform_int_distribution<int> dist(1, 20);
+
 void NPCemu::step() {
   bool ready_to_step = false, is_ebreak = false;
   while (!ready_to_step) {
     ready_to_step = dut.io_ok_to_step;
     // addr_t pc = dut.io_pc;
-    if (dut.io_inst_bus_ifu_reqValid) {
-      {
-        int delay = dist(gen);
-        proxy.register_event(
-            [pc = dut.io_inst_bus_ifu_addr, &devices = *devices.get(),
-             &bus_instr = dut.io_inst_bus_instr,
-             &resp = dut.io_inst_bus_ifu_respValid, &tracer = this->tracer,
-             this] {
-              bus_instr = devices.get_instruction(pc);
-              resp = 1;
-
-              uint32_t rs1 = (bus_instr >> 15) & 0x1f;
-
-#ifndef DISABLE_ALL_TRACER
-              if (tracer) [[unlikely]] {
-                tracer->flush_instruction(pc, bus_instr, getGPR(rs1));
-              }
-#endif
-            },
-            delay);
-        proxy.register_event(
-            [&resp = dut.io_inst_bus_ifu_respValid] { resp = 0; }, delay + 1);
-      }
-    }
-
-    if (dut.io_mem_reqValid) {
-      int delay = dist(gen);
-      if (dut.io_mem_wen) {
-        proxy.register_event(
-            [waddr = dut.io_mem_waddr, wdata = dut.io_mem_wdata,
-             wmask = dut.io_mem_wmask, &devices = *devices.get(),
-             &resp = dut.io_mem_respValid] {
-              devices.writeMemory(waddr, wdata, wmask);
-              resp = 1;
-            },
-            delay);
-        proxy.register_event([&resp = dut.io_mem_respValid] { resp = 0; },
-                             delay + 1);
-      } else {
-        proxy.register_event(
-            [raddr = dut.io_mem_raddr, &devices = *devices.get(),
-             &resp = dut.io_mem_respValid, &rdata = dut.io_mem_rdata] {
-              rdata = devices.readMemory(raddr);
-              resp = 1;
-            },
-            delay);
-        proxy.register_event([&resp = dut.io_mem_respValid] { resp = 0; },
-                             delay + 1);
-      }
-    }
+    proxy.fetch_inst();
+    proxy.fetch_ram();
     dut.clock = 1;
     dut.eval();
     proxy.update_one_cycle();

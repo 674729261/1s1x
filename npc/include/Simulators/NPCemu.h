@@ -7,12 +7,12 @@
 #include <Device/Keyboard.h>
 #include <Device/VGA.h>
 #include <VCPU.h>
-#include <compare>
 #include <cstdint>
 #include <functional>
 #include <lockfree/spsc/queue.hpp>
 #include <memory>
 #include <queue>
+#include <random>
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -29,8 +29,68 @@ class ProgSymTab;
 
 class FetchProxy {
 public:
-  FetchProxy() : current_time(0), sub_id(0) {}
+  FetchProxy(TOP_NAME &dut, std::shared_ptr<Devices> devices)
+      : dut(dut), current_time(0), sub_id(0), gen(1234), dist(1, 20) {}
+  void update_one_cycle() {
+    current_time++;
+    while (!event_pool.empty() && event_pool.top().event_time <= current_time) {
+      event_pool.top().func();
+      event_pool.pop();
+    }
+  }
 
+  void fetch_inst() {
+    if (dut.io_inst_bus_ifu_reqValid) {
+      {
+        int delay = dist(gen);
+        register_event(
+            [pc = dut.io_inst_bus_ifu_addr, &devices = *devices.get(),
+             &bus_instr = dut.io_inst_bus_instr,
+             &resp = dut.io_inst_bus_ifu_respValid, this] {
+              bus_instr = devices.get_instruction(pc);
+              resp = 1;
+            },
+            delay);
+        register_event([&resp = dut.io_inst_bus_ifu_respValid] { resp = 0; },
+                       delay + 1);
+      }
+    }
+  }
+
+  void fetch_ram() {
+    if (dut.io_mem_reqValid) {
+      int delay = dist(gen);
+      if (dut.io_mem_wen) {
+        register_event(
+            [waddr = dut.io_mem_waddr, wdata = dut.io_mem_wdata,
+             wmask = dut.io_mem_wmask, &devices = *devices.get(),
+             &resp = dut.io_mem_respValid] {
+              devices.writeMemory(waddr, wdata, wmask);
+              resp = 1;
+            },
+            delay);
+        register_event([&resp = dut.io_mem_respValid] { resp = 0; }, delay + 1);
+      } else {
+        register_event(
+            [raddr = dut.io_mem_raddr, &devices = *devices.get(),
+             &resp = dut.io_mem_respValid, &rdata = dut.io_mem_rdata] {
+              rdata = devices.readMemory(raddr);
+              resp = 1;
+            },
+            delay);
+        register_event([&resp = dut.io_mem_respValid] { resp = 0; }, delay + 1);
+      }
+    }
+  }
+
+  void clear() {
+    while (!event_pool.empty())
+      event_pool.pop();
+  }
+
+private:
+  std::mt19937_64 gen;
+  std::uniform_int_distribution<long long> dist;
   void register_event(std::function<void()> call, long long delay) {
     if (delay < 0)
       log_and_throw<std::logic_error>("Delay {} must be > 0", delay);
@@ -40,15 +100,9 @@ public:
     }
   }
 
-  void update_one_cycle() {
-    current_time++;
-    while (!event_pool.empty() && event_pool.top().event_time <= current_time) {
-      event_pool.top().func();
-      event_pool.pop();
-    }
-  }
-
 private:
+  TOP_NAME &dut;
+  std::shared_ptr<Devices> devices;
   struct Request {
     long long event_time, sub_id;
     std::function<void()> func;

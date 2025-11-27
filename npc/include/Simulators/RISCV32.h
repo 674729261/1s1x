@@ -9,7 +9,7 @@
 #include <string_view>
 class RISCV32 {
 public:
-  RISCV32() : EMUstate(Interrupt::NONE), tracer(nullptr), devices(nullptr) {}
+  RISCV32() : EMUstate(Interrupt::NONE), devices(nullptr) {}
 
   using addr_t = uint32_t;
   struct CPU_State {
@@ -80,13 +80,11 @@ public:
   virtual uint32_t getGPR(int idx) = 0;
   virtual ~RISCV32() = default;
 
-  void tie_tracer(std::shared_ptr<Tracer> t) { tracer = t; }
   void tie_devices(std::shared_ptr<Devices> d) { devices = d; }
 
 protected:
   CPU_State cpu;
   Interrupt EMUstate;
 
-  std::shared_ptr<Tracer> tracer;
   std::shared_ptr<Devices> devices;
 };

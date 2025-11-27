@@ -42,9 +42,6 @@ SingleMonitor::SingleMonitor(std::shared_ptr<RISCV32> emu, size_t MemSize,
     spdlog::info("Loaded {} history commands from {}", repl.history_size(),
                  tmp_path.string());
   tracer = std::make_shared<Tracer>(ftracer, elf_path, irb);
-  if (ftracer || elf_path != "" || irb) {
-    emus.front()->tie_tracer(tracer);
-  }
 
   devices = std::make_shared<Devices>(ds, MemSize, program, mtracer);
 
@@ -63,6 +60,17 @@ void SingleMonitor::addReference(std::shared_ptr<RISCV32> ref) {
   devices->set_multiple_emu();
 }
 
+void SingleMonitor::flush_inst(RISCV32 &e) {
+#ifndef DISABLE_ALL_TRACER
+  if (tracer) [[unlikely]] {
+    int pc_old = e.getPC();
+    uint32_t inst = devices->get_instruction(pc_old);
+    uint32_t rs1 = (inst >> 15) & 0x1f;
+    tracer->flush_instruction(pc_old, inst, e.getGPR(rs1));
+  }
+#endif
+}
+
 int SingleMonitor::start() {
   using namespace std::chrono;
   for_each(emus, [](auto &e) { e->reset(); });
@@ -79,6 +87,7 @@ int SingleMonitor::start() {
         auto start = steady_clock::now();
         while (main_emu.getEMUState() == RISCV32::Interrupt::NONE &&
                !devices->is_quit()) {
+          flush_inst(main_emu);
 #ifdef NO_DIFFTEST
           main_emu.step();
 #else
@@ -188,6 +197,7 @@ void SingleMonitor::simulate(unsigned long long cnt) {
   tracer->set_display(max_display_inst > 0);
 
   while (cnt--) {
+    flush_inst(*emus.front());
     if (max_display_inst > 0) [[unlikely]] {
       for_each(emus, [](auto &e) { e->step(); });
       max_display_inst--;

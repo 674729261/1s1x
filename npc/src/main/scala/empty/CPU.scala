@@ -26,16 +26,19 @@ class MemAccessBus extends Bundle {
   val rdata = Input(UInt(32.W))
 
   val reqValid = Output(Bool())
-  // val reqReady = Input(Bool())
+  val reqReady = Input(Bool())
   val respValid = Input(Bool())
-  // val respReady = Output(Bool())
+  val respReady = Output(Bool())
 }
 
 class InstBus extends Bundle {
   val ifu_addr = Output(UInt(32.W))
-  val ifu_reqValid = Output(Bool())
-  val ifu_respValid = Input(Bool())
   val instr = Input(UInt(32.W))
+
+  val reqValid = Output(Bool())
+  val reqReady = Input(Bool())
+  val respValid = Input(Bool())
+  val respReady = Output(Bool())
 }
 class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
   val io = IO(new Bundle {
