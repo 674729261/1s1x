@@ -43,6 +43,7 @@ void NPCemu::step() {
     proxy.fetch_inst(*devices, dut);
     proxy.fetch_ram(*devices, dut);
     proxy.update_one_cycle();
+    std::println("pc : {:08x}", dut.io_pc);
     dut.clock = 0;
     dut.eval();
     ready_to_step = dut.io_ok_to_step;
