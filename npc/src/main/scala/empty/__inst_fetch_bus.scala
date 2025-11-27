@@ -31,7 +31,7 @@ class __inst_fetch_bus() extends Module with RequireAsyncReset {
 
   counter_next := Mux(
     (state === sWAIT_READY && state_next === sBUSY) || (state === sWAIT_REQ && state_next === sFETCH),
-    1.U,
+    random_delay,
     Mux(
       counter_delay === 0.U(32.W),
       0.U(32.W),
