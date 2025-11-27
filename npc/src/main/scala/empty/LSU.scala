@@ -4,6 +4,7 @@ import chisel3.util._
 import empty.RamWriteData
 import empty.RamLoadData
 import empty.MemAccessBus
+import svsim.CommonCompilationSettings.Timescale.Unit.s
 
 class MessageLSU2WBU extends Bundle {
   val pc = (UInt(32.W))
@@ -77,5 +78,5 @@ class LSU() extends Module with RequireAsyncReset {
   }
 
   out.valid := (in.valid && !in.bits.controls.is_ram_valid) || (fetch_port.respValid && state === sWAIT)
-  in.ready := out.ready
+  in.ready := state === sWAIT && out.ready
 }
