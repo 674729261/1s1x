@@ -8,7 +8,6 @@
 #include <format>
 #include <lockfree/lockfree.hpp>
 #include <print>
-#include <random>
 NPCemu::NPCemu()
 #include <stdexcept>
     : RISCV32(), proxy(dut, devices), trapped(0), context(), dut(&context),
