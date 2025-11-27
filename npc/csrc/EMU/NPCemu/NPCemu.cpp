@@ -42,12 +42,12 @@ void NPCemu::step() {
             dut.io_inst_bus_reqValid, dut.io_inst_bus_reqReady);
     proxy.fetch_inst(*devices, dut);
     proxy.fetch_ram(*devices, dut);
-    dut.clock = 1;
-    dut.eval();
     proxy.update_one_cycle();
-
     dut.clock = 0;
     dut.eval();
+    dut.clock = 1;
+    dut.eval();
+
     if (dut.io_ebreak)
       is_ebreak = true;
     // std::print("!");
