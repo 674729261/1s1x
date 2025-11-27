@@ -78,5 +78,5 @@ class LSU() extends Module with RequireAsyncReset {
   }
 
   out.valid := (in.valid && !in.bits.controls.is_ram_valid) || (fetch_port.respValid && state === sWAIT)
-  in.ready := state === sWAIT && out.ready
+  in.ready := state === sIDLE
 }
