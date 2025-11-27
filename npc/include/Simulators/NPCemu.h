@@ -75,8 +75,8 @@ public:
         uint32_t wdata;
         uint32_t wmask;
         Devices &devices = devices;
-        decltype(dut.io_mem_rdata) rdata;
-        decltype(dut.io_mem_respValid) resp;
+        decltype(dut.io_mem_rdata) &rdata;
+        decltype(dut.io_mem_respValid) &resp;
       } pack = {.waddr = dut.io_inst_bus_ifu_addr,
                 .wdata = dut.io_mem_wdata,
                 .wmask = dut.io_mem_wmask,
