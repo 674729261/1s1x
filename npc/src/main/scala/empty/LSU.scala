@@ -45,11 +45,11 @@ class LSU() extends Module with RequireAsyncReset {
   )
 
   val rdata_reg =
-    RegEnable(fetch_port.rdata, state === sWAIT_RESP && fetch_port.respValid)
+    RegEnable(ramLoader.io.out, state === sWAIT_RESP && fetch_port.respValid)
 
   fetch_port.respReady := state === sWAIT_RESP
 
-  ramLoader.io.word := Mux(state === sWAIT_RESP, rdata_reg, rdata_reg)
+  ramLoader.io.word := fetch_port.rdata
   ramLoader.io.is_byte := in.bits.controls.is_ram_byte
   ramLoader.io.is_half := in.bits.controls.is_ram_half
   ramLoader.io.is_word := in.bits.controls.is_ram_word
@@ -82,7 +82,11 @@ class LSU() extends Module with RequireAsyncReset {
 
   out.bits.write_info := in.bits.write_info
   when(in.bits.controls.is_gpr_wdata_from_ram) {
-    out.bits.write_info.gpr_wdata := ramLoader.io.out
+    out.bits.write_info.gpr_wdata := Mux(
+      state === sWAIT_RESP,
+      ramLoader.io.out,
+      rdata_reg
+    )
   }
 
   out.valid := (in.valid && !in.bits.controls.is_ram_valid) || (state === sWAIT_RESP && fetch_port.respValid) || state === sWAIT
