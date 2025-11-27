@@ -40,18 +40,18 @@ public:
   }
 
   void fetch_inst() {
-    if (dut.io_inst_bus_ifu_reqValid) {
+    if (dut.io_inst_bus_reqValid) {
       {
         int delay = dist(gen);
         register_event(
             [pc = dut.io_inst_bus_ifu_addr, &devices = *devices.get(),
              &bus_instr = dut.io_inst_bus_instr,
-             &resp = dut.io_inst_bus_ifu_respValid, this] {
+             &resp = dut.io_inst_bus_respValid, this] {
               bus_instr = devices.get_instruction(pc);
               resp = 1;
             },
             delay);
-        register_event([&resp = dut.io_inst_bus_ifu_respValid] { resp = 0; },
+        register_event([&resp = dut.io_inst_bus_respValid] { resp = 0; },
                        delay + 1);
       }
     }
