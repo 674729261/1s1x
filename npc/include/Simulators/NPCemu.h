@@ -43,6 +43,7 @@ public:
 
   void fetch_inst(Devices &devices, TOP_NAME &dut) {
     if (dut.io_inst_bus_reqValid) {
+      println("Get : {:08x}", dut.io_inst_bus_ifu_addr);
       struct {
         uint32_t pc;
         Devices &devices;
