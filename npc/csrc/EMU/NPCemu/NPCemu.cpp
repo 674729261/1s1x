@@ -1,5 +1,4 @@
-#include "VCPU.h"
-#include "VCPU___024root.h"
+#include "Vnpc_top.h"
 #include "my_utils.h"
 #include "verilated.h"
 #include <Simulators/NPCemu.h>

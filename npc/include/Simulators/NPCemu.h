@@ -6,7 +6,7 @@
 #include <Device/Device.h>
 #include <Device/Keyboard.h>
 #include <Device/VGA.h>
-#include <VCPU.h>
+#include <Vnpc_top.h>
 #include <cstdint>
 #include <lockfree/spsc/queue.hpp>
 #include <print>
