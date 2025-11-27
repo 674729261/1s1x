@@ -51,7 +51,7 @@ void NPCemu::step() {
   bool ready_to_step = false, is_ebreak = false;
   while (!ready_to_step) {
     handle_bus();
-
+    std::println("PC = {}", dut.io_pc);
     dut.clock = 0;
     dut.eval();
     ready_to_step = dut.io_ok_to_step;
