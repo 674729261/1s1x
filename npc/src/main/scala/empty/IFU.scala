@@ -33,7 +33,7 @@ class IFU() extends Module with RequireAsyncReset {
 
   fetch_port.ifu_addr := Mux(state === sIDLE, in.pc, 12345.U(32.W))
   fetch_port.reqValid := state === sIDLE
-  fetch_port.respReady := state === sWAIT_RESP
+  fetch_port.respReady := 0.U // state === sWAIT_RESP
   out.valid := state === sWAIT
 
   out.bits.inst := inst_reg
