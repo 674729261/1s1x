@@ -77,6 +77,6 @@ class LSU() extends Module with RequireAsyncReset {
     out.bits.write_info.gpr_wdata := ramLoader.io.out
   }
 
-  out.valid := (in.valid && !in.bits.controls.is_ram_valid) || (fetch_port.respValid && state === sWAIT)
+  out.valid := (in.valid && !in.bits.controls.is_ram_valid) || state === sWAIT
   in.ready := state === sIDLE
 }
