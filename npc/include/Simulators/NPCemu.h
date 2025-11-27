@@ -31,8 +31,8 @@ class ProgSymTab;
 
 class FetchProxy {
 public:
-  FetchProxy(TOP_NAME &dut, std::shared_ptr<Devices> devices = nullptr)
-      : dut(dut), current_time(0), sub_id(0), gen(1234), dist(1, 20) {}
+  FetchProxy(std::shared_ptr<Devices> devices = nullptr)
+      : current_time(0), sub_id(0), gen(1234), dist(1, 20) {}
   void update_one_cycle() {
     current_time++;
     while (!event_pool.empty() && event_pool.top().event_time <= current_time) {
@@ -41,7 +41,7 @@ public:
     }
   }
 
-  void fetch_inst(Devices &devices) {
+  void fetch_inst(Devices &devices, TOP_NAME &dut) {
     if (dut.io_inst_bus_reqValid) {
       struct {
         uint32_t pc;
@@ -67,7 +67,7 @@ public:
     }
   }
 
-  void fetch_ram(Devices &devices) {
+  void fetch_ram(Devices &devices, TOP_NAME &dut) {
     if (dut.io_mem_reqValid) {
       int delay = dist(gen);
       if (dut.io_mem_wen) {
@@ -111,7 +111,6 @@ private:
   }
 
 private:
-  TOP_NAME &dut;
   struct Request {
     long long event_time, sub_id;
     std::function<void()> func;
