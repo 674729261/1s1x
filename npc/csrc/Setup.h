@@ -3,7 +3,7 @@
 #include "Simulators/RISCV32.h"
 #include <Simulators/NEMUemu.h>
 #include <Simulators/NPCemu.h>
-#include <VCPU.h>
+#include <V__npc_cpu.h>
 #include <argparse/argparse.hpp>
 #include <cstdint>
 #include <memory>

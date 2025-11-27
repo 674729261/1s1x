@@ -6,7 +6,7 @@ import _root_.empty.CPU
 import _root_.empty.InstBus
 import _root_.empty.MemAccessBus
 
-class __npc_top() extends Module with RequireAsyncReset {
+class npc_top() extends Module with RequireAsyncReset {
   val io = IO(new Bundle {
     val pc = Output(UInt(32.W))
     val ebreak = Output(Bool())
