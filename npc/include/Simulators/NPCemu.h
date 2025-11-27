@@ -85,11 +85,11 @@ public:
                 .resp = dut.io_mem_respValid};
       int delay = dist(gen);
       if (dut.io_mem_wen) {
+        println("!!");
         register_event(
             [pack] {
               pack.devices.writeMemory(pack.waddr, pack.wdata, pack.wmask);
               pack.resp = 1;
-              println("addr : {:08x}", pack.waddr);
             },
             delay);
         register_event([&resp = dut.io_mem_respValid] { resp = 0; }, delay + 1);
