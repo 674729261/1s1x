@@ -31,11 +31,7 @@ class LSU() extends Module with RequireAsyncReset {
   state := MuxLookup(state, sIDLE)(
     Seq(
       sIDLE -> Mux(should_mem_access && fetch_port.reqReady, sWAIT_RESP, sIDLE),
-      sWAIT_RESP -> Mux(
-        fetch_port.respValid,
-        Mux(out.ready, sIDLE, sWAIT),
-        sWAIT_RESP
-      ),
+      sWAIT_RESP -> Mux(fetch_port.respValid, sWAIT, sWAIT_RESP),
       sWAIT -> Mux(out.ready, sIDLE, sWAIT)
     )
   )
@@ -81,6 +77,6 @@ class LSU() extends Module with RequireAsyncReset {
     out.bits.write_info.gpr_wdata := ramLoader.io.out
   }
 
-  out.valid := (in.valid && !in.bits.controls.is_ram_valid) || (state === sWAIT_RESP && fetch_port.respValid) || state === sWAIT
+  out.valid := (in.valid && !in.bits.controls.is_ram_valid) || state === sWAIT
   in.ready := state === sIDLE
 }
