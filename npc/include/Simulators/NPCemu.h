@@ -50,5 +50,6 @@ private:
   unsigned long long inst_count;
 
 private:
+  void handle_bus();
   // void record_ftracer(uint32_t cur_inst, std::shared_ptr<ProgSymTab> sy_tab);
 };
