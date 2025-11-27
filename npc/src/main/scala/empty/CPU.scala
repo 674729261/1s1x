@@ -42,16 +42,11 @@ class InstBus extends Bundle {
 }
 class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
   val io = IO(new Bundle {
-
     val pc = Output(UInt(32.W))
-
     val inst_bus = new InstBus
-
     val ebreak = Output(Bool())
     val mem = new MemAccessBus
-
     val ok_to_step = Output(Bool())
-
   })
 
   val ifu = Module(new IFU)

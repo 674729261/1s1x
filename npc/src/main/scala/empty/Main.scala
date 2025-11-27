@@ -2,12 +2,14 @@ package empty
 
 import circt.stage._
 import chisel3._
+import _root_.empty.empty.__npc_top
 
 object AddMain extends App {
   println("Generating the CPU RTL")
   ChiselStage.emitSystemVerilogFile(
     // new CPU(init_pc = "h80000000".U(32.W)),
-    new CPU(init_pc = "h80000000".U(32.W)),
+    // new CPU(init_pc = "h80000000".U(32.W)),
+    new __npc_top,
     Array(
       "--target-dir",
       "generated_svsrc"
