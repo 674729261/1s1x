@@ -14,9 +14,9 @@ class __inst_fetch_bus() extends Module with RequireAsyncReset {
   })
   val sBUSY :: sWAIT_REQ :: sFETCH :: sWAIT_READY :: Nil = Enum(4)
   val state_next = Wire(UInt(sBUSY.getWidth.W))
-  val state = RegEnable(state_next, sWAIT_REQ, false.B)
+  val state = RegEnable(state_next, sWAIT_REQ, true.B)
 
-  val random_delay = Cat(0.U(27.W), LFSR(5))
+  val random_delay = Cat(0.U(28.W), LFSR(4))
   val counter_next = Wire(UInt(32.W))
   val counter_delay = RegEnable(counter_next, 0.U(32.W), true.B)
 
