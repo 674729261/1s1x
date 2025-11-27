@@ -25,6 +25,8 @@ void NPCemu::reset() {
   dut.eval();
   dut.clock = 0;
   dut.reset = 0;
+  dut.io_inst_bus_reqReady = 1;
+  dut.io_mem_reqReady = 1;
   proxy.clear();
   // dut.eval();
 
