@@ -43,7 +43,7 @@ class __inst_fetch_bus() extends Module with RequireAsyncReset {
   fetch_port.respValid := state === sWAIT_READY
 
   io.addr := fetch_port.ifu_addr
-  io.valid := state === sFETCH && state_next === sWAIT_READY
+  io.valid := state === sWAIT_REQ && state_next === sFETCH
   fetch_port.instr := Mux(state === sWAIT_READY, io.instr, 0.U(32.W))
 
 }

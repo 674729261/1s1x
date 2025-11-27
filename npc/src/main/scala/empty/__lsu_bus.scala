@@ -52,7 +52,7 @@ class __lsu_fetch_bus() extends Module with RequireAsyncReset {
   io.wen := fetch_port.wen
   io.wmask := fetch_port.wmask
   io.wdata := fetch_port.wdata
-  io.valid := state === sFETCH && state_next === sWAIT_READY
+  io.valid := state === sWAIT_REQ && state_next === sFETCH
 
   fetch_port.rdata := Mux(state === sWAIT_READY, io.rdata, 0.U(32.W))
 }
