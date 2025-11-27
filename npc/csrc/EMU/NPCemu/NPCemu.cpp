@@ -16,6 +16,8 @@ NPCemu::NPCemu()
 RISCV32::addr_t NPCemu::getPC() { return getGPR(32); }
 
 void NPCemu::reset() {
+  dut.io_inst_bus_reqReady = 1;
+  dut.io_mem_reqReady = 1;
   dut.reset = 1;
   dut.clock = 0;
   dut.eval();
@@ -23,8 +25,6 @@ void NPCemu::reset() {
   dut.eval();
   dut.clock = 0;
   dut.reset = 0;
-  dut.io_inst_bus_reqReady = 1;
-  dut.io_mem_reqReady = 1;
 
   proxy.clear();
   // dut.eval();
