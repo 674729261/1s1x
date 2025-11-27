@@ -11,6 +11,7 @@
 #include <functional>
 #include <lockfree/spsc/queue.hpp>
 #include <memory>
+#include <print>
 #include <queue>
 #include <random>
 #include <stdexcept>
@@ -40,20 +41,20 @@ public:
   }
 
   void fetch_inst(Devices &devices) {
+
     if (dut.io_inst_bus_reqValid) {
-      {
-        int delay = dist(gen);
-        register_event(
-            [pc = dut.io_inst_bus_ifu_addr, &devices = devices,
-             &bus_instr = dut.io_inst_bus_instr,
-             &resp = dut.io_inst_bus_respValid, this] {
-              bus_instr = devices.get_instruction(pc);
-              resp = 1;
-            },
-            delay);
-        register_event([&resp = dut.io_inst_bus_respValid] { resp = 0; },
-                       delay + 1);
-      }
+      println("addr : {:08x}", dut.io_inst_bus_ifu_addr);
+      int delay = dist(gen);
+      register_event(
+          [pc = dut.io_inst_bus_ifu_addr, &devices = devices,
+           &bus_instr = dut.io_inst_bus_instr,
+           &resp = dut.io_inst_bus_respValid, this] {
+            bus_instr = devices.get_instruction(pc);
+            resp = 1;
+          },
+          delay);
+      register_event([&resp = dut.io_inst_bus_respValid] { resp = 0; },
+                     delay + 1);
     }
   }
 
