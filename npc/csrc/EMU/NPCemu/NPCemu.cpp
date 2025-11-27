@@ -37,9 +37,9 @@ void NPCemu::step() {
   while (!ready_to_step) {
 
     // addr_t pc = dut.io_pc;
-    // println("s = {}, XX = {:08x}, reqV = {}, reqR = {}",
-    //         dut.rootp->CPU__DOT__ifu__DOT__state, dut.io_inst_bus_ifu_addr,
-    //         dut.io_inst_bus_reqValid, dut.io_inst_bus_reqReady);
+    println("s = {}, XX = {:08x}, wem = {}, reqV = {}, reqR = {}",
+            dut.rootp->CPU__DOT__ifu__DOT__state, dut.io_mem_waddr,
+            dut.io_mem_wen, dut.io_mem_reqValid, dut.io_mem_reqReady);
 
     proxy.fetch_inst(*devices, dut);
     proxy.fetch_ram(*devices, dut);
