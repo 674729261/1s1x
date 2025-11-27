@@ -42,7 +42,6 @@ public:
   }
 
   void fetch_inst(Devices &devices) {
-
     if (dut.io_inst_bus_reqValid) {
       struct {
         uint32_t pc;

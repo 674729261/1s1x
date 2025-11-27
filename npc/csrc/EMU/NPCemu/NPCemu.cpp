@@ -38,6 +38,7 @@ void NPCemu::step() {
   while (!ready_to_step) {
     ready_to_step = dut.io_ok_to_step;
     // addr_t pc = dut.io_pc;
+    println("XX = {:08x}", dut.io_inst_bus_ifu_addr);
     proxy.fetch_inst(*devices);
     proxy.fetch_ram(*devices);
     dut.clock = 1;
