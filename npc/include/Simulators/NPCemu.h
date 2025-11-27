@@ -43,12 +43,13 @@ public:
   void fetch_inst(Devices &devices) {
 
     if (dut.io_inst_bus_reqValid) {
-      println("addr : {:08x}", dut.io_inst_bus_ifu_addr);
+
       int delay = dist(gen);
       register_event(
           [pc = dut.io_inst_bus_ifu_addr, &devices = devices,
            &bus_instr = dut.io_inst_bus_instr,
            &resp = dut.io_inst_bus_respValid, this] {
+            println("addr : {:08x}", pc);
             bus_instr = devices.get_instruction(pc);
             resp = 1;
             println("inst : {:08x}", bus_instr);
