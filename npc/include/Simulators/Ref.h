@@ -254,10 +254,7 @@ inline void Ref::step() {
                cpu.pc));
   END_PATTERN
   inst_count++;
-#ifndef DISABLE_ALL_TRACER
-  if (tracer)
-    tracer->flush_instruction(cpu.pc, inst, cpu.gpr[d.src1_id]);
-#endif
+
   cpu.pc = dnpc;
   cpu.gpr[0] = 0;
 }
