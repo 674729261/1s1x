@@ -51,6 +51,7 @@ public:
            &resp = dut.io_inst_bus_respValid, this] {
             bus_instr = devices.get_instruction(pc);
             resp = 1;
+            println("inst : {:08x}", bus_instr);
           },
           delay);
       register_event([&resp = dut.io_inst_bus_respValid] { resp = 0; },
