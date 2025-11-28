@@ -1,8 +1,7 @@
 package empty.empty
 import chisel3._
 import chisel3.util._
-import empty.InstBus
-import _root_.empty.MemAccessBus
+import empty.MemAccessBus
 import chisel3.util.random.LFSR
 
 class __lsu_fetch_bus() extends Module with RequireAsyncReset {

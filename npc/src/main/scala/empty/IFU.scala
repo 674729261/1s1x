@@ -1,7 +1,6 @@
 package empty.empty
 import chisel3._
 import chisel3.util._
-import empty.InstBus
 import empty.AXI_Lite
 
 class MessageIFU2IDU extends Bundle {

@@ -1,10 +1,8 @@
 package empty.empty
 import chisel3._
 import chisel3.util._
-import empty.InstBus
-import _root_.empty.CPU
-import _root_.empty.InstBus
-import _root_.empty.MemAccessBus
+import empty.CPU
+import empty.MemAccessBus
 
 class npc_top() extends Module with RequireAsyncReset {
   val io = IO(new Bundle {
