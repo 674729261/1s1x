@@ -2,10 +2,29 @@ package empty.empty
 import chisel3._
 import chisel3.util._
 import empty.InstBus
+import empty.AXI_Lite
 
 class MessageIFU2IDU extends Bundle {
   val pc = (UInt(32.W))
   val inst = (UInt(32.W))
+}
+
+object set_AXI_zero {
+  def apply(axi: AXI_Lite) = {
+    axi.ar.araddr := 0.U
+    axi.ar.arvalid := 0.U
+
+    axi.r.rready := 0.U
+
+    axi.aw.awaddr := 0.U
+    axi.aw.awvalid := 0.U
+
+    axi.w.wdata := 0.U
+    axi.w.wvalid := 0.U
+    axi.w.wstrb := 0.U
+
+    axi.b.bready := 0.U
+  }
 }
 
 class IFU() extends Module with RequireAsyncReset {
@@ -13,8 +32,8 @@ class IFU() extends Module with RequireAsyncReset {
     val pc = Input(UInt(32.W))
   })
 
-  val fetch_port = IO(new InstBus)
-
+  val fetch_port = IO(new AXI_Lite)
+  set_AXI_zero(fetch_port)
   val out = IO(DecoupledIO(new MessageIFU2IDU))
 
   val sIDLE :: sWAIT_RESP :: sWAIT :: Nil = Enum(3)
@@ -22,9 +41,9 @@ class IFU() extends Module with RequireAsyncReset {
   val state = RegInit(sIDLE)
   state := MuxLookup(state, sIDLE)(
     Seq(
-      sIDLE -> Mux(fetch_port.reqReady, sWAIT_RESP, sIDLE),
+      sIDLE -> Mux(fetch_port.ar.arready, sWAIT_RESP, sIDLE),
       sWAIT_RESP -> Mux(
-        fetch_port.respValid,
+        fetch_port.r.rvalid,
         Mux(out.ready, sIDLE, sWAIT),
         sWAIT_RESP
       ),
@@ -33,14 +52,14 @@ class IFU() extends Module with RequireAsyncReset {
   )
 
   val inst_reg =
-    RegEnable(fetch_port.instr, state === sWAIT_RESP && fetch_port.respValid)
+    RegEnable(fetch_port.r.rdata, state === sWAIT_RESP && fetch_port.r.rvalid)
 
-  fetch_port.ifu_addr := Mux(state === sIDLE, in.pc, 12345.U(32.W))
-  fetch_port.reqValid := state === sIDLE
-  fetch_port.respReady := state === sWAIT_RESP
-  out.valid := state === sWAIT || (state === sWAIT_RESP && fetch_port.respValid)
+  fetch_port.ar.araddr := Mux(state === sIDLE, in.pc, 12345.U(32.W))
+  fetch_port.ar.arvalid := state === sIDLE
+  fetch_port.r.rready := state === sWAIT_RESP
+  out.valid := state === sWAIT || (state === sWAIT_RESP && fetch_port.r.rvalid)
 
-  out.bits.inst := Mux(state === sWAIT_RESP, fetch_port.instr, inst_reg)
+  out.bits.inst := Mux(state === sWAIT_RESP, fetch_port.r.rdata, inst_reg)
   out.bits.pc := in.pc
 
 }

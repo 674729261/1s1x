@@ -29,7 +29,7 @@ class npc_top() extends Module with RequireAsyncReset {
   val cpu = Module(new CPU(init_pc = "h80000000".U(32.W)))
   val __inst_fetch = Module(new __inst_fetch_bus)
   val __lsu_fetch = Module(new __lsu_fetch_bus)
-  cpu.io.inst_bus <> __inst_fetch.fetch_port
+  cpu.io.inst_bus_axi <> __inst_fetch.fetch_port
   cpu.io.mem <> __lsu_fetch.fetch_port
 
   io.pc := cpu.io.pc
