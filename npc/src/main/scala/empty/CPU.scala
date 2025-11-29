@@ -36,7 +36,7 @@ class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
     val pc = Output(UInt(32.W))
     val inst_bus_axi = new AXI_Lite
     val ebreak = Output(Bool())
-    val mem = new MemAccessBus
+    val mem = new AXI_Lite
     val ok_to_step = Output(Bool())
   })
 

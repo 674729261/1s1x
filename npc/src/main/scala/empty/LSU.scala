@@ -5,6 +5,7 @@ import empty.RamWriteData
 import empty.RamLoadData
 import empty.MemAccessBus
 import svsim.CommonCompilationSettings.Timescale.Unit.s
+import empty.AXI_Lite
 
 class MessageLSU2WBU extends Bundle {
   val pc = (UInt(32.W))
@@ -19,37 +20,76 @@ class LSU() extends Module with RequireAsyncReset {
 
   val out = IO(DecoupledIO(new MessageLSU2WBU))
 
-  val fetch_port = IO(new MemAccessBus)
+  val fetch_port = IO(new AXI_Lite)
 
   val ramWriter = Module(new RamWriteData)
   val ramLoader = Module(new RamLoadData)
 
-  val should_mem_access = Wire(Bool())
+  val should_mem_access_r = Wire(Bool())
+  val should_mem_access_w = Wire(Bool())
 
-  val sIDLE :: sWAIT_RESP :: sWAIT :: Nil = Enum(3)
-  val state = RegInit(sIDLE)
-  state := MuxLookup(state, sIDLE)(
+  val cpu_fire = out.valid && out.ready
+  val aw_fire = fetch_port.aw.awready && fetch_port.aw.awvalid
+  val w_fire = fetch_port.w.wready && fetch_port.w.wvalid
+  val ar_fire = fetch_port.ar.arready && fetch_port.ar.arvalid
+  val r_fire = fetch_port.r.rready && fetch_port.r.rvalid
+  val b_fire = fetch_port.b.bready && fetch_port.b.bvalid
+
+  val sIDLE_r :: sWAIT_RESP_r :: sWAIT_r :: Nil = Enum(3)
+  val state_r = RegInit(sIDLE_r)
+  state_r := MuxLookup(state_r, sIDLE_r)(
     Seq(
-      sIDLE -> Mux(
-        should_mem_access && fetch_port.reqReady,
-        sWAIT_RESP,
-        sIDLE
-      ),
-      sWAIT_RESP -> Mux(
-        fetch_port.respValid,
-        Mux(out.ready, sIDLE, sWAIT),
-        sWAIT_RESP
-      ),
-      sWAIT -> Mux(out.ready, sIDLE, sWAIT)
+      sIDLE_r -> Mux(should_mem_access_r && ar_fire, sWAIT_r, sIDLE_r),
+      sWAIT_RESP_r -> Mux(r_fire, sWAIT_r, sWAIT_RESP_r),
+      sWAIT_r -> Mux(cpu_fire, sIDLE_r, sWAIT_r)
     )
   )
 
-  val rdata_reg =
-    RegEnable(ramLoader.io.out, state === sWAIT_RESP && fetch_port.respValid)
+  val out_aw = RegInit(false.B)
+  val out_w = RegInit(false.B)
+  val has_b = RegInit(false.B)
+  out_aw := MuxCase(
+    out_aw,
+    Seq(
+      aw_fire -> true.B,
+      cpu_fire -> false.B
+    )
+  )
+  out_w := MuxCase(
+    out_w,
+    Seq(
+      w_fire -> true.B,
+      cpu_fire -> false.B
+    )
+  )
+  has_b := MuxCase(
+    has_b,
+    Seq(
+      b_fire -> true.B,
+      cpu_fire -> false.B
+    )
+  )
 
-  fetch_port.respReady := state === sWAIT_RESP
+  val rdata_reg = RegEnable(ramLoader.io.out, r_fire)
 
-  ramLoader.io.word := fetch_port.rdata
+  fetch_port.ar.arvalid := should_mem_access_r && state_r === sIDLE_r
+  fetch_port.ar.araddr := Cat(
+    in.bits.write_info.alu_out(31, 2),
+    "b00".U(2.W)
+  )
+
+  fetch_port.r.rready := state_r === sWAIT_RESP_r
+
+  fetch_port.aw.awaddr := in.bits.write_info.alu_out
+  fetch_port.aw.awvalid := should_mem_access_w && !out_aw
+
+  fetch_port.w.wdata := ramWriter.io.out
+  fetch_port.w.wvalid := should_mem_access_w && !out_w
+  fetch_port.w.wstrb := ramWriter.io.mask
+
+  fetch_port.b.bready := out_aw && out_w && !has_b
+
+  ramLoader.io.word := fetch_port.r.rdata
   ramLoader.io.is_byte := in.bits.controls.is_ram_byte
   ramLoader.io.is_half := in.bits.controls.is_ram_half
   ramLoader.io.is_word := in.bits.controls.is_ram_word
@@ -63,18 +103,8 @@ class LSU() extends Module with RequireAsyncReset {
   ramWriter.io.is_byte := in.bits.controls.is_ram_byte
   ramWriter.io.lower2bit := in.bits.write_info.alu_out(1, 0)
 
-  fetch_port.reqValid := should_mem_access && state === sIDLE
-
-  fetch_port.raddr := Cat(
-    in.bits.write_info.alu_out(31, 2),
-    "b00".U(2.W)
-  )
-  should_mem_access := in.bits.controls.is_ram_valid && in.valid
-
-  fetch_port.wdata := ramWriter.io.out
-  fetch_port.waddr := in.bits.write_info.alu_out
-  fetch_port.wen := in.bits.controls.is_ram_wen
-  fetch_port.wmask := ramWriter.io.mask
+  should_mem_access_r := in.bits.controls.is_ram_valid && !in.bits.controls.is_ram_wen && in.valid
+  should_mem_access_w := in.bits.controls.is_ram_valid && in.bits.controls.is_ram_wen && in.valid
 
   out.bits.pc := in.bits.pc
   out.bits.controls := in.bits.controls
@@ -82,13 +112,13 @@ class LSU() extends Module with RequireAsyncReset {
 
   out.bits.write_info := in.bits.write_info
   when(in.bits.controls.is_gpr_wdata_from_ram) {
-    out.bits.write_info.gpr_wdata := Mux(
-      state === sWAIT_RESP,
-      ramLoader.io.out,
-      rdata_reg
-    )
+    out.bits.write_info.gpr_wdata := rdata_reg
   }
 
-  out.valid := (in.valid && !in.bits.controls.is_ram_valid) || (state === sWAIT_RESP && fetch_port.respValid) || state === sWAIT
+  val no_mem_access = in.valid && !in.bits.controls.is_ram_valid
+  val load_finished = state_r === sWAIT_r
+  val save_finished = out_aw && out_w && has_b
+
+  out.valid := no_mem_access || (should_mem_access_r && load_finished) || (should_mem_access_w && load_finished)
   in.ready := out.ready
 }
