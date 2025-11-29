@@ -120,5 +120,5 @@ class LSU() extends Module with RequireAsyncReset {
   val save_finished = out_aw && out_w && has_b
 
   out.valid := no_mem_access || (should_mem_access_r && load_finished) || (should_mem_access_w && load_finished)
-  in.ready := out.ready
+  in.ready := cpu_fire
 }
