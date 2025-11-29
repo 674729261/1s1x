@@ -31,21 +31,12 @@ class MemAccessBus extends Bundle {
   val respReady = Output(Bool())
 }
 
-class InstBus extends Bundle {
-  val ifu_addr = Output(UInt(32.W))
-  val instr = Input(UInt(32.W))
-
-  val reqValid = Output(Bool())
-  val reqReady = Input(Bool())
-  val respValid = Input(Bool())
-  val respReady = Output(Bool())
-}
 class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
   val io = IO(new Bundle {
     val pc = Output(UInt(32.W))
-    val inst_bus = new InstBus
+    val inst_bus_axi = new AXI_Lite
     val ebreak = Output(Bool())
-    val mem = new MemAccessBus
+    val mem = new AXI_Lite
     val ok_to_step = Output(Bool())
   })
 
@@ -62,7 +53,7 @@ class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
   io.pc := pc
 
   ifu.in.pc := pc
-  ifu.fetch_port <> io.inst_bus
+  ifu.fetch_port <> io.inst_bus_axi
 
   StageConnect(idu.in, ifu.out)
   StageConnect(exu.in, idu.out)
