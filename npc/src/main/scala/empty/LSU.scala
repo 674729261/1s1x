@@ -39,7 +39,7 @@ class LSU() extends Module with RequireAsyncReset {
   val state_r = RegInit(sIDLE_r)
   state_r := MuxLookup(state_r, sIDLE_r)(
     Seq(
-      sIDLE_r -> Mux(should_mem_access_r && ar_fire, sWAIT_r, sIDLE_r),
+      sIDLE_r -> Mux(should_mem_access_r && ar_fire, sWAIT_RESP_r, sIDLE_r),
       sWAIT_RESP_r -> Mux(r_fire, sWAIT_r, sWAIT_RESP_r),
       sWAIT_r -> Mux(cpu_fire, sIDLE_r, sWAIT_r)
     )
