@@ -15,7 +15,7 @@ Devices::Devices(Devices::DeviceSettings ds, size_t MemSize,
                  std::string_view program, bool mtracer)
     : KeyboardBase{}, AudioBase{}, VideoBase{}, RTC{}, renderer(nullptr),
       texture(nullptr), window(nullptr), quit(false), device_settings(ds),
-      mtracer(mtracer), operation({.used = false}), multiple_emu(false) {
+      mtracer(mtracer), multiple_emu(false) {
   using std::ifstream;
   using std::ios;
 
