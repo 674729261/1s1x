@@ -15,7 +15,7 @@ class __lsu_fetch_bus() extends Module with RequireAsyncReset {
     val rdata = Input(UInt(32.W))
   })
 
-  val random_delay = LFSR(3)
+  val random_delay = LFSR(16) % 31.U(16.W)
 
   val ar_timeup = random_delay === 2.U(3.W)
   val r_timeup = random_delay === 3.U(3.W)
