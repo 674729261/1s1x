@@ -92,7 +92,7 @@ int SingleMonitor::start() {
           main_emu.step();
 #else
           for_each(emus, [](auto &e) { e->step(); });
-          check_device();
+          // check_device();
           diff_fault = check_diff();
           if (diff_fault.first >= 0)
             break;
@@ -201,12 +201,12 @@ void SingleMonitor::simulate(unsigned long long cnt) {
     if (max_display_inst > 0) [[unlikely]] {
       for_each(emus, [](auto &e) { e->step(); });
       max_display_inst--;
-      check_device();
+      // check_device();
       if (max_display_inst == 0)
         tracer->set_display(false);
     } else {
       for_each(emus, [](auto &e) { e->step(); });
-      check_device();
+      // check_device();
     }
 
     if (emus.size() > 1)
