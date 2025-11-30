@@ -1,8 +1,7 @@
-package empty.empty
+package empty
 import chisel3._
 import chisel3.util._
 import chisel3.util.random.LFSR
-import empty.AXI_Lite
 
 class __lsu_fetch_bus() extends Module with RequireAsyncReset {
   val fetch_port = IO(Flipped(new AXI_Lite))

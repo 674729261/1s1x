@@ -1,29 +1,10 @@
-package empty.empty
+package empty
 import chisel3._
 import chisel3.util._
-import empty.AXI_Lite
 
 class MessageIFU2IDU extends Bundle {
   val pc = (UInt(32.W))
   val inst = (UInt(32.W))
-}
-
-object set_AXI_zero {
-  def apply(axi: AXI_Lite) = {
-    axi.ar.araddr := 0.U
-    axi.ar.arvalid := 0.U
-
-    axi.r.rready := 0.U
-
-    axi.aw.awaddr := 0.U
-    axi.aw.awvalid := 0.U
-
-    axi.w.wdata := 0.U
-    axi.w.wvalid := 0.U
-    axi.w.wstrb := 0.U
-
-    axi.b.bready := 0.U
-  }
 }
 
 class IFU() extends Module with RequireAsyncReset {

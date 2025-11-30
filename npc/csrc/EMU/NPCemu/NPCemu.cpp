@@ -35,8 +35,8 @@ void NPCemu::reset() {
 }
 
 void NPCemu::handle_bus() {
-  if (dut.io_ifu_valid)
-    dut.io_ifu_inst = devices->get_instruction(dut.io_ifu_addr);
+  // if (dut.io_ifu_valid)
+  //   dut.io_ifu_inst = devices->get_instruction(dut.io_ifu_addr);
   if (dut.io_lsu_valid) {
     if (dut.io_lsu_wen) {
       devices->writeMemory(dut.io_lsu_waddr, dut.io_lsu_wdata,

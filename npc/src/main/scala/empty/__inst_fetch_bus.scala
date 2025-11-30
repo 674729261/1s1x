@@ -1,25 +1,7 @@
-package empty.empty
+package empty
 import chisel3._
 import chisel3.util._
 import chisel3.util.random.LFSR
-import empty.AXI_Lite
-
-object set_flipped_AXI_zero {
-  def apply(axi: AXI_Lite) = {
-    axi.ar.arready := 0.U
-
-    axi.r.rdata := 0.U
-    axi.r.rresp := 0.U
-    axi.r.rvalid := 0.U
-
-    axi.aw.awready := 0.U
-
-    axi.w.wready := 0.U
-
-    axi.b.bresp := 0.U
-    axi.b.bvalid := 0.U
-  }
-}
 
 class __inst_fetch_bus() extends Module with RequireAsyncReset {
   val fetch_port = IO(Flipped(new AXI_Lite))

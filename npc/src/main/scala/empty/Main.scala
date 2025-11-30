@@ -2,7 +2,6 @@ package empty
 
 import circt.stage._
 import chisel3._
-import _root_.empty.empty.npc_top
 
 object AddMain extends App {
   println("Generating the CPU RTL")

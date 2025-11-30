@@ -1,11 +1,6 @@
 package empty
 import chisel3._
 import chisel3.util._
-import empty.IFU
-import empty.IDU
-import empty.EXU
-import empty.WBU
-import _root_.empty.empty.LSU
 
 object StageConnect {
   def apply[T <: Data](left: DecoupledIO[T], right: DecoupledIO[T]) = {
@@ -34,9 +29,10 @@ class MemAccessBus extends Bundle {
 class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
   val io = IO(new Bundle {
     val pc = Output(UInt(32.W))
-    val inst_bus_axi = new AXI_Lite
+    // val inst_bus_axi = new AXI_Lite
     val ebreak = Output(Bool())
-    val mem = new AXI_Lite
+    // val mem = new AXI_Lite
+    val axi_bus = new AXI_Lite
     val ok_to_step = Output(Bool())
   })
 
@@ -50,10 +46,14 @@ class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
   val gpr = Module(new GPR(CNT = 32, BITWIDTH = 32))
   val csrBank = Module(new CSR)
 
+  val arbiter = Module(new Arbiter_2Master)
+
+  io.axi_bus <> arbiter.OUT_AXI
+
   io.pc := pc
 
   ifu.in.pc := pc
-  ifu.fetch_port <> io.inst_bus_axi
+  ifu.fetch_port <> arbiter.IFU_AXI
 
   StageConnect(idu.in, ifu.out)
   StageConnect(exu.in, idu.out)
@@ -72,7 +72,7 @@ class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
   idu.fetch_port_in.gpr_rdata1 := gpr.io.rdata1
   idu.fetch_port_in.gpr_rdata2 := gpr.io.rdata2
 
-  lsu.fetch_port <> io.mem
+  lsu.fetch_port <> arbiter.LSU_AXI
 
   gpr.io.raddr1 := idu.fetch_port_out.gpr_raddr1
   gpr.io.raddr2 := idu.fetch_port_out.gpr_raddr2

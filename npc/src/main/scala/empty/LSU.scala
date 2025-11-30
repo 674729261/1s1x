@@ -1,11 +1,7 @@
-package empty.empty
+package empty
 import chisel3._
 import chisel3.util._
-import empty.RamWriteData
-import empty.RamLoadData
-import empty.MemAccessBus
 import svsim.CommonCompilationSettings.Timescale.Unit.s
-import empty.AXI_Lite
 
 class MessageLSU2WBU extends Bundle {
   val pc = (UInt(32.W))
