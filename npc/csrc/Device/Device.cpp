@@ -48,31 +48,32 @@ constexpr std::array<uint32_t, 16> lookup_mask32 = {
 
 void Devices::writeMemory(uint32_t waddr, uint32_t wdata, uint32_t wmask) {
   uint32_t mask32 = lookup_mask32[wmask]; // extend 4bit mask to 32bit mask
-#ifndef NO_DIFFTEST
-  if (multiple_emu) [[unlikely]] {
-    if (operation.used) {
-      wdata &= mask32;
-      if (operation.op !=
-          OP::OP_record{
-              .is_read = false, .addr = waddr, .wdata = wdata, .wmask = wmask})
-        log_and_throw<std::logic_error>(
-            "Different memory operation from ref\n"
-            "dut : {:6} addr={:#010x} data={:#010x} mask={:x}\n"
-            "ref : {:6} addr={:#10x} data={:#010x} mask={:x}",
-            operation.op.is_read ? "read" : "write", operation.op.addr,
-            operation.op.wdata, operation.op.wmask, "write", waddr, wdata,
-            wmask);
-      operation.used++;
-      return;
-    } else {
-      operation.used++;
-      operation.op = {.is_read = false,
-                      .addr = waddr,
-                      .wdata = wdata & mask32,
-                      .wmask = wmask};
-    }
-  }
-#endif
+// #ifndef NO_DIFFTEST
+//   if (multiple_emu) [[unlikely]] {
+//     if (operation.used) {
+//       wdata &= mask32;
+//       if (operation.op !=
+//           OP::OP_record{
+//               .is_read = false, .addr = waddr, .wdata = wdata, .wmask =
+//               wmask})
+//         log_and_throw<std::logic_error>(
+//             "Different memory operation from ref\n"
+//             "dut : {:6} addr={:#010x} data={:#010x} mask={:x}\n"
+//             "ref : {:6} addr={:#10x} data={:#010x} mask={:x}",
+//             operation.op.is_read ? "read" : "write", operation.op.addr,
+//             operation.op.wdata, operation.op.wmask, "write", waddr, wdata,
+//             wmask);
+//       operation.used++;
+//       return;
+//     } else {
+//       operation.used++;
+//       operation.op = {.is_read = false,
+//                       .addr = waddr,
+//                       .wdata = wdata & mask32,
+//                       .wmask = wmask};
+//     }
+//   }
+// #endif
 #ifndef DISABLE_ALL_TRACER
   if (mtracer) {
     println("Write to memory : {:#010x}, data : {:#010x}, mask : {:#010x}",
@@ -91,24 +92,24 @@ void Devices::writeMemory(uint32_t waddr, uint32_t wdata, uint32_t wmask) {
 
 uint32_t Devices::readMemory(uint32_t raddr) {
   raddr &= ~0x3;
-#ifndef NO_DIFFTEST
-  if (multiple_emu) [[unlikely]] {
-    if (operation.used) {
-      if (operation.op.is_read != true || operation.op.addr != raddr)
-        log_and_throw<std::logic_error>(
-            "Different memory operation from ref\n"
-            "dut : {:6} addr={:#010x} data={:#010x} mask={:x}\n"
-            "ref : {:6} addr={:#10x}",
-            operation.op.is_read ? "read" : "write", operation.op.addr,
-            operation.op.wdata, operation.op.wmask, "read", raddr);
-      operation.used++;
-      return operation.rdata;
-    }
-    operation.used++;
-    operation.op.is_read = true;
-    operation.op.addr = raddr;
-  }
-#endif
+  // #ifndef NO_DIFFTEST
+  //   if (multiple_emu) [[unlikely]] {
+  //     if (operation.used) {
+  //       if (operation.op.is_read != true || operation.op.addr != raddr)
+  //         log_and_throw<std::logic_error>(
+  //             "Different memory operation from ref\n"
+  //             "dut : {:6} addr={:#010x} data={:#010x} mask={:x}\n"
+  //             "ref : {:6} addr={:#10x}",
+  //             operation.op.is_read ? "read" : "write", operation.op.addr,
+  //             operation.op.wdata, operation.op.wmask, "read", raddr);
+  //       operation.used++;
+  //       return operation.rdata;
+  //     }
+  //     operation.used++;
+  //     operation.op.is_read = true;
+  //     operation.op.addr = raddr;
+  //   }
+  // #endif
 
 #ifndef DISABLE_ALL_TRACER
   if (mtracer) {
@@ -122,9 +123,9 @@ uint32_t Devices::readMemory(uint32_t raddr) {
     rdata = M[addr];
   else if (raddr >= Devices::deviceBase)
     rdata = readMMIO(raddr).value_or(0xdeadbeef);
-#ifndef NO_DIFFTEST
-  operation.rdata = rdata;
-#endif
+  // #ifndef NO_DIFFTEST
+  //   operation.rdata = rdata;
+  // #endif
   return rdata;
 }
 

@@ -66,16 +66,16 @@ public:
    */
   void reset_quit() { quit.store(false); }
 
-  /**
-   * @brief Check the number of memory accesses since last call.
-   *
-   * @return int the number of memory accesses since last call
-   */
-  int check_and_reset_op() {
-    int ret = operation.used;
-    operation.used = 0;
-    return ret;
-  }
+  // /**
+  //  * @brief Check the number of memory accesses since last call.
+  //  *
+  //  * @return int the number of memory accesses since last call
+  //  */
+  // int check_and_reset_op() {
+  //   int ret = operation.used;
+  //   operation.used = 0;
+  //   return ret;
+  // }
 
   const DeviceSettings device_settings;
 
@@ -106,21 +106,21 @@ private:
   bool mtracer;
   bool multiple_emu;
 
-  struct OP {
-    int used;
-    struct OP_record {
-      bool is_read;
-      uint32_t addr;
-      uint32_t wdata;
-      uint32_t wmask;
+  // struct OP {
+  //   int used;
+  //   struct OP_record {
+  //     bool is_read;
+  //     uint32_t addr;
+  //     uint32_t wdata;
+  //     uint32_t wmask;
 
-      bool operator==(const OP_record &o) const {
-        return is_read == o.is_read && addr == o.addr && wdata == o.wdata &&
-               wmask == o.wmask;
-      }
-    } op;
-    uint32_t rdata;
-  } operation;
+  //     bool operator==(const OP_record &o) const {
+  //       return is_read == o.is_read && addr == o.addr && wdata == o.wdata &&
+  //              wmask == o.wmask;
+  //     }
+  //   } op;
+  //   uint32_t rdata;
+  // } operation;
 
   struct {
     uint32_t RTC_reg[2];
