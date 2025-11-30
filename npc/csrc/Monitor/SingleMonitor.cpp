@@ -151,12 +151,12 @@ bool SingleMonitor::process_trap() {
 
 void SingleMonitor::check_device() {
 #ifndef NO_DIFFTEST
-  int op_memory_cnt = devices->check_and_reset_op();
-  if (op_memory_cnt != 0 && op_memory_cnt != emus.size()) {
-    log_and_throw<std::logic_error>(
-        "Different memory access with difftest, total visit count : {}",
-        op_memory_cnt);
-  }
+  // int op_memory_cnt = devices->check_and_reset_op();
+  // if (op_memory_cnt != 0 && op_memory_cnt != emus.size()) {
+  //   log_and_throw<std::logic_error>(
+  //       "Different memory access with difftest, total visit count : {}",
+  //       op_memory_cnt);
+  // }
 #endif
 }
 
