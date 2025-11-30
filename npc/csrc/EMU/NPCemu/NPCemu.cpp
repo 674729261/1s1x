@@ -43,7 +43,7 @@ void NPCemu::handle_bus() {
                            dut.io_lsu_wmask);
     } else {
       dut.io_lsu_rdata = devices->readMemory(dut.io_lsu_raddr);
-      print("?");
+      // print("?");
     }
   }
 }
@@ -51,7 +51,7 @@ void NPCemu::handle_bus() {
 void NPCemu::step() {
   bool ready_to_step = false, is_ebreak = false;
   while (!ready_to_step) {
-    print("!");
+    // print("!");
     handle_bus();
     dut.clock = 0;
     dut.eval();
@@ -68,7 +68,7 @@ void NPCemu::step() {
   if (is_ebreak) [[unlikely]] {
     EMUstate = RISCV32::Interrupt::EBREAK;
   }
-  std::println();
+  // std::println();
 }
 
 void NPCemu::syncCPUState() {
