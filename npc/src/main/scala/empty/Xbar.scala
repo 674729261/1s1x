@@ -75,13 +75,13 @@ class Xbar() extends Module with RequireAsyncReset {
     IN_AXI.b <> MEM_AXI.b
   }
 
-  when(w_owner === sMEM) {
+  when(w_owner === sUART) {
     IN_AXI.aw <> UART_AXI.aw
     IN_AXI.w <> UART_AXI.w
     IN_AXI.b <> UART_AXI.b
   }
 
-  when(w_owner === sMEM) {
+  when(w_owner === sCLINT) {
     IN_AXI.aw <> CLINT_AXI.aw
     IN_AXI.w <> CLINT_AXI.w
     IN_AXI.b <> CLINT_AXI.b
