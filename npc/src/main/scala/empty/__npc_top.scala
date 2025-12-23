@@ -15,7 +15,7 @@ class UART extends Module with RequireAsyncReset {
   val state_r = RegInit(sIDLE)
 
   val w_fire = fetch_port.w.wvalid && fetch_port.w.wready
-  val b_fire = fetch_port.r.rvalid && fetch_port.r.rready
+  val b_fire = fetch_port.b.bvalid && fetch_port.b.bready
 
   fetch_port.ar.arready := false.B
   fetch_port.r.rvalid := false.B
