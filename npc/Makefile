@@ -33,6 +33,7 @@ FAST_FLAGS = -Ofast -march=native -mtune=native
 MDIR = $(NPC_HOME)/build/default/
 
 npc: $(SV_FILELIST) $(LIBCAPSTONE) $(SO_PATH_NEMU)
+	echo $(VSRC)
 	mkdir -p $(MDIR) || true
 	$(VERILATOR)  $(VERILATORFLAGS) \
 	--top-module $(TOPNAME) --public-flat-rw  \
