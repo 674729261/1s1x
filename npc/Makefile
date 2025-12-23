@@ -49,8 +49,8 @@ $(SV_FILELIST): $(CHISELSRC)
 
 
 
-PROG ?= test_progs/add.bin
-ELF ?= test_progs/add.elf
+PROG ?= test_progs/yield-os.bin
+ELF ?= test_progs/yield-os.elf
 MEM_SIZE ?= 134217728
 TIME_STAMP := $(shell date +"%Y_%m_%d_%H_%M_%S")
 LOG_FILE ?= "log/$(TIME_STAMP).log"
