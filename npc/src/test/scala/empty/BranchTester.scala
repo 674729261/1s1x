@@ -12,7 +12,7 @@ import chisel3.simulator.EphemeralSimulator._
 import org.scalatest.flatspec.AnyFlatSpec
 
 import scala.util.Random
-import _root_.empty.empty.Branch
+import empty.Branch
 
 class __Branch_test(WIDTH: Int) extends Module {
   val io = IO(new Bundle {

@@ -2,6 +2,7 @@ package empty
 
 import circt.stage._
 import chisel3._
+import chisel3.layer._
 
 object AddMain extends App {
   println("Generating the CPU RTL")

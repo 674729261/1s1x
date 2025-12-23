@@ -12,7 +12,7 @@ import chisel3.simulator.EphemeralSimulator._
 import org.scalatest.flatspec.AnyFlatSpec
 
 import scala.util.Random
-import _root_.empty.empty.Branch
+import empty.Branch
 
 class CSRTester extends AnyFlatSpec {
   val random = new Random(12345)
@@ -20,6 +20,7 @@ class CSRTester extends AnyFlatSpec {
   behavior of "CSR"
   it should "work correctly" in {
     simulate(new CSR) { dut =>
+      dut.io.ok_to_step.poke(true.B)
       dut.reset.poke(true.B)
       dut.clock.step()
       dut.reset.poke(false.B)

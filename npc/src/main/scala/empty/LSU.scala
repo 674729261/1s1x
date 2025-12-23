@@ -1,7 +1,7 @@
 package empty
 import chisel3._
 import chisel3.util._
-import svsim.CommonCompilationSettings.Timescale.Unit.s
+import chisel3.layer.block
 
 class MessageLSU2WBU extends Bundle {
   val pc = (UInt(32.W))
@@ -117,4 +117,27 @@ class LSU() extends Module with RequireAsyncReset {
 
   out.valid := no_mem_access || (should_mem_access_r && load_finished) || (should_mem_access_w && save_finished)
   in.ready := cpu_fire
+
+  block(AXIAssertLayer) {
+    withDisable(Disable.Never) {
+      when(fetch_port.ar.arvalid && !fetch_port.ar.arready) {
+        assert(
+          fetch_port.ar.arvalid === RegNext(fetch_port.ar.arvalid),
+          "lsu.axi.ar.arvalid dropped without handshake"
+        )
+      }
+      when(fetch_port.w.wvalid && !fetch_port.w.wready) {
+        assert(
+          fetch_port.w.wvalid === RegNext(fetch_port.w.wvalid),
+          "lsu.axi.w.wvalid dropped without handshake"
+        )
+      }
+      when(fetch_port.aw.awvalid && !fetch_port.aw.awready) {
+        assert(
+          fetch_port.aw.awvalid === RegNext(fetch_port.aw.awvalid),
+          "lsu.axi.aw.awvalid dropped without handshake"
+        )
+      }
+    }
+  }
 }

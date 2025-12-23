@@ -86,7 +86,9 @@ void Devices::writeMemory(uint32_t waddr, uint32_t wdata, uint32_t wmask) {
     M[addr] &= ~mask32;
     M[addr] |= wdata & mask32;
   } else if (waddr >= Devices::deviceBase) {
+#ifdef NO_DIFFTEST
     writeMMIO(waddr & ~0x3, mask32, wdata);
+#endif
   }
 }
 
@@ -121,8 +123,11 @@ uint32_t Devices::readMemory(uint32_t raddr) {
   uint32_t addr = (uint32_t)(raddr - Devices::PC_Init) >> 2;
   if (addr < M.size() && raddr >= Devices::PC_Init) [[likely]]
     rdata = M[addr];
-  else if (raddr >= Devices::deviceBase)
+  else if (raddr >= Devices::deviceBase) {
+#ifdef NO_DIFFTEST
     rdata = readMMIO(raddr).value_or(0xdeadbeef);
+#endif
+  }
   // #ifndef NO_DIFFTEST
   //   operation.rdata = rdata;
   // #endif

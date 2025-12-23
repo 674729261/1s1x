@@ -2,6 +2,9 @@ package empty
 
 import chisel3._
 import chisel3.util._
+import chisel3.layer._
+
+object AXIAssertLayer extends Layer(LayerConfig.Inline)
 
 class ReadAddressChannel extends Bundle {
   val araddr = Output(UInt(32.W))

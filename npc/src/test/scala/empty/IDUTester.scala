@@ -12,7 +12,7 @@ import chisel3.simulator.EphemeralSimulator._
 import org.scalatest.flatspec.AnyFlatSpec
 
 import scala.util.Random
-import _root_.empty.empty.IDU
+import empty.IDU
 
 class IDUTester extends AnyFlatSpec {
   behavior of "IDU"

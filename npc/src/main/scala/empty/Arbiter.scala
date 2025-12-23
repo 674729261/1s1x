@@ -9,7 +9,7 @@ class FireSignal extends Bundle {
   val w_fire = Bool()
   val b_fire = Bool()
 }
-object GenrageFireSignal {
+object GenerateFireSignal {
   def apply(axi: AXI_Lite): FireSignal = {
     val ret = Wire(new FireSignal)
 
@@ -32,25 +32,24 @@ class Arbiter_2Master() extends Module with RequireAsyncReset {
   set_flipped_AXI_zero(LSU_AXI)
   set_AXI_zero(OUT_AXI)
 
-  val IFU_fire = GenrageFireSignal(IFU_AXI)
-  val LSU_fire = GenrageFireSignal(LSU_AXI)
-  val out_fire = GenrageFireSignal(OUT_AXI)
-
-  val any_ar_fire = IFU_fire.ar_fire || LSU_fire.ar_fire
-  val any_r_fire = IFU_fire.r_fire || LSU_fire.r_fire
-  val any_aw_fire = IFU_fire.aw_fire || LSU_fire.aw_fire
-  val any_w_fire = IFU_fire.w_fire || LSU_fire.w_fire
-  val any_b_fire = IFU_fire.b_fire || LSU_fire.b_fire
+  val IFU_fire = GenerateFireSignal(IFU_AXI)
+  val LSU_fire = GenerateFireSignal(LSU_AXI)
+  val out_fire = GenerateFireSignal(OUT_AXI)
 
   val sIDLE :: sIFU :: sLSU :: Nil = Enum(3)
   val r_owner = RegInit(sIDLE)
   val w_owner = RegInit(sIDLE)
 
-  when((r_owner === sIDLE && IFU_AXI.ar.arvalid) || r_owner === sIFU) {
+  val bind_to_IFU_r =
+    (r_owner === sIDLE && IFU_AXI.ar.arvalid) || r_owner === sIFU
+  val bind_to_LSU_r =
+    (r_owner === sIDLE && LSU_AXI.ar.arvalid) || r_owner === sLSU
+
+  when(bind_to_IFU_r) {
     IFU_AXI.ar <> OUT_AXI.ar
     IFU_AXI.r <> OUT_AXI.r
   }
-  when((r_owner === sIDLE && LSU_AXI.ar.arvalid) || r_owner === sLSU) {
+  when(bind_to_LSU_r) {
     LSU_AXI.ar <> OUT_AXI.ar
     LSU_AXI.r <> OUT_AXI.r
   }
@@ -67,16 +66,17 @@ class Arbiter_2Master() extends Module with RequireAsyncReset {
     )
   )
 
-  when(
+  val bind_to_IFU_w =
     (w_owner === sIDLE && (IFU_AXI.aw.awvalid || IFU_AXI.w.wvalid)) || w_owner === sIFU
-  ) {
+  val bind_to_LSU_w =
+    (w_owner === sIDLE && (LSU_AXI.aw.awvalid || LSU_AXI.w.wvalid)) || w_owner === sLSU
+
+  when(bind_to_IFU_w) {
     IFU_AXI.aw <> OUT_AXI.aw
     IFU_AXI.w <> OUT_AXI.w
     IFU_AXI.b <> OUT_AXI.b
   }
-  when(
-    (w_owner === sIDLE && (LSU_AXI.aw.awvalid || LSU_AXI.w.wvalid)) || w_owner === sLSU
-  ) {
+  when(bind_to_LSU_w) {
     LSU_AXI.aw <> OUT_AXI.aw
     LSU_AXI.w <> OUT_AXI.w
     LSU_AXI.b <> OUT_AXI.b

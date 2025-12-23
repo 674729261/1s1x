@@ -12,7 +12,7 @@ import chisel3.simulator.EphemeralSimulator._
 import org.scalatest.flatspec.AnyFlatSpec
 
 import scala.util.Random
-import _root_.empty.empty.Branch
+import empty.Branch
 
 class GPRTester extends AnyFlatSpec {
   val random = new Random(12345)

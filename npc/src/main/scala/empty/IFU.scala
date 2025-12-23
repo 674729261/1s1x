@@ -1,6 +1,7 @@
 package empty
 import chisel3._
 import chisel3.util._
+import chisel3.layer.block
 
 class MessageIFU2IDU extends Bundle {
   val pc = (UInt(32.W))
@@ -42,4 +43,14 @@ class IFU() extends Module with RequireAsyncReset {
   out.bits.inst := Mux(state === sWAIT_RESP, fetch_port.r.rdata, inst_reg)
   out.bits.pc := in.pc
 
+  block(AXIAssertLayer) {
+    withDisable(Disable.Never) {
+      when(fetch_port.ar.arvalid && !fetch_port.ar.arready) {
+        assert(
+          fetch_port.ar.arvalid === RegNext(fetch_port.ar.arvalid),
+          "ifu.axi.ar.arvalid dropped without handshake"
+        )
+      }
+    }
+  }
 }
