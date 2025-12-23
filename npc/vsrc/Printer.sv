@@ -1,4 +1,4 @@
-module Print (
+module Printer (
     input clock,
     input valid,
     input [7:0] data
