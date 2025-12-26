@@ -1,2 +1,7 @@
 build/
 out/
+.bloop/
+.metals/
+.vscode/
+rocket-chip/dependencies/chisel/
+!build.sc
