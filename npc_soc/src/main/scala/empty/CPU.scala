@@ -26,7 +26,7 @@ class MemAccessBus extends Bundle {
   val respReady = Output(Bool())
 }
 
-class CPU(init_pc: UInt) extends Module {
+class CPU_Core(init_pc: UInt) extends Module {
   val io = IO(new Bundle {
     val pc = Output(UInt(32.W))
     // val inst_bus_axi = new AXI_Lite
