@@ -45,13 +45,14 @@ int main(int argc, char *argv[]) {
     std::println(std::cerr, "Error : {}", err.what());
     std::terminate();
   }
-  Verilated::traceEverOn(true);
+
   std::unique_ptr<VerilatedContext> contextp =
       std::make_unique<VerilatedContext>();
   contextp->commandArgs(argc, argv);
   std::unique_ptr<VysyxSoCFull> dut =
       std::make_unique<VysyxSoCFull>(contextp.get());
   std::unique_ptr<VerilatedVcdC> m_trace = std::make_unique<VerilatedVcdC>();
+  Verilated::traceEverOn(true);
   dut->trace(m_trace.get(), 5);
   m_trace->open("waveform.vcd");
   static vluint64_t sim_time = 0;
