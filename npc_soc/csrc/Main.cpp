@@ -60,9 +60,11 @@ int main(int argc, char *argv[]) {
     dut->clock = 0;
     dut->eval();
     m_trace->dump(sim_time);
+    sim_time++;
     dut->clock = 1;
     dut->eval();
     m_trace->dump(sim_time);
+    sim_time++;
   }
   int result;
   m_trace->close();
