@@ -9,6 +9,7 @@
 #include <format>
 #include <lockfree/lockfree.hpp>
 #include <print>
+#include <verilated_vcd_c.h>
 
 #define gprname(X) npc_top__DOT__cpu__DOT__gpr__DOT__register_bank_regs_##X##_r
 
