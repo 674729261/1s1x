@@ -185,4 +185,4 @@ uint32_t NPCemu::getGPR(int idx) {
 
 unsigned long long NPCemu::instrCount() { return inst_count; }
 
-NPCemu::~NPCemu() { m_trace.close(); }
+NPCemu::~NPCemu() { m_trace->close(); }
