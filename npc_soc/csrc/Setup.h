@@ -21,17 +21,8 @@ void register_argparse(argparse::ArgumentParser &program);
 void register_logger(argparse::ArgumentParser &program);
 struct Config {
   std::string image_path;
-  uint32_t mem_size;
   bool batch_mode;
-  unsigned long itracer;
-  bool mtracer;
   bool difftest;
-  bool use_irb;
-  unsigned long sz_irb;
-  bool use_ftracer;
-  std::string path_elf;
-  Devices::DeviceSettings device_settings;
-  bool swap;
 };
 
 Config setup(argparse::ArgumentParser &program);
