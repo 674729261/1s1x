@@ -56,6 +56,7 @@ int main(int argc, char *argv[]) {
   dut->trace(m_trace.get(), 5);
   m_trace->open("waveform.vcd");
   static vluint64_t sim_time = 0;
+  reset_soc(*dut);
   while (!contextp->gotFinish() && sim_time <= 2 * 10000) {
     dut->clock = 0;
     dut->eval();
