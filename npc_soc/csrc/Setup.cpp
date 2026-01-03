@@ -5,7 +5,6 @@ using std::println, std::cerr;
 using std::string;
 
 extern "C" void flash_read(int32_t addr, int32_t *data) { assert(0); }
-extern "C" void mrom_read(int32_t addr, int32_t *data) { *data = 0x00100073; }
 
 void register_argparse(argparse::ArgumentParser &program) {
   program.add_argument("-i", "--image")
@@ -13,29 +12,9 @@ void register_argparse(argparse::ArgumentParser &program) {
       .nargs(1)
       .required();
   program.add_argument("-l", "--log").help("The program image file");
-  program.add_argument("-z", "--mem_size")
-      .help("Size of memory")
-      .default_value(1 << 24)
-      .scan<'i', uint32_t>();
-  program.add_argument("-b", "--batch").help("Batch mode").flag();
-  program.add_argument("-a", "--enable_audio").help("Enable audio").flag();
-  program.add_argument("-v", "--enable_vga").help("Enable vga").flag();
-  program.add_argument("-s", "--swap").help("Use ref as main simulator").flag();
-
-  program.add_argument("-k", "--enable_keyboard")
-      .help("Enable keyboard")
-      .flag();
-  program.add_argument("--itracer")
-      .help("Display instruction executed")
-      .scan<'i', unsigned long>();
-  program.add_argument("--mtracer").help("Display memory visited").flag();
   program.add_argument("-d", "--difftest")
       .help("Use NEMUemu as differential test")
       .flag();
-  program.add_argument("--inst_ringbuffer")
-      .help("Use ring buffer")
-      .scan<'i', unsigned long>();
-  program.add_argument("--elf").help("ELF file path").default_value("");
 }
 
 void register_logger(argparse::ArgumentParser &program) {

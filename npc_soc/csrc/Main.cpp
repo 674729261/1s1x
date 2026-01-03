@@ -1,4 +1,5 @@
 #include "Setup.h"
+#include <MROM.h>
 #include <VysyxSoCFull.h>
 #include <iostream>
 #include <memory>
@@ -56,6 +57,8 @@ int main(int argc, char *argv[]) {
   dut->trace(m_trace.get(), 5);
   m_trace->open("waveform.vcd");
   static vluint64_t sim_time = 0;
+
+  init_mrom(config.image_path);
   reset_soc(*dut);
   while (!contextp->gotFinish() && sim_time <= 2 * 10000) {
     dut->clock = 0;

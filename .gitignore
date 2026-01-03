@@ -20,6 +20,7 @@
 !/nanos-lite/*
 !/navy-apps/*
 !/npc/*
+
 !Makefile
 !README.md
 !.gitignore
@@ -27,6 +28,8 @@
 /c_practice/p32_33/build/
 /c_practice/p32_33/bin/
 !/fceux-am
+!/soc_npc
+!/soc_kernal/**/*
 
 **/*.log
 **/build/
@@ -34,3 +37,4 @@
 **/compile_commands.json
 **/obj_dir/
 /nvboard
+
