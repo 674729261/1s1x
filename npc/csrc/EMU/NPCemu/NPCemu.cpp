@@ -56,7 +56,13 @@ void NPCemu::handle_bus() {
 void NPCemu::step() {
   bool ready_to_step = false, is_ebreak = false;
   static vluint64_t sim_time = 0;
+  int cycles = 0;
   while (!ready_to_step) {
+    cycles++;
+    if (cycles >= 100) {
+      std::println("loop");
+      return;
+    }
     // print("!");
     handle_bus();
     dut.clock = 0;
