@@ -71,7 +71,6 @@ Config setup(argparse::ArgumentParser &program) {
 
   if (ret.difftest) {
     try {
-      refemu = make_shared<Ref>();
       spdlog::info("Using difftest");
     } catch (const std::exception &err) {
       println(cerr, "Load ref failed: {}", err.what());
