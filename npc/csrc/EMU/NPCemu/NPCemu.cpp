@@ -55,14 +55,19 @@ void NPCemu::handle_bus() {
 
 void NPCemu::step() {
   bool ready_to_step = false, is_ebreak = false;
+  static vluint64_t sim_time = 0;
   while (!ready_to_step) {
     // print("!");
     handle_bus();
     dut.clock = 0;
     dut.eval();
+    m_trace->dump(sim_time);
+    sim_time++;
     ready_to_step = dut.io_ok_to_step;
     dut.clock = 1;
     dut.eval();
+    m_trace->dump(sim_time);
+    sim_time++;
 
     if (dut.io_ebreak)
       is_ebreak = true;
