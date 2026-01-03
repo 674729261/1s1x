@@ -19,7 +19,7 @@ NPCemu::NPCemu()
   Verilated::traceEverOn(true);
   m_trace = new VerilatedVcdC;
   dut.trace(m_trace, 3);
-  m_trace->open("waveform.vcd")
+  m_trace->open("waveform.vcd");
 }
 
 RISCV32::addr_t NPCemu::getPC() { return getGPR(32); }
