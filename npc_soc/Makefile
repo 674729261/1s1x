@@ -5,6 +5,7 @@ CSRC += /usr/local/lib/libreplxx.a
 
 VSRC = $(wildcard vsrc/*.v)
 VSRC += $(wildcard vsrc/*.sv)
+VSRC += $(wildcard $(SOC_HOME)/build/*.v)
 VSRC += $(wildcard $(SOC_HOME)/perip/**/*.v)
 CHISELSRC += $(wildcard src/main/scala/empty/*.scala)
 TOPNAME = ysyxSoCFull
