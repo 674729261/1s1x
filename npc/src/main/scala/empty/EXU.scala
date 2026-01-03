@@ -23,7 +23,7 @@ class MessageEXU2LSU extends Bundle {
   val write_info = (new WriteInfo)
 }
 
-class EXU() extends Module with RequireAsyncReset {
+class EXU() extends Module {
   val in = IO(Flipped(DecoupledIO(new MessageIDU2EXU)))
 
   val out = IO(DecoupledIO(new MessageEXU2LSU))

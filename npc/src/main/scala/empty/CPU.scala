@@ -26,13 +26,13 @@ class MemAccessBus extends Bundle {
   val respReady = Output(Bool())
 }
 
-class CPU(init_pc: UInt) extends Module with RequireAsyncReset {
+class CPU(init_pc: UInt) extends Module {
   val io = IO(new Bundle {
     val pc = Output(UInt(32.W))
     // val inst_bus_axi = new AXI_Lite
     val ebreak = Output(Bool())
     // val mem = new AXI_Lite
-    val axi_bus = new AXI_Lite
+    val axi_bus = new AXI
     val ok_to_step = Output(Bool())
   })
 

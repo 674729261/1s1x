@@ -16,7 +16,7 @@ object AddMain extends App {
     ),
     Array(
       "--disable-all-randomization",
-      "--disable-layers=Verification",
+      // "--disable-layers=Verification",
       "--lowering-options=" + List(
         // make yosys happy
         // see https://github.com/llvm/circt/blob/main/docs/VerilogGeneration.md
@@ -35,6 +35,24 @@ object AddMain extends App {
     ),
     Array(
       "--disable-all-randomization",
+      "--disable-layers=Verification",
+      "--lowering-options=" + List(
+        // make yosys happy
+        // see https://github.com/llvm/circt/blob/main/docs/VerilogGeneration.md
+        "disallowLocalVariables",
+        // "disallowPackedArrays",
+        "locationInfoStyle=wrapInAtSquareBracket"
+      ).reduce(_ + "," + _)
+    )
+  )
+
+  ChiselStage.emitSystemVerilogFile(
+    new ysyx_25080216,
+    Array(
+      "--target-dir",
+      "generated_svsrc/ysyx_25080216"
+    ),
+    Array(
       "--disable-layers=Verification",
       "--lowering-options=" + List(
         // make yosys happy

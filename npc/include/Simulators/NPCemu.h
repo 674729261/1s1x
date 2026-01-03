@@ -45,6 +45,7 @@ public:
 
 private:
   VerilatedContext context;
+  VerilatedVcdC *m_trace;
   TOP_NAME dut;
   int trapped;
   unsigned long long inst_count;

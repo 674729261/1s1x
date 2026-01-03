@@ -15,6 +15,10 @@
 NPCemu::NPCemu()
 #include <stdexcept>
     : RISCV32(), trapped(0), context(), dut(&context), inst_count(0) {
+  Verilated::traceEverOn(true);
+  m_trace = new VerilatedVcdC;
+  dut.trace(m_trace, 3);
+  m_trace->open("waveform.vcd")
 }
 
 RISCV32::addr_t NPCemu::getPC() { return getGPR(32); }
@@ -181,4 +185,4 @@ uint32_t NPCemu::getGPR(int idx) {
 
 unsigned long long NPCemu::instrCount() { return inst_count; }
 
-NPCemu::~NPCemu() {}
+NPCemu::~NPCemu() { m_trace.close(); }

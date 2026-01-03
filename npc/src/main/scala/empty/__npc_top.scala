@@ -9,7 +9,7 @@ class Printer extends ExtModule {
   val data = IO(Input(UInt(8.W)))
 }
 
-class UART extends Module with RequireAsyncReset {
+class UART extends Module {
   val fetch_port = IO(Flipped(new AXI_Lite))
   val sIDLE :: sRESP :: Nil = Enum(2)
   val state_r = RegInit(sIDLE)
@@ -37,7 +37,7 @@ class UART extends Module with RequireAsyncReset {
   printer.data := char_lower8
 }
 
-class CLINT extends Module with RequireAsyncReset {
+class CLINT extends Module {
   val fetch_port = IO(Flipped(new AXI_Lite))
   val sIDLE :: sRESP :: Nil = Enum(2)
   val state_r = RegInit(sIDLE)
@@ -59,7 +59,7 @@ class CLINT extends Module with RequireAsyncReset {
   )
 }
 
-class npc_top extends Module with RequireAsyncReset {
+class npc_top extends Module {
   val io = IO(new Bundle {
     val pc = Output(UInt(32.W))
     val ebreak = Output(Bool())
@@ -82,15 +82,15 @@ class npc_top extends Module with RequireAsyncReset {
   val cpu = Module(new CPU(init_pc = "h80000000".U(32.W)))
   // val __inst_fetch = Module(new __inst_fetch_bus)
   val __lsu_fetch = Module(new __lsu_fetch_bus)
-  val serial = Module(new UART)
-  val clint = Module(new CLINT)
-  val crossbar = Module(new Xbar)
+  // val serial = Module(new UART)
+  // val clint = Module(new CLINT)
+  // val crossbar = Module(new Xbar)
   // cpu.io.inst_bus_axi <> __inst_fetch.fetch_port
-  // cpu.io.axi_bus <> __lsu_fetch.fetch_port
-  cpu.io.axi_bus <> crossbar.IN_AXI
-  crossbar.MEM_AXI <> __lsu_fetch.fetch_port
-  crossbar.UART_AXI <> serial.fetch_port
-  crossbar.CLINT_AXI <> clint.fetch_port
+  cpu.io.axi_bus <> __lsu_fetch.fetch_port
+  // cpu.io.axi_bus <> crossbar.IN_AXI
+  // crossbar.MEM_AXI <> __lsu_fetch.fetch_port
+  // crossbar.UART_AXI <> serial.fetch_port
+  // crossbar.CLINT_AXI <> clint.fetch_port
 
   io.pc := cpu.io.pc
   io.ebreak := cpu.io.ebreak

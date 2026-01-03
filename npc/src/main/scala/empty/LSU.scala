@@ -10,13 +10,14 @@ class MessageLSU2WBU extends Bundle {
   val write_info = (new WriteInfo)
 }
 
-class LSU() extends Module with RequireAsyncReset {
+class LSU() extends Module {
 
   val in = IO(Flipped(DecoupledIO(new MessageEXU2LSU)))
 
   val out = IO(DecoupledIO(new MessageLSU2WBU))
 
-  val fetch_port = IO(new AXI_Lite)
+  val fetch_port = IO(new AXI)
+  set_AXIfull_zero(fetch_port)
 
   val ramWriter = Module(new RamWriteData)
   val ramLoader = Module(new RamLoadData)
@@ -25,11 +26,11 @@ class LSU() extends Module with RequireAsyncReset {
   val should_mem_access_w = Wire(Bool())
 
   val cpu_fire = out.valid && out.ready
-  val aw_fire = fetch_port.aw.awready && fetch_port.aw.awvalid
-  val w_fire = fetch_port.w.wready && fetch_port.w.wvalid
-  val ar_fire = fetch_port.ar.arready && fetch_port.ar.arvalid
-  val r_fire = fetch_port.r.rready && fetch_port.r.rvalid
-  val b_fire = fetch_port.b.bready && fetch_port.b.bvalid
+  val aw_fire = fetch_port.aw.ready && fetch_port.aw.valid
+  val w_fire = fetch_port.w.ready && fetch_port.w.valid
+  val ar_fire = fetch_port.ar.ready && fetch_port.ar.valid
+  val r_fire = fetch_port.r.ready && fetch_port.r.valid
+  val b_fire = fetch_port.b.ready && fetch_port.b.valid
 
   val sIDLE_r :: sWAIT_RESP_r :: sWAIT_r :: Nil = Enum(3)
   val state_r = RegInit(sIDLE_r)
@@ -68,24 +69,41 @@ class LSU() extends Module with RequireAsyncReset {
 
   val rdata_reg = RegEnable(ramLoader.io.out, r_fire)
 
-  fetch_port.ar.arvalid := should_mem_access_r && state_r === sIDLE_r
-  fetch_port.ar.araddr := Cat(
+  fetch_port.ar.valid := should_mem_access_r && state_r === sIDLE_r
+  fetch_port.ar.addr := Cat(
     in.bits.write_info.alu_out(31, 2),
     "b00".U(2.W)
   )
+  fetch_port.ar.size := Mux1H(
+    Seq(
+      in.bits.controls.is_ram_byte -> "b000".U(3.W),
+      in.bits.controls.is_ram_half -> "b001".U(3.W),
+      in.bits.controls.is_ram_word -> "b010".U(3.W)
+    )
+  )
 
-  fetch_port.r.rready := state_r === sWAIT_RESP_r
+  fetch_port.ar.id := "b1000".U(4.W)
+  fetch_port.r.ready := state_r === sWAIT_RESP_r
 
-  fetch_port.aw.awaddr := in.bits.write_info.alu_out
-  fetch_port.aw.awvalid := should_mem_access_w && !out_aw
+  fetch_port.aw.addr := in.bits.write_info.alu_out
+  fetch_port.aw.valid := should_mem_access_w && !out_aw
+  fetch_port.aw.id := "b1000".U(4.W)
 
-  fetch_port.w.wdata := ramWriter.io.out
-  fetch_port.w.wvalid := should_mem_access_w && !out_w
-  fetch_port.w.wstrb := ramWriter.io.mask
+  fetch_port.w.data := ramWriter.io.out
+  fetch_port.w.valid := should_mem_access_w && !out_w
+  fetch_port.w.strb := ramWriter.io.mask
+  fetch_port.aw.size := Mux1H(
+    Seq(
+      in.bits.controls.is_ram_byte -> "b000".U(3.W),
+      in.bits.controls.is_ram_half -> "b001".U(3.W),
+      in.bits.controls.is_ram_word -> "b010".U(3.W)
+    )
+  )
+  fetch_port.w.last := true.B
 
-  fetch_port.b.bready := out_aw && out_w && !has_b
+  fetch_port.b.ready := out_aw && out_w && !has_b
 
-  ramLoader.io.word := fetch_port.r.rdata
+  ramLoader.io.word := fetch_port.r.data
   ramLoader.io.is_byte := in.bits.controls.is_ram_byte
   ramLoader.io.is_half := in.bits.controls.is_ram_half
   ramLoader.io.is_word := in.bits.controls.is_ram_word
@@ -120,23 +138,32 @@ class LSU() extends Module with RequireAsyncReset {
 
   block(AXIAssertLayer) {
     withDisable(Disable.Never) {
-      when(fetch_port.ar.arvalid && !fetch_port.ar.arready) {
+      when(fetch_port.ar.valid && !fetch_port.ar.ready) {
         assert(
-          fetch_port.ar.arvalid === RegNext(fetch_port.ar.arvalid),
-          "lsu.axi.ar.arvalid dropped without handshake"
+          fetch_port.ar.valid === RegNext(fetch_port.ar.valid),
+          "lsu.axi.arvalid dropped without handshake"
         )
       }
-      when(fetch_port.w.wvalid && !fetch_port.w.wready) {
+      when(fetch_port.w.valid && !fetch_port.w.ready) {
         assert(
-          fetch_port.w.wvalid === RegNext(fetch_port.w.wvalid),
-          "lsu.axi.w.wvalid dropped without handshake"
+          fetch_port.w.valid === RegNext(fetch_port.w.valid),
+          "lsu.axi.wvalid dropped without handshake"
         )
       }
-      when(fetch_port.aw.awvalid && !fetch_port.aw.awready) {
+      when(fetch_port.aw.valid && !fetch_port.aw.ready) {
         assert(
-          fetch_port.aw.awvalid === RegNext(fetch_port.aw.awvalid),
-          "lsu.axi.aw.awvalid dropped without handshake"
+          fetch_port.aw.valid === RegNext(fetch_port.aw.valid),
+          "lsu.axi.awvalid dropped without handshake"
         )
+      }
+      when(r_fire) {
+        assert(fetch_port.r.last, "lsu.axi.rlast is not set")
+        assert(fetch_port.r.resp === "b00".U, "lsu.axi.rresp is not b00")
+        assert(fetch_port.r.id === "b1000".U, "lsu.axi.rid is not b1000")
+      }
+      when(b_fire) {
+        assert(fetch_port.b.resp === 0.U, "lsu.axi.bresp is not 0")
+        assert(fetch_port.b.id === "b1000".U)
       }
     }
   }

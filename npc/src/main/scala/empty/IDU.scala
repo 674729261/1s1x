@@ -214,7 +214,7 @@ class MessageIDU2EXU extends Bundle {
   val sources = (new Operands)
 }
 
-class IDU() extends Module with RequireAsyncReset {
+class IDU() extends Module {
   val in = IO(Flipped(DecoupledIO(new MessageIFU2IDU)))
 
   val out = IO(DecoupledIO(new MessageIDU2EXU))

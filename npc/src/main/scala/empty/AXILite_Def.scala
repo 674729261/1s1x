@@ -13,7 +13,7 @@ class ReadAddressChannel extends Bundle {
 }
 class ReadDataChannel extends Bundle {
   val rdata = Input(UInt(32.W))
-  val rresp = Input(Bool())
+  val rresp = Input(UInt(2.W))
   val rvalid = Input(Bool())
   val rready = Output(Bool())
 }

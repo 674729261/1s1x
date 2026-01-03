@@ -2,7 +2,7 @@ package empty
 import chisel3._
 import chisel3.util._
 
-class WBU() extends Module with RequireAsyncReset {
+class WBU() extends Module {
   val in = IO(Flipped(DecoupledIO(new MessageLSU2WBU)))
 
   val out = IO(new Bundle {
