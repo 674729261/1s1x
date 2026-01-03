@@ -59,7 +59,7 @@ void NPCemu::step() {
   int cycles = 0;
   while (!ready_to_step) {
     cycles++;
-    if (cycles >= 100) {
+    if (cycles >= 1000) {
       std::println("loop");
       return;
     }
