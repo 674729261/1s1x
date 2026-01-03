@@ -1,5 +1,4 @@
 .DEFAULT_GOAL := sim
-PWD := $(shell pwd)
 CSRC = $(shell find csrc -name "*.cpp")
 CSRC += /usr/local/lib/libreplxx.a
 
@@ -24,7 +23,7 @@ VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -Ofast   \
 VERILATOR_LDFLAGS = -flto=auto -fipa-pta 
 
 
-CXXFLAGS += -CFLAGS "$(VERILATOR_CFLAGS) -std=c++23 -I$(PWD)/include"
+CXXFLAGS += -CFLAGS "$(VERILATOR_CFLAGS) -std=c++23 -I$(SOC_NPC_HOME)/include"
 # VERILATORFLAGS += --noassert --trace --no-coverage --x-assign fast --x-initial fast -O3 --threads 1 --cc --exe --build -j 8 
 VERILATORFLAGS += -I$(SOC_HOME)/perip/uart16550/rtl -I$(SOC_HOME)/perip/spi/rtl --trace --timescale "1ns/1ns" --no-timing -O3 --threads 1 --cc --exe --build -j 8 
 VERILATOR_DISABLE_WARNINGS += -Wno-UNUSEDSIGNAL -Wno-DECLFILENAME -Wno-SYNCASYNCNET -Wno-PINCONNECTEMPTY \
@@ -34,7 +33,7 @@ FAST_FLAGS = -Ofast -march=native -mtune=native
 
 -include scripts/*.mk
 
-MDIR = $(PWD)/build/default/
+MDIR = $(SOC_NPC_HOME)/build/default/
 
 npc: $(SV_FILELIST) $(LIBCAPSTONE) $(SO_PATH_NEMU)
 	mkdir -p $(MDIR) || true

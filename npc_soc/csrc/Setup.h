@@ -1,8 +1,6 @@
 #pragma once
 
 #include <argparse/argparse.hpp>
-#include <cstdint>
-#include <memory>
 #include <print>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>

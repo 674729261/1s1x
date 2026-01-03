@@ -1,8 +1,6 @@
 #include "Setup.h"
-#include "Simulators/Ref.h"
 #include "my_utils.h"
 #include "spdlog/spdlog.h"
-using std::make_shared;
 using std::println, std::cerr;
 using std::string;
 
