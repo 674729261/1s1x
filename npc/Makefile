@@ -50,8 +50,8 @@ $(SV_FILELIST): $(CHISELSRC)
 
 
 
-PROG ?= test_progs/string.bin
-ELF  ?= test_progs/string.elf
+PROG ?= test_progs/unalign.bin
+ELF  ?= test_progs/unalign.elf
 MEM_SIZE ?= 134217728
 TIME_STAMP := $(shell date +"%Y_%m_%d_%H_%M_%S")
 LOG_FILE ?= "log/$(TIME_STAMP).log"
