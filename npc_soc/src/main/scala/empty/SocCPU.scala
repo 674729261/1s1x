@@ -39,6 +39,11 @@ class AXI_Flatten extends Bundle {
 
 }
 
+class Ebreaker extends ExtModule {
+  val clock = IO(Input(Clock()))
+  val ebreak = IO(Input(Bool()))
+}
+
 class ysyx_25080216 extends Module {
   val io = IO(new Bundle {
     val interrupt = Input(Bool())
@@ -46,6 +51,10 @@ class ysyx_25080216 extends Module {
     val slave = Flipped(new AXI_Flatten)
   })
   val cpu = Module(new CPU_Core(init_pc = "h20000000".U(32.W)))
+  val ebreaker = Module(new Ebreaker)
+  ebreaker.clock := clock
+  ebreaker.ebreak := cpu.io.ebreak
+
   io.master.awvalid := cpu.io.axi_bus.aw.valid
   io.master.awaddr := cpu.io.axi_bus.aw.addr
   io.master.awid := cpu.io.axi_bus.aw.id
