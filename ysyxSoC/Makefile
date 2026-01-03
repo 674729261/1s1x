@@ -3,7 +3,7 @@ V_FILE_FINAL = build/ysyxSoCFull.v
 SCALA_FILES = $(shell find src/ -name "*.scala")
 
 # Firtool version
-FIRTOOL_VERSION = 1.138.0
+FIRTOOL_VERSION = 1.105.0
 FIRTOOL_PATCH_DIR = $(shell pwd)/patch/firtool
 
 $(V_FILE_FINAL): $(SCALA_FILES)

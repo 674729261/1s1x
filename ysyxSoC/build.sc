@@ -5,8 +5,8 @@ import $file.`rocket-chip`.dependencies.cde.{common => cdeCommon}
 import $file.`rocket-chip`.dependencies.diplomacy.{common => diplomacyCommon}
 import $file.`rocket-chip`.{common => rocketChipCommon}
 
-val chiselVersion = "7.6.0"
-val defaultScalaVersion = "2.13.18"
+val chiselVersion = "7.0.0-M2"
+val defaultScalaVersion = "2.13.14"
 val pwd = os.Path(sys.env("MILL_WORKSPACE_ROOT"))
 
 object v {
