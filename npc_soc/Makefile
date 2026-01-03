@@ -6,7 +6,7 @@ CSRC += /usr/local/lib/libreplxx.a
 VSRC = $(wildcard vsrc/*.v)
 VSRC += $(wildcard vsrc/*.sv)
 VSRC += $(wildcard $(SOC_HOME)/build/*.v)
-VSRC += $(wildcard $(SOC_HOME)/perip/**/*.v)
+VSRC += $(shell find $(SOC_HOME)/perip -name *.v)
 CHISELSRC += $(wildcard src/main/scala/empty/*.scala)
 TOPNAME = ysyxSoCFull
 BIN = $(MDIR)/V$(TOPNAME)
@@ -36,7 +36,6 @@ FAST_FLAGS = -Ofast -march=native -mtune=native
 MDIR = $(NPC_HOME)/build/default/
 
 npc: $(SV_FILELIST) $(LIBCAPSTONE) $(SO_PATH_NEMU)
-	echo $(VSRC)
 	mkdir -p $(MDIR) || true
 	$(VERILATOR)  $(VERILATORFLAGS) \
 	--top-module $(TOPNAME) --public-flat-rw  \
