@@ -15,6 +15,7 @@ void register_argparse(argparse::ArgumentParser &program) {
   program.add_argument("-d", "--difftest")
       .help("Use NEMUemu as differential test")
       .flag();
+  program.add_argument("-b", "--batch").help("Use batch mode").flag();
 }
 
 void register_logger(argparse::ArgumentParser &program) {
