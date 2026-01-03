@@ -46,33 +46,17 @@ class Arbiter_2Master() extends Module {
   val aw_w_owner = RegInit(sIDLE)
   val b_owner = RegInit(sIDLE)
 
-  val bind_to_IFU_ar =
-    (ar_owner === sIDLE && IFU_AXI.ar.valid) || ar_owner === sIFU
-  val bind_to_LSU_ar =
-    (ar_owner === sIDLE && LSU_AXI.ar.valid) || ar_owner === sLSU
+  val bind_to_IFU_ar = ar_owner === sIFU
+  val bind_to_LSU_ar = ar_owner === sLSU
 
-  val bind_to_IFU_r =
-    (r_owner === sIDLE && OUT_AXI.r.valid && OUT_AXI.r.id === "b0000".U(
-      4.W
-    )) || r_owner === sIFU
-  val bind_to_LSU_r =
-    (r_owner === sIDLE && OUT_AXI.r.valid && OUT_AXI.r.id === "b1000".U(
-      4.W
-    )) || r_owner === sLSU
+  val bind_to_IFU_r = r_owner === sIFU
+  val bind_to_LSU_r = r_owner === sLSU
 
-  val bind_to_IFU_aw_w =
-    (aw_w_owner === sIDLE && IFU_AXI.aw.valid) || aw_w_owner === sIFU
-  val bind_to_LSU_aw_w =
-    (aw_w_owner === sIDLE && LSU_AXI.aw.valid) || aw_w_owner === sLSU
+  val bind_to_IFU_aw_w = aw_w_owner === sIFU
+  val bind_to_LSU_aw_w = aw_w_owner === sLSU
 
-  val bind_to_IFU_b =
-    (b_owner === sIDLE && OUT_AXI.b.valid && OUT_AXI.b.id === "b0000".U(
-      4.W
-    )) || b_owner === sIFU
-  val bind_to_LSU_b =
-    (b_owner === sIDLE && OUT_AXI.b.valid && OUT_AXI.b.id === "b1000".U(
-      4.W
-    )) || b_owner === sLSU
+  val bind_to_IFU_b = b_owner === sIFU
+  val bind_to_LSU_b = b_owner === sLSU
 
   when(bind_to_IFU_ar) {
     IFU_AXI.ar <> OUT_AXI.ar
@@ -115,9 +99,9 @@ class Arbiter_2Master() extends Module {
   r_owner := MuxLookup(r_owner, sIDLE)(
     Seq(
       sIDLE -> Mux(
-        bind_to_IFU_r,
+        OUT_AXI.r.valid && OUT_AXI.r.id === "b0000".U(4.W),
         sIFU,
-        Mux(bind_to_LSU_r, sLSU, sIDLE)
+        Mux(OUT_AXI.r.valid && OUT_AXI.r.id === "b1000".U(4.W), sLSU, sIDLE)
       ),
       sIFU -> Mux(IFU_fire.r_burst_last, sIDLE, sIFU),
       sLSU -> Mux(LSU_fire.r_burst_last, sIDLE, sLSU)
@@ -127,9 +111,9 @@ class Arbiter_2Master() extends Module {
   aw_w_owner := MuxLookup(aw_w_owner, sIDLE)(
     Seq(
       sIDLE -> Mux(
-        bind_to_IFU_aw_w,
+        IFU_AXI.aw.valid,
         sIFU,
-        Mux(bind_to_LSU_aw_w, sLSU, sIDLE)
+        Mux(LSU_AXI.aw.valid, sLSU, sIDLE)
       ),
       sIFU -> Mux(IFU_fire.w_burst_last, sIDLE, sIFU),
       sLSU -> Mux(LSU_fire.w_burst_last, sIDLE, sLSU)
@@ -139,9 +123,9 @@ class Arbiter_2Master() extends Module {
   b_owner := MuxLookup(b_owner, sIDLE)(
     Seq(
       sIDLE -> Mux(
-        bind_to_IFU_b,
+        OUT_AXI.b.valid && OUT_AXI.b.id === "b0000".U(4.W),
         sIFU,
-        Mux(bind_to_LSU_b, sLSU, sIDLE)
+        Mux(OUT_AXI.b.valid && OUT_AXI.b.id === "b1000".U(4.W), sLSU, sIDLE)
       ),
       sIFU -> Mux(IFU_fire.b_fire, sIDLE, sIFU),
       sLSU -> Mux(LSU_fire.b_fire, sIDLE, sLSU)
