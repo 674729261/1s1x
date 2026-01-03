@@ -45,7 +45,7 @@ class ysyx_25080216 extends Module {
     val master = new AXI_Flatten
     val slave = Flipped(new AXI_Flatten)
   })
-  val cpu = Module(new CPU_Core(init_pc = "h80000000".U(32.W)))
+  val cpu = Module(new CPU_Core(init_pc = "h20000000".U(32.W)))
   io.master.awvalid := cpu.io.axi_bus.aw.valid
   io.master.awaddr := cpu.io.axi_bus.aw.addr
   io.master.awid := cpu.io.axi_bus.aw.id
