@@ -1,37 +1,37 @@
-.PHONY: build clean run
+.PHONY: all run gdb clean latest $(ALL)
 
-RVGCC=riscv64-linux-gnu-gcc
-RVOBJCOPY=riscv64-linux-gnu-objcopy
-RVOBJDUMP=riscv64-linux-gnu-objdump
+RESULT = .result
+$(shell > $(RESULT))
+MAKECMDGOALS = run
 
+COLOR_RED   = \033[1;31m
+COLOR_GREEN = \033[1;32m
+COLOR_NONE  = \033[0m
 
-CSRC=$(wildcard ./tests/*.c)
+ALL = $(basename $(notdir $(shell find tests/. -name "*.c")))
 
-MDIR=./build
+all: $(addprefix Makefile., $(ALL))
+	@echo "test list [$(words $(ALL)) item(s)]:" $(ALL)
 
-ELF=$(MDIR)/mromtest.elf
-BIN=$(MDIR)/mromtest.bin
-ASM=$(MDIR)/mromtest.txt
+$(ALL): %: Makefile.%
 
+Makefile.%: tests/%.c latest
+	@/bin/echo -e "NAME = $*\nSRCS = $<\ninclude $${AM_HOME}/Makefile" > $@
+	@if make -s -f $@ ARCH=$(ARCH) $(MAKECMDGOALS); then \
+		printf "[%14s] $(COLOR_GREEN)PASS$(COLOR_NONE)\n" $* >> $(RESULT); \
+	else \
+		printf "[%14s] $(COLOR_RED)***FAIL***$(COLOR_NONE)\n" $* >> $(RESULT); \
+	fi
+	-@rm -f Makefile.$*
 
-build: $(ELF) $(BIN) $(ASM)
+run: all
+	@cat $(RESULT)
+	@rm $(RESULT)
+
+gdb: all
 
 clean:
-	rm -rf $(MDIR)
-
-run: $(BIN)
-	make -C $(SOC_NPC_HOME) sim PROG=$(realpath $(BIN))
+	rm -rf Makefile.* build/
 
 
-$(ELF):$(CSRC)
-	mkdir -p $(MDIR)
-	$(RVGCC) $(CSRC) -march=rv32i -mabi=ilp32 \
-	-nostdlib -nostartfiles -fno-stack-protector \
-	-fno-pic -T link.ld \
-	-I./include -O2 -o $@
-
-$(BIN): $(ELF)
-	$(RVOBJCOPY) -O binary $(ELF) $@
-
-$(ASM): $(BIN)
-	$(RVOBJDUMP) -d $(ELF) > $@
+latest:

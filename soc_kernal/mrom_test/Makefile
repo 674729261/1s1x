@@ -1,4 +1,4 @@
-.PHONY: build clean
+.PHONY: build clean run
 
 RVGCC=riscv64-linux-gnu-gcc
 RVOBJCOPY=riscv64-linux-gnu-objcopy
@@ -18,6 +18,9 @@ build: $(ELF) $(BIN) $(ASM)
 
 clean:
 	rm -rf $(MDIR)
+
+run: $(BIN)
+	make -C $(SOC_NPC_HOME) sim PROG=$(realpath $(BIN))
 
 
 $(ELF):$(CSRC)
