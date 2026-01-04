@@ -50,6 +50,7 @@ int simulate(int argc, char *argv[], Config config) {
   dut.reset();
   ref.reset(dut);
   bool difftest_state = false;
+  std::println("start");
   while (!contextp->gotFinish()) {
     retire = false;
     if (dut.top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__reset)
