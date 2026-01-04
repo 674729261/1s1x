@@ -48,9 +48,10 @@ int main(int argc, char *argv[]) {
   Config config = process_args(argc, argv);
   int return_value = -1;
   try {
-    simulate(argc, argv, config);
+    return_value = simulate(argc, argv, config);
   } catch (std::exception e) {
     std::println(std::cerr, "Error : {}", e.what());
   }
   spdlog::shutdown();
+  return return_value;
 }
