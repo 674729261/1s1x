@@ -226,14 +226,14 @@ inline void Ref::step() {
   try_this("??????? ????? ????? 000 ????? 01000 11", sb,
            uint32_t addr = cpu.gpr[d.src1_id] + d.imm_S;
            uint32_t shift = addr & 0x3; vbus.writeMemory(
-               addr, cpu.gpr[d.src2_id] << (shift * 8), 1 << shift));
+               addr & ~0x3, cpu.gpr[d.src2_id] << (shift * 8), 1 << shift));
   try_this("??????? ????? ????? 001 ????? 01000 11", sh,
            uint32_t addr = cpu.gpr[d.src1_id] + d.imm_S;
            uint32_t shift = addr & 0x3; vbus.writeMemory(
-               addr, cpu.gpr[d.src2_id] << (shift * 8), 0x3 << shift));
-  try_this(
-      "??????? ????? ????? 010 ????? 01000 11", sw,
-      vbus.writeMemory(cpu.gpr[d.src1_id] + d.imm_S, cpu.gpr[d.src2_id], 0xF));
+               addr & ~0x3, cpu.gpr[d.src2_id] << (shift * 8), 0x3 << shift));
+  try_this("??????? ????? ????? 010 ????? 01000 11", sw,
+           vbus.writeMemory((cpu.gpr[d.src1_id] + d.imm_S) & ~0x3,
+                            cpu.gpr[d.src2_id], 0xF));
 
   try_this("0000000 00001 00000 000 00000 11100 11", ebreak,
            is_halt = true); // R(10) is $a0
