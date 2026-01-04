@@ -12,7 +12,6 @@
 std::vector<uint32_t> mrom_content;
 
 extern "C" void mrom_read(int32_t addr, int32_t *data) {
-  spdlog::info("{} : {}", mrom_content[0x250 / 4], mrom_content[0x254 / 4]);
   *data = mrom_content[(addr & 0x0FFFFFFF) >> 2];
 }
 
@@ -35,8 +34,5 @@ int init_mrom(std::string_view image_path) {
   prog_file.read(reinterpret_cast<char *>(mrom_content.data()), size_prog);
   prog_file.close();
   spdlog::info("Loaded {} bytes to MROM", size_prog);
-  for (uint32_t v : mrom_content) {
-    std::println("{} ", v);
-  }
   return size_prog;
 }
