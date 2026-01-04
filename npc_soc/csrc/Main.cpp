@@ -33,11 +33,11 @@ int simulate(int argc, char *argv[], Config config) {
       spdlog::info("HIT GOOD TRAP");
       result = 0;
     } else {
-      spdlog::info("HIT BAD TRAP with a0 = {:010x}", dut.getGPR(10));
+      spdlog::warn("HIT BAD TRAP with a0 = {:010x}", dut.getGPR(10));
       result = -1;
     }
   } else {
-    spdlog::info("FAILED TO HALT");
+    spdlog::warn("FAILED TO HALT");
     result = -2;
   }
   dut.print_all_gpr();
