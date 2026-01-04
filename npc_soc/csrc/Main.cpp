@@ -26,7 +26,6 @@ int simulate(int argc, char *argv[], Config config) {
   dut.reset();
   while (!contextp->gotFinish()) {
     dut.step_one_cycle();
-    dut.print_all_gpr();
   }
   int result;
   if (contextp->gotFinish()) {

@@ -7,7 +7,6 @@
 #include "verilated_vcd_c.h"
 #include <MROM.h>
 #include <Setup.h>
-#include <ostream>
 #include <print>
 
 static constexpr std::array<std::string, 32> gpr_names = {

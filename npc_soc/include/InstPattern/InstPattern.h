@@ -3,7 +3,7 @@
 #include <concepts>
 #include <cstdint>
 #include <string_view>
-
+using std::string_view;
 struct Pattern {
   uint32_t mask;
   uint32_t pattern;
