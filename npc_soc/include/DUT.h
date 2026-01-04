@@ -55,7 +55,10 @@ struct Dut {
     m_trace->dump(sim_time);
     sim_time++;
   }
-
+  uint32_t getPC() {
+    return top->rootp
+        ->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__cpu__DOT__pc;
+  }
   uint32_t getGPR(int idx) {
     switch (idx) {
     case 0:
@@ -134,6 +137,7 @@ struct Dut {
       }
       std::println();
     }
+    println("PC = {:#010x}", getPC());
   }
 
   ~Dut() { m_trace->close(); }
