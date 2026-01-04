@@ -52,6 +52,7 @@ int simulate(int argc, char *argv[], Config config) {
   bool difftest_state = false;
   while (!contextp->gotFinish()) {
     dut.step_one_cycle();
+    println("{}", retire);
     if (retire) {
       retire = false;
       ref.step();
