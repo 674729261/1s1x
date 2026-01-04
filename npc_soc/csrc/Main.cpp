@@ -59,7 +59,6 @@ int simulate(int argc, char *argv[], Config config) {
         "{:6} {:08x} {}", retire, dut.getPC(),
         dut.top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__reset);
     if (retire) {
-
       ref.step();
       if (config.difftest) {
         difftest_state = check_difftest(dut, ref);
