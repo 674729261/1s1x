@@ -25,11 +25,8 @@ SECTIONS {
     *(.scommon)
   }
 
-  . = _sram_start;
-  _stack_top = ALIGN(0x1000);
+  _stack_top = _sram_start + 0x1000;
   . = _stack_top + 0x1000;
   _stack_pointer = .;
-  end = .;
-  _end = .;
-  _heap_start = ALIGN(0x1000);
+  _heap_start = _sram_start;
 }
