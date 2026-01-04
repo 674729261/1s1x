@@ -15,6 +15,10 @@
 
 using std::string;
 
+bool retire;
+
+extern "C" void notify_retire(int32_t pc, int32_t inst) { retire = true; }
+
 bool check_difftest(Dut &dut, Ref &ref) {
   bool ret = false;
   for (int i = 0; i < 32; i++) {
@@ -48,10 +52,13 @@ int simulate(int argc, char *argv[], Config config) {
   bool difftest_state = false;
   while (!contextp->gotFinish()) {
     dut.step_one_cycle();
-    if (config.difftest) {
-      difftest_state = check_difftest(dut, ref);
-      if (difftest_state)
-        break;
+    if (retire) {
+      retire = false;
+      if (config.difftest) {
+        difftest_state = check_difftest(dut, ref);
+        if (difftest_state)
+          break;
+      }
     }
   }
   int result;

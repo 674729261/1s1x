@@ -54,6 +54,9 @@ struct Dut {
     m_trace->dump(sim_time);
     sim_time++;
   }
+
+  void step_one_inst() {}
+
   uint32_t getPC() {
     return top->rootp
         ->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__cpu__DOT__pc;

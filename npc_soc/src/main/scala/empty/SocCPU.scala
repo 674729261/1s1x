@@ -55,6 +55,14 @@ class AXI_Checker extends ExtModule {
   val rresp = IO(Input(UInt(2.W)))
 }
 
+class Inst_Retire extends ExtModule {
+  val clock = IO(Input(Clock()))
+  val reset = IO(Input(Reset()))
+  val retire = IO(Input(Bool()))
+  val inst = IO(Input(UInt(32.W)))
+  val pc = IO(Input(UInt(32.W)))
+}
+
 class ysyx_25080216 extends Module {
   val io = IO(new Bundle {
     val interrupt = Input(Bool())
@@ -64,6 +72,13 @@ class ysyx_25080216 extends Module {
   val cpu = Module(new CPU_Core(init_pc = "h20000000".U(32.W)))
   val ebreaker = Module(new Ebreaker)
   val axi_checker = Module(new AXI_Checker)
+  val inst_retire = Module(new Inst_Retire)
+
+  inst_retire.clock := clock
+  inst_retire.reset := reset
+  inst_retire.pc := cpu.io.pc
+  inst_retire.retire := cpu.io.ok_to_step
+  inst_retire.inst := 0.U(32.W)
 
   axi_checker.clock := clock
   axi_checker.reset := reset
