@@ -56,8 +56,9 @@ int simulate(int argc, char *argv[], Config config) {
       ref.reset();
     dut.step_one_cycle();
     println(
-        "{:6} {:08x} {}", retire, dut.getPC(),
-        dut.top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__reset);
+        "{:6} {:08x} {} {:08x}", retire, dut.getPC(),
+        dut.top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__reset,
+        ref.getPC());
     if (retire) {
       ref.step();
       if (config.difftest) {
