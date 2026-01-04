@@ -20,7 +20,6 @@ static constexpr std::array<std::string, 32> gpr_names = {
 
 struct Dut {
   Dut(Config config, VerilatedContext *contextp) : sim_time{0} {
-    init_mrom(config.image_path);
     top = std::make_unique<VysyxSoCFull>(contextp);
     m_trace = std::make_unique<VerilatedVcdC>();
     top->trace(m_trace.get(), 5);

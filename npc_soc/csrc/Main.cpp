@@ -38,6 +38,7 @@ bool check_difftest(Dut &dut, Ref &ref) {
 }
 
 int simulate(int argc, char *argv[], Config config) {
+  init_mrom(config.image_path);
   Verilated::commandArgs(argc, argv);
   std::unique_ptr<VerilatedContext> contextp =
       std::make_unique<VerilatedContext>();
@@ -50,7 +51,6 @@ int simulate(int argc, char *argv[], Config config) {
   dut.reset();
   ref.reset(dut);
   bool difftest_state = false;
-  std::println("start");
   while (!contextp->gotFinish()) {
     retire = false;
     if (dut.top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__reset)
