@@ -1,7 +1,8 @@
 #include "trap.h"
 
+int ans[] = {6, 28};
+
 int main() {
-  int ans[] = {6, 28};
   int n, sum, i, k = 0;
   for (n = 1; n < 30; n++) {
     sum = 0;
