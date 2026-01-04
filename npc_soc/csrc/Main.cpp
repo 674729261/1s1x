@@ -3,6 +3,7 @@
 #include "spdlog/spdlog.h"
 #include <Args.h>
 #include <MROM.h>
+#include <Ref.h>
 #include <VysyxSoCFull.h>
 #include <VysyxSoCFull___024root.h>
 #include <exception>
@@ -14,6 +15,24 @@
 
 using std::string;
 
+bool check_difftest(Dut &dut, Ref &ref) {
+  bool ret = false;
+  for (int i = 0; i < 32; i++) {
+    if (dut.getGPR(i) != ref.cpu.gpr[i]) {
+      spdlog::error("gpr {} differs from ref : should be {:08x}, got {:08x}",
+                    gpr_names[i], ref.cpu.gpr[i], dut.getGPR(i));
+      ret = true;
+    }
+  }
+  if (dut.getPC() != ref.cpu.pc) {
+    spdlog::error("PC differs from ref : should be {:08x}, got {:08x}",
+                  ref.cpu.pc, dut.getPC());
+    ret = true;
+  }
+
+  return ret;
+}
+
 int simulate(int argc, char *argv[], Config config) {
   Verilated::commandArgs(argc, argv);
   std::unique_ptr<VerilatedContext> contextp =
@@ -23,9 +42,17 @@ int simulate(int argc, char *argv[], Config config) {
   Verilated::traceEverOn(true);
 
   Dut dut(config, contextp.get());
+  Ref ref(config);
   dut.reset();
+  ref.reset();
+  bool difftest_state = false;
   while (!contextp->gotFinish()) {
     dut.step_one_cycle();
+    if (config.difftest) {
+      difftest_state = check_difftest(dut, ref);
+      if (difftest_state)
+        break;
+    }
   }
   int result;
   if (contextp->gotFinish()) {
@@ -36,9 +63,12 @@ int simulate(int argc, char *argv[], Config config) {
       spdlog::warn("HIT BAD TRAP with a0 = {:010x}", dut.getGPR(10));
       result = -1;
     }
+  } else if (difftest_state) {
+    spdlog::warn("DIFFTEST FAILED");
+    result = -2;
   } else {
     spdlog::warn("FAILED TO HALT");
-    result = -2;
+    result = -3;
   }
   dut.print_all_gpr();
   return result;

@@ -1,14 +1,14 @@
 #pragma once
 
-#include <DUT.h>
+#include "Setup.h"
 #include <InstPattern/InstPattern.h>
+#include <VirtualBus.h>
 #include <algorithm>
 #include <cstdint>
 #include <my_utils.h>
 #include <stdexcept>
-class Ref {
-public:
-  Ref()
+struct Ref {
+  Ref(Config config)
       : inst_count(0), csr({.mstatus = 0x1800,
                             .mvendorid = 0x79737978,
                             .marchid = 0x17eb198}) {}
@@ -23,18 +23,6 @@ public:
   void step();
   unsigned long long instrCount() { return inst_count; }
 
-  uint32_t getGPR(int idx) {
-    if (idx < 32)
-      return cpu.gpr[idx];
-    else
-      return cpu.pc;
-  };
-
-  void syncCPUState() {};
-
-  ~Ref() {}
-
-private:
   uint32_t isa_raise_intr(int intr_id) {
     csr.mepc = cpu.pc;
     csr.mcause = intr_id;
@@ -59,7 +47,6 @@ private:
     log_and_throw<std::logic_error>("Visited invalid csr : {:x}", id);
   }
 
-private:
   unsigned long long inst_count;
 
   struct {
@@ -76,7 +63,10 @@ private:
     uint32_t pc;
   };
 
+  bool is_halt;
+
   CPU_State cpu;
+  VirtualBus vbus;
 };
 
 #define BEGIN_PATTERN do {
@@ -185,23 +175,23 @@ inline void Ref::step() {
            uint32_t addr = cpu.gpr[d.src1_id] + d.imm_I;
            int shift = (addr & 0x3) * 8;
            cpu.gpr[d.dst_id] =
-               sign_ext<8>((devices->readMemory(addr) >> shift) & 0xFF));
+               sign_ext<8>((vbus.readMemory(addr, 1) >> shift) & 0xFF));
   try_this("??????? ????? ????? 100 ????? 00000 11", lbu,
            uint32_t addr = cpu.gpr[d.src1_id] + d.imm_I;
            int shift = (addr & 0x3) * 8;
-           cpu.gpr[d.dst_id] = (devices->readMemory(addr) >> shift) & 0xFF);
+           cpu.gpr[d.dst_id] = (vbus.readMemory(addr, 1) >> shift) & 0xFF);
   try_this("??????? ????? ????? 001 ????? 00000 11", lh,
            uint32_t addr = cpu.gpr[d.src1_id] + d.imm_I;
            int shift = (addr & 0x3) * 8;
            cpu.gpr[d.dst_id] =
-               sign_ext<16>((devices->readMemory(addr) >> shift) & 0xFFFF));
+               sign_ext<16>((vbus.readMemory(addr, 2) >> shift) & 0xFFFF));
   try_this("??????? ????? ????? 101 ????? 00000 11", lhu,
            uint32_t addr = cpu.gpr[d.src1_id] + d.imm_I;
            int shift = (addr & 0x3) * 8;
-           cpu.gpr[d.dst_id] = (devices->readMemory(addr) >> shift) & 0xFFFF);
+           cpu.gpr[d.dst_id] = (vbus.readMemory(addr, 2) >> shift) & 0xFFFF);
   try_this("??????? ????? ????? 010 ????? 00000 11", lw,
            cpu.gpr[d.dst_id] =
-               devices->readMemory(cpu.gpr[d.src1_id] + d.imm_I));
+               vbus.readMemory(cpu.gpr[d.src1_id] + d.imm_I, 4));
 
   try_this("??????? ????? ????? ??? ????? 11011 11", jal,
            cpu.gpr[d.dst_id] = cpu.pc + 4;
@@ -231,18 +221,18 @@ inline void Ref::step() {
 
   try_this("??????? ????? ????? 000 ????? 01000 11", sb,
            uint32_t addr = cpu.gpr[d.src1_id] + d.imm_S;
-           uint32_t shift = addr & 0x3; devices->writeMemory(
+           uint32_t shift = addr & 0x3; vbus.writeMemory(
                addr, cpu.gpr[d.src2_id] << (shift * 8), 1 << shift));
   try_this("??????? ????? ????? 001 ????? 01000 11", sh,
            uint32_t addr = cpu.gpr[d.src1_id] + d.imm_S;
-           uint32_t shift = addr & 0x3; devices->writeMemory(
+           uint32_t shift = addr & 0x3; vbus.writeMemory(
                addr, cpu.gpr[d.src2_id] << (shift * 8), 0x3 << shift));
-  try_this("??????? ????? ????? 010 ????? 01000 11", sw,
-           devices->writeMemory(cpu.gpr[d.src1_id] + d.imm_S,
-                                cpu.gpr[d.src2_id], 0xF));
+  try_this(
+      "??????? ????? ????? 010 ????? 01000 11", sw,
+      vbus.writeMemory(cpu.gpr[d.src1_id] + d.imm_S, cpu.gpr[d.src2_id], 0xF));
 
   try_this("0000000 00001 00000 000 00000 11100 11", ebreak,
-           EMUstate = RISCV32::Interrupt::EBREAK); // R(10) is $a0
+           is_halt = true); // R(10) is $a0
   try_this("0000000 00000 00000 000 00000 11100 11", ecall,
            dnpc = isa_raise_intr(11));
   try_this("0011000 00010 00000 000 00000 11100 11", mret, dnpc = csr.mepc);
