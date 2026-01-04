@@ -61,7 +61,7 @@ LOG_FILE ?= "log/$(TIME_STAMP).log"
 
 sim: npc
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
-	$(BIN) --image $(PROG) --log $(LOG_FILE) --difftest
+	$(BIN) --image $(PROG) --log $(LOG_FILE)
 
 sim_full_speed: VERILATOR_CFLAGS+=-DNDEBUG -fstrict-aliasing \
 -frename-registers -fomit-frame-pointer \

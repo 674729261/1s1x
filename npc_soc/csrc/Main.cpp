@@ -58,8 +58,8 @@ int simulate(int argc, char *argv[], Config config) {
     std::println("PC = {:08x}", dut.getPC());
 
     if (retire) {
-      ref.step();
       if (config.difftest) {
+        ref.step();
         difftest_state = check_difftest(dut, ref);
         if (difftest_state)
           break;
