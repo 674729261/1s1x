@@ -34,18 +34,22 @@ struct VirtualBus {
         0x00000000, 0x000000FF, 0x0000FF00, 0x0000FFFF, 0x00FF0000, 0x00FF00FF,
         0x00FFFF00, 0x00FFFFFF, 0xFF000000, 0xFF0000FF, 0xFF00FF00, 0xFF00FFFF,
         0xFFFF0000, 0xFFFF00FF, 0xFFFFFF00, 0xFFFFFFFF};
-
+    auto check_range = [=](Area area) {
+      return addr >= area.from && addr <= area.to;
+    };
     if ((addr & 0x3) != 0) {
       log_and_throw<std::logic_error>("Unaligned write to address {:08x}",
                                       addr);
     }
     uint32_t mask32 = lookup_mask32[wmask];
-    if (addr >= mrom_field.from && addr <= mrom_field.to) {
+    if (check_range(mrom_field)) {
       log_and_throw<std::logic_error>(
           "Failed to write to address {:08x} : MROM can not be written", addr);
-    } else if (addr >= sram_field.from && addr <= sram_field.to) {
+    } else if (check_range(sram_field)) {
       sram[(addr & 0x00FFFFFF) >> 2] &= ~mask32;
       sram[(addr & 0x00FFFFFF) >> 2] |= wdata & mask32;
+    } else if (check_range(uart_field)) {
+      // no action
     } else {
       log_and_throw<std::logic_error>("Failed to decode write addr {:08x}",
                                       addr);
@@ -60,4 +64,6 @@ struct VirtualBus {
 
   std::vector<uint32_t> sram;
   const Area sram_field = {0x0f000000, 0x0f001fff};
+
+  const Area uart_field = {0x10000000, 0x10000fff};
 };
