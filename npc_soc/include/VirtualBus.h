@@ -14,9 +14,14 @@ struct VirtualBus {
       log_and_throw<std::logic_error>(
           "Unaligned read in address {:08x}, size = {}", addr, sz);
     }
-    if (addr >= mrom_field.from && addr + sz <= mrom_field.to) {
+
+    auto check_range = [=](Area area) {
+      return addr >= area.from && addr + sz - 1 <= area.to;
+    };
+
+    if (check_range(mrom_field)) {
       return mrom_content[(addr & 0x00FFFFFF) >> 2];
-    } else if (addr >= sram_field.from && addr + sz <= sram_field.to) {
+    } else if (check_range(sram_field)) {
       return sram[(addr & 0x00FFFFFF) >> 2];
     } else {
       log_and_throw<std::logic_error>(
