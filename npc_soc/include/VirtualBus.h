@@ -51,8 +51,8 @@ struct VirtualBus {
     uint32_t from, to;
   };
 
-  Area mrom_field = {0x20000000, 0x20000fff};
+  const Area mrom_field = {0x20000000, 0x20000fff};
 
   std::vector<uint32_t> sram;
-  Area sram_field = {0x0f000000, 0x0f001fff};
+  const Area sram_field = {0x0f000000, 0x0f001fff};
 };
