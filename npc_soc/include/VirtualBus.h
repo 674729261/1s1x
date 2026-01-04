@@ -39,8 +39,8 @@ struct VirtualBus {
       log_and_throw<std::logic_error>(
           "Failed to write to address {:08x} : MROM can not be written", addr);
     } else if (addr >= sram_field.from && addr <= sram_field.to) {
-      sram[(addr & 0x00FFFFFF)] &= ~mask32;
-      sram[(addr & 0x00FFFFFF)] |= wdata & mask32;
+      sram[(addr & 0x00FFFFFF) >> 2] &= ~mask32;
+      sram[(addr & 0x00FFFFFF) >> 2] |= wdata & mask32;
     } else {
       log_and_throw<std::logic_error>("Failed to decode write addr {:08x}",
                                       addr);
