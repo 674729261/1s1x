@@ -1,7 +1,9 @@
 
+#include "spdlog/spdlog.h"
 #include <Args.h>
 #include <MROM.h>
 #include <VysyxSoCFull.h>
+#include <VysyxSoCFull___024root.h>
 #include <exception>
 #include <iostream>
 #include <memory>
@@ -27,7 +29,9 @@ void reset_soc(VysyxSoCFull &soc) {
   soc.eval();
   soc.reset = 0;
 }
-
+#define gprname(X)                                                             \
+  rootp                                                                        \
+      ->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__cpu__DOT__gpr__DOT__register_bank_regs_##X##_r
 int simulate(int argc, char *argv[], Config config) {
   Verilated::commandArgs(argc, argv);
   std::unique_ptr<VerilatedContext> contextp =
@@ -39,7 +43,7 @@ int simulate(int argc, char *argv[], Config config) {
   Verilated::traceEverOn(true);
   dut->trace(m_trace.get(), 5);
   m_trace->open("waveform.vcd");
-  static vluint64_t sim_time = 0;
+  vluint64_t sim_time = 0;
 
   init_mrom(config.image_path);
   reset_soc(*dut);
@@ -54,6 +58,18 @@ int simulate(int argc, char *argv[], Config config) {
     sim_time++;
   }
   int result;
+  if (contextp->gotFinish()) {
+    if (dut->gprname(10) == 0) {
+      spdlog::info("HIT GOOD TRAP");
+      result = 0;
+    } else {
+      spdlog::info("HIT BAD TRAP with a0 = {:010x}", dut->gprname(10));
+      result = -1;
+    }
+  } else {
+    spdlog::info("FAILED TO HALT");
+    result = -2;
+  }
   m_trace->close();
 
   return result;
