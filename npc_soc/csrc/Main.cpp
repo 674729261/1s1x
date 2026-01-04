@@ -54,6 +54,7 @@ int simulate(int argc, char *argv[], Config config) {
     dut.step_one_cycle();
     if (retire) {
       retire = false;
+      ref.step();
       if (config.difftest) {
         difftest_state = check_difftest(dut, ref);
         if (difftest_state)
