@@ -37,11 +37,14 @@ struct Dut {
     top->eval();
     top->clock = 1;
     top->eval();
-    top->clock = 0;
-    top->eval();
-    top->clock = 1;
-    top->eval();
     top->reset = 0;
+
+    while (top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__reset) {
+      top->clock = 0;
+      top->eval();
+      top->clock = 1;
+      top->eval();
+    }
   }
 
   void step_one_cycle() {
