@@ -26,10 +26,6 @@ int simulate(int argc, char *argv[], Config config) {
   dut.reset();
   while (!contextp->gotFinish() && dut.sim_time <= 2 * 10000) {
     dut.step_one_cycle();
-    dut.print_all_gpr();
-    if (dut.getPC() == 0) {
-      break;
-    }
   }
   int result;
   if (contextp->gotFinish()) {
