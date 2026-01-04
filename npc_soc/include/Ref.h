@@ -1,5 +1,6 @@
 #pragma once
 
+#include "DUT.h"
 #include "Setup.h"
 #include <InstPattern/InstPattern.h>
 #include <VirtualBus.h>
@@ -15,9 +16,12 @@ struct Ref {
 
   uint32_t getPC() { return cpu.pc; };
 
-  void reset() {
+  void reset(Dut &dut) {
     inst_count = 0;
-    std::fill(cpu.gpr.begin(), cpu.gpr.end(), 0);
+    // std::fill(cpu.gpr.begin(), cpu.gpr.end(), 0);
+    for (int i = 0; i < 32; i++) {
+      cpu.gpr[i] = dut.getGPR(i);
+    }
     cpu.pc = 0x20000000;
   };
   void step();
