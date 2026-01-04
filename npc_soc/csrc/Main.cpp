@@ -51,6 +51,7 @@ int simulate(int argc, char *argv[], Config config) {
   ref.reset();
   bool difftest_state = false;
   while (!contextp->gotFinish()) {
+    retire = false;
     if (dut.top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__reset)
       ref.reset();
     dut.step_one_cycle();
@@ -58,7 +59,7 @@ int simulate(int argc, char *argv[], Config config) {
         "{:6} {:08x} {}", retire, dut.getPC(),
         dut.top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__reset);
     if (retire) {
-      retire = false;
+
       ref.step();
       if (config.difftest) {
         difftest_state = check_difftest(dut, ref);
