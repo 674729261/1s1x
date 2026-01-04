@@ -70,10 +70,7 @@ class LSU() extends Module {
   val rdata_reg = RegEnable(ramLoader.io.out, r_fire)
 
   fetch_port.ar.valid := should_mem_access_r && state_r === sIDLE_r
-  fetch_port.ar.addr := Cat(
-    in.bits.write_info.alu_out(31, 2),
-    "b00".U(2.W)
-  )
+  fetch_port.ar.addr := in.bits.write_info.alu_out(31, 2)
   fetch_port.ar.size := Mux1H(
     Seq(
       in.bits.controls.is_ram_byte -> "b000".U(3.W),
