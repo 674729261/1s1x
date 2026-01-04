@@ -1,6 +1,6 @@
 #include "trap.h"
 
-int ans[] __attribute__((section(".data"))) = {6, 28};
+int ans[] = {6, 28};
 
 int main() {
   int n, sum, i, k = 0;

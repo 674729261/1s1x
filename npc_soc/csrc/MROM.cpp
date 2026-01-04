@@ -1,12 +1,16 @@
+#include "spdlog/spdlog.h"
 #include <MROM.h>
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
+#include <ostream>
 #include <vector>
 
 std::vector<uint32_t> mrom_content;
 
 extern "C" void mrom_read(int32_t addr, int32_t *data) {
+  if ((addr & 0x0FFFFFFF) == 0x00000250)
+    spdlog::info("!!!!");
   *data = mrom_content[(addr & 0x0FFFFFFF) >> 2];
 }
 
