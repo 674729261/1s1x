@@ -55,5 +55,8 @@ int main() {
   return_value = test_half();
   if (return_value)
     return -1;
+  return_value = test_byte();
+  if (return_value)
+    return -1;
   return 0;
 }
