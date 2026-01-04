@@ -31,16 +31,16 @@ struct VirtualBus {
         0xFFFF0000, 0xFFFF00FF, 0xFFFFFF00, 0xFFFFFFFF};
 
     if ((addr & 0x3) != 0) {
-      log_and_throw<std::logic_error>(
-          "Unaligned write to address {:08x}", addr);
+      log_and_throw<std::logic_error>("Unaligned write to address {:08x}",
+                                      addr);
     }
     uint32_t mask32 = lookup_mask32[wmask];
     if (addr >= mrom_field.from && addr <= mrom_field.to) {
       log_and_throw<std::logic_error>(
           "Failed to write to address {:08x} : MROM can not be written", addr);
     } else if (addr >= sram_field.from && addr <= sram_field.to) {
-      sram[addr] &= ~mask32;
-      sram[addr] |= wdata & mask32;
+      sram[(addr & 0x00FFFFFF)] &= ~mask32;
+      sram[(addr & 0x00FFFFFF)] |= wdata & mask32;
     } else {
       log_and_throw<std::logic_error>("Failed to decode write addr {:08x}",
                                       addr);
