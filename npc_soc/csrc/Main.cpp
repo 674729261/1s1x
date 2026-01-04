@@ -1,13 +1,14 @@
-#include "Setup.h"
+
+#include <Args.h>
 #include <MROM.h>
 #include <VysyxSoCFull.h>
+#include <exception>
 #include <iostream>
 #include <memory>
 #include <print>
 #include <verilated.h>
 #include <verilated_vcd_c.h>
 
-using std::cerr;
 using std::string;
 
 void reset_soc(VysyxSoCFull &soc) {
@@ -27,26 +28,8 @@ void reset_soc(VysyxSoCFull &soc) {
   soc.reset = 0;
 }
 
-int main(int argc, char *argv[]) {
+int simulate(int argc, char *argv[], Config config) {
   Verilated::commandArgs(argc, argv);
-  argparse::ArgumentParser program("NPCemu");
-  register_argparse(program);
-  try {
-    program.parse_args(argc, argv);
-  } catch (const std::exception &err) {
-    cerr << err.what() << std::endl;
-    cerr << program;
-    std::terminate();
-  }
-  Config config;
-  try {
-    register_logger(program);
-    config = setup(program);
-  } catch (const std::exception &err) {
-    std::println(std::cerr, "Error : {}", err.what());
-    std::terminate();
-  }
-
   std::unique_ptr<VerilatedContext> contextp =
       std::make_unique<VerilatedContext>();
   contextp->commandArgs(argc, argv);
@@ -72,7 +55,17 @@ int main(int argc, char *argv[]) {
   }
   int result;
   m_trace->close();
-  spdlog::shutdown();
 
   return result;
+}
+
+int main(int argc, char *argv[]) {
+  Config config = process_args(argc, argv);
+  int return_value = -1;
+  try {
+    simulate(argc, argv, config);
+  } catch (std::exception e) {
+    std::println(std::cerr, "Error : {}", e.what());
+  }
+  spdlog::shutdown();
 }
