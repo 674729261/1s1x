@@ -41,7 +41,18 @@ class AXI_Flatten extends Bundle {
 
 class Ebreaker extends ExtModule {
   val clock = IO(Input(Clock()))
+  val reset = IO(Input(Reset()))
   val ebreak = IO(Input(Bool()))
+}
+class AXI_Checker extends ExtModule {
+  val clock = IO(Input(Clock()))
+  val reset = IO(Input(Reset()))
+  val bready = IO(Input(Bool()))
+  val bvalid = IO(Input(Bool()))
+  val bresp = IO(Input(UInt(2.W)))
+  val rready = IO(Input(Bool()))
+  val rvalid = IO(Input(Bool()))
+  val rresp = IO(Input(UInt(2.W)))
 }
 
 class ysyx_25080216 extends Module {
@@ -52,7 +63,19 @@ class ysyx_25080216 extends Module {
   })
   val cpu = Module(new CPU_Core(init_pc = "h20000000".U(32.W)))
   val ebreaker = Module(new Ebreaker)
+  val axi_checker = Module(new AXI_Checker)
+
+  axi_checker.clock := clock
+  axi_checker.reset := reset
+  axi_checker.bvalid := io.master.bvalid
+  axi_checker.bready := io.master.bready
+  axi_checker.bresp := io.master.bresp
+  axi_checker.rvalid := io.master.rvalid
+  axi_checker.rready := io.master.rready
+  axi_checker.rresp := io.master.rresp
+
   ebreaker.clock := clock
+  ebreaker.reset := reset
   ebreaker.ebreak := cpu.io.ebreak
 
   io.master.awvalid := cpu.io.axi_bus.aw.valid
