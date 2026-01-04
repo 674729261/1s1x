@@ -26,6 +26,7 @@ int simulate(int argc, char *argv[], Config config) {
   dut.reset();
   while (!contextp->gotFinish() && dut.sim_time <= 2 * 100000) {
     dut.step_one_cycle();
+    dut.print_all_gpr();
   }
   int result;
   if (contextp->gotFinish()) {
