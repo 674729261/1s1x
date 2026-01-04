@@ -19,7 +19,6 @@ int test_word() {
     *p = (uint32_t)((uint32_t)p * 23);
   }
   for (volatile uint32_t *p = start; p < end; p++) {
-    *p = (uint32_t)p;
     MY_CHECK(*p == (uint32_t)((uint32_t)p * 23));
   }
   return 0;
