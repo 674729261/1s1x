@@ -17,9 +17,9 @@ static const char mainargs[MAINARGS_MAX_LEN] =
     TOSTRING(MAINARGS_PLACEHOLDER); // defined in CFLAGS
 
 void putch(char ch) {
-  uint8_t line_status = 0x00;
-  while (!(line_status & (1 << 5)))
-    line_status = *(volatile uint8_t *)(SERIAL_PORT + SERIAL_LSR_OFFSET);
+  // uint8_t line_status = 0x00;
+  // while (!(line_status & (1 << 5)))
+  //   line_status = inb(SERIAL_PORT + SERIAL_LSR_OFFSET);
 
   outb(SERIAL_PORT, ch);
 }
@@ -30,9 +30,7 @@ void halt(int code) {
     ;
 }
 
-void _init_uart() {
-  *(volatile uint8_t *)(SERIAL_INT_OFFSET + SERIAL_PORT) = 0x00;
-}
+void _init_uart() { outb(SERIAL_INT_OFFSET + SERIAL_PORT, 0x00); }
 void _show_motd(uint32_t vendorid, uint32_t archid) {
   const char *first_part = "\033[31mmvendorid\033[0m : 0x";
   const char *second_part = "\n\033[31mmarchid\033[0m : ";
