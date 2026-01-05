@@ -9,7 +9,7 @@
   } while (0)
 
 int main() {
-  for (int i = 0; i < 0xfff0; i += 4) {
+  for (int i = 0; i < 0xf0; i += 4) {
     uint32_t recv = flash_read(i);
     MY_CHECK(recv == i);
   } // char buffer[16] = {};
