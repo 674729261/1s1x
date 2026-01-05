@@ -146,7 +146,7 @@ module spi_top_apb #(
             // next write to 0x18
             xip_paddr   <= 5'h18;
             xip_pwrite  <= 1'b1;
-            xip_pwdata  <= 32'h00000080;
+            xip_pwdata  <= 32'h00000000;
             xip_pstrb   <= 4'b1111;
             xip_psel    <= 1'b1;
             xip_penable <= 1'b1;
