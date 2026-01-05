@@ -1,5 +1,5 @@
-#include "am.h"
 #include <klib.h>
+#include <spi.h>
 #include <stdint.h>
 #define SPI_BASE 0x10001000
 #define MY_CHECK(C)                                                            \

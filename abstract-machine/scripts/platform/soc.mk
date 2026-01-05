@@ -11,7 +11,7 @@ AM_SRCS := riscv/soc/start.S \
            platform/dummy/mpe.c
 
 CFLAGS    += -fdata-sections -ffunction-sections
-CFLAGS    += -I$(AM_HOME)/am/src/platform/soc/include -I-I$(AM_HOME)/am/src/riscv
+CFLAGS    += -I$(AM_HOME)/am/src/platform/soc/include -I$(AM_HOME)/am/src
 LDSCRIPTS += $(AM_HOME)/scripts/linker_soc.ld
 LDFLAGS   += --gc-sections -e _start
 
