@@ -58,7 +58,7 @@ static inline void set_spi_len(uint32_t len) {
 static inline uint32_t flash_read(uintptr_t addr) {
   spi_tx_neg(true);
   spi_rx_neg(true);
-  outw(SPI_BASE + 0x4, (0xff << 24) | (addr & 0x00ffffff));
+  outw(SPI_BASE + 0x4, (0x03 << 24) | (addr & 0x00ffffff));
   set_spi_ss(SPI_SLAVE_FLASH);
   set_spi_len(64);
   set_spi_busy();
