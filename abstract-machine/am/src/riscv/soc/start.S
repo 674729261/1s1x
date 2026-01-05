@@ -5,9 +5,9 @@
 _start:
   mv s0, zero
   la sp, _stack_pointer
+  call _init_uart
   csrr a0, mvendorid
   csrr a1, marchid
-  call _init_uart
   call _show_motd
   call _trm_init
 
