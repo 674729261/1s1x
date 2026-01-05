@@ -37,5 +37,6 @@ int main() {
   }
   for (int i = cnt - 1; i >= 0; i--)
     putch(buffer[i]);
+  putch('\n');
   return 0;
 }
