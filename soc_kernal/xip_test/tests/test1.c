@@ -7,7 +7,7 @@
     if (!(C))                                                                  \
       return -1;                                                               \
   } while (0)
-#define XIP_BASE 0x3000f0f0
+#define XIP_BASE 0x3007f0f0
 int main() {
   uint32_t recv = inl(XIP_BASE);
   char buffer[16] = {};

@@ -371,7 +371,7 @@ module spi_top_apb #(
         S_RESPOND: begin
           // hold internal values, present shifted result on APB read response when master performs enable
           concat64   <= concat64;  // hold
-          xip_prdata <= concat64[32:1];
+          xip_prdata <= {concat64[8:1], concat64[16:9], concat64[24:17], concat64[32:25]};
           // assert pready to APB master when it is in enable phase and accessing XIP
           if (in_psel && in_penable && is_xip && seq_done) begin
             xip_pready <= 1'b1;
