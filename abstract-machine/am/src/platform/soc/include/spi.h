@@ -57,19 +57,20 @@ static inline void set_spi_len(uint32_t len) {
 
 static inline uint32_t flash_read(uintptr_t addr) {
   spi_tx_neg(true);
-  spi_rx_neg(false);
+  spi_rx_neg(true);
   outl(SPI_BASE + 0x4, (0x03 << 24) | (addr & 0x00ffffff));
   outl(SPI_BASE, 0);
   set_spi_ss(SPI_SLAVE_FLASH);
   set_spi_len(64);
   set_spi_busy();
   wait_spi_finish();
-  uint32_t rx_data_raw = inl(SPI_BASE);
-  uint32_t rx_data = 0;
-  rx_data |= (rx_data_raw & 0xff000000) >> 24;
-  rx_data |= (rx_data_raw & 0x00ff0000) >> 8;
-  rx_data |= (rx_data_raw & 0x0000ff00) << 8;
-  rx_data |= (rx_data_raw & 0x000000ff) << 24;
+  uint64_t rx_data = inl(SPI_BASE) | ((uint64_t)(inl(SPI_BASE + 0x4)) << 32ull);
+  rx_data >>= 1;
+  // uint32_t rx_data = 0;
+  // rx_data |= (rx_data_raw & 0xff000000) >> 24;
+  // rx_data |= (rx_data_raw & 0x00ff0000) >> 8;
+  // rx_data |= (rx_data_raw & 0x0000ff00) << 8;
+  // rx_data |= (rx_data_raw & 0x000000ff) << 24;
   return rx_data;
 }
 
