@@ -12,6 +12,7 @@ int main() {
   uint32_t recv = inl(XIP_BASE);
   char buffer[16] = {};
   int cnt = 0;
+  MY_CHECK(recv == 0x7f0f0);
   while (recv) {
     int dig = recv % 16;
     buffer[cnt++] = (dig < 10 ? '0' + dig : 'a' + dig - 10);
@@ -20,5 +21,4 @@ int main() {
   for (int i = cnt - 1; i >= 0; i--)
     putch(buffer[i]);
   putch('\n');
-  MY_CHECK(recv == 0x7f0f0);
 }
