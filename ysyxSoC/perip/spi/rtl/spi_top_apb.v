@@ -213,10 +213,9 @@ module spi_top_apb #(
         end
 
         S_SETUP_WR4: begin
-          // write 0x00000000 to addr 0x4
           xip_paddr   <= 5'h04;
           xip_pwrite  <= 1'b1;
-          xip_pwdata  <= 32'h00000000;
+          xip_pwdata  <= {8'h03, target_addr[23:0]};
           xip_pstrb   <= 4'b1111;
           xip_psel    <= 1'b1;
           xip_penable <= 1'b0;
@@ -228,7 +227,7 @@ module spi_top_apb #(
           xip_penable <= 1'b1;
           xip_pwrite  <= 1'b1;
           xip_paddr   <= 5'h04;
-          xip_pwdata  <= 32'h00000000;
+          xip_pwdata  <= {8'h03, target_addr[23:0]};
           if (spi_pready) begin
             xip_psel    <= 1'b0;
             xip_penable <= 1'b0;
@@ -238,10 +237,9 @@ module spi_top_apb #(
         end
 
         S_SETUP_WR0: begin
-          // write {8'h03, target_addr[23:0]} to addr 0x0
-          xip_paddr   <= 5'h00;
-          xip_pwrite  <= 1'b1;
-          xip_pwdata  <= {8'h03, target_addr[23:0]};
+          xip_paddr  <= 5'h00;
+          xip_pwrite <= 1'b1;
+          xip_pwdata <= 32'h00000000;
           xip_pstrb   <= 4'b1111;
           xip_psel    <= 1'b1;
           xip_penable <= 1'b0;
@@ -253,7 +251,7 @@ module spi_top_apb #(
           xip_penable <= 1'b1;
           xip_pwrite  <= 1'b1;
           xip_paddr   <= 5'h00;
-          xip_pwdata  <= {8'h03, target_addr[23:0]};
+          xip_pwdata  <= 32'h00000000;
           if (spi_pready) begin
             xip_psel    <= 1'b0;
             xip_penable <= 1'b0;
