@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Flash.h>
 #include <MROM.h>
 #include <cstdint>
 #include <my_utils.h>
@@ -29,7 +30,7 @@ struct VirtualBus {
     } else if (check_range(sram_field)) {
       return {sram[(addr & 0x00FFFFFF) >> 2], false};
     } else if (check_range(flash_field)) {
-      return {addr & 0x0FFFFFFF, false};
+      return {flash_content[(addr & 0x0FFFFFFF) >> 2], false};
     } else if (check_range(uart_field)) {
       return {0xdeadbeef, true};
     } else if (check_range(spi_field)) {

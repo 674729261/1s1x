@@ -1,22 +1,22 @@
 ENTRY(_start)
 
 MEMORY {
-  mrom (rx)  : ORIGIN = 0x20000000, LENGTH = 4K
+  flash (rx)  : ORIGIN = 0x30000000, LENGTH = 16K
   sram (rwx) : ORIGIN = 0x0f000000, LENGTH = 8K
 }
 
 SECTIONS
 {
-  . = ORIGIN(mrom);
+  . = ORIGIN(flash);
 
   .text : {
     *(entry)
     *(.text*)
-  } > mrom AT> mrom
+  } > flash AT> flash
 
   .rodata : {
     *(.rodata*)
-  } > mrom AT> mrom
+  } > flash AT> flash
 
 
   . = ORIGIN(sram);
@@ -26,7 +26,7 @@ SECTIONS
   *(.data*)
   *(.sdata*)
   __data_end = .;
-  } > sram AT> mrom
+  } > sram AT> flash
 
   __data_load_start = LOADADDR(.data);
   __data_load_end   = __data_load_start + SIZEOF(.data);

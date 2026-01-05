@@ -40,7 +40,7 @@ bool check_difftest(Dut &dut, Ref &ref) {
 
 int simulate(int argc, char *argv[], Config config) {
   init_mrom(config.image_path);
-  init_flash();
+  init_flash(config.image_path);
   Verilated::commandArgs(argc, argv);
   std::unique_ptr<VerilatedContext> contextp =
       std::make_unique<VerilatedContext>();
