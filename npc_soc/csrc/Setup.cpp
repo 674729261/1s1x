@@ -4,8 +4,6 @@
 using std::println, std::cerr;
 using std::string;
 
-extern "C" void flash_read(int32_t addr, int32_t *data) { assert(0); }
-
 void register_argparse(argparse::ArgumentParser &program) {
   program.add_argument("-i", "--image")
       .help("Path to log file")

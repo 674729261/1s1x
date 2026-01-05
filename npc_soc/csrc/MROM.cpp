@@ -15,7 +15,7 @@ extern "C" void mrom_read(int32_t addr, int32_t *data) {
   *data = mrom_content[(addr & 0x0FFFFFFF) >> 2];
 }
 
-int init_mrom(std::string_view image_path) {
+void init_mrom(std::string_view image_path) {
   using std::ifstream;
   using std::ios;
 
@@ -34,5 +34,4 @@ int init_mrom(std::string_view image_path) {
   prog_file.read(reinterpret_cast<char *>(mrom_content.data()), size_prog);
   prog_file.close();
   spdlog::info("Loaded {} bytes to MROM", size_prog);
-  return size_prog;
 }

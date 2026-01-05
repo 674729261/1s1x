@@ -1,5 +1,6 @@
 
 #include "DUT.h"
+#include "Flash.h"
 #include "spdlog/spdlog.h"
 #include <Args.h>
 #include <MROM.h>
@@ -39,6 +40,7 @@ bool check_difftest(Dut &dut, Ref &ref) {
 
 int simulate(int argc, char *argv[], Config config) {
   init_mrom(config.image_path);
+  init_flash();
   Verilated::commandArgs(argc, argv);
   std::unique_ptr<VerilatedContext> contextp =
       std::make_unique<VerilatedContext>();
