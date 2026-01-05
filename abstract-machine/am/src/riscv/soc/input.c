@@ -1,7 +1,7 @@
 #include "riscv/riscv.h"
-#include "soc.h"
 #include <am.h>
 #include <klib.h>
+#include <soc.h>
 #include <stdint.h>
 #include <sys/types.h>
 

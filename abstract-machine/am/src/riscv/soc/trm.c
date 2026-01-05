@@ -1,8 +1,8 @@
 #include "riscv/riscv.h"
-#include "spi.h"
 #include <am.h>
 #include <klib-macros.h>
 #include <klib.h>
+#include <spi.h>
 #include <stdint.h>
 
 extern char _heap_start;
@@ -29,7 +29,7 @@ void halt(int code) {
   while (1)
     ;
 }
-#include <a.h>
+
 void _init_uart() {
   uint8_t lcr = inb(SERIAL_PORT + SERIAL_LCR_OFFSET);
   lcr |= (1 << 7);

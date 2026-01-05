@@ -1,7 +1,7 @@
 #include "riscv/riscv.h"
-#include "soc.h"
 #include <am.h>
 #include <klib.h>
+#include <soc.h>
 #include <stdint.h>
 
 #define AUDIO_FREQ_ADDR (AUDIO_ADDR + 0x00)
