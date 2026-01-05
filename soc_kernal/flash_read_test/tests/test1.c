@@ -9,7 +9,7 @@
   } while (0)
 
 int main() {
-  uint32_t addr = 0x23;
+  uint32_t addr = 0x28;
   uint32_t recv = flash_read(addr);
   char buffer[16] = {};
   int cnt = 0;
