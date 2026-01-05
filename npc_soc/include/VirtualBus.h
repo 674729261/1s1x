@@ -28,6 +28,8 @@ struct VirtualBus {
       return {mrom_content[(addr & 0x00FFFFFF) >> 2], false};
     } else if (check_range(sram_field)) {
       return {sram[(addr & 0x00FFFFFF) >> 2], false};
+    } else if (check_range(flash_field)) {
+      return {addr & 0x0FFFFFFF, false};
     } else if (check_range(uart_field)) {
       return {0xdeadbeef, true};
     } else {
@@ -68,6 +70,8 @@ struct VirtualBus {
   };
 
   const Area mrom_field = {0x20000000, 0x20000fff};
+
+  const Area flash_field = {0x30000000, 0x3fffffff};
 
   std::vector<uint32_t> sram;
   const Area sram_field = {0x0f000000, 0x0f001fff};
