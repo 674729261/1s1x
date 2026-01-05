@@ -3,7 +3,7 @@
 
 #include <klib-macros.h>
 #include <klib.h>
-#include <riscv/riscv.h>
+#include ISA_H
 #include <stdint.h>
 
 #define DEVICE_BASE 0xa0000000

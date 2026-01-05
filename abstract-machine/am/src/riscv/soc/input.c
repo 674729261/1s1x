@@ -1,4 +1,3 @@
-#include "riscv/riscv.h"
 #include <am.h>
 #include <klib.h>
 #include <soc.h>
