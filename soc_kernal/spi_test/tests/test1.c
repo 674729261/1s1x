@@ -27,8 +27,8 @@ int main() {
   ctrl |= (1 << 8);
   *(volatile uint32_t *)(SPI_BASE + 0x10) = ctrl;
 
-  while (ctrl & (1 << 8))
-    ctrl = *(volatile uint32_t *)(SPI_BASE + 0x10);
+  // while (ctrl & (1 << 8))
+  //   ctrl = *(volatile uint32_t *)(SPI_BASE + 0x10);
 
   uint32_t recv = *(volatile uint32_t *)(SPI_BASE);
 
