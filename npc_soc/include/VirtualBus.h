@@ -59,6 +59,9 @@ struct VirtualBus {
       sram[(addr & 0x00FFFFFF) >> 2] |= wdata & mask32;
     } else if (check_range(uart_field)) {
       // no action
+    } else if (check_range(flash_field)) {
+      log_and_throw<std::logic_error>(
+          "Failed to write to address {:08x} : flash can not be written", addr);
     } else {
       log_and_throw<std::logic_error>("Failed to decode write addr {:08x}",
                                       addr);
