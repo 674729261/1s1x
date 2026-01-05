@@ -47,7 +47,7 @@ int simulate(int argc, char *argv[], Config config) {
   Verilated::traceEverOn(true);
 
   Dut dut(config, contextp.get());
-  Ref ref(config);
+  Ref ref(config, dut);
   dut.reset();
   ref.reset(dut);
   bool difftest_state = false;

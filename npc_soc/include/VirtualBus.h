@@ -6,9 +6,15 @@
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 #include <vector>
+
 struct VirtualBus {
   VirtualBus() : sram(2048) {}
-  uint32_t readMemory(uint32_t addr, int sz) {
+
+  struct ReadResult {
+    uint32_t data;
+    bool read_nonmemory;
+  };
+  ReadResult readMemory(uint32_t addr, int sz) {
     if ((addr & (sz - 1)) != 0) {
       log_and_throw<std::logic_error>(
           "Unaligned read in address {:08x}, size = {}", addr, sz);
@@ -19,9 +25,11 @@ struct VirtualBus {
     };
 
     if (check_range(mrom_field)) {
-      return mrom_content[(addr & 0x00FFFFFF) >> 2];
+      return {mrom_content[(addr & 0x00FFFFFF) >> 2], false};
     } else if (check_range(sram_field)) {
-      return sram[(addr & 0x00FFFFFF) >> 2];
+      return {sram[(addr & 0x00FFFFFF) >> 2], false};
+    } else if (check_range(uart_field)) {
+      return {0xdeadbeef, true};
     } else {
       log_and_throw<std::logic_error>(
           "Failed to decode read addr {:08x}, size = {}", addr, sz);

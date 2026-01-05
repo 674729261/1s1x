@@ -9,10 +9,10 @@
 #include <my_utils.h>
 #include <stdexcept>
 struct Ref {
-  Ref(Config config)
-      : inst_count(0), csr({.mstatus = 0x1800,
-                            .mvendorid = 0x79737978,
-                            .marchid = 0x17eb198}) {}
+  Ref(Config config, Dut &dut)
+      : inst_count(0), dut(dut), csr({.mstatus = 0x1800,
+                                      .mvendorid = 0x79737978,
+                                      .marchid = 0x17eb198}) {}
 
   uint32_t getPC() { return cpu.pc; };
 
@@ -69,6 +69,7 @@ struct Ref {
 
   bool is_halt;
 
+  Dut &dut;
   CPU_State cpu;
   VirtualBus vbus;
 };
@@ -177,25 +178,29 @@ inline void Ref::step() {
 
   try_this("??????? ????? ????? 000 ????? 00000 11", lb,
            uint32_t addr = cpu.gpr[d.src1_id] + d.imm_I;
-           int shift = (addr & 0x3) * 8;
-           cpu.gpr[d.dst_id] =
-               sign_ext<8>((vbus.readMemory(addr, 1) >> shift) & 0xFF));
+           int shift = (addr & 0x3) * 8; auto result = vbus.readMemory(addr, 1);
+           if (result.read_nonmemory) cpu.gpr[d.dst_id] = dut.getGPR(d.dst_id);
+           else cpu.gpr[d.dst_id] = sign_ext<8>((result.data >> shift) & 0xFF));
   try_this("??????? ????? ????? 100 ????? 00000 11", lbu,
            uint32_t addr = cpu.gpr[d.src1_id] + d.imm_I;
-           int shift = (addr & 0x3) * 8;
-           cpu.gpr[d.dst_id] = (vbus.readMemory(addr, 1) >> shift) & 0xFF);
+           int shift = (addr & 0x3) * 8; auto result = vbus.readMemory(addr, 1);
+           if (result.read_nonmemory) cpu.gpr[d.dst_id] = dut.getGPR(d.dst_id);
+           else cpu.gpr[d.dst_id] = (result.data >> shift) & 0xFF);
   try_this("??????? ????? ????? 001 ????? 00000 11", lh,
            uint32_t addr = cpu.gpr[d.src1_id] + d.imm_I;
-           int shift = (addr & 0x3) * 8;
-           cpu.gpr[d.dst_id] =
-               sign_ext<16>((vbus.readMemory(addr, 2) >> shift) & 0xFFFF));
+           int shift = (addr & 0x3) * 8; auto result = vbus.readMemory(addr, 2);
+           if (result.read_nonmemory) cpu.gpr[d.dst_id] = dut.getGPR(d.dst_id);
+           else cpu.gpr[d.dst_id] =
+               sign_ext<16>((result.data >> shift) & 0xFFFF));
   try_this("??????? ????? ????? 101 ????? 00000 11", lhu,
            uint32_t addr = cpu.gpr[d.src1_id] + d.imm_I;
-           int shift = (addr & 0x3) * 8;
-           cpu.gpr[d.dst_id] = (vbus.readMemory(addr, 2) >> shift) & 0xFFFF);
+           int shift = (addr & 0x3) * 8; auto result = vbus.readMemory(addr, 2);
+           if (result.read_nonmemory) cpu.gpr[d.dst_id] = dut.getGPR(d.dst_id);
+           else cpu.gpr[d.dst_id] = (result.data >> shift) & 0xFFFF);
   try_this("??????? ????? ????? 010 ????? 00000 11", lw,
-           cpu.gpr[d.dst_id] =
-               vbus.readMemory(cpu.gpr[d.src1_id] + d.imm_I, 4));
+           auto result = vbus.readMemory(cpu.gpr[d.src1_id] + d.imm_I, 4);
+           if (result.read_nonmemory) cpu.gpr[d.dst_id] = dut.getGPR(d.dst_id);
+           else cpu.gpr[d.dst_id] = result.data);
 
   try_this("??????? ????? ????? ??? ????? 11011 11", jal,
            cpu.gpr[d.dst_id] = cpu.pc + 4;
