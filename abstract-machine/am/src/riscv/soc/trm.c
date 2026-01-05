@@ -35,8 +35,8 @@ void _init_uart() {
   lcr |= (1 << 7);
   outb(SERIAL_PORT + SERIAL_LCR_OFFSET, lcr);
 
-  outb(SERIAL_PORT + 1, 0x01);
-  outb(SERIAL_PORT, 0x00);
+  outb(SERIAL_PORT + 1, 0x00);
+  outb(SERIAL_PORT, 0x01);
 
   lcr = inb(SERIAL_PORT + SERIAL_LCR_OFFSET);
   lcr &= ~(1 << 7);
