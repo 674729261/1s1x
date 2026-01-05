@@ -20,5 +20,5 @@ int main() {
   for (int i = cnt - 1; i >= 0; i--)
     putch(buffer[i]);
   putch('\n');
-  MY_CHECK(recv == 0xf0f0);
+  MY_CHECK(recv == 0x7f0f0);
 }
