@@ -10,7 +10,7 @@
 
 int main() {
   uint32_t addr = 23;
-  uint32_t recv = flash_read(addr);
+  uint32_t recv = 23 + addr; // flash_read(addr);
   char buffer[16] = {};
   int cnt = 0;
   while (recv) {
