@@ -1,5 +1,5 @@
 #include "riscv/riscv.h"
-#include "soc.h"
+#include "spi.h"
 #include <am.h>
 #include <klib-macros.h>
 #include <klib.h>
@@ -73,6 +73,8 @@ void _show_motd(uint32_t vendorid, uint32_t archid) {
 void _trm_init() {
   // printf("\033[31mmvendorid\033[0m : %#010x\n\033[31mmarchid\033[0m : %d\n",
   //        vendorid, archid);
+  wait_spi_finish();
+  spi_init();
 
   extern char __data_load_start, __data_load_end, __data_start;
   char *src = &__data_load_start;

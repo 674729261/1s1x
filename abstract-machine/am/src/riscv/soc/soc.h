@@ -2,6 +2,8 @@
 #define NPC_H__
 
 #include <klib-macros.h>
+#include <klib.h>
+#include <riscv/riscv.h>
 #include <stdint.h>
 
 #define DEVICE_BASE 0xa0000000
@@ -14,6 +16,9 @@
 #define SERIAL_LSR_OFFSET 0x5
 
 #define SPI_BASE 0x10001000
+#define SPI_CTRL 0x10
+#define SPI_DIV 0x14
+#define SPI_SS 0x18
 
 #define KBD_ADDR (DEVICE_BASE + 0x0000060)
 #define RTC_ADDR (DEVICE_BASE + 0x0000048)
