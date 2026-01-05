@@ -1,3 +1,5 @@
+#ifndef SPI_H_
+#define SPI_H_
 #include "soc.h"
 #include <riscv/riscv.h>
 #define SPI_SLAVE_FLASH (1 << 0)
@@ -34,3 +36,4 @@ static inline void set_spi_len(uint32_t len) {
   ctrl |= len;
   outw(SPI_BASE + SPI_CTRL, ctrl);
 }
+#endif

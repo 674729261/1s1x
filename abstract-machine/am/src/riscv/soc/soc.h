@@ -1,5 +1,5 @@
-#ifndef NPC_H__
-#define NPC_H__
+#ifndef SOC_H__
+#define SOC_H__
 
 #include <klib-macros.h>
 #include <klib.h>
