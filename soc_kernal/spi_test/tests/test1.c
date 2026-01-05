@@ -34,6 +34,7 @@ int main() {
 
   char buffer[16] = {};
   int cnt = 0;
+  MY_CHECK(recv == 0x34);
   while (recv) {
     int dig = recv % 16;
     buffer[cnt++] = (dig < 10 ? '0' + dig : 'a' + dig - 10);
@@ -42,6 +43,5 @@ int main() {
   for (int i = cnt - 1; i >= 0; i--)
     putch(buffer[i]);
   putch('\n');
-  MY_CHECK(recv == 0x34);
   return 0;
 }
