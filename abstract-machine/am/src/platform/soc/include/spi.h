@@ -60,6 +60,7 @@ static inline uint32_t flash_read(uintptr_t addr) {
   spi_tx_neg(true);
   spi_rx_neg(true);
   outl(SPI_BASE + 0x4, (0x03 << 24) | (addr & 0x00ffffff));
+  outl(SPI_BASE, 0xffffffff);
   set_spi_ss(SPI_SLAVE_FLASH);
   set_spi_len(64);
   set_spi_busy();
