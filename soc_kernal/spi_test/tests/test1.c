@@ -23,14 +23,14 @@ int main() {
 
   while (ctrl & (1 << 8))
     ctrl = *(volatile uint32_t *)(SPI_BASE + 0x10);
-  *(volatile uint32_t *)(SPI_BASE) = 0x2c;
+  *(volatile uint32_t *)(SPI_BASE) = 0x2c << 8;
   ctrl |= (1 << 8);
   *(volatile uint32_t *)(SPI_BASE + 0x10) = ctrl;
 
   while (ctrl & (1 << 8))
     ctrl = *(volatile uint32_t *)(SPI_BASE + 0x10);
 
-  uint32_t recv = *(volatile uint32_t *)(SPI_BASE);
+  uint32_t recv = *(volatile uint32_t *)(SPI_BASE) & 0xFF;
 
   char buffer[16] = {};
   int cnt = 0;
