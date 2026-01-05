@@ -9,15 +9,15 @@ int main() {
   int a = 123, b = 456;
   int c = a + b;
   while (a != 0) {
-    buffer[0][cnt[0]++] = a % 10;
+    buffer[0][cnt[0]++] = a % 10 + '0';
     a /= 10;
   }
   while (b != 0) {
-    buffer[1][cnt[1]++] = b % 10;
+    buffer[1][cnt[1]++] = b % 10 + '0';
     b /= 10;
   }
   while (c != 0) {
-    buffer[2][cnt[2]++] = c % 10;
+    buffer[2][cnt[2]++] = c % 10 + '0';
     c /= 10;
   }
   for (int i = cnt[0] - 1; i >= 0; i--)
