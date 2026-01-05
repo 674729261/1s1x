@@ -42,5 +42,6 @@ int main() {
   for (int i = cnt - 1; i >= 0; i--)
     putch(buffer[i]);
   putch('\n');
+  MY_CHECK(recv == 0x34);
   return 0;
 }
