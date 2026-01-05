@@ -15,7 +15,7 @@
 #define SERIAL_LCR_OFFSET 0x3
 #define SERIAL_LSR_OFFSET 0x5
 
-#define SPI_BASE 0x10001000
+#define SPI_BASE 0x10011000
 #define SPI_CTRL 0x10
 #define SPI_DIV 0x14
 #define SPI_SS 0x18
