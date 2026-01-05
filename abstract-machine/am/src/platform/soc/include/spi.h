@@ -8,7 +8,7 @@
 static inline void spi_init() {
   uint32_t ctrl = inl(SPI_BASE + SPI_CTRL);
   ctrl = 0x2640;
-  outl(SPI_BASE + SPI_DIV, 0x00000001);
+  outl(SPI_BASE + SPI_DIV, 0x00000000);
   outl(SPI_BASE + SPI_CTRL, ctrl);
 }
 
