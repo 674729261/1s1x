@@ -65,12 +65,12 @@ static inline uint32_t flash_read(uintptr_t addr) {
   set_spi_busy();
   wait_spi_finish();
   uint32_t rx_data_raw = inl(SPI_BASE);
-  uint32_t rx_data = 0;
-  rx_data |= (rx_data_raw & 0xff000000) >> 24;
-  rx_data |= (rx_data_raw & 0x00ff0000) >> 8;
-  rx_data |= (rx_data_raw & 0x0000ff00) << 8;
-  rx_data |= (rx_data_raw & 0x000000ff) << 24;
-  return rx_data;
+  // uint32_t rx_data = 0;
+  // rx_data |= (rx_data_raw & 0xff000000) >> 24;
+  // rx_data |= (rx_data_raw & 0x00ff0000) >> 8;
+  // rx_data |= (rx_data_raw & 0x0000ff00) << 8;
+  // rx_data |= (rx_data_raw & 0x000000ff) << 24;
+  return rx_data_raw;
 }
 
 #endif
