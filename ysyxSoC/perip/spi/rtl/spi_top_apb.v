@@ -47,7 +47,6 @@ module spi_top_apb #(
   assign in_prdata   = data[31:0];
 
 `else
-
   reg  [ 4:0] xip_paddr;
   reg         xip_psel;
   reg         xip_penable;
@@ -58,7 +57,6 @@ module spi_top_apb #(
   reg  [31:0] xip_prdata;
   reg         xip_pslverr;
   reg         xip_spi_irq_out;
-
 
   wire [ 4:0] spi_paddr;
   wire        spi_psel;
@@ -71,26 +69,39 @@ module spi_top_apb #(
   wire        spi_pslverr;
   wire        spi_spi_irq_out;
 
-
   wire        is_xip;
   assign is_xip = in_paddr[31:28] == 4'h3;
-  // state machine to perform XIP sequence when address[31:28] == 4'h3
-  localparam S_IDLE = 4'd0;
-  localparam S_WR14 = 4'd1;
-  localparam S_WR18 = 4'd2;
-  localparam S_WR10 = 4'd3;
-  localparam S_POLL10 = 4'd4;
-  localparam S_RD0 = 4'd5;
-  localparam S_RD4 = 4'd6;
-  localparam S_RESPOND = 4'd7;
 
-  reg [ 3:0] state;
+  // capture target APB addr requested by master (so it can't change mid-seq)
+  reg [31:0] target_addr;
+
+  // state machine (APB-compliant: setup cycle (psel=1, penable=0) then enable cycle (psel=1, penable=1))
+  localparam S_IDLE = 5'd0;
+  localparam S_SETUP_WR14 = 5'd1;
+  localparam S_EN_WR14 = 5'd2;
+  localparam S_SETUP_WR18 = 5'd3;
+  localparam S_EN_WR18 = 5'd4;
+  localparam S_SETUP_WR4 = 5'd5;
+  localparam S_EN_WR4 = 5'd6;
+  localparam S_SETUP_WR0 = 5'd7;
+  localparam S_EN_WR0 = 5'd8;
+  localparam S_SETUP_WR10 = 5'd9;
+  localparam S_EN_WR10 = 5'd10;
+  localparam S_POLL_SETUP = 5'd11;
+  localparam S_POLL_EN = 5'd12;
+  localparam S_RD0_SETUP = 5'd13;
+  localparam S_RD0_EN = 5'd14;
+  localparam S_RD4_SETUP = 5'd15;
+  localparam S_RD4_EN = 5'd16;
+  localparam S_RESPOND = 5'd17;
+
+  reg [ 4:0] state;
   reg [31:0] read0;
   reg [31:0] read4;
   reg [63:0] concat64;
   reg        seq_done;
 
-  // default values
+  // default values and state machine
   always @(posedge clock) begin
     if (reset) begin
       xip_paddr       <= 5'd0;
@@ -108,175 +119,248 @@ module spi_top_apb #(
       read4           <= 32'd0;
       concat64        <= 64'd0;
       seq_done        <= 1'b0;
+      target_addr     <= 32'd0;
     end else begin
-      // default drive values each cycle (will be overwritten per-state)
+      // default per-cycle values
       xip_pslverr <= 1'b0;
       xip_spi_irq_out <= 1'b0;
 
       case (state)
         S_IDLE: begin
-          // capture request on APB setup phase (psel && !penable) in XIP region
+          // wait for master APB setup in XIP region
+          xip_psel    <= 1'b0;
+          xip_penable <= 1'b0;
+          xip_pwrite  <= 1'b0;
+          xip_pwdata  <= 32'd0;
+          xip_pstrb   <= 4'b1111;
+          xip_paddr   <= 5'd0;
+          xip_pready  <= 1'b0;
+          seq_done    <= 1'b0;
           if (in_psel && !in_penable && is_xip) begin
-            seq_done <= 1'b0;
-            xip_pready <= 1'b0;
-            // start first write to addr 0x14
+            // latch target address and start sequence
+            target_addr <= in_paddr;
+            // first setup write to 0x14 (setup cycle)
             xip_paddr   <= 5'h14;
             xip_pwrite  <= 1'b1;
             xip_pwdata  <= 32'h00000001;
             xip_pstrb   <= 4'b1111;
             xip_psel    <= 1'b1;
-            xip_penable <= 1'b1;
-            state <= S_WR14;
-          end else begin
-            xip_psel <= 1'b0;
             xip_penable <= 1'b0;
-            xip_pwrite <= 1'b0;
-            xip_pwdata <= 32'd0;
-            xip_paddr <= 5'd0;
+            state <= S_EN_WR14;
           end
         end
 
-        S_WR14: begin
-          // wait for spi ack
+        // WR14: enable then wait ack
+        S_EN_WR14: begin
+          // now in enable phase for write 0x14
+          xip_psel    <= 1'b1;
+          xip_penable <= 1'b1;
+          xip_pwrite  <= 1'b1;
+          xip_paddr   <= 5'h14;
+          xip_pwdata  <= 32'h00000001;
+          xip_pstrb   <= 4'b1111;
           if (spi_pready) begin
-            // deassert bus
-            xip_psel <= 1'b0;
+            // transaction complete, deassert and go to setup for next write
+            xip_psel    <= 1'b0;
             xip_penable <= 1'b0;
-            xip_pwrite <= 1'b0;
-            // next write to 0x18
-            xip_paddr   <= 5'h18;
-            xip_pwrite  <= 1'b1;
-            xip_pwdata  <= 32'h00000001;
-            xip_pstrb   <= 4'b1111;
-            xip_psel    <= 1'b1;
-            xip_penable <= 1'b1;
-            state <= S_WR18;
-          end else begin
-            // keep asserting until ack
-            xip_psel <= 1'b1;
-            xip_penable <= 1'b1;
-          end
-        end
-
-        S_WR18: begin
-          if (spi_pready) begin
-            xip_psel <= 1'b0;
-            xip_penable <= 1'b0;
-            xip_pwrite <= 1'b0;
-            // write 0x2740 to addr 0x10
-            xip_paddr   <= 5'h10;
-            xip_pwrite  <= 1'b1;
-            xip_pwdata  <= 32'h00002740;
-            xip_pstrb   <= 4'b1111;
-            xip_psel    <= 1'b1;
-            xip_penable <= 1'b1;
-            state <= S_WR10;
-          end else begin
-            xip_psel <= 1'b1;
-            xip_penable <= 1'b1;
-          end
-        end
-
-        S_WR10: begin
-          if (spi_pready) begin
-            xip_psel <= 1'b0;
-            xip_penable <= 1'b0;
-            xip_pwrite <= 1'b0;
-            // begin polling read of addr 0x10
-            xip_paddr   <= 5'h10;
             xip_pwrite  <= 1'b0;
-            xip_pwdata  <= 32'd0;
-            xip_pstrb   <= 4'b0000;
-            xip_psel    <= 1'b1;
-            xip_penable <= 1'b1;
-            state <= S_POLL10;
-          end else begin
-            xip_psel <= 1'b1;
-            xip_penable <= 1'b1;
+            state <= S_SETUP_WR18;
           end
         end
 
-        S_POLL10: begin
+        S_SETUP_WR18: begin
+          // setup write to 0x18
+          xip_paddr   <= 5'h18;
+          xip_pwrite  <= 1'b1;
+          xip_pwdata  <= 32'h00000001;
+          xip_pstrb   <= 4'b1111;
+          xip_psel    <= 1'b1;
+          xip_penable <= 1'b0;
+          state <= S_EN_WR18;
+        end
+
+        S_EN_WR18: begin
+          xip_psel    <= 1'b1;
+          xip_penable <= 1'b1;
+          xip_pwrite  <= 1'b1;
+          xip_paddr   <= 5'h18;
+          xip_pwdata  <= 32'h00000001;
           if (spi_pready) begin
-            // spi_prdata contains read value
-            if (spi_prdata == 32'h00002640) begin
-              // stop polling and read addr 0x0 then 0x4
-              xip_psel <= 1'b0;
-              xip_penable <= 1'b0;
-              xip_pwrite <= 1'b0;
-              // read addr 0x0
-              xip_paddr   <= 5'h00;
-              xip_pwrite  <= 1'b0;
-              xip_pwdata  <= 32'd0;
-              xip_pstrb   <= 4'b0000;
-              xip_psel    <= 1'b1;
-              xip_penable <= 1'b1;
-              state <= S_RD0;
-            end else begin
-              // keep polling: reissue read
-              xip_psel <= 1'b1;
-              xip_penable <= 1'b1;
-              xip_pwrite <= 1'b0;
-              xip_paddr <= 5'h10;
-            end
-          end else begin
-            // hold bus asserted while waiting for ack
-            xip_psel <= 1'b1;
-            xip_penable <= 1'b1;
-            xip_pwrite <= 1'b0;
-            xip_paddr <= 5'h10;
+            xip_psel    <= 1'b0;
+            xip_penable <= 1'b0;
+            xip_pwrite  <= 1'b0;
+            state <= S_SETUP_WR4;
           end
         end
 
-        S_RD0: begin
+        S_SETUP_WR4: begin
+          // write 0x00000000 to addr 0x4
+          xip_paddr   <= 5'h04;
+          xip_pwrite  <= 1'b1;
+          xip_pwdata  <= 32'h00000000;
+          xip_pstrb   <= 4'b1111;
+          xip_psel    <= 1'b1;
+          xip_penable <= 1'b0;
+          state <= S_EN_WR4;
+        end
+
+        S_EN_WR4: begin
+          xip_psel    <= 1'b1;
+          xip_penable <= 1'b1;
+          xip_pwrite  <= 1'b1;
+          xip_paddr   <= 5'h04;
+          xip_pwdata  <= 32'h00000000;
+          if (spi_pready) begin
+            xip_psel    <= 1'b0;
+            xip_penable <= 1'b0;
+            xip_pwrite  <= 1'b0;
+            state <= S_SETUP_WR0;
+          end
+        end
+
+        S_SETUP_WR0: begin
+          // write {8'h03, target_addr[23:0]} to addr 0x0
+          xip_paddr   <= 5'h00;
+          xip_pwrite  <= 1'b1;
+          xip_pwdata  <= {8'h03, target_addr[23:0]};
+          xip_pstrb   <= 4'b1111;
+          xip_psel    <= 1'b1;
+          xip_penable <= 1'b0;
+          state <= S_EN_WR0;
+        end
+
+        S_EN_WR0: begin
+          xip_psel    <= 1'b1;
+          xip_penable <= 1'b1;
+          xip_pwrite  <= 1'b1;
+          xip_paddr   <= 5'h00;
+          xip_pwdata  <= {8'h03, target_addr[23:0]};
+          if (spi_pready) begin
+            xip_psel    <= 1'b0;
+            xip_penable <= 1'b0;
+            xip_pwrite  <= 1'b0;
+            state <= S_SETUP_WR10;
+          end
+        end
+
+        S_SETUP_WR10: begin
+          // write 0x2740 to addr 0x10
+          xip_paddr   <= 5'h10;
+          xip_pwrite  <= 1'b1;
+          xip_pwdata  <= 32'h00002740;
+          xip_pstrb   <= 4'b1111;
+          xip_psel    <= 1'b1;
+          xip_penable <= 1'b0;
+          state <= S_EN_WR10;
+        end
+
+        S_EN_WR10: begin
+          xip_psel    <= 1'b1;
+          xip_penable <= 1'b1;
+          xip_pwrite  <= 1'b1;
+          xip_paddr   <= 5'h10;
+          xip_pwdata  <= 32'h00002740;
+          if (spi_pready) begin
+            xip_psel    <= 1'b0;
+            xip_penable <= 1'b0;
+            xip_pwrite  <= 1'b0;
+            // begin polling read of 0x10
+            state <= S_POLL_SETUP;
+          end
+        end
+
+        // Poll: repeatedly perform APB read of 0x10 until value equals 0x00002640
+        S_POLL_SETUP: begin
+          xip_paddr   <= 5'h10;
+          xip_pwrite  <= 1'b0;
+          xip_pwdata  <= 32'd0;
+          xip_pstrb   <= 4'b0000;
+          xip_psel    <= 1'b1;
+          xip_penable <= 1'b0;
+          state <= S_POLL_EN;
+        end
+
+        S_POLL_EN: begin
+          xip_psel    <= 1'b1;
+          xip_penable <= 1'b1;
+          xip_pwrite  <= 1'b0;
+          xip_paddr   <= 5'h10;
+          if (spi_pready) begin
+            if (spi_prdata == 32'h00002640) begin
+              // stop polling, read addr 0x0 then 0x4
+              xip_psel    <= 1'b0;
+              xip_penable <= 1'b0;
+              xip_pwrite  <= 1'b0;
+              state <= S_RD0_SETUP;
+            end else begin
+              // reissue polling read
+              xip_psel    <= 1'b0;
+              xip_penable <= 1'b0;
+              state <= S_POLL_SETUP;
+            end
+          end
+        end
+
+        S_RD0_SETUP: begin
+          // read addr 0x0 (setup)
+          xip_paddr   <= 5'h00;
+          xip_pwrite  <= 1'b0;
+          xip_pwdata  <= 32'd0;
+          xip_pstrb   <= 4'b0000;
+          xip_psel    <= 1'b1;
+          xip_penable <= 1'b0;
+          state <= S_RD0_EN;
+        end
+
+        S_RD0_EN: begin
+          xip_psel    <= 1'b1;
+          xip_penable <= 1'b1;
+          xip_pwrite  <= 1'b0;
+          xip_paddr   <= 5'h00;
           if (spi_pready) begin
             read0 <= spi_prdata;
-            xip_psel <= 1'b0;
+            xip_psel    <= 1'b0;
             xip_penable <= 1'b0;
-            // now read addr 0x4
-            xip_paddr   <= 5'h04;
-            xip_pwrite  <= 1'b0;
-            xip_pwdata  <= 32'd0;
-            xip_pstrb   <= 4'b0000;
-            xip_psel    <= 1'b1;
-            xip_penable <= 1'b1;
-            state <= S_RD4;
-          end else begin
-            xip_psel <= 1'b1;
-            xip_penable <= 1'b1;
-            xip_pwrite <= 1'b0;
-            xip_paddr <= 5'h00;
+            state <= S_RD4_SETUP;
           end
         end
 
-        S_RD4: begin
+        S_RD4_SETUP: begin
+          xip_paddr   <= 5'h04;
+          xip_pwrite  <= 1'b0;
+          xip_pwdata  <= 32'd0;
+          xip_pstrb   <= 4'b0000;
+          xip_psel    <= 1'b1;
+          xip_penable <= 1'b0;
+          state <= S_RD4_EN;
+        end
+
+        S_RD4_EN: begin
+          xip_psel    <= 1'b1;
+          xip_penable <= 1'b1;
+          xip_pwrite  <= 1'b0;
+          xip_paddr   <= 5'h04;
           if (spi_pready) begin
             read4 <= spi_prdata;
-            xip_psel <= 1'b0;
+            xip_psel    <= 1'b0;
             xip_penable <= 1'b0;
-            // combine and shift right by 1
+            // combine and mark done
             concat64 <= {spi_prdata, read0};
             seq_done <= 1'b1;
             state <= S_RESPOND;
-          end else begin
-            xip_psel <= 1'b1;
-            xip_penable <= 1'b1;
-            xip_pwrite <= 1'b0;
-            xip_paddr <= 5'h04;
           end
         end
 
         S_RESPOND: begin
-          // shift right by 1 and supply lower 32 bits on APB read response
+          // hold internal values, present shifted result on APB read response when master performs enable
           concat64   <= concat64;  // hold
-          // perform the shift combinationally
           xip_prdata <= concat64[32:1];
           // assert pready to APB master when it is in enable phase and accessing XIP
-          if (in_psel && in_penable && is_xip) begin
+          if (in_psel && in_penable && is_xip && seq_done) begin
             xip_pready <= 1'b1;
           end else begin
-            // once master sees the ready and completes transaction, clear and go idle
             if (xip_pready && !(in_psel && in_penable && is_xip)) begin
+              // master has seen ready and finished transaction
               xip_pready <= 1'b0;
               seq_done <= 1'b0;
               state <= S_IDLE;
@@ -291,7 +375,7 @@ module spi_top_apb #(
     end
   end
 
-
+  // route requests to spi_top (either direct from master or from XIP sequencer)
   assign spi_paddr   = is_xip ? xip_paddr   : in_paddr[4:0];
   assign spi_psel    = is_xip ? xip_psel    : in_psel;
   assign spi_penable = is_xip ? xip_penable : in_penable;
