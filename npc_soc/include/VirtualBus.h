@@ -32,6 +32,8 @@ struct VirtualBus {
       return {addr & 0x0FFFFFFF, false};
     } else if (check_range(uart_field)) {
       return {0xdeadbeef, true};
+    } else if (check_range(spi_field)) {
+      return {0xdeadbeef, true};
     } else {
       log_and_throw<std::logic_error>(
           "Failed to decode read addr {:08x}, size = {}", addr, sz);
@@ -59,6 +61,8 @@ struct VirtualBus {
       sram[(addr & 0x00FFFFFF) >> 2] |= wdata & mask32;
     } else if (check_range(uart_field)) {
       // no action
+    } else if (check_range(uart_field)) {
+      // no action
     } else if (check_range(flash_field)) {
       log_and_throw<std::logic_error>(
           "Failed to write to address {:08x} : flash can not be written", addr);
@@ -80,4 +84,5 @@ struct VirtualBus {
   const Area sram_field = {0x0f000000, 0x0f001fff};
 
   const Area uart_field = {0x10000000, 0x10000fff};
+  const Area spi_field = {0x10001000, 0x10001fff};
 };
