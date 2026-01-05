@@ -7,9 +7,8 @@
 
 static inline void spi_init() {
   uint32_t ctrl = inl(SPI_BASE + SPI_CTRL);
-  ctrl = 0x0640;
-  ctrl |= (1 << 13);
-  outl(SPI_BASE + SPI_DIV, 0x0000000f);
+  ctrl = 0x2640;
+  outl(SPI_BASE + SPI_DIV, 0x000000ff);
   outl(SPI_BASE + SPI_CTRL, ctrl);
 }
 
@@ -60,7 +59,7 @@ static inline uint32_t flash_read(uintptr_t addr) {
   spi_tx_neg(true);
   spi_rx_neg(true);
   outl(SPI_BASE + 0x4, (0x03 << 24) | (addr & 0x00ffffff));
-  outl(SPI_BASE, 0xffffffff);
+  outl(SPI_BASE, 0);
   set_spi_ss(SPI_SLAVE_FLASH);
   set_spi_len(64);
   set_spi_busy();
