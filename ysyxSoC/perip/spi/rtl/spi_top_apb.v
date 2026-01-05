@@ -77,10 +77,11 @@ module spi_top_apb #(
 
   // state machine (APB-compliant: setup cycle (psel=1, penable=0) then enable cycle (psel=1, penable=1))
   localparam S_IDLE = 5'd0;
-  localparam S_SETUP_WR14 = 5'd1;
+  localparam S_SETUP_WR10_PRE = 5'd1;  // new preamble write 0x2640 -> addr 0x10
   localparam S_EN_WR14 = 5'd2;
-  localparam S_SETUP_WR18 = 5'd3;
+  // localparam S_SETUP_WR14 = 5'd1;
   localparam S_EN_WR18 = 5'd4;
+  localparam S_SETUP_WR18 = 5'd3;
   localparam S_SETUP_WR4 = 5'd5;
   localparam S_EN_WR4 = 5'd6;
   localparam S_SETUP_WR0 = 5'd7;
@@ -94,6 +95,7 @@ module spi_top_apb #(
   localparam S_RD4_SETUP = 5'd15;
   localparam S_RD4_EN = 5'd16;
   localparam S_RESPOND = 5'd17;
+  localparam S_EN_WR10_PRE = 5'd18;  // enable phase for the new preamble write
 
   reg [ 4:0] state;
   reg [31:0] read0;
@@ -139,13 +141,30 @@ module spi_top_apb #(
           if (in_psel && !in_penable && is_xip) begin
             // latch target address and start sequence
             target_addr <= in_paddr;
-            // first setup write to 0x14 (setup cycle)
-            xip_paddr   <= 5'h14;
+            // first: write 0x00002640 to addr 0x10 (preamble)
+            xip_paddr   <= 5'h10;
             xip_pwrite  <= 1'b1;
-            xip_pwdata  <= 32'h00000001;
+            xip_pwdata  <= 32'h00002640;
             xip_pstrb   <= 4'b1111;
             xip_psel    <= 1'b1;
             xip_penable <= 1'b0;
+            state <= S_EN_WR10_PRE;
+          end
+        end
+
+        S_EN_WR10_PRE: begin
+          // enable phase for preamble write to 0x10
+          xip_psel    <= 1'b1;
+          xip_penable <= 1'b1;
+          xip_pwrite  <= 1'b1;
+          xip_paddr   <= 5'h10;
+          xip_pwdata  <= 32'h00002640;
+          xip_pstrb   <= 4'b1111;
+          if (spi_pready) begin
+            // after preamble, proceed to original first write (0x14)
+            xip_psel    <= 1'b0;
+            xip_penable <= 1'b0;
+            xip_pwrite  <= 1'b0;
             state <= S_EN_WR14;
           end
         end
@@ -388,7 +407,6 @@ module spi_top_apb #(
   assign in_prdata   = is_xip ? xip_prdata   : spi_prdata;
   assign in_pslverr  = is_xip ? xip_pslverr  : spi_pslverr;
   assign spi_irq_out = is_xip ? xip_spi_irq_out : spi_spi_irq_out;
-
 
 
 
