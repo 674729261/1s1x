@@ -7,6 +7,7 @@ _start:
   la sp, _stack_pointer
   csrr a0, mvendorid
   csrr a1, marchid
+  call _show_motd
   call _trm_init
 
 .size _start, . - _start

@@ -24,7 +24,34 @@ void halt(int code) {
     ;
 }
 
-void _trm_init(uint32_t vendorid, uint32_t archid) {
+void _show_motd(uint32_t vendorid, uint32_t archid) {
+  const char *first_part = "\033[31mmvendorid\033[0m : 0x";
+  const char *second_part = "\n\033[31mmarchid\033[0m : ";
+  char buffer[16] = {};
+  int cnt = 0;
+  for (const char *p = first_part; *p; p++)
+    putch(*p);
+  while (vendorid) {
+    int dig = vendorid % 16;
+    buffer[cnt++] = (dig < 10 ? '0' + dig : 'a' + dig - 10);
+    vendorid /= 16;
+  }
+  for (int i = cnt - 1; i >= 0; i--)
+    putch(buffer[i]);
+  cnt = 0;
+  for (const char *p = second_part; *p; p++)
+    putch(*p);
+  while (archid) {
+    int dig = archid % 10;
+    buffer[cnt++] = '0' + dig;
+    archid /= 10;
+  }
+  for (int i = cnt - 1; i >= 0; i--)
+    putch(buffer[i]);
+  putch('\n');
+}
+
+void _trm_init() {
   // printf("\033[31mmvendorid\033[0m : %#010x\n\033[31mmarchid\033[0m : %d\n",
   //        vendorid, archid);
 
