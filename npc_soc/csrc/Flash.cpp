@@ -29,5 +29,5 @@ void init_flash(std::string_view image_path) {
 
   prog_file.read(reinterpret_cast<char *>(flash_content.data()), size_prog);
   prog_file.close();
-  spdlog::info("Loaded {} bytes to MROM", size_prog);
+  spdlog::info("Loaded {} bytes to flash", size_prog);
 }
