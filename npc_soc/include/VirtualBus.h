@@ -1,9 +1,8 @@
 #pragma once
 
-#include "my_utils.h"
-#include "spdlog/common.h"
 #include <MROM.h>
 #include <cstdint>
+#include <my_utils.h>
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 #include <vector>

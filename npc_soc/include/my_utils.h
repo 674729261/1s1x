@@ -1,5 +1,4 @@
 #pragma once
-#include "spdlog/spdlog.h"
 #include <cctype>
 #include <charconv>
 #include <concepts>
@@ -9,6 +8,7 @@
 #include <optional>
 #include <ostream>
 #include <print>
+#include <spdlog/spdlog.h>
 #include <stdexcept>
 #include <string_view>
 #include <utility>
