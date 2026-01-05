@@ -31,7 +31,7 @@ void halt(int code) {
 }
 
 void _init_uart() {
-  *(volatile uint8_t *)(SERIAL_INT_OFFSET + SERIAL_PORT) = 0x00;
+  // *(volatile uint8_t *)(SERIAL_INT_OFFSET + SERIAL_PORT) = 0x00;
 }
 void _show_motd(uint32_t vendorid, uint32_t archid) {
   const char *first_part = "\033[31mmvendorid\033[0m : 0x";
