@@ -29,7 +29,7 @@ void halt(int code) {
   while (1)
     ;
 }
-
+#include <a.h>
 void _init_uart() {
   uint8_t lcr = inb(SERIAL_PORT + SERIAL_LCR_OFFSET);
   lcr |= (1 << 7);
