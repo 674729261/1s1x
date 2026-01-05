@@ -10,6 +10,7 @@
   } while (0)
 
 int main() {
+  *(volatile uint32_t *)(SPI_BASE + 0x18) = 7;
   uint32_t ctrl = *(volatile uint32_t *)(SPI_BASE + 0x10);
   while (ctrl & (1 << 8))
     ctrl = *(volatile uint32_t *)(SPI_BASE + 0x10);
@@ -18,7 +19,6 @@ int main() {
   ctrl |= 16;
   *(volatile uint32_t *)(SPI_BASE + 0x10) = ctrl;
   *(volatile uint32_t *)(SPI_BASE + 0x14) = 0x000000ff;
-  *(volatile uint32_t *)(SPI_BASE + 0x18) = 7;
   while (ctrl & (1 << 8))
     ctrl = *(volatile uint32_t *)(SPI_BASE + 0x10);
   *(volatile uint32_t *)(SPI_BASE) = 0x2c;
