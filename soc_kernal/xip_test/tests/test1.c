@@ -11,16 +11,17 @@
 int main() {
   for (uint32_t i = 0; i < 0x100; i += 4) {
     uint32_t recv = inl(XIP_BASE + i);
-    char buffer[16] = {};
-    int cnt = 0;
     MY_CHECK(recv == i);
-    while (recv) {
-      int dig = recv % 16;
-      buffer[cnt++] = (dig < 10 ? '0' + dig : 'a' + dig - 10);
-      recv /= 16;
-      for (int j = cnt - 1; j >= 0; j--)
-        putch(buffer[j]);
-      putch('\n');
-    }
+
+    // char buffer[16] = {};
+    // int cnt = 0;
+    // while (recv) {
+    //   int dig = recv % 16;
+    //   buffer[cnt++] = (dig < 10 ? '0' + dig : 'a' + dig - 10);
+    //   recv /= 16;
+    //   for (int j = cnt - 1; j >= 0; j--)
+    //     putch(buffer[j]);
+    //   putch('\n');
+    // }
   }
 }
