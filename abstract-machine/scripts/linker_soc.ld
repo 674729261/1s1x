@@ -18,14 +18,14 @@ SECTIONS
 
   . = ORIGIN(sram);  
   
-  .second_stage : {
+  .first_stage : {
     __ssbl_start = .;
     *(.ssbl)
     __ssbl_end = .;
   } > sram AT> prog
 
-  __ssbl_load_start = LOADADDR(.second_stage);
-  __ssbl_load_end   = __ssbl_load_start + SIZEOF(.second_stage);
+  __ssbl_load_start = LOADADDR(.first_stage);
+  __ssbl_load_end   = __ssbl_load_start + SIZEOF(.first_stage);
 
   . = ORIGIN(psram);  
 

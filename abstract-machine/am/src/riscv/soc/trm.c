@@ -45,7 +45,7 @@ void _init_uart() {
   outb(SERIAL_PORT + SERIAL_INT_OFFSET, 0x00);
 }
 void _show_motd(uint32_t vendorid, uint32_t archid) {
-  const char *message = "Bootloader finished\n";
+  const char message[] = "Second-stage Bootloader finished\n";
   for (const char *p = message; *p; p++)
     putch(*p);
 
@@ -94,6 +94,10 @@ __attribute__((section(".fsbl"))) void fstbootloader() {
     ++dst;
     ++src;
   }
+
+  const char *message = "First-stage bootloader finished\n";
+  for (const char *p = message; *p; p++)
+    putch(*p);
 }
 
 __attribute__((section(".ssbl"))) void secbootloader() {
