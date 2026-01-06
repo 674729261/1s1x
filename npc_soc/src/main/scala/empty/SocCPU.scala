@@ -69,7 +69,7 @@ class ysyx_25080216 extends Module {
     val master = new AXI_Flatten
     val slave = Flipped(new AXI_Flatten)
   })
-  val cpu = Module(new CPU_Core(init_pc = "h20000000".U(32.W)))
+  val cpu = Module(new CPU_Core(init_pc = "h30000000".U(32.W)))
   val ebreaker = Module(new Ebreaker)
   val axi_checker = Module(new AXI_Checker)
   val inst_retire = Module(new Inst_Retire)
