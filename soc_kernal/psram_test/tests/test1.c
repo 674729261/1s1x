@@ -9,7 +9,7 @@
       return -1;                                                               \
   } while (0)
 
-#define TEST_ADDR_START 0x80000000
+#define TEST_ADDR_START 0x800000f0
 #define TEST_ADDR_END 0x80001000
 
 int test_word() {
