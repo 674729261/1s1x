@@ -86,7 +86,13 @@ struct Ref {
   }
 
 inline void Ref::step() {
-  uint32_t inst = mrom_content[(cpu.pc & 0x0FFFFFFF) >> 2];
+  auto ifnst_fetch = vbus.readMemory(cpu.pc, 4);
+  if (ifnst_fetch.read_nonmemory) {
+    log_and_throw<std::logic_error>(
+        "Ref tried to fetch instruction in non-memory address {:#010x}",
+        cpu.pc);
+  }
+  uint32_t inst = ifnst_fetch.data;
   Decoded d = decode(inst);
   uint32_t dnpc = cpu.pc + 4;
   BEGIN_PATTERN
