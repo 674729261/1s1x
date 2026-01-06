@@ -1,10 +1,11 @@
 ENTRY(_start)
 
 MEMORY {
+  sram (rw) : ORIGIN = 0x0f000000, LENGTH = 8K
   prog (rx)  : ORIGIN = 0x30000000, LENGTH = _pmem_size
   psram (rwx) : ORIGIN = 0x80000000, LENGTH = 2M
   psram_heap (rw) : ORIGIN = 0x80200000, LENGTH = 2M
-  sram (rw) : ORIGIN = 0x0f000000, LENGTH = 8K
+
 }
 
 SECTIONS
