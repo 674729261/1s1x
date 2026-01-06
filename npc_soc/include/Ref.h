@@ -6,13 +6,18 @@
 #include <VirtualBus.h>
 #include <algorithm>
 #include <cstdint>
+#include <format>
+#include <fstream>
 #include <my_utils.h>
 #include <stdexcept>
+std::ofstream ref_trace_file;
 struct Ref {
   Ref(Config config, Dut &dut)
       : inst_count(0), dut(dut), csr({.mstatus = 0x1800,
                                       .mvendorid = 0x79737978,
-                                      .marchid = 0x17eb198}) {}
+                                      .marchid = 0x17eb198}) {
+    ref_trace_file.open("ref_trace.log");
+  }
 
   uint32_t getPC() { return cpu.pc; };
 
@@ -102,6 +107,7 @@ inline void Ref::step() {
   const uint32_t inst = ifnst_fetch.data;
   // std::println("PC = {:08x}, inst = {:08x}", cpu.pc, inst);
   Decoded d = decode(inst);
+  ref_trace_file << std::format("{:08x} {:08x}\n", cpu.pc, inst);
 
   uint32_t dnpc = cpu.pc + 4;
   BEGIN_PATTERN
