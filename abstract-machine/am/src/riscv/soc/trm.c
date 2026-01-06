@@ -94,10 +94,6 @@ __attribute__((section(".fsbl"))) void fstbootloader() {
     ++dst;
     ++src;
   }
-
-  const char *message = "First-stage bootloader finished\n";
-  for (const char *p = message; *p; p++)
-    putch(*p);
 }
 
 __attribute__((section(".ssbl"))) void secbootloader() {
