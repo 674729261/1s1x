@@ -16,15 +16,7 @@ Area heap = RANGE(&_heap_start, PMEM_END);
 static const char mainargs[MAINARGS_MAX_LEN] =
     TOSTRING(MAINARGS_PLACEHOLDER); // defined in CFLAGS
 
-void putch(char ch) {
-  uint8_t line_status = 0x00;
-  while (!(line_status & (1 << 5)))
-    line_status = inb(SERIAL_PORT + SERIAL_LSR_OFFSET);
-
-  outb(SERIAL_PORT, ch);
-}
-
-void __attribute__((section(".bootloader"))) __putch(char ch) {
+void __attribute__((section(".bootloader"))) putch(char ch) {
   uint8_t line_status = 0x00;
   while (!(line_status & (1 << 5)))
     line_status = inb(SERIAL_PORT + SERIAL_LSR_OFFSET);
@@ -58,25 +50,25 @@ void __attribute__((section(".bootloader"))) _show_motd(uint32_t vendorid,
   char buffer[16] = {};
   int cnt = 0;
   for (const char *p = first_part; *p; p++)
-    __putch(*p);
+    putch(*p);
   while (vendorid) {
     int dig = vendorid % 16;
     buffer[cnt++] = (dig < 10 ? '0' + dig : 'a' + dig - 10);
     vendorid /= 16;
   }
   for (int i = cnt - 1; i >= 0; i--)
-    __putch(buffer[i]);
+    putch(buffer[i]);
   cnt = 0;
   for (const char *p = second_part; *p; p++)
-    __putch(*p);
+    putch(*p);
   while (archid) {
     int dig = archid % 10;
     buffer[cnt++] = '0' + dig;
     archid /= 10;
   }
   for (int i = cnt - 1; i >= 0; i--)
-    __putch(buffer[i]);
-  __putch('\n');
+    putch(buffer[i]);
+  putch('\n');
 }
 
 void __attribute__((section(".bootloader"))) _trm_init() {
