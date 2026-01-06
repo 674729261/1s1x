@@ -114,6 +114,15 @@ __attribute__((section(".ssbl"))) void secbootloader() {
     ++src;
   }
 
+  extern char rt_load_begin, rt_load_end, rt_begin;
+  src = &rt_load_begin;
+  dst = &rt_begin;
+  while (src < &rt_load_end) {
+    *dst = *src;
+    ++dst;
+    ++src;
+  }
+
   extern char __bss_start, __bss_end;
   for (char *p = &__bss_start; p < &__bss_end; p++)
     *p = 0;
