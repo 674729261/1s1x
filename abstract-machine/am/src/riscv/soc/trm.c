@@ -30,7 +30,7 @@ void halt(int code) {
     ;
 }
 
-void _init_uart() {
+void __attribute__((section(".bootloader"))) _init_uart() {
   uint8_t lcr = inb(SERIAL_PORT + SERIAL_LCR_OFFSET);
   lcr |= (1 << 7);
   outb(SERIAL_PORT + SERIAL_LCR_OFFSET, lcr);
@@ -43,7 +43,8 @@ void _init_uart() {
   outb(SERIAL_PORT + SERIAL_LCR_OFFSET, lcr);
   outb(SERIAL_PORT + SERIAL_INT_OFFSET, 0x00);
 }
-void _show_motd(uint32_t vendorid, uint32_t archid) {
+void __attribute__((section(".bootloader"))) _show_motd(uint32_t vendorid,
+                                                        uint32_t archid) {
   const char *first_part = "\033[31mmvendorid\033[0m : 0x";
   const char *second_part = "\n\033[31mmarchid\033[0m : ";
   char buffer[16] = {};
@@ -70,7 +71,7 @@ void _show_motd(uint32_t vendorid, uint32_t archid) {
   putch('\n');
 }
 
-void _trm_init() {
+void __attribute__((section(".bootloader"))) _trm_init() {
   // printf("\033[31mmvendorid\033[0m : %#010x\n\033[31mmarchid\033[0m : %d\n",
   //        vendorid, archid);
   // wait_spi_finish();
@@ -80,6 +81,14 @@ void _trm_init() {
   char *src = &__data_load_start;
   char *dst = &__data_start;
   while (src < &__data_load_end) {
+    *dst = *src;
+    ++dst;
+    ++src;
+  }
+  extern char __prog_load_start, __prog_load_end, __prog_start;
+  src = &__prog_load_start;
+  dst = &__prog_start;
+  while (src < &__prog_load_end) {
     *dst = *src;
     ++dst;
     ++src;
