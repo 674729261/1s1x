@@ -24,6 +24,14 @@ void putch(char ch) {
   outb(SERIAL_PORT, ch);
 }
 
+void __attribute__((section(".bootloader"))) __putch(char ch) {
+  uint8_t line_status = 0x00;
+  while (!(line_status & (1 << 5)))
+    line_status = inb(SERIAL_PORT + SERIAL_LSR_OFFSET);
+
+  outb(SERIAL_PORT, ch);
+}
+
 void halt(int code) {
   asm volatile("mv a0, %0; ebreak" : : "r"(code));
   while (1)
@@ -50,25 +58,25 @@ void __attribute__((section(".bootloader"))) _show_motd(uint32_t vendorid,
   char buffer[16] = {};
   int cnt = 0;
   for (const char *p = first_part; *p; p++)
-    putch(*p);
+    __putch(*p);
   while (vendorid) {
     int dig = vendorid % 16;
     buffer[cnt++] = (dig < 10 ? '0' + dig : 'a' + dig - 10);
     vendorid /= 16;
   }
   for (int i = cnt - 1; i >= 0; i--)
-    putch(buffer[i]);
+    __putch(buffer[i]);
   cnt = 0;
   for (const char *p = second_part; *p; p++)
-    putch(*p);
+    __putch(*p);
   while (archid) {
     int dig = archid % 10;
     buffer[cnt++] = '0' + dig;
     archid /= 10;
   }
   for (int i = cnt - 1; i >= 0; i--)
-    putch(buffer[i]);
-  putch('\n');
+    __putch(buffer[i]);
+  __putch('\n');
 }
 
 void __attribute__((section(".bootloader"))) _trm_init() {
