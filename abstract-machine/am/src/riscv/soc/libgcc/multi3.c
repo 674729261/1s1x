@@ -37,7 +37,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define __multi3 __muldi3
 #endif
 
-DWtype __attribute__((section(".bootloader"))) __multi3(DWtype u, DWtype v) {
+DWtype __multi3(DWtype u, DWtype v) {
   const DWunion uu = {.ll = u};
   const DWunion vv = {.ll = v};
   DWunion w;

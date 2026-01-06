@@ -16,7 +16,7 @@ Area heap = RANGE(&_heap_start, PMEM_END);
 static const char mainargs[MAINARGS_MAX_LEN] =
     TOSTRING(MAINARGS_PLACEHOLDER); // defined in CFLAGS
 
-void __attribute__((section(".bootloader"))) putch(char ch) {
+void putch(char ch) {
   uint8_t line_status = 0x00;
   while (!(line_status & (1 << 5)))
     line_status = inb(SERIAL_PORT + SERIAL_LSR_OFFSET);
@@ -30,7 +30,7 @@ void halt(int code) {
     ;
 }
 
-void __attribute__((section(".bootloader"))) _init_uart() {
+void _init_uart() {
   uint8_t lcr = inb(SERIAL_PORT + SERIAL_LCR_OFFSET);
   lcr |= (1 << 7);
   outb(SERIAL_PORT + SERIAL_LCR_OFFSET, lcr);
@@ -43,8 +43,7 @@ void __attribute__((section(".bootloader"))) _init_uart() {
   outb(SERIAL_PORT + SERIAL_LCR_OFFSET, lcr);
   outb(SERIAL_PORT + SERIAL_INT_OFFSET, 0x00);
 }
-void __attribute__((section(".bootloader"))) _show_motd(uint32_t vendorid,
-                                                        uint32_t archid) {
+void _show_motd(uint32_t vendorid, uint32_t archid) {
   const char *first_part = "\033[31mmvendorid\033[0m : 0x";
   const char *second_part = "\n\033[31mmarchid\033[0m : ";
   char buffer[16] = {};
@@ -71,12 +70,17 @@ void __attribute__((section(".bootloader"))) _show_motd(uint32_t vendorid,
   putch('\n');
 }
 
-void __attribute__((section(".bootloader"))) _trm_init() {
+void _trm_init() {
   // printf("\033[31mmvendorid\033[0m : %#010x\n\033[31mmarchid\033[0m : %d\n",
   //        vendorid, archid);
   // wait_spi_finish();
   // spi_init();
 
+  int ret = main(mainargs);
+  halt(ret);
+}
+
+__attribute__((section(".bootloader"))) void bootloader() {
   extern char __data_load_start, __data_load_end, __data_start;
   char *src = &__data_load_start;
   char *dst = &__data_start;
@@ -97,7 +101,4 @@ void __attribute__((section(".bootloader"))) _trm_init() {
   extern char __bss_start, __bss_end;
   for (char *p = &__bss_start; p < &__bss_end; p++)
     *p = 0;
-
-  int ret = main(mainargs);
-  halt(ret);
 }

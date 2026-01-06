@@ -22,7 +22,7 @@ You should have received a copy of the GNU General Public License and
 a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
-.section .bootloader, "ax"
+
 #include "riscv-asm.h"
 
   .text
@@ -36,7 +36,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 # define __moddi3 __modsi3
 #else
 
-.section .bootloader, "ax"
+
 FUNC_BEGIN (__udivsi3)
   /* Compute __udivdi3(a0 << 32, a1 << 32); cast result to uint32_t.  */
   sll    a0, a0, 32
@@ -47,7 +47,7 @@ FUNC_BEGIN (__udivsi3)
   jr     t0
 FUNC_END (__udivsi3)
 
-.section .bootloader, "ax"
+
 FUNC_BEGIN (__umodsi3)
   /* Compute __udivdi3((uint32_t)a0, (uint32_t)a1); cast a1 to uint32_t.  */
   sll    a0, a0, 32
@@ -62,20 +62,20 @@ FUNC_END (__umodsi3)
 
 FUNC_ALIAS (__modsi3, __moddi3)
 
-.section .bootloader, "ax"
+
 FUNC_BEGIN( __divsi3)
   /* Check for special case of INT_MIN/-1. Otherwise, fall into __divdi3.  */
   li    t0, -1
   beq   a1, t0, .L20
 #endif
 
-.section .bootloader, "ax"
+
 FUNC_BEGIN (__divdi3)
   bltz  a0, .L10
   bltz  a1, .L11
   /* Since the quotient is positive, fall into __udivdi3.  */
 
-.section .bootloader, "ax"
+
 FUNC_BEGIN (__udivdi3)
   mv    a2, a1
   mv    a1, a0
@@ -103,7 +103,7 @@ FUNC_BEGIN (__udivdi3)
 FUNC_END (__udivdi3)
 HIDDEN_DEF (__udivdi3)
 
-.section .bootloader, "ax"
+
 FUNC_BEGIN (__umoddi3)
   /* Call __udivdi3(a0, a1), then return the remainder, which is in a1.  */
   move  t0, ra
@@ -129,7 +129,7 @@ FUNC_END (__umoddi3)
   jr    t0
 FUNC_END (__divdi3)
 
-.section .bootloader, "ax"
+
 FUNC_BEGIN (__moddi3)
   move   t0, ra
   bltz   a1, .L31

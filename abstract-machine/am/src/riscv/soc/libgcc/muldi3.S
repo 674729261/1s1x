@@ -33,7 +33,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 # define __muldi3 __mulsi3
 #endif
 
-.section .bootloader, "ax"
+
 FUNC_BEGIN (__muldi3)
   mv     a2, a0
   li     a0, 0

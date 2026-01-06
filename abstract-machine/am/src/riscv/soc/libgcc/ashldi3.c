@@ -1,8 +1,7 @@
 #define LIBGCC2_UNITS_PER_WORD (__riscv_xlen / 8)
 #include "libgcc2.h"
 
-DWtype __attribute__((section(".bootloader"))) __ashldi3(DWtype u,
-                                                         shift_count_type b) {
+DWtype __ashldi3(DWtype u, shift_count_type b) {
   if (b == 0)
     return u;
 
