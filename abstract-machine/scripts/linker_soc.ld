@@ -17,6 +17,7 @@ SECTIONS
   } > prog AT> prog
 
 
+
   .rodata : {
     __prog_start = .;
     *(.text*)
@@ -27,12 +28,13 @@ SECTIONS
   __prog_load_start = LOADADDR(.rodata);
   __prog_load_end   = __prog_load_start + SIZEOF(.rodata);
 
+
   .data : {
   __data_start = .;
   *(.data*)
   *(.sdata*)
   __data_end = .;
-  } > psram AT> prog
+  } > psram AT>prog
 
   __data_load_start = LOADADDR(.data);
   __data_load_end   = __data_load_start + SIZEOF(.data);
