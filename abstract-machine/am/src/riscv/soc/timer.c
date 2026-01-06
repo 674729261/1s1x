@@ -2,17 +2,16 @@
 #include <am.h>
 #include <klib.h>
 #include <stdint.h>
-#define RTC_ADDR (DEVICE_BASE + 0x0000048)
-#define DEVICE_BASE 0xa0000000
+
 void __am_timer_init() {
-  outl(RTC_ADDR, 0);
-  outl(RTC_ADDR + 4, 0);
+  // outl(RTC_ADDR, 0);
+  // outl(RTC_ADDR + 4, 0);
 }
 
 void __am_timer_uptime(AM_TIMER_UPTIME_T *uptime) {
-  uint32_t lower = inl(RTC_ADDR);
-  uint32_t upper = inl(RTC_ADDR + 0x4);
-  uptime->us = ((uint64_t)upper << 32ull) | (uint64_t)lower;
+  // uint32_t lower = inl(RTC_ADDR);
+  // uint32_t upper = inl(RTC_ADDR + 0x4);
+  // uptime->us = ((uint64_t)upper << 32ull) | (uint64_t)lower;
   // static uint64_t last = 0;
   // if (last > uptime->us / 1000000) {
   //   printf("!!%lld\r", last);
