@@ -61,7 +61,6 @@ int simulate(int argc, char *argv[], Config config) {
       ref.sync_state();
     }
     dut.step_one_cycle();
-    std::println("PC = {:08x}", dut.getPC());
 
     if (retire) {
       if (config.difftest) {
