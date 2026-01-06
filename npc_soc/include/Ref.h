@@ -22,7 +22,7 @@ struct Ref {
     for (int i = 0; i < 32; i++) {
       cpu.gpr[i] = dut.getGPR(i);
     }
-    cpu.pc = 0x30000000;
+    cpu.pc = 0x20000000;
   };
   void step();
   unsigned long long instrCount() { return inst_count; }
