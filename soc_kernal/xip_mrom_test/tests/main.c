@@ -4,7 +4,7 @@ void putch(char c);
 uint32_t inl(uint32_t addr);
 
 void _start() {
-  asm volatile("lui sp, 0x0f000");
+  asm volatile("lui sp, 0x0f000\naddi sp,sp,256");
   for (uint32_t i = 0; i < 0x80; i += 4) {
     uint32_t recv = inl(XIP_BASE + i);
 
