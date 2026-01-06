@@ -179,7 +179,6 @@ module EF_PSRAM_CTRL_wb (
       .sck   (ms_sck),
       .ce_n  (ms_ce_n),
       .din   (ms_din),
-      .dout  (ms_doe),
       .douten(ms_doe)
   );
 
