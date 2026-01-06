@@ -19,9 +19,9 @@ int main() {
       int dig = recv % 16;
       buffer[cnt++] = (dig < 10 ? '0' + dig : 'a' + dig - 10);
       recv /= 16;
-      for (int j = cnt - 1; j >= 0; j--)
-        putch(buffer[j]);
-      putch('\n');
     }
+    for (int j = cnt - 1; j >= 0; j--)
+      putch(buffer[j]);
+    putch('\n');
   }
 }
