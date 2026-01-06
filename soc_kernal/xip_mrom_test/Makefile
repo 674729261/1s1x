@@ -5,7 +5,7 @@ RVOBJCOPY=riscv64-linux-gnu-objcopy
 RVOBJDUMP=riscv64-linux-gnu-objdump
 
 
-CSRC=$(wildcard ./tests/*.c)
+CSRC=$(wildcard ./tests/*.S)
 
 MDIR=./build
 

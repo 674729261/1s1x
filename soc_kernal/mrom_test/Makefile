@@ -27,7 +27,7 @@ $(ELF):$(CSRC)
 	mkdir -p $(MDIR)
 	$(RVGCC) $(CSRC) -march=rv32i -mabi=ilp32 \
 	-nostdlib -nostartfiles -fno-stack-protector \
-	-fno-pic -T link.ld \
+	-fpic -T link.ld \
 	-I./include -O2 -o $@
 
 $(BIN): $(ELF)

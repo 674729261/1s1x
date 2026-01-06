@@ -13,6 +13,8 @@ extern "C" void flash_read(int32_t addr, int32_t *data) {
 }
 
 void init_flash(std::string_view image_path) {
+  image_path = "/home/shitful/1s1x/ysyx-workbench/soc_kernal/mrom_test/build/"
+               "mromtest.bin";
   using std::ifstream;
   using std::ios;
 
