@@ -108,7 +108,8 @@ inline void Ref::step() {
   // std::println("PC = {:08x}, inst = {:08x}", cpu.pc, inst);
   Decoded d = decode(inst);
   ref_trace_file << std::format("{:08x} {:08x} {:08x} {:08x} {:08x}\n", cpu.pc,
-                                inst, cpu.gpr[10], cpu.gpr[11], cpu.gpr[12]);
+                                inst, cpu.gpr[10], cpu.gpr[11], cpu.gpr[12])
+                 << std::flush;
 
   uint32_t dnpc = cpu.pc + 4;
   BEGIN_PATTERN
