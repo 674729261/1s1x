@@ -9,15 +9,12 @@ MEMORY {
 
 SECTIONS
 {
-  . = ORIGIN(prog);
-
   .text : {
     *(entry)
     *(.bootloader)
   } > prog AT> prog
 
 
-  . = ORIGIN(psram);
   .rodata : {
     __prog_start = .;
     *(.text*)
@@ -28,7 +25,6 @@ SECTIONS
   __prog_load_start = LOADADDR(.rodata);
   __prog_load_end   = __prog_load_start + SIZEOF(.rodata);
 
-  . = ORIGIN(psram);
   .data : {
   __data_start = .;
   *(.data*)
