@@ -27,5 +27,5 @@ int main() {
     putch('\n');
   }
   asm volatile("lui t0, 0x30000");
-  asm volatile("jalr x0, 0(t0)");
+  asm volatile("jr t0");
 }
