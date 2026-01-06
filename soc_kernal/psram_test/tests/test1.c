@@ -16,10 +16,10 @@ int test_word() {
   uint32_t *start = (uint32_t *)(TEST_ADDR_START);
   uint32_t *end = (uint32_t *)(TEST_ADDR_END);
   for (volatile uint32_t *p = start; p < end; p++) {
-    *p = (uint32_t)((uint32_t)p * 23);
+    *p = (uint32_t)((uint32_t)p | 0xF0F00000);
   }
   for (volatile uint32_t *p = start; p < end; p++) {
-    MY_CHECK(*p == (uint32_t)((uint32_t)p * 23));
+    MY_CHECK(*p == (uint32_t)((uint32_t)p | 0xF0F00000));
   }
   return 0;
 }
