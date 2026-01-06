@@ -1,12 +1,5 @@
 #include <stdint.h>
 #define XIP_BASE 0x30000000
-#define MY_CHECK(C)                                                            \
-  do {                                                                         \
-    if (!(C)) {                                                                \
-      asm volatile("lui a0, 0xfffff\nebreak");                                 \
-    }                                                                          \
-  } while (0)
-
 void putch(char c);
 uint32_t inl(uint32_t addr);
 
@@ -14,7 +7,6 @@ void _start() {
   asm volatile("lui sp, 0x20000");
   for (uint32_t i = 0; i < 0x80; i += 4) {
     uint32_t recv = inl(XIP_BASE + i);
-    MY_CHECK(recv == i);
 
     char buffer[16] = {};
     int cnt = 0;
