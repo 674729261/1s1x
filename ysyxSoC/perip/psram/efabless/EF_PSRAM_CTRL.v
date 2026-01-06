@@ -60,7 +60,7 @@ module PSRAM_READER (
     localparam  IDLE = 1'b0,
                 READ = 1'b1;
 
-    wire [7:0]  FINAL_COUNT = 12 + size*2; // was 27: Always read 1 word
+    wire [7:0]  FINAL_COUNT = 13 + size*2; // was 27: Always read 1 word
 
     reg         state, nstate;
     reg [7:0]   counter;
