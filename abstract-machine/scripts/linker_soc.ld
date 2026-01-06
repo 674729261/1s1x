@@ -9,6 +9,8 @@ MEMORY {
 
 SECTIONS
 {
+  . = ORIGIN(prog);
+
   .text : {
     *(entry)
     *(.bootloader)
