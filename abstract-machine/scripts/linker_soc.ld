@@ -2,9 +2,9 @@ ENTRY(_start)
 
 MEMORY {
   prog (rx)  : ORIGIN = 0x30000000, LENGTH = _pmem_size
-  sram (rw) : ORIGIN = 0x0f000000, LENGTH = 8K
   psram (rwx) : ORIGIN = 0x80000000, LENGTH = 2M
   psram_heap (rw) : ORIGIN = 0x80200000, LENGTH = 2M
+  sram (rw) : ORIGIN = 0x0f000000, LENGTH = 8K
 }
 
 SECTIONS
@@ -17,8 +17,7 @@ SECTIONS
   } > prog AT> prog
 
 
-  . = ORIGIN(sram);
-
+  . = ORIGIN(psram);
   .rodata : {
     __prog_start = .;
     *(.text*)
@@ -29,6 +28,7 @@ SECTIONS
   __prog_load_start = LOADADDR(.rodata);
   __prog_load_end   = __prog_load_start + SIZEOF(.rodata);
 
+  . = ORIGIN(psram);
   .data : {
   __data_start = .;
   *(.data*)
