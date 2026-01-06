@@ -1,7 +1,7 @@
 ENTRY(_start)
 
 MEMORY {
-  prog (rx)  : ORIGIN = 0x20000000, LENGTH = 4K
+  prog (rx)  : ORIGIN = _pmem_start, LENGTH = 4K
   sram (rwx) : ORIGIN = 0x0f000000, LENGTH = 8K
 }
 
