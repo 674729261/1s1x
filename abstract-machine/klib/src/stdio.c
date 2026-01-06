@@ -415,12 +415,15 @@ int vsnprintf(char *out, size_t n, const char *fmt, va_list ap) {
 #if defined(__ARCH_X86_NEMU)
 #define DEVICE_BASE 0x0
 #else
+#if defined(_SOC_)
+#define SERIAL_PORT 0x10000000
+#else
 #define DEVICE_BASE 0xa0000000
+#define MMIO_BASE 0xa0000000
+#define SERIAL_PORT (DEVICE_BASE + 0x00003f8)
+#endif
 #endif
 
-#define MMIO_BASE 0xa0000000
-
-#define SERIAL_PORT (DEVICE_BASE + 0x00003f8)
 static char *update_to_serial(char *addr, char c, char *begin, size_t max_len) {
   *(volatile char *)addr = c;
   return addr;
