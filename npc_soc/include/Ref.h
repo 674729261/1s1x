@@ -27,6 +27,13 @@ struct Ref {
   void step();
   unsigned long long instrCount() { return inst_count; }
 
+  void sync_state() {
+    for (int i = 1; i < 32; i++) {
+      cpu.gpr[i] = dut.getGPR(i);
+    }
+    cpu.pc = dut.getPC();
+  }
+
   uint32_t isa_raise_intr(int intr_id) {
     csr.mepc = cpu.pc;
     csr.mcause = intr_id;

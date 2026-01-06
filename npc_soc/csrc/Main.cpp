@@ -55,8 +55,11 @@ int simulate(int argc, char *argv[], Config config) {
   bool difftest_state = false;
   while (!contextp->gotFinish()) {
     retire = false;
-    if (dut.top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__reset)
+    if (dut.top->rootp
+            ->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__reset) {
       ref.reset(dut);
+      ref.sync_state();
+    }
     dut.step_one_cycle();
     // std::println("PC = {:08x}", dut.getPC());
 
