@@ -1,14 +1,15 @@
 #include <stdint.h>
-
+#define XIP_BASE 0x30000000
 #define MY_CHECK(C)                                                            \
   do {                                                                         \
     if (!(C)) {                                                                \
       asm volatile("lui a0, 0xfffff\nebreak");                                 \
     }                                                                          \
   } while (0)
-void putch(char c) { *(volatile char *)0x10000000L = c; }
-#define XIP_BASE 0x30000000
-uint32_t inl(uint32_t addr) { return *(volatile uint32_t *)addr; }
+
+void putch(char c);
+uint32_t inl(uint32_t addr);
+
 void _start() {
   asm volatile("lui sp, 0x20000");
   for (uint32_t i = 0; i < 0x80; i += 4) {
@@ -30,3 +31,6 @@ void _start() {
   asm volatile("lui t0, 0x30000");
   asm volatile("jalr x0, 0(t0)");
 }
+
+void putch(char c) { *(volatile char *)0x10000000L = c; }
+uint32_t inl(uint32_t addr) { return *(volatile uint32_t *)addr; }
