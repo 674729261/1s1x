@@ -19,7 +19,10 @@ int main() {
       buffer[cnt++] = (dig < 10 ? '0' + dig : 'a' + dig - 10);
       recv /= 16;
     }
-    for (int j = cnt - 1; j >= 0; j--)
+    while (cnt < 8) {
+      buffer[cnt++] = '0';
+    }
+    for (int j = 7; j >= 0; j--)
       putch(buffer[j]);
     putch('\n');
   }
