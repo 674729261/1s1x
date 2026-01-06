@@ -99,7 +99,7 @@ inline void Ref::step() {
         "Ref tried to fetch instruction in non-memory address {:#010x}",
         cpu.pc);
   }
-  uint32_t inst = ifnst_fetch.data;
+  const uint32_t inst = ifnst_fetch.data;
   std::println("PC = {:08x}, inst = {:08x}", cpu.pc, inst);
   Decoded d = decode(inst);
 

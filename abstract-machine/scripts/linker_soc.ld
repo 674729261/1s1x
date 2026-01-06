@@ -12,6 +12,7 @@ SECTIONS
 
   .text : {
     *(entry)
+    *(.bootloader)
   } > prog AT> prog
 
 
