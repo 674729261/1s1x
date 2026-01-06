@@ -3,5 +3,6 @@
 void _start() {
   *(volatile char *)(UART_BASE + UART_TX) = 'A';
   *(volatile char *)(UART_BASE + UART_TX) = '\n';
+  asm volatile("lui a0, 0x00000");
   asm volatile("ebreak");
 }
