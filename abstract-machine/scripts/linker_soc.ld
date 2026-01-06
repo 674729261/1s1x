@@ -16,8 +16,8 @@ SECTIONS
     *(.bootloader)
   } > prog AT> prog
 
-
-
+  . = ORIGIN(psram);  
+  
   .rodata : {
     __prog_start = .;
     *(.text*)
