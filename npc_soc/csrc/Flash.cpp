@@ -8,7 +8,8 @@
 
 std::vector<uint32_t> flash_content;
 extern "C" void flash_read(int32_t addr, int32_t *data) {
-  *data = flash_content[(addr & 0x0FFFFFFF) >> 2];
+  // *data = flash_content[(addr & 0x0FFFFFFF) >> 2];
+  *data = (addr & 0x0FFFFFFF);
 }
 
 void init_flash(std::string_view image_path) {
