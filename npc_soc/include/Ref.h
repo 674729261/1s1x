@@ -101,7 +101,7 @@ inline void Ref::step() {
   }
   uint32_t inst = ifnst_fetch.data;
   Decoded d = decode(inst);
-  std::println("PC = {:08x}", cpu.pc);
+  // std::println("PC = {:08x}", cpu.pc);
 
   uint32_t dnpc = cpu.pc + 4;
   BEGIN_PATTERN
