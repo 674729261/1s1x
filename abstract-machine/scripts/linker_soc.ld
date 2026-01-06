@@ -1,9 +1,10 @@
 ENTRY(_start)
 
 MEMORY {
-  prog (rx)  : ORIGIN = _pmem_start, LENGTH = _pmem_size
-  sram (rwx) : ORIGIN = 0x0f000000, LENGTH = 8K
-  psram (rwx) : ORIGIN = 0x80000000, LENGTH = 4M
+  prog (rx)  : ORIGIN = 0x30000000, LENGTH = _pmem_size
+  sram (rw) : ORIGIN = 0x0f000000, LENGTH = 8K
+  psram (rwx) : ORIGIN = 0x80000000, LENGTH = 2M
+  psram_heap (rw) : ORIGIN = 0x80200000, LENGTH = 2M
 }
 
 SECTIONS
@@ -23,7 +24,7 @@ SECTIONS
     *(.text*)
     *(.rodata*)
     __prog_end = .;
-  } > sram AT> prog
+  } > psram AT> prog
 
   __prog_load_start = LOADADDR(.rodata);
   __prog_load_end   = __prog_load_start + SIZEOF(.rodata);
@@ -33,7 +34,7 @@ SECTIONS
   *(.data*)
   *(.sdata*)
   __data_end = .;
-  } > sram AT> prog
+  } > psram AT> prog
 
   __data_load_start = LOADADDR(.data);
   __data_load_end   = __data_load_start + SIZEOF(.data);
@@ -44,9 +45,8 @@ SECTIONS
     *(.sbss*)
     *(.scommon)
     __bss_end = .;
-  } > sram
+  } > psram
 
-  . = ALIGN(32);
-  _heap_start = .;
+  _heap_start = ORIGIN(psram_heap);
   _stack_pointer = ORIGIN(sram) + LENGTH(sram);
 }

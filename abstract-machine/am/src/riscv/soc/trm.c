@@ -101,4 +101,8 @@ __attribute__((section(".bootloader"))) void bootloader() {
   extern char __bss_start, __bss_end;
   for (char *p = &__bss_start; p < &__bss_end; p++)
     *p = 0;
+
+  const char *message = "Bootloader finished\n";
+  for (const char *p = message; *p; p++)
+    putch(*p);
 }
