@@ -48,5 +48,6 @@ SECTIONS
   } > psram
 
   _heap_start = ORIGIN(psram_heap);
+  _heap_end = ORIGIN(psram_heap) + LENGTH(psram_heap);
   _stack_pointer = ORIGIN(sram) + LENGTH(sram);
 }
