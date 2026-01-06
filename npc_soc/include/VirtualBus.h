@@ -9,7 +9,7 @@
 #include <vector>
 
 struct VirtualBus {
-  VirtualBus() : sram(2048) {}
+  VirtualBus() : sram(2048), psram(1024 * 1024 * 4) {}
 
   struct ReadResult {
     uint32_t data;
@@ -35,6 +35,8 @@ struct VirtualBus {
       return {0xdeadbeef, true};
     } else if (check_range(spi_field)) {
       return {0xdeadbeef, true};
+    } else if (check_range(psram_field)) {
+      return {psram[(addr & 0x00FFFFFF) >> 2], false};
     } else {
       log_and_throw<std::logic_error>(
           "Failed to decode read addr {:08x}, size = {}", addr, sz);
@@ -67,6 +69,9 @@ struct VirtualBus {
     } else if (check_range(flash_field)) {
       log_and_throw<std::logic_error>(
           "Failed to write to address {:08x} : flash can not be written", addr);
+    } else if (check_range(psram_field)) {
+      psram[(addr & 0x00FFFFFF) >> 2] &= ~mask32;
+      psram[(addr & 0x00FFFFFF) >> 2] |= wdata & mask32;
     } else {
       log_and_throw<std::logic_error>("Failed to decode write addr {:08x}",
                                       addr);
@@ -86,4 +91,7 @@ struct VirtualBus {
 
   const Area uart_field = {0x10000000, 0x10000fff};
   const Area spi_field = {0x10001000, 0x10001fff};
+
+  std::vector<uint32_t> psram;
+  const Area psram_field = {0x80000000, 0x9fffffff};
 };
