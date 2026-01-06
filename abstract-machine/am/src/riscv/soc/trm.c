@@ -85,7 +85,18 @@ void _trm_init() {
   halt(ret);
 }
 
-__attribute__((section(".bootloader"))) void bootloader() {
+__attribute__((section(".fsbl"))) void fstbootloader() {
+  extern char __ssbl_load_start, __ssbl_load_end, __ssbl_start;
+  char *src = &__ssbl_load_start;
+  char *dst = &__ssbl_start;
+  while (src < &__ssbl_load_end) {
+    *dst = *src;
+    ++dst;
+    ++src;
+  }
+}
+
+__attribute__((section(".ssbl"))) void secbootloader() {
   extern char __data_load_start, __data_load_end, __data_start;
   char *src = &__data_load_start;
   char *dst = &__data_start;

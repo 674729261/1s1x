@@ -13,11 +13,22 @@ SECTIONS
 
   .text : {
     *(entry)
-    *(.bootloader)
+    *(.fsbl)
   } > prog AT> prog
 
-  . = ORIGIN(psram);  
+  . = ORIGIN(sram);  
   
+  .second_stage : {
+    __ssbl_start = .;
+    *(.ssbl)
+    __ssbl_end = .;
+  } > sram AT> prog
+
+  __ssbl_load_start = LOADADDR(.second_stage);
+  __ssbl_load_end   = __ssbl_load_start + SIZEOF(.second_stage);
+
+  . = ORIGIN(psram);  
+
   .rodata : {
     __prog_start = .;
     *(.text*)
