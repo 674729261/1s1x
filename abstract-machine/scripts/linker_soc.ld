@@ -4,7 +4,7 @@ MEMORY {
   sram (rw) : ORIGIN = 0x0f000000, LENGTH = 8K
   prog (rx)  : ORIGIN = 0x30000000, LENGTH = _pmem_size
   psram (rw) : ORIGIN = 0x80000000, LENGTH = 4M
-  dsram (rwx) : ORIGIN = 0xa0000000, LENGTH = 32M
+  dsram (rwx) : ORIGIN = 0x80000000, LENGTH = 32M
 }
 
 SECTIONS
