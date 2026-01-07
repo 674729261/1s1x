@@ -8,7 +8,6 @@ NAME = rtthread
 SRCS = $(shell find src -name "*.c")
 CFLAGS += -DHAVE_CCONFIG_H -D__RTTHREAD__
 CFLAGS += -Wno-nonnull-compare
-export CFLAGS
 
 
 ifeq ($(findstring soc,$(ARCH)),soc)
@@ -19,6 +18,8 @@ endif
 
 -include $(FILE_MK)
 -include $(AM_APPS_MK)
+
+CFLAGS += -D__RTTHREAD__
 include $(AM_HOME)/Makefile
 
 $(RTCONFIG_H):
