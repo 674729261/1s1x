@@ -600,27 +600,30 @@ module sdram_axi_core (
       else ack_q <= 1'b0;
     end
 
-  assign ram_ack_w           = ack_q;
+  assign ram_ack_w                = ack_q;
 
   // Accept command in READ or WRITE0 states
-  assign ram_accept_w        = (state_q == STATE_READ || state_q == STATE_WRITE0);
+  assign ram_accept_w             = (state_q == STATE_READ || state_q == STATE_WRITE0);
 
   //-----------------------------------------------------------------
   // SDRAM I/O
   //-----------------------------------------------------------------
-  assign sdram_clk_o         = ~clk_i;
-  assign sdram_data_out_en_o = ~data_rd_en_q;
-  assign sdram_data_output_o = data_q;
-  assign sdram_data_in_w     = sdram_data_input_low_i;
+  assign sdram_clk_o              = ~clk_i;
+  assign sdram_data_out_en_o      = ~data_rd_en_q;
+  assign sdram_data_output_low_o  = ram_write_data_w[15:0];
+  assign sdram_data_output_high_o = ram_write_data_w[31:16];
+  assign sdram_data_in_low_w      = sdram_data_input_low_i;
+  assign sdram_data_in_high_w     = sdram_data_input_high_i;
 
-  assign sdram_cke_o         = cke_q;
-  assign sdram_cs_o          = command_q[3];
-  assign sdram_ras_o         = command_q[2];
-  assign sdram_cas_o         = command_q[1];
-  assign sdram_we_o          = command_q[0];
-  assign sdram_dqm_o         = dqm_q;
-  assign sdram_ba_o          = bank_q;
-  assign sdram_addr_o        = addr_q;
+
+  assign sdram_cke_o              = cke_q;
+  assign sdram_cs_o               = command_q[3];
+  assign sdram_ras_o              = command_q[2];
+  assign sdram_cas_o              = command_q[1];
+  assign sdram_we_o               = command_q[0];
+  assign sdram_dqm_o              = dqm_q;
+  assign sdram_ba_o               = bank_q;
+  assign sdram_addr_o             = addr_q;
 
   //-----------------------------------------------------------------
   // Simulation only
