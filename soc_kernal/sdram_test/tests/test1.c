@@ -42,7 +42,7 @@ int test_byte() {
   for (volatile uint8_t *p = start; p < end; p += 0x2350) {
     *p = (uint8_t)((uint32_t)p * 3);
   }
-  for (volatile uint8_t *p = start; p < end; p += 0x2330) {
+  for (volatile uint8_t *p = start; p < end; p += 0x2350) {
     MY_CHECK(*p == (uint8_t)((uint32_t)p * 3));
   }
   return 0;
