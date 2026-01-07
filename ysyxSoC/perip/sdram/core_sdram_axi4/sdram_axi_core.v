@@ -55,7 +55,9 @@ module sdram_axi_core (
     , output        sdram_ras_o
     , output        sdram_cas_o
     , output        sdram_we_o
-    , output [ 1:0] sdram_dqm_o
+    , output [ 1:0] sdram_dqm_low_o
+    , output [ 1:0] sdram_dqm_high_o
+
     , output [12:0] sdram_addr_o
     , output [ 1:0] sdram_ba_o
     , output [15:0] sdram_data_output_low_o
@@ -621,7 +623,9 @@ module sdram_axi_core (
   assign sdram_ras_o              = command_q[2];
   assign sdram_cas_o              = command_q[1];
   assign sdram_we_o               = command_q[0];
-  assign sdram_dqm_o              = dqm_q;
+  assign sdram_dqm_low_o          = ram_wr_w[1:0];
+  assign sdram_dqm_high_o         = ram_wr_w[3:2];
+
   assign sdram_ba_o               = bank_q;
   assign sdram_addr_o             = addr_q;
 
