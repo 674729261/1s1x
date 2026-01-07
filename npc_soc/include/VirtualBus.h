@@ -37,6 +37,8 @@ struct VirtualBus {
       return {0xdeadbeef, true};
     } else if (check_range(psram_field)) {
       return {psram[(addr & 0x00FFFFFF) >> 2], false};
+    } else if (check_range(sdram_field)) {
+      return {sdram[(addr & 0x0FFFFFFF) >> 2], false};
     } else {
       log_and_throw<std::logic_error>(
           "Failed to decode read addr {:08x}, size = {}", addr, sz);
@@ -72,6 +74,9 @@ struct VirtualBus {
     } else if (check_range(psram_field)) {
       psram[(addr & 0x00FFFFFF) >> 2] &= ~mask32;
       psram[(addr & 0x00FFFFFF) >> 2] |= wdata & mask32;
+    } else if (check_range(sdram_field)) {
+      sdram[(addr & 0x0FFFFFFF) >> 2] &= ~mask32;
+      sdram[(addr & 0x0FFFFFFF) >> 2] |= wdata & mask32;
     } else {
       log_and_throw<std::logic_error>("Failed to decode write addr {:08x}",
                                       addr);
@@ -94,4 +99,7 @@ struct VirtualBus {
 
   std::vector<uint32_t> psram;
   const Area psram_field = {0x80000000, 0x9fffffff};
+
+  std::vector<uint32_t> sdram;
+  const Area sdram_field = {0xa0000000, 0xbfffffff};
 };
