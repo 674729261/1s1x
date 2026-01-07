@@ -70,7 +70,7 @@ int test_memcpy() {
   char x[8] = {1, 2, 3, 4, 5, 6, 7, 8};
   char y[8] = {};
   const char r1[8] = {0, 3, 4, 5, 6, 7, 8, 0};
-  const char r2[8] = {0, 3, 4, 5, 7, 4, 5, 0};
+  const char r2[8] = {0, 3, 4, 5, 6, 4, 5, 0};
   memcpy(y + 1, x + 2, 6 * sizeof(char));
   MY_RANGE(y, r1, 0, 8);
   memcpy(y + 5, x + 3, 2 * sizeof(char));
