@@ -71,7 +71,7 @@ struct VirtualBus {
       // no action
     } else if (check_range(flash_field)) {
       log_and_throw<std::logic_error>(
-          "Failed to write to address {:08x} : flash can not be written", addr);
+          "Failed to write to address {:} : flash can not be written", addr);
     } else if (check_range(psram_field)) {
       psram[(addr & 0x00FFFFFF) >> 2] &= ~mask32;
       psram[(addr & 0x00FFFFFF) >> 2] |= wdata & mask32;
