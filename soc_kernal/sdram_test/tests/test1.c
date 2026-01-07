@@ -48,6 +48,20 @@ int test_byte() {
   return 0;
 }
 
+int test_last() {
+  *(volatile uint32_t *)(TEST_ADDR_START) = 0xdeadbeef;
+  *(volatile uint16_t *)(TEST_ADDR_START + 4) = 0xabcd;
+  *(volatile uint8_t *)(TEST_ADDR_START + 6) = 0x3;
+  *(volatile uint8_t *)(TEST_ADDR_START + 7) = 0x6;
+
+  MY_CHECK(*(volatile uint8_t *)(TEST_ADDR_START + 7) == 0x6);
+  MY_CHECK(*(volatile uint16_t *)(TEST_ADDR_START + 4) == 0xabcd);
+  MY_CHECK(*(volatile uint32_t *)(TEST_ADDR_START) == 0xdeadbeef);
+  MY_CHECK(*(volatile uint8_t *)(TEST_ADDR_START + 6) == 0x3);
+
+  return 0;
+}
+
 int main() {
   int return_value = test_word();
   if (return_value)
@@ -56,6 +70,9 @@ int main() {
   if (return_value)
     return -1;
   return_value = test_byte();
+  if (return_value)
+    return -1;
+  return_value = test_last();
   if (return_value)
     return -1;
   return 0;
