@@ -19,7 +19,6 @@ endif
 -include $(FILE_MK)
 -include $(AM_APPS_MK)
 
-CFLAGS += -D__RTTHREAD__
 include $(AM_HOME)/Makefile
 
 $(RTCONFIG_H):
