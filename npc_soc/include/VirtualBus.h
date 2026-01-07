@@ -9,7 +9,7 @@
 #include <vector>
 
 struct VirtualBus {
-  VirtualBus() : sram(2048), psram(1024 * 1024 * 4) {}
+  VirtualBus() : sram(2048), psram(1024 * 1024 * 1), sdram(1024 * 1024 * 8) {}
 
   struct ReadResult {
     uint32_t data;
