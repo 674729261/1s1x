@@ -69,7 +69,19 @@ int strncmp(const char *s1, const char *s2, size_t n) {
 
 void *memset(void *s, int c, size_t n) {
   unsigned char *p = (unsigned char *)s;
-  unsigned char uc = (unsigned char)c;
+  while ((((uintptr_t)p) & 0x3) && n) {
+    *p++ = (unsigned char)c;
+    n--;
+  }
+  const uint32_t content = ((unsigned char)c << 24) | ((unsigned char)c << 16) |
+                           ((unsigned char)c << 8) | (unsigned char)c;
+  while (n >= 4) {
+    *(unsigned int *)p = content;
+    p += 4;
+    n -= 4;
+  }
+
+  const unsigned char uc = (unsigned char)c;
   while (n-- > 0) {
     *p++ = uc;
   }
