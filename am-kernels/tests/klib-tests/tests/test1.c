@@ -71,6 +71,18 @@ int test_memset() {
   const int r1[8] = {-1, -1, -1, -1, -1, 6, 7, 8};
   memset(x, -1, 5 * sizeof(int));
   MY_RANGE(x, r1, 0, 8);
+
+  char y[16] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+  memset(y + 5, -5, 9 * sizeof(char));
+  const char r2[16] = {1,  2,  3,  4,  5,  -5, -5, -5,
+                       -5, -5, -5, -5, -5, -5, 15, 16};
+  MY_RANGE(y, r2, 0, 8);
+
+  memset(y + 1, -7, 2 * sizeof(char));
+  const char r3[16] = {1,  -7, -7, 4,  5,  -5, -5, -5,
+                       -5, -5, -5, -5, -5, -5, 15, 16};
+  MY_RANGE(y, r3, 0, 8);
+
   return 0;
 }
 
