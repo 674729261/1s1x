@@ -40,7 +40,7 @@ static int _uart_putc(struct rt_serial_device *serial, char c) {
 
 static int _uart_getc(struct rt_serial_device *serial) {
   static const char *p = "help\ndate\nversion\nfree\nps\npwd\nls\nmemtrace\nmem"
-                         "check\nutest_list\nam_hello\n";
+                         "check\nutest_list\nam_hello\nblockchain 0\n";
   return (*p != '\0' ? *(p++) : -1);
 }
 
