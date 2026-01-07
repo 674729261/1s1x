@@ -9,7 +9,6 @@ SRCS = $(shell find src -name "*.c")
 CFLAGS += -DHAVE_CCONFIG_H -D__RTTHREAD__
 CFLAGS += -Wno-nonnull-compare
 
-EXTRA_CFLAGS += -D__RTTHREAD__
 
 
 ifeq ($(findstring soc,$(ARCH)),soc)
