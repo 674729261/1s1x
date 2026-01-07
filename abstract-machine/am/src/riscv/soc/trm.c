@@ -45,10 +45,6 @@ void _init_uart() {
   outb(SERIAL_PORT + SERIAL_INT_OFFSET, 0x00);
 }
 void _show_motd(uint32_t vendorid, uint32_t archid) {
-  const char message[] = "Second-stage Bootloader finished\n";
-  for (const char *p = message; *p; p++)
-    putch(*p);
-
   const char *first_part = "\033[31mmvendorid\033[0m : 0x";
   const char *second_part = "\n\033[31mmarchid\033[0m : ";
   char buffer[16] = {};
@@ -161,4 +157,8 @@ __attribute__((section(".ssbl"))) void secbootloader() {
 
   extern char __bss_start, __bss_end;
   __ssbl_memset(&__bss_start, 0, &__bss_end - &__bss_start);
+
+  const char message[] = "2-stage Bootloader finished\n";
+  for (const char *p = message; *p; p++)
+    putch(*p);
 }
