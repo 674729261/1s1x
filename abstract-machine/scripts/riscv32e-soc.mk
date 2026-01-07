@@ -1,6 +1,6 @@
 include $(AM_HOME)/scripts/isa/riscv.mk
 include $(AM_HOME)/scripts/platform/soc.mk
-CFLAGS  += -DISA_H=\"riscv/riscv.h\" -D_SOC_
+CFLAGS  += -D__RTTHREAD__ -DISA_H=\"riscv/riscv.h\" -D_SOC_
 
 
 COMMON_CFLAGS += -march=rv32e_zicsr -mabi=ilp32e  # overwrite
