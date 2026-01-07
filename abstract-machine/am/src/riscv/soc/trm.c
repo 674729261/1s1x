@@ -96,36 +96,69 @@ __attribute__((section(".fsbl"))) void fstbootloader() {
   }
 }
 
+__attribute__((section(".ssbl"))) static void *
+__ssbl__memcpy(void *out, const void *in, size_t n) {
+  unsigned char *d = (unsigned char *)out;
+  const unsigned char *s = (const unsigned char *)in;
+
+  while ((((uintptr_t)d) & 0x3) && n) {
+    *d++ = *s++;
+    n--;
+  }
+
+  while (n >= 4) {
+    *(uint32_t *)d = *(const uint32_t *)s;
+    d += 4;
+    s += 4;
+    n -= 4;
+  }
+
+  while (n-- > 0) {
+    *d++ = *s++;
+  }
+  return out;
+}
+
+__attribute__((section(".ssbl"))) static void *__ssbl_memset(void *s, int c,
+                                                             size_t n) {
+  unsigned char *p = (unsigned char *)s;
+  while ((((uintptr_t)p) & 0x3) && n) {
+    *p++ = (unsigned char)c;
+    n--;
+  }
+  const uint32_t content = ((unsigned char)c << 24) | ((unsigned char)c << 16) |
+                           ((unsigned char)c << 8) | (unsigned char)c;
+  while (n >= 4) {
+    *(uint32_t *)p = content;
+    p += 4;
+    n -= 4;
+  }
+
+  const unsigned char uc = (unsigned char)c;
+  while (n-- > 0) {
+    *p++ = uc;
+  }
+  return s;
+}
+
 __attribute__((section(".ssbl"))) void secbootloader() {
   extern char __data_load_start, __data_load_end, __data_start;
   char *src = &__data_load_start;
   char *dst = &__data_start;
-  while (src < &__data_load_end) {
-    *dst = *src;
-    ++dst;
-    ++src;
-  }
+  __ssbl__memcpy(dst, src, &__data_load_end - &__data_load_start);
+
   extern char __prog_load_start, __prog_load_end, __prog_start;
   src = &__prog_load_start;
   dst = &__prog_start;
-  while (src < &__prog_load_end) {
-    *dst = *src;
-    ++dst;
-    ++src;
-  }
+  __ssbl__memcpy(dst, src, &__prog_load_end - &__prog_load_start);
 
 #ifdef RT_THREAD_LOAD
   extern char rt_load_begin, rt_load_end, rt_begin;
   src = &rt_load_begin;
   dst = &rt_begin;
-  while (src < &rt_load_end) {
-    *dst = *src;
-    ++dst;
-    ++src;
-  }
+  __ssbl__memcpy(dst, src, &rt_load_end - &rt_load_begin);
 #endif
 
   extern char __bss_start, __bss_end;
-  for (char *p = &__bss_start; p < &__bss_end; p++)
-    *p = 0;
+  __ssbl_memset(&__bss_start, 0, &__bss_end - &__bss_start);
 }
