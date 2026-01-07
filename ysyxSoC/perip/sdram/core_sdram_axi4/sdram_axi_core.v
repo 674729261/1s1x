@@ -621,7 +621,7 @@ module sdram_axi_core (
   reg [3:0] msk_r;
   always @(posedge clk_i or posedge rst_i) begin
     if (rst_i) msk_r <= 4'b1111;
-    else msk_r <= (state_q == STATE_WRITE0 ? ram_wr_w : 4'b1111);
+    else msk_r <= (state_q == STATE_WRITE0 ? ~ram_wr_w : 4'b1111);
   end
 
   assign sdram_cke_o      = cke_q;
