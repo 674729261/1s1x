@@ -76,7 +76,7 @@ struct VirtualBus {
       psram[(addr & 0x00FFFFFF) >> 2] &= ~mask32;
       psram[(addr & 0x00FFFFFF) >> 2] |= wdata & mask32;
     } else if (check_range(sdram_field)) {
-      std::println("{:08x}", (addr & 0x0FFFFFFF) >> 2);
+      std::println("{}", (addr & 0x0FFFFFFF) >> 2);
       sdram[(addr & 0x0FFFFFFF) >> 2] &= ~mask32;
       sdram[(addr & 0x0FFFFFFF) >> 2] |= wdata & mask32;
     } else {
