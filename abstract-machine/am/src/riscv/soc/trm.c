@@ -155,7 +155,7 @@ __attribute__((section(".ssbl"))) void secbootloader() {
   extern char __bss_start, __bss_end;
   __ssbl_memset(&__bss_start, 0, &__bss_end - &__bss_start);
 
-#ifdef _RT_THREAD_LOAD_
+#ifdef __RTTHREAD__
   ssadasdasdasd asdasd extern char rt_load_begin, rt_load_end, rt_begin;
   src = &rt_load_begin;
   dst = &rt_begin;

@@ -9,7 +9,7 @@ SRCS = $(shell find src -name "*.c")
 CFLAGS += -DHAVE_CCONFIG_H -D__RTTHREAD__
 CFLAGS += -Wno-nonnull-compare
 
-RT_THREAD_LOAD:=1
+TASK = rtthread
 
 ifeq ($(findstring soc,$(ARCH)),soc)
   LDFLAGS += -T extra_soc.ld
