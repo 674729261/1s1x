@@ -76,7 +76,7 @@ void *memset(void *s, int c, size_t n) {
   const uint32_t content = ((unsigned char)c << 24) | ((unsigned char)c << 16) |
                            ((unsigned char)c << 8) | (unsigned char)c;
   while (n >= 4) {
-    *(unsigned int *)p = content;
+    *(uint32_t *)p = content;
     p += 4;
     n -= 4;
   }
@@ -108,6 +108,19 @@ void *memmove(void *dst, const void *src, size_t n) {
 void *memcpy(void *out, const void *in, size_t n) {
   unsigned char *d = (unsigned char *)out;
   const unsigned char *s = (const unsigned char *)in;
+
+  while ((((uintptr_t)d) & 0x3) && n) {
+    *d++ = *s++;
+    n--;
+  }
+
+  while (n >= 4) {
+    *(uint32_t *)d = *(const uint32_t *)s;
+    d += 4;
+    s += 4;
+    n -= 4;
+  }
+
   while (n-- > 0) {
     *d++ = *s++;
   }
