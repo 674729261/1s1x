@@ -4,6 +4,7 @@
 #include <MROM.h>
 #include <cstdint>
 #include <my_utils.h>
+#include <ostream>
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 #include <vector>
