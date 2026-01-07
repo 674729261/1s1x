@@ -141,6 +141,10 @@ __attribute__((section(".ssbl"))) static void *__ssbl_memset(void *s, int c,
   return s;
 }
 
+__attribute__((weak)) __attribute__((section(".ssbl"))) void __ssbl_extra() {
+  // do nothing
+}
+
 __attribute__((section(".ssbl"))) void secbootloader() {
   extern char __data_load_start, __data_load_end, __data_start;
   char *src = &__data_load_start;
@@ -155,6 +159,7 @@ __attribute__((section(".ssbl"))) void secbootloader() {
   extern char __bss_start, __bss_end;
   __ssbl_memset(&__bss_start, 0, &__bss_end - &__bss_start);
 
+  __ssbl_extra();
   // #ifdef __RTTHREAD__
   //   extern char rt_load_begin, rt_load_end, rt_begin;
   //   src = &rt_load_begin;
