@@ -10,8 +10,7 @@
 #include <vector>
 
 struct VirtualBus {
-  VirtualBus()
-      : sram(2048), psram(1024 * 1024 * 1), sdram(1024 * 1024 * 8 * 2) {}
+  VirtualBus() : sram(2048), psram(1024 * 1024 * 1), sdram(1024 * 1024 * 8) {}
 
   struct ReadResult {
     uint32_t data;
@@ -40,10 +39,6 @@ struct VirtualBus {
     } else if (check_range(psram_field)) {
       return {psram[(addr & 0x00FFFFFF) >> 2], false};
     } else if (check_range(sdram_field)) {
-      if (((addr & 0x0FFFFFFF) >> 2) >= sdram.size()) {
-        log_and_throw<std::logic_error>("SDRAM read addr {:08x} overflow",
-                                        addr);
-      }
       return {sdram[(addr & 0x0FFFFFFF) >> 2], false};
     } else {
       log_and_throw<std::logic_error>(
@@ -76,15 +71,11 @@ struct VirtualBus {
       // no action
     } else if (check_range(flash_field)) {
       log_and_throw<std::logic_error>(
-          "Failed to write to address {:} : flash can not be written", addr);
+          "Failed to write to address {:08x} : flash can not be written", addr);
     } else if (check_range(psram_field)) {
       psram[(addr & 0x00FFFFFF) >> 2] &= ~mask32;
       psram[(addr & 0x00FFFFFF) >> 2] |= wdata & mask32;
     } else if (check_range(sdram_field)) {
-      if (((addr & 0x0FFFFFFF) >> 2) >= sdram.size()) {
-        log_and_throw<std::logic_error>("SDRAM write addr {:08x} overflow",
-                                        addr);
-      }
       sdram[(addr & 0x0FFFFFFF) >> 2] &= ~mask32;
       sdram[(addr & 0x0FFFFFFF) >> 2] |= wdata & mask32;
     } else {
