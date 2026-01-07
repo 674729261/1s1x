@@ -618,16 +618,22 @@ module sdram_axi_core (
   assign sdram_data_in_high_w     = sdram_data_input_high_i;
 
 
-  assign sdram_cke_o              = cke_q;
-  assign sdram_cs_o               = command_q[3];
-  assign sdram_ras_o              = command_q[2];
-  assign sdram_cas_o              = command_q[1];
-  assign sdram_we_o               = command_q[0];
-  assign sdram_dqm_low_o          = ram_wr_w[1:0];
-  assign sdram_dqm_high_o         = ram_wr_w[3:2];
+  reg [3:0] msk_r;
+  always @(posedge clk_i or posedge rst_i) begin
+    if (!rst_i) msk_r <= 4'b0;
+    else msk_r <= (state_q == STATE_WRITE0 ? ram_wr_w : 4'b1111);
+  end
 
-  assign sdram_ba_o               = bank_q;
-  assign sdram_addr_o             = addr_q;
+  assign sdram_cke_o      = cke_q;
+  assign sdram_cs_o       = command_q[3];
+  assign sdram_ras_o      = command_q[2];
+  assign sdram_cas_o      = command_q[1];
+  assign sdram_we_o       = command_q[0];
+  assign sdram_dqm_low_o  = msk_r[1:0];
+  assign sdram_dqm_high_o = msk_r[3:2];
+
+  assign sdram_ba_o       = bank_q;
+  assign sdram_addr_o     = addr_q;
 
   //-----------------------------------------------------------------
   // Simulation only
