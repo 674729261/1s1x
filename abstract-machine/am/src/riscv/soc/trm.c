@@ -114,6 +114,7 @@ __attribute__((section(".ssbl"))) void secbootloader() {
     ++src;
   }
 
+#ifdef RT_THREAD_LOAD
   extern char rt_load_begin, rt_load_end, rt_begin;
   src = &rt_load_begin;
   dst = &rt_begin;
@@ -122,6 +123,7 @@ __attribute__((section(".ssbl"))) void secbootloader() {
     ++dst;
     ++src;
   }
+#endif
 
   extern char __bss_start, __bss_end;
   for (char *p = &__bss_start; p < &__bss_end; p++)
