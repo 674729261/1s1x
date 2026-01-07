@@ -41,7 +41,8 @@ module sdram_axi_core (
     , input [ 7:0] inport_len_i
     , input [31:0] inport_addr_i
     , input [31:0] inport_write_data_i
-    , input [15:0] sdram_data_input_i
+    , input [15:0] sdram_data_input_low_i
+    , input [15:0] sdram_data_input_high_i
 
     // Outputs
     , output        inport_accept_o
@@ -57,7 +58,8 @@ module sdram_axi_core (
     , output [ 1:0] sdram_dqm_o
     , output [12:0] sdram_addr_o
     , output [ 1:0] sdram_ba_o
-    , output [15:0] sdram_data_output_o
+    , output [15:0] sdram_data_output_low_o
+    , output [15:0] sdram_data_output_high_o
     , output        sdram_data_out_en_o
 );
 
@@ -93,7 +95,9 @@ module sdram_axi_core (
   localparam CMD_LOAD_MODE = 4'b0000;
 
   // Mode: Burst Length = 4 bytes, CAS=2
-  localparam MODE_REG = {3'b000, 1'b0, 2'b00, 3'b010, 1'b0, 3'b001};
+  // localparam MODE_REG = {3'b000, 1'b0, 2'b00, 3'b010, 1'b0, 3'b001};
+  localparam MODE_REG = {3'b000, 1'b0, 2'b00, 3'b010, 1'b0, 3'b000};
+
 
   // SM states
   localparam STATE_W = 4;
@@ -104,7 +108,7 @@ module sdram_axi_core (
   localparam STATE_READ = 4'd4;
   localparam STATE_READ_WAIT = 4'd5;
   localparam STATE_WRITE0 = 4'd6;
-  localparam STATE_WRITE1 = 4'd7;
+  // localparam STATE_WRITE1 = 4'd7;
   localparam STATE_PRECHARGE = 4'd8;
   localparam STATE_REFRESH = 4'd9;
 
@@ -159,10 +163,11 @@ module sdram_axi_core (
   reg [SDRAM_BANK_W-1:0] bank_q;
 
   // Buffer half word during read and write commands
-  reg [SDRAM_DATA_W-1:0] data_buffer_q;
+  // reg [SDRAM_DATA_W-1:0] data_buffer_q;
   reg [SDRAM_DQM_W-1:0] dqm_buffer_q;
 
-  wire [SDRAM_DATA_W-1:0] sdram_data_in_w;
+  wire [SDRAM_DATA_W-1:0] sdram_data_in_low_w;
+  wire [SDRAM_DATA_W-1:0] sdram_data_in_high_w;
 
   reg refresh_q;
 
@@ -259,13 +264,13 @@ module sdram_axi_core (
       //-----------------------------------------
       // STATE_WRITE0
       //-----------------------------------------
-      STATE_WRITE0: begin
-        next_state_r = STATE_WRITE1;
-      end
+      // STATE_WRITE0: begin
+      //   next_state_r = STATE_WRITE1;
+      // end
       //-----------------------------------------
       // STATE_WRITE1
       //-----------------------------------------
-      STATE_WRITE1: begin
+      STATE_WRITE0: begin
         next_state_r = STATE_IDLE;
 
         // Another pending write request (with no refresh pending)
@@ -405,15 +410,11 @@ module sdram_axi_core (
   // Input sampling
   //-----------------------------------------------------------------
 
-  reg [SDRAM_DATA_W-1:0] sample_data0_q;
+  reg [31:0] sample_data0_q;
   always @(posedge clk_i or posedge rst_i)
-    if (rst_i) sample_data0_q <= {SDRAM_DATA_W{1'b0}};
-    else sample_data0_q <= sdram_data_in_w;
+    if (rst_i) sample_data0_q <= {32{1'b0}};
+    else sample_data0_q <= {sdram_data_in_high_w, sdram_data_in_low_w};
 
-  reg [SDRAM_DATA_W-1:0] sample_data_q;
-  always @(posedge clk_i or posedge rst_i)
-    if (rst_i) sample_data_q <= {SDRAM_DATA_W{1'b0}};
-    else sample_data_q <= sample_data0_q;
 
   //-----------------------------------------------------------------
   // Command Output
@@ -548,18 +549,18 @@ module sdram_axi_core (
         //-----------------------------------------
         // STATE_WRITE1
         //-----------------------------------------
-        STATE_WRITE1: begin
-          // Burst continuation
-          command_q              <= CMD_NOP;
+        // STATE_WRITE1: begin
+        //   // Burst continuation
+        //   command_q              <= CMD_NOP;
 
-          data_q                 <= data_buffer_q;
+        //   // data_q                 <= data_buffer_q;
 
-          // Disable auto precharge (auto close of row)
-          addr_q[AUTO_PRECHARGE] <= 1'b0;
+        //   // Disable auto precharge (auto close of row)
+        //   addr_q[AUTO_PRECHARGE] <= 1'b0;
 
-          // Write mask
-          dqm_q                  <= dqm_buffer_q;
-        end
+        //   // Write mask
+        //   dqm_q                  <= dqm_buffer_q;
+        // end
       endcase
     end
 
@@ -578,13 +579,13 @@ module sdram_axi_core (
 
   // Buffer upper 16-bits of write data so write command can be accepted
   // in WRITE0. Also buffer lower 16-bits of read data.
-  always @(posedge clk_i or posedge rst_i)
-    if (rst_i) data_buffer_q <= 16'b0;
-    else if (state_q == STATE_WRITE0) data_buffer_q <= ram_write_data_w[31:16];
-    else if (rd_q[SDRAM_READ_LATENCY+1]) data_buffer_q <= sample_data_q;
+  // always @(posedge clk_i or posedge rst_i)
+  //   if (rst_i) data_buffer_q <= 16'b0;
+  //   else if (state_q == STATE_WRITE0) data_buffer_q <= ram_write_data_w[31:16];
+  //   else if (rd_q[SDRAM_READ_LATENCY+1]) data_buffer_q <= sample_data_q;
 
   // Read data output
-  assign ram_read_data_w = {sample_data_q, data_buffer_q};
+  assign ram_read_data_w = sample_data0_q;
 
   //-----------------------------------------------------------------
   // ACK
@@ -594,7 +595,7 @@ module sdram_axi_core (
   always @(posedge clk_i or posedge rst_i)
     if (rst_i) ack_q <= 1'b0;
     else begin
-      if (state_q == STATE_WRITE1) ack_q <= 1'b1;
+      if (state_q == STATE_WRITE0) ack_q <= 1'b1;
       else if (rd_q[SDRAM_READ_LATENCY+1]) ack_q <= 1'b1;
       else ack_q <= 1'b0;
     end
@@ -610,7 +611,7 @@ module sdram_axi_core (
   assign sdram_clk_o         = ~clk_i;
   assign sdram_data_out_en_o = ~data_rd_en_q;
   assign sdram_data_output_o = data_q;
-  assign sdram_data_in_w     = sdram_data_input_i;
+  assign sdram_data_in_w     = sdram_data_input_low_i;
 
   assign sdram_cke_o         = cke_q;
   assign sdram_cs_o          = command_q[3];
@@ -636,7 +637,7 @@ module sdram_axi_core (
       STATE_READ:      dbg_state = "READ";
       STATE_READ_WAIT: dbg_state = "READ_WAIT";
       STATE_WRITE0:    dbg_state = "WRITE0";
-      STATE_WRITE1:    dbg_state = "WRITE1";
+      // STATE_WRITE1:    dbg_state = "WRITE1";
       STATE_PRECHARGE: dbg_state = "PRECHARGE";
       STATE_REFRESH:   dbg_state = "REFRESH";
       default:         dbg_state = "UNKNOWN";
