@@ -155,10 +155,10 @@ __attribute__((section(".ssbl"))) void secbootloader() {
   extern char __bss_start, __bss_end;
   __ssbl_memset(&__bss_start, 0, &__bss_end - &__bss_start);
 
-  // #ifdef RT_THREAD_LOAD
-  extern char rt_load_begin, rt_load_end, rt_begin;
+#ifdef __RTTHREAD__
+  s extern char rt_load_begin, rt_load_end, rt_begin;
   src = &rt_load_begin;
   dst = &rt_begin;
   __ssbl__memcpy(dst, src, &rt_load_end - &rt_load_begin);
-  // #endif
+#endif
 }
