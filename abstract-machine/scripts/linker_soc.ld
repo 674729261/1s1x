@@ -1,4 +1,4 @@
-ENTRY(_start)
+/* ENTRY(_start)
 
 MEMORY {
   sram (rw) : ORIGIN = 0x0f000000, LENGTH = 8K
@@ -63,11 +63,11 @@ SECTIONS
   _heap_start = ORIGIN(psram_heap);
   _heap_end = ORIGIN(psram_heap) + LENGTH(psram_heap);
   _stack_pointer = ORIGIN(sram) + LENGTH(sram);
-}
+} */
 
 
 
-/*
+
 ENTRY(_start)
 
 MEMORY {
@@ -136,4 +136,3 @@ SECTIONS
 }
 
 
-*/
