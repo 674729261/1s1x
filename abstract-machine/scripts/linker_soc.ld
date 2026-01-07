@@ -19,8 +19,10 @@ SECTIONS
   . = ORIGIN(sram);  
   
   .first_stage : {
+    . = ALIGN(4);
     __ssbl_start = .;
     *(.ssbl)
+    . = ALIGN(4);
     __ssbl_end = .;
   } > sram AT> prog
 
