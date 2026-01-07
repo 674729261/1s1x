@@ -10,7 +10,7 @@
   } while (0)
 
 #define TEST_ADDR_START 0xa22ea000
-#define TEST_ADDR_END 0xa22eaf00
+#define TEST_ADDR_END 0xa22ea100
 
 int test_word() {
   uint32_t *start = (uint32_t *)(TEST_ADDR_START);
