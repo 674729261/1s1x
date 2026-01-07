@@ -10,7 +10,7 @@ AM_SRCS := riscv/soc/start.S \
            platform/dummy/vme.c \
            platform/dummy/mpe.c
 
-CFLAGS    += -D__RTTHREAD__  -fdata-sections -ffunction-sections
+CFLAGS    += -fdata-sections -ffunction-sections
 CFLAGS    += -I$(AM_HOME)/am/src/platform/soc/include -I$(AM_HOME)/am/src
 LDSCRIPTS += $(AM_HOME)/scripts/linker_soc.ld
 LDFLAGS   += --gc-sections -e _start --defsym=_pmem_size=1M --defsym=_SOC_=1
