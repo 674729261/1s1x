@@ -10,7 +10,7 @@ int main() {
   for (int i = 0; i < 100; i++) {
     for (uint16_t p = 0; p < 16; p++)
       *(volatile uint16_t *)LED_GPIO = (1 << p);
-    for (volatile int j = 0; j < 100; j++)
+    for (volatile int j = 0; j < 1000; j++)
       ;
   }
   return 0;
