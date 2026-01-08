@@ -23,6 +23,11 @@ loop:
     *(volatile uint16_t *)LED_GPIO = (1 << p);
     while (*(volatile uint16_t *)SWITCH_GPIO != 0x8001)
       ;
+    uint8_t low = p & 0xff;
+    uint8_t high = (p >> 8) & 0xff;
+    putch(high < 10 ? '0' + high : 'A' + high - 10);
+    putch(low < 10 ? '0' + low : 'A' + low - 10);
+    putch('\n');
     for (volatile int j = 0; j < 256; j++)
       ;
   }
