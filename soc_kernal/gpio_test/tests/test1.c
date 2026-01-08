@@ -14,7 +14,7 @@ int main() {
   uint32_t marchid;
   asm volatile("csrr %0, marchid" : "=r"(marchid));
   for (int i = 0; i < 8; i++) {
-    *(volatile uint8_t *)(DIGIT_GPIO + i) = hex_2_digit[marchid % 10];
+    *(volatile uint8_t *)(DIGIT_GPIO + i) = 0; // hex_2_digit[marchid % 10];
     marchid /= 10;
   }
 
