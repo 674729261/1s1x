@@ -1,6 +1,8 @@
 #include "am.h"
+#include "amdev.h"
 #include <klib.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #define LED_GPIO 0x10002000
 #define SWITCH_GPIO 0x10002004
@@ -17,6 +19,21 @@ int main() {
     *(volatile uint8_t *)(DIGIT_GPIO + i) = hex_2_digit_ctrl[marchid % 10];
     marchid /= 10;
   }
+  AM_UART_RX_T rx;
+  ioe_read(AM_UART_RX, &rx);
+  uint32_t x = rx.data - '0';
+  ioe_read(AM_UART_RX, &rx);
+  x = x * 10 + rx.data - '0';
+  ioe_read(AM_UART_RX, &rx);
+  x = x * 10 + rx.data - '0';
+
+  ioe_read(AM_UART_RX, &rx);
+  uint32_t y = rx.data - '0';
+  ioe_read(AM_UART_RX, &rx);
+  y = y * 10 + rx.data - '0';
+  ioe_read(AM_UART_RX, &rx);
+  y = y * 10 + rx.data - '0';
+  printf("%u + %u = %u\n", x, y, x + y);
 
 loop:
   for (uint16_t p = 0; p < 16; p++) {
