@@ -53,9 +53,10 @@ int simulate(int argc, char *argv[], Config config) {
 
   Dut dut(config, contextp.get());
   Ref ref(config, dut);
-
-  nvboard_bind_all_pins(dut.top.get());
-  nvboard_init();
+  if (config.nvboard) {
+    nvboard_bind_all_pins(dut.top.get());
+    nvboard_init();
+  }
   ref.reset(dut);
   dut.reset();
 
@@ -67,7 +68,8 @@ int simulate(int argc, char *argv[], Config config) {
       ref.reset(dut);
       ref.sync_state();
     }
-    nvboard_update();
+    if (config.nvboard)
+      nvboard_update();
     dut.step_one_cycle();
 
     if (retire) {
