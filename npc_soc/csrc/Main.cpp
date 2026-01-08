@@ -55,6 +55,7 @@ int simulate(int argc, char *argv[], Config config) {
   Ref ref(config, dut);
   if (config.nvboard) {
     nvboard_bind_all_pins(dut.top.get());
+
     nvboard_init();
   }
   ref.reset(dut);
