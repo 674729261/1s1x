@@ -1,6 +1,9 @@
 .DEFAULT_GOAL := sim
+
+include $(NVBOARD_HOME)/scripts/nvboard.mk
+
 CSRC = $(shell find csrc -name "*.cpp")
-CSRC += /usr/local/lib/libreplxx.a
+CSRC += /usr/local/lib/libreplxx.a $(NVBOARD_ARCHIVE)
 
 VSRC = $(wildcard vsrc/*.v)
 VSRC += $(wildcard vsrc/*.sv)
@@ -27,7 +30,8 @@ VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -Ofast   \
 VERILATOR_LDFLAGS = -flto=auto -fipa-pta 
 
 
-CXXFLAGS += -CFLAGS "$(VERILATOR_CFLAGS) -std=c++23 -I$(SOC_NPC_HOME)/include"
+CXXFLAGS += -CFLAGS "$(VERILATOR_CFLAGS) -std=c++23 -I$(SOC_NPC_HOME)/include -I$(NVBOARD_HOME)/usr/include" \
+-LDFLAGS "-lSDL2 -lSDL2_image" 
 # VERILATORFLAGS += --noassert --trace --no-coverage --x-assign fast --x-initial fast -O3 --threads 1 --cc --exe --build -j 8 
 VERILATORFLAGS += --autoflush -I$(SOC_HOME)/perip/uart16550/rtl -I$(SOC_HOME)/perip/spi/rtl --trace \
 --timescale "1ns/1ns" --no-timing -O3 --threads 1 --cc --exe --build -j 8 
@@ -61,15 +65,18 @@ PROG ?= /home/shitful/1s1x/ysyx-workbench/am-kernels/tests/cpu-tests/build/fib-r
 TIME_STAMP := $(shell date +"%Y_%m_%d_%H_%M_%S")
 LOG_FILE ?= "log/$(TIME_STAMP).log"
 
+$(NXDC_CPP): $(NXDC)
+	$(PYTHON) $(NVBOARD_HOME)/scripts/auto_pin_bind.py $(NXDC) $(NXDC_CPP)
 
 
 sim: npc
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
 	$(BIN) --image $(PROG) --log $(LOG_FILE) --difftest
 
-nvboard: npc
+
+nvboard: $(NXDC_CPP) nvboard-archive npc
 	$(call git_commit, "sim RTL with nvboard")
-	$(PYTHON) $(NVBOARD_HOME)/scripts/auto_pin_bind.py $(NXDC) $(NXDC_CPP)
+	$(BIN) --image $(PROG) --log $(LOG_FILE) --difftest --nvboard
 
 valgrind: PROG = test_progs/add.bin
 valgrind: ELF = test_progs/add.elf

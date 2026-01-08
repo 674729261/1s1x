@@ -13,6 +13,7 @@ struct Config {
   std::string image_path;
   bool batch_mode;
   bool difftest;
+  bool nvboard;
 };
 
 Config setup(argparse::ArgumentParser &program);

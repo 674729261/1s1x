@@ -14,6 +14,7 @@ void register_argparse(argparse::ArgumentParser &program) {
       .help("Use NEMUemu as differential test")
       .flag();
   program.add_argument("-b", "--batch").help("Use batch mode").flag();
+  program.add_argument("-n", "--nvboard").help("Use nvboard").flag();
 }
 
 void register_logger(argparse::ArgumentParser &program) {
@@ -44,15 +45,10 @@ Config setup(argparse::ArgumentParser &program) {
   ret.batch_mode = program.get<bool>("--batch");
   spdlog::info("Image path  : {}", ret.image_path);
   ret.difftest = program.get<bool>("--difftest");
-
-  if (ret.difftest) {
-    try {
-      spdlog::info("Using difftest");
-    } catch (const std::exception &err) {
-      println(cerr, "Load ref failed: {}", err.what());
-      throw err;
-    }
-  }
-
+  ret.nvboard = program.get<bool>("--nvboard");
+  if (ret.difftest)
+    spdlog::info("Using difftest");
+  if (ret.nvboard)
+    spdlog::info("Using nvboard");
   return ret;
 }

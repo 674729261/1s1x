@@ -10,6 +10,7 @@
 #include <exception>
 #include <iostream>
 #include <memory>
+#include <nvboard.h>
 #include <print>
 #include <verilated.h>
 #include <verilated_vcd_c.h>
@@ -19,6 +20,8 @@ using std::string;
 bool retire;
 
 extern "C" void notify_retire(int32_t pc, int32_t inst) { retire = true; }
+
+void nvboard_bind_all_pins(TOP_NAME *top);
 
 bool check_difftest(Dut &dut, Ref &ref) {
   bool ret = false;
@@ -50,8 +53,12 @@ int simulate(int argc, char *argv[], Config config) {
 
   Dut dut(config, contextp.get());
   Ref ref(config, dut);
-  dut.reset();
+
+  nvboard_bind_all_pins(dut.top.get());
+  nvboard_init();
   ref.reset(dut);
+  dut.reset();
+
   bool difftest_state = false;
   while (!contextp->gotFinish()) {
     retire = false;
@@ -60,6 +67,7 @@ int simulate(int argc, char *argv[], Config config) {
       ref.reset(dut);
       ref.sync_state();
     }
+    nvboard_update();
     dut.step_one_cycle();
 
     if (retire) {
