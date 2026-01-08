@@ -3,7 +3,8 @@
 include $(NVBOARD_HOME)/scripts/nvboard.mk
 
 NXDC = $(SOC_NPC_HOME)/nvboard/top.nxdc
-NXDC_CPP = $(SOC_NPC_HOME)/nvboard/auto_bind.cpp
+NXDC_CPP_PATH = $(SOC_NPC_HOME)/nvboard/generated_svsrc
+NXDC_CPP = $(SOC_NPC_HOME)/nvboard/generated_svsrc/auto_bind.cpp
 
 CSRC = $(shell find csrc -name "*.cpp")
 CSRC += /usr/local/lib/libreplxx.a $(NVBOARD_ARCHIVE)
@@ -69,6 +70,7 @@ TIME_STAMP := $(shell date +"%Y_%m_%d_%H_%M_%S")
 LOG_FILE ?= "log/$(TIME_STAMP).log"
 
 $(NXDC_CPP): $(NXDC)
+	mkdir -p $(NXDC_CPP_PATH) || true
 	$(PYTHON) $(NVBOARD_HOME)/scripts/auto_pin_bind.py $(NXDC) $(NXDC_CPP)
 
 
