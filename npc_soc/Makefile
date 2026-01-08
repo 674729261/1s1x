@@ -3,8 +3,8 @@
 include $(NVBOARD_HOME)/scripts/nvboard.mk
 
 NXDC = $(SOC_NPC_HOME)/nvboard/top.nxdc
-NXDC_CPP_PATH = $(SOC_NPC_HOME)/nvboard/generated_svsrc
-NXDC_CPP = $(SOC_NPC_HOME)/nvboard/generated_svsrc/auto_bind.cpp
+NXDC_CPP_PATH = $(SOC_NPC_HOME)/nvboard/generated
+NXDC_CPP = $(SOC_NPC_HOME)/nvboard/generated/auto_bind.cpp
 
 CSRC = $(shell find csrc -name "*.cpp")
 CSRC += /usr/local/lib/libreplxx.a $(NVBOARD_ARCHIVE)
