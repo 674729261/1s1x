@@ -26,7 +26,7 @@ int main() {
   x = x * 10 + rx.data - '0';
   ioe_read(AM_UART_RX, &rx);
   x = x * 10 + rx.data - '0';
-  printf("%u + \n", x);
+  printf("%u + ", x);
 
   ioe_read(AM_UART_RX, &rx);
   uint32_t y = rx.data - '0';
