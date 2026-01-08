@@ -30,7 +30,7 @@ VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -Ofast   \
 VERILATOR_LDFLAGS = -flto=auto -fipa-pta 
 
 
-CXXFLAGS += -CFLAGS "$(VERILATOR_CFLAGS) -std=c++23 -I$(SOC_NPC_HOME)/include -I$(NVBOARD_HOME)/usr/include" \
+V_CXXFLAGS += -CFLAGS "$(VERILATOR_CFLAGS) -std=c++23 -I$(SOC_NPC_HOME)/include -I$(NVBOARD_HOME)/usr/include" \
 -LDFLAGS "-lSDL2 -lSDL2_image" 
 # VERILATORFLAGS += --noassert --trace --no-coverage --x-assign fast --x-initial fast -O3 --threads 1 --cc --exe --build -j 8 
 VERILATORFLAGS += --autoflush -I$(SOC_HOME)/perip/uart16550/rtl -I$(SOC_HOME)/perip/spi/rtl --trace \
@@ -50,7 +50,7 @@ npc: $(SV_FILELIST) $(LIBCAPSTONE) $(SO_PATH_NEMU)
 	--top-module $(TOPNAME) --public-flat-rw  \
 	-CFLAGS -DTOP_NAME="\"V$(TOPNAME)\"" \
 	--MAKEFLAGS "-j12 OPT_FAST=\"$(FAST_FLAGS)\"" \
-	$(CXXFLAGS) -Wall $(CSRC) $(SVSRC) $(VSRC) $(VERILATOR_DISABLE_WARNINGS) \
+	$(V_CXXFLAGS) -Wall $(CSRC) $(SVSRC) $(VSRC) $(VERILATOR_DISABLE_WARNINGS) \
 	--Mdir $(MDIR)
 
 sbt: $(SV_FILELIST)
