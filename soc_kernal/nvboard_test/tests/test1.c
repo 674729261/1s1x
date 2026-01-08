@@ -26,6 +26,7 @@ int main() {
   x = x * 10 + rx.data - '0';
   ioe_read(AM_UART_RX, &rx);
   x = x * 10 + rx.data - '0';
+  printf("%u + \n", x);
 
   ioe_read(AM_UART_RX, &rx);
   uint32_t y = rx.data - '0';
@@ -33,7 +34,7 @@ int main() {
   y = y * 10 + rx.data - '0';
   ioe_read(AM_UART_RX, &rx);
   y = y * 10 + rx.data - '0';
-  printf("%u + %u = %u\n", x, y, x + y);
+  printf("%u = %u\n", y, x + y);
 
 loop:
   for (uint16_t p = 0; p < 16; p++) {
