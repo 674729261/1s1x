@@ -28,7 +28,7 @@ loop:
     putch(high < 10 ? '0' + high : 'A' + high - 10);
     putch(low < 10 ? '0' + low : 'A' + low - 10);
     putch('\n');
-    for (volatile int j = 0; j < 256; j++)
+    for (volatile int j = 0; j < 1024; j++)
       ;
   }
   goto loop;
