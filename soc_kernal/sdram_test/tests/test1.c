@@ -15,10 +15,10 @@
 int test_word() {
   uint32_t *start = (uint32_t *)(TEST_ADDR_START);
   uint32_t *end = (uint32_t *)(TEST_ADDR_END);
-  for (volatile uint32_t *p = start; p < end; p += 0x2000) {
+  for (volatile uint32_t *p = start; p < end; p += 0x40) {
     *p = (uint32_t)((uint32_t)p + 3);
   }
-  for (volatile uint32_t *p = start; p < end; p += 0x2000) {
+  for (volatile uint32_t *p = start; p < end; p += 0x40) {
     MY_CHECK(*p == (uint32_t)((uint32_t)p + 3));
   }
   return 0;
@@ -27,10 +27,10 @@ int test_word() {
 int test_half() {
   uint16_t *start = (uint16_t *)(TEST_ADDR_START);
   uint16_t *end = (uint16_t *)(TEST_ADDR_END);
-  for (volatile uint16_t *p = start; p < end; p += 0x2000) {
+  for (volatile uint16_t *p = start; p < end; p += 0x40) {
     *p = (uint16_t)((uint32_t)p * 42);
   }
-  for (volatile uint16_t *p = start; p < end; p += 0x2000) {
+  for (volatile uint16_t *p = start; p < end; p += 0x40) {
     MY_CHECK(*p == (uint16_t)((uint32_t)p * 42));
   }
   return 0;
@@ -39,10 +39,10 @@ int test_half() {
 int test_byte() {
   uint8_t *start = (uint8_t *)(TEST_ADDR_START);
   uint8_t *end = (uint8_t *)(TEST_ADDR_END);
-  for (volatile uint8_t *p = start; p < end; p += 0x4000) {
+  for (volatile uint8_t *p = start; p < end; p += 0x400) {
     *p = (uint8_t)((uint32_t)p * 3);
   }
-  for (volatile uint8_t *p = start; p < end; p += 0x4000) {
+  for (volatile uint8_t *p = start; p < end; p += 0x400) {
     MY_CHECK(*p == (uint8_t)((uint32_t)p * 3));
   }
   return 0;
