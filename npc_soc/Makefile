@@ -31,7 +31,7 @@ VERILATOR_LDFLAGS = -flto=auto -fipa-pta
 
 
 V_CXXFLAGS += -CFLAGS "$(VERILATOR_CFLAGS) -std=c++23 -I$(SOC_NPC_HOME)/include -I$(NVBOARD_HOME)/usr/include" \
--LDFLAGS "-lSDL2 -lSDL2_image" 
+-LDFLAGS "-lSDL2 -lSDL2_image -lSDL2_ttf" 
 # VERILATORFLAGS += --noassert --trace --no-coverage --x-assign fast --x-initial fast -O3 --threads 1 --cc --exe --build -j 8 
 VERILATORFLAGS += --autoflush -I$(SOC_HOME)/perip/uart16550/rtl -I$(SOC_HOME)/perip/spi/rtl --trace \
 --timescale "1ns/1ns" --no-timing -O3 --threads 1 --cc --exe --build -j 8 
