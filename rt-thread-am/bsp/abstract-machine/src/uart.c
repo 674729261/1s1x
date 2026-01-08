@@ -7,6 +7,7 @@
  * Date           Author       Notes
  */
 
+#include "amdev.h"
 #include <am.h>
 #include <klib.h>
 #include <rtdevice.h>
@@ -41,7 +42,12 @@ static int _uart_putc(struct rt_serial_device *serial, char c) {
 static int _uart_getc(struct rt_serial_device *serial) {
   static const char *p = "help\ndate\nversion\nfree\nps\npwd\nls\nmemtrace\nmem"
                          "check\nutest_list\nam_hello\nam_blockchain 0\n";
-  return (*p != '\0' ? *(p++) : -1);
+  if (*p == '\0') {
+    AM_UART_RX_T rx;
+    ioe_read(AM_UART_RX, &rx);
+    return rx.data;
+  }
+  return *p++;
 }
 
 const struct rt_uart_ops _uart_ops = {_uart_configure, _uart_control,
