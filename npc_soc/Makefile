@@ -16,6 +16,10 @@ SVSRC_FILES = $(shell cat $(SV_FILELIST))
 SVSRC = $(patsubst %,generated_svsrc/%,$(SVSRC_FILES))
 
 VERILATOR = verilator
+PYTHON = python
+
+NXDC = $(SOC_NPC_HOME)/nvboard/top.nxdc
+NXDC_CPP = $(SOC_NPC_HOME)/nvboard/auto_bind.cpp
 
 VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -Ofast   \
 -march=native -mtune=native \
@@ -63,14 +67,9 @@ sim: npc
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
 	$(BIN) --image $(PROG) --log $(LOG_FILE) --difftest
 
-sim_full_speed: VERILATOR_CFLAGS+=-DNDEBUG -fstrict-aliasing \
--frename-registers -fomit-frame-pointer \
--DDISABLE_ALL_TRACER -DNO_DIFFTEST
-sim_full_speed: VERILATOR_LDFLAGS+=-fuse-linker-plugin
-sim_full_speed: MDIR = ./build/full_speed/
-sim_full_speed: npc
-	$(call git_commit, "sim RTL full speed") # DO NOT REMOVE THIS LINE!!!
-	$(BIN) --image $(PROG) --log $(LOG_FILE) $(NPC_FLAGS) 
+nvboard: npc
+	$(call git_commit, "sim RTL with nvboard")
+	$(PYTHON) $(NVBOARD_HOME)/scripts/auto_pin_bind.py $(NXDC) $(NXDC_CPP)
 
 valgrind: PROG = test_progs/add.bin
 valgrind: ELF = test_progs/add.elf
