@@ -2,15 +2,16 @@
 #include <klib.h>
 #include <stdint.h>
 
+#define LED_GPIO 0x10002000
 #define SWITCH_GPIO 0x10002004
 #define DIGIT_GPIO 0x10002008
 
 int main() {
-  // uint16_t switches = *(volatile uint16_t *)SWITCH_GPIO;
-  *(volatile uint32_t *)DIGIT_GPIO = 0xdeadbeef;
-  *(volatile uint32_t *)(DIGIT_GPIO + 0x4) = 0x12345678;
-  *(volatile uint16_t *)(DIGIT_GPIO + 0x2) = 0x3456;
-  *(volatile uint8_t *)(DIGIT_GPIO + 0x5) = 0x89;
-
+  for (int i = 0; i < 1000; i++) {
+    for (uint16_t p = 0; p < 16; p++)
+      *(volatile uint16_t *)LED_GPIO = (1 << p);
+    for (volatile int j = 0; j < 10000; j++)
+      ;
+  }
   return 0;
 }
