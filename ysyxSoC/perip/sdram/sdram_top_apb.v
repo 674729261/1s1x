@@ -20,17 +20,26 @@ module sdram_top_apb (
     output        sdram_we,
     output [12:0] sdram_a,
     output [ 1:0] sdram_ba,
-    output [ 1:0] sdram_dqm_low,
-    inout  [15:0] sdram_dq_low,
-    output [ 1:0] sdram_dqm_high,
-    inout  [15:0] sdram_dq_high
+    output [ 1:0] sdram_dqm0_low,
+    inout  [15:0] sdram_dq0_low,
+    output [ 1:0] sdram_dqm0_high,
+    inout  [15:0] sdram_dq0_high,
+
+    output [ 1:0] sdram_dqm1_low,
+    inout  [15:0] sdram_dq1_low,
+    output [ 1:0] sdram_dqm1_high,
+    inout  [15:0] sdram_dq1_high
 );
 
   wire        sdram_dout_en;
-  wire [15:0] sdram_dout_low;
-  wire [15:0] sdram_dout_high;
-  assign sdram_dq_low  = sdram_dout_en ? sdram_dout_low : 16'bz;
-  assign sdram_dq_high = sdram_dout_en ? sdram_dout_high : 16'bz;
+  wire [15:0] sdram_dout0_low;
+  wire [15:0] sdram_dout0_high;
+  wire [15:0] sdram_dout1_low;
+  wire [15:0] sdram_dout1_high;
+  assign sdram_dq0_low  = sdram_dout_en ? sdram_dout0_low : 16'bz;
+  assign sdram_dq0_high = sdram_dout_en ? sdram_dout0_high : 16'bz;
+  assign sdram_dq1_low  = sdram_dout_en ? sdram_dout1_low : 16'bz;
+  assign sdram_dq1_high = sdram_dout_en ? sdram_dout1_high : 16'bz;
 
   // typedef enum [1:0] { ST_IDLE, ST_WAIT_ACCEPT, ST_WAIT_ACK } state_t;
   localparam ST_IDLE = 2'b00;
@@ -71,21 +80,25 @@ module sdram_top_apb (
       .inport_error_o     (in_pslverr),
       .inport_read_data_o (in_prdata),
 
-      .sdram_clk_o             (sdram_clk),
-      .sdram_cke_o             (sdram_cke),
-      .sdram_cs_o              (sdram_cs),
-      .sdram_ras_o             (sdram_ras),
-      .sdram_cas_o             (sdram_cas),
-      .sdram_we_o              (sdram_we),
-      .sdram_dqm_low_o         (sdram_dqm_low),
-      .sdram_dqm_high_o        (sdram_dqm_high),
-      .sdram_addr_o            (sdram_a),
-      .sdram_ba_o              (sdram_ba),
-      .sdram_data_input_low_i  (sdram_dq_low),
-      .sdram_data_input_high_i (sdram_dq_high),
-      .sdram_data_output_low_o (sdram_dout_low),
-      .sdram_data_output_high_o(sdram_dout_high),
-      .sdram_data_out_en_o     (sdram_dout_en)
+      .sdram_clk_o              (sdram_clk),
+      .sdram_cke_o              (sdram_cke),
+      .sdram_cs_o               (sdram_cs),
+      .sdram_ras_o              (sdram_ras),
+      .sdram_cas_o              (sdram_cas),
+      .sdram_we_o               (sdram_we),
+      .sdram_dqm_low_o          (sdram_dqm_low),
+      .sdram_dqm_high_o         (sdram_dqm_high),
+      .sdram_addr_o             (sdram_a),
+      .sdram_ba_o               (sdram_ba),
+      .sdram_data_input0_low_i  (sdram_dq0_low),
+      .sdram_data_input0_high_i (sdram_dq0_high),
+      .sdram_data_input1_low_i  (sdram_dq1_low),
+      .sdram_data_input1_high_i (sdram_dq1_high),
+      .sdram_data_output0_low_o (sdram_dout0_low),
+      .sdram_data_output0_high_o(sdram_dout0_high),
+      .sdram_data_output1_low_o (sdram_dout1_low),
+      .sdram_data_output1_high_o(sdram_dout1_high),
+      .sdram_data_out_en_o      (sdram_dout_en)
   );
 
 endmodule

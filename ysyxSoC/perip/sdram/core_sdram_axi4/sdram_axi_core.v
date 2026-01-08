@@ -41,8 +41,10 @@ module sdram_axi_core (
     , input [ 7:0] inport_len_i
     , input [31:0] inport_addr_i
     , input [31:0] inport_write_data_i
-    , input [15:0] sdram_data_input_low_i
-    , input [15:0] sdram_data_input_high_i
+    , input [15:0] sdram_data_input0_low_i
+    , input [15:0] sdram_data_input0_high_i
+    , input [15:0] sdram_data_input1_low_i
+    , input [15:0] sdram_data_input1_high_i
 
     // Outputs
     , output        inport_accept_o
@@ -55,13 +57,17 @@ module sdram_axi_core (
     , output        sdram_ras_o
     , output        sdram_cas_o
     , output        sdram_we_o
-    , output [ 1:0] sdram_dqm_low_o
-    , output [ 1:0] sdram_dqm_high_o
+    , output [ 1:0] sdram_dqm0_low_o
+    , output [ 1:0] sdram_dqm0_high_o
+    , output [ 1:0] sdram_dqm1_low_o
+    , output [ 1:0] sdram_dqm1_high_o
 
     , output [12:0] sdram_addr_o
     , output [ 1:0] sdram_ba_o
-    , output [15:0] sdram_data_output_low_o
-    , output [15:0] sdram_data_output_high_o
+    , output [15:0] sdram_data_output0_low_o
+    , output [15:0] sdram_data_output0_high_o
+    , output [15:0] sdram_data_output1_low_o
+    , output [15:0] sdram_data_output1_high_o
     , output        sdram_data_out_en_o
 );
 
@@ -168,8 +174,10 @@ module sdram_axi_core (
   // reg [SDRAM_DATA_W-1:0] data_buffer_q;
   reg [SDRAM_DQM_W-1:0] dqm_buffer_q;
 
-  wire [SDRAM_DATA_W-1:0] sdram_data_in_low_w;
-  wire [SDRAM_DATA_W-1:0] sdram_data_in_high_w;
+  wire [SDRAM_DATA_W-1:0] sdram_data_in0_low_w;
+  wire [SDRAM_DATA_W-1:0] sdram_data_in0_high_w;
+  wire [SDRAM_DATA_W-1:0] sdram_data_in1_low_w;
+  wire [SDRAM_DATA_W-1:0] sdram_data_in1_high_w;
 
   reg refresh_q;
 
@@ -181,6 +189,8 @@ module sdram_axi_core (
   reg [STATE_W-1:0] target_state_r;
   reg [STATE_W-1:0] target_state_q;
   reg [STATE_W-1:0] delay_state_q;
+
+  wire which_chip = ram_addr_w[SDRAM_COL_W+2];
 
   // Address bits
   wire [SDRAM_ROW_W-1:0] addr_col_w = {
@@ -415,7 +425,8 @@ module sdram_axi_core (
   reg [31:0] sample_data0_q;
   always @(posedge clk_i or posedge rst_i)
     if (rst_i) sample_data0_q <= {32{1'b0}};
-    else sample_data0_q <= {sdram_data_in_high_w, sdram_data_in_low_w};
+    else
+      sample_data0_q <= which_chip ? {sdram_data_in1_high_w, sdram_data_in1_low_w} : {sdram_data_in0_high_w, sdram_data_in0_low_w};
 
 
   //-----------------------------------------------------------------
@@ -602,20 +613,24 @@ module sdram_axi_core (
       else ack_q <= 1'b0;
     end
 
-  assign ram_ack_w                = ack_q;
+  assign ram_ack_w                 = ack_q;
 
   // Accept command in READ or WRITE0 states
-  assign ram_accept_w             = (state_q == STATE_READ || state_q == STATE_WRITE0);
+  assign ram_accept_w              = (state_q == STATE_READ || state_q == STATE_WRITE0);
 
   //-----------------------------------------------------------------
   // SDRAM I/O
   //-----------------------------------------------------------------
-  assign sdram_clk_o              = ~clk_i;
-  assign sdram_data_out_en_o      = ~data_rd_en_q;
-  assign sdram_data_output_low_o  = ram_write_data_w[15:0];
-  assign sdram_data_output_high_o = ram_write_data_w[31:16];
-  assign sdram_data_in_low_w      = sdram_data_input_low_i;
-  assign sdram_data_in_high_w     = sdram_data_input_high_i;
+  assign sdram_clk_o               = ~clk_i;
+  assign sdram_data_out_en_o       = ~data_rd_en_q;
+  assign sdram_data_output0_low_o  = ram_write_data_w[15:0];
+  assign sdram_data_output0_high_o = ram_write_data_w[31:16];
+  assign sdram_data_output1_low_o  = ram_write_data_w[15:0];
+  assign sdram_data_output1_high_o = ram_write_data_w[31:16];
+  assign sdram_data_in0_low_w      = sdram_data_input0_low_i;
+  assign sdram_data_in0_high_w     = sdram_data_input0_high_i;
+  assign sdram_data_in1_low_w      = sdram_data_input1_low_i;
+  assign sdram_data_in1_high_w     = sdram_data_input1_high_i;
 
 
   reg [3:0] msk_r;
@@ -624,16 +639,18 @@ module sdram_axi_core (
     else msk_r <= (state_q == STATE_WRITE0 ? ~ram_wr_w : 4'b1111);
   end
 
-  assign sdram_cke_o      = cke_q;
-  assign sdram_cs_o       = command_q[3];
-  assign sdram_ras_o      = command_q[2];
-  assign sdram_cas_o      = command_q[1];
-  assign sdram_we_o       = command_q[0];
-  assign sdram_dqm_low_o  = msk_r[1:0];
-  assign sdram_dqm_high_o = msk_r[3:2];
+  assign sdram_cke_o       = cke_q;
+  assign sdram_cs_o        = command_q[3];
+  assign sdram_ras_o       = command_q[2];
+  assign sdram_cas_o       = command_q[1];
+  assign sdram_we_o        = command_q[0];
+  assign sdram_dqm0_low_o  = which_chip ? 2'b11 : msk_r[1:0];
+  assign sdram_dqm0_high_o = which_chip ? 2'b11 : msk_r[3:2];
+  assign sdram_dqm1_low_o  = which_chip ? msk_r[1:0] : 2'b11;
+  assign sdram_dqm1_high_o = which_chip ? msk_r[3:2] : 2'b11;
 
-  assign sdram_ba_o       = bank_q;
-  assign sdram_addr_o     = addr_q;
+  assign sdram_ba_o        = bank_q;
+  assign sdram_addr_o      = addr_q;
 
   //-----------------------------------------------------------------
   // Simulation only
