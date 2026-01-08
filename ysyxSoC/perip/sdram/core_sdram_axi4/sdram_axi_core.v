@@ -190,7 +190,7 @@ module sdram_axi_core (
   reg [STATE_W-1:0] target_state_q;
   reg [STATE_W-1:0] delay_state_q;
 
-  wire which_chip = ram_addr_w[SDRAM_COL_W+2];
+  wire which_chip = ram_addr_w[SDRAM_ADDR_W+1+1];
 
   // Address bits
   wire [SDRAM_ROW_W-1:0] addr_col_w = {
