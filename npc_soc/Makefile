@@ -2,8 +2,12 @@
 
 include $(NVBOARD_HOME)/scripts/nvboard.mk
 
+NXDC = $(SOC_NPC_HOME)/nvboard/top.nxdc
+NXDC_CPP = $(SOC_NPC_HOME)/nvboard/auto_bind.cpp
+
 CSRC = $(shell find csrc -name "*.cpp")
 CSRC += /usr/local/lib/libreplxx.a $(NVBOARD_ARCHIVE)
+CSRC += $(NXDC_CPP)
 
 VSRC = $(wildcard vsrc/*.v)
 VSRC += $(wildcard vsrc/*.sv)
@@ -21,8 +25,7 @@ SVSRC = $(patsubst %,generated_svsrc/%,$(SVSRC_FILES))
 VERILATOR = verilator
 PYTHON = python
 
-NXDC = $(SOC_NPC_HOME)/nvboard/top.nxdc
-NXDC_CPP = $(SOC_NPC_HOME)/nvboard/auto_bind.cpp
+
 
 VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -Ofast   \
 -march=native -mtune=native \
