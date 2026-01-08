@@ -6,16 +6,15 @@
 #define SWITCH_GPIO 0x10002004
 #define DIGIT_GPIO 0x10002008
 
-const uint8_t hex_2_digit[16] = {0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d,
-                                 0x7d, 0x07, 0x7f, 0x6f, 0x77, 0x7c,
-                                 0x39, 0x5e, 0x79, 0x71};
+const uint8_t hex_2_digit_ctrl[16] = {0x03, 0x9F, 0x25, 0x0D, 0x99, 0x49,
+                                      0x41, 0x1F, 0x01, 0x09, 0x11, 0xC1,
+                                      0x63, 0x85, 0x61, 0x71};
 
 int main() {
   uint32_t marchid;
   asm volatile("csrr %0, marchid" : "=r"(marchid));
   for (int i = 0; i < 8; i++) {
-    *(volatile uint8_t *)(DIGIT_GPIO + i) =
-        ~0x10; // ~hex_2_digit[marchid % 10];
+    *(volatile uint8_t *)(DIGIT_GPIO + i) = hex_2_digit_ctrl[marchid % 10];
     marchid /= 10;
   }
 
