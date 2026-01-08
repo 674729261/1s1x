@@ -2,7 +2,7 @@
 
 RESULT = .result
 $(shell > $(RESULT))
-MAKECMDGOALS = run
+MAKECMDGOALS = nvboard
 
 COLOR_RED   = \033[1;31m
 COLOR_GREEN = \033[1;32m

@@ -30,4 +30,8 @@ image: image-dep
 run: insert-arg
 	$(MAKE) -C $(SOC_NPC_HOME) sim PROG=$(IMAGE).bin NPC_FLAGS="--batch"
 
+nvboard: insert-arg
+	$(MAKE) -C $(SOC_NPC_HOME) nvboard PROG=$(IMAGE).bin NPC_FLAGS="--batch"
+
+
 .PHONY: insert-arg
