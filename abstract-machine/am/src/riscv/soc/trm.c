@@ -49,8 +49,8 @@ void _show_motd(uint32_t vendorid, uint32_t archid) {
   for (const char *p = message; *p; p++)
     putch(*p);
 
-  const char *first_part = "\033[31mmvendorid\033[0m : 0x";
-  const char *second_part = "\n\033[31mmarchid\033[0m : ";
+  const char *first_part = "mmvendorid : 0x";
+  const char *second_part = "mmarchid : ";
   char buffer[16] = {};
   int cnt = 0;
   for (const char *p = first_part; *p; p++)
