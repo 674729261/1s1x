@@ -50,7 +50,7 @@ void _show_motd(uint32_t vendorid, uint32_t archid) {
     putch(*p);
 
   const char *first_part = "mmvendorid : 0x";
-  const char *second_part = "mmarchid : ";
+  const char *second_part = "\nmmarchid : ";
   char buffer[16] = {};
   int cnt = 0;
   for (const char *p = first_part; *p; p++)
