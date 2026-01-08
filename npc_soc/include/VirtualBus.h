@@ -52,6 +52,8 @@ struct VirtualBus {
       return {sdram[(addr & 0x0FFFFFFF) >> 2], false};
     } else if (check_range(gpio_field)) {
       return {0xdeadbeef, true};
+    } else if (check_range(keyboard_field)) {
+      return {0xdeadbeef, true};
     } else {
       log_and_throw<std::logic_error>(
           "Failed to decode read addr {:08x}, size = {}", addr, sz);
@@ -96,6 +98,9 @@ struct VirtualBus {
       sdram[(addr & 0x0FFFFFFF) >> 2] |= wdata & mask32;
     } else if (check_range(gpio_field)) {
       // no action
+    } else if (check_range(keyboard_field)) {
+      log_and_throw<std::logic_error>(
+          "Failed to write to address {:} : keyboard can not be written", addr);
     } else {
       log_and_throw<std::logic_error>("Failed to decode write addr {:08x}",
                                       addr);
@@ -122,4 +127,5 @@ struct VirtualBus {
   std::vector<uint32_t> sdram;
   const Area sdram_field = {0xa0000000, 0xbfffffff};
   const Area gpio_field = {0x10002000, 0x1000200f};
+  const Area keyboard_field = {0x10011000, 0x10011007};
 };
