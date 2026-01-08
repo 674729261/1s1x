@@ -41,7 +41,7 @@ loop:
     p = (p + 1) % 16;
   }
   AM_INPUT_KEYBRD_T input_kbd;
-  putch('!');
+
   for (volatile int j = 0; j < 256; j++) {
     ioe_read(AM_INPUT_KEYBRD, &input_kbd);
     if (input_kbd.keycode != 0) {
