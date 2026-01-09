@@ -11,7 +11,8 @@
 
 struct VirtualBus {
   VirtualBus()
-      : sram(2048), psram(1024 * 1024 * 1), sdram(1024 * 1024 * 8 * 4) {}
+      : sram(2048), psram(1024 * 1024 * 1), sdram(1024 * 1024 * 8 * 4),
+        vga_buffer(640 * 480) {}
 
   struct ReadResult {
     uint32_t data;
@@ -54,6 +55,8 @@ struct VirtualBus {
       return {0xdeadbeef, true};
     } else if (check_range(keyboard_field)) {
       return {0xdeadbeef, true};
+    } else if (check_range(vga_field)) {
+      return {vga_buffer[(addr & 0x0FFFFFFF) >> 2], false};
     } else {
       log_and_throw<std::logic_error>(
           "Failed to decode read addr {:08x}, size = {}", addr, sz);
@@ -101,6 +104,13 @@ struct VirtualBus {
     } else if (check_range(keyboard_field)) {
       log_and_throw<std::logic_error>(
           "Failed to write to address {:} : keyboard can not be written", addr);
+    } else if (check_range(vga_field)) {
+      if (((addr & 0x0FFFFFFF) >> 2) >= vga_buffer.size()) {
+        log_and_throw<std::logic_error>("VGA buffer write addr {:08x} overflow",
+                                        addr);
+      }
+      vga_buffer[(addr & 0x0FFFFFFF) >> 2] &= ~mask32;
+      vga_buffer[(addr & 0x0FFFFFFF) >> 2] |= wdata & mask32;
     } else {
       log_and_throw<std::logic_error>("Failed to decode write addr {:08x}",
                                       addr);
@@ -128,4 +138,7 @@ struct VirtualBus {
   const Area sdram_field = {0xa0000000, 0xbfffffff};
   const Area gpio_field = {0x10002000, 0x1000200f};
   const Area keyboard_field = {0x10011000, 0x10011007};
+
+  std::vector<uint32_t> vga_buffer;
+  const Area vga_field = {0x21000000, 0x211fffff};
 };
