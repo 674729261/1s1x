@@ -44,8 +44,8 @@ struct Dut {
     // sim_time++;
     top->clock = 1;
     top->eval();
-    m_trace->dump(sim_time);
-    sim_time++;
+    // m_trace->dump(sim_time);
+    // sim_time++;
   }
 
   void step_one_inst() {}
