@@ -70,24 +70,23 @@ void update() {
 }
 
 void video_test() {
-  // unsigned long last = 0;
-  // unsigned long fps_last = 0;
-  // int fps = 0;
+  unsigned long last = 0;
+  unsigned long fps_last = 0;
+  int fps = 0;
 
   while (1) {
-    // unsigned long upt = io_read(AM_TIMER_UPTIME).us / 1000;
-    // if (upt - last > 1000 / FPS)
-    {
+    unsigned long upt = io_read(AM_TIMER_UPTIME).us / 1000;
+    if (upt - last > 1000 / FPS) {
       update();
       redraw();
-      // last = upt;
-      // fps++;
+      last = upt;
+      fps++;
     }
-    // if (upt - fps_last > 1000) {
-    //   // display fps every 1s
-    //   printf("%d: FPS = %d\n", upt, fps);
-    //   fps_last = upt;
-    //   fps = 0;
-    // }
+    if (upt - fps_last > 1000) {
+      // display fps every 1s
+      printf("%d: FPS = %d\n", upt, fps);
+      fps_last = upt;
+      fps = 0;
+    }
   }
 }
