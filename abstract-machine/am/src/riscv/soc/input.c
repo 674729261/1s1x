@@ -23,7 +23,7 @@ void __am_input_keybrd(AM_INPUT_KEYBRD_T *kbd) {
   if (signal == 0xf0) {
     kbd->keycode = 0;
     kbd->keydown = false;
-    is_keydown = true;
+    is_keydown = false;
     return;
   }
   switch (state) {
