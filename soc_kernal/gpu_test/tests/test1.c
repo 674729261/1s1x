@@ -3,7 +3,7 @@
 #include <klib.h>
 #include <stdint.h>
 #define N 64
-const uint32_t colors[] = {0x000000, 0xff0000, 0x00ff00, 0x0000ff,
+const uint32_t colors[] = {0xffffff, 0xff0000, 0x00ff00, 0x0000ff,
                            0xffff00, 0xff00ff, 0x00ffff, 0xffffff};
 
 void draw(uint32_t color) {
@@ -13,9 +13,8 @@ void draw(uint32_t color) {
   for (int i = 0; i < LENGTH(color_buf); i++) {
     color_buf[i] = color;
   }
-  for (int x = 0; x <= w; x++) {
-    for (int y = 0; y <= h; y++) {
-      printf("%d %d\n", x * N, y * N);
+  for (int x = 0; x < w; x++) {
+    for (int y = 0; y < h; y++) {
       io_write(AM_GPU_FBDRAW, x * N, y * N, color_buf, N, N, false);
     }
   }
