@@ -41,16 +41,15 @@ loop:
     *(volatile uint16_t *)LED_GPIO = (1 << p);
     p = (p + 1) % 16;
   }
-  // AM_INPUT_KEYBRD_T input_kbd;
+  AM_INPUT_KEYBRD_T input_kbd;
 
   for (volatile int j = 0; j < 256; j++) {
-    // ioe_read(AM_INPUT_KEYBRD, &input_kbd);
-    // if (input_kbd.keycode != 0) {
-    //   printf("%02x\n", input_kbd.keycode);
-    // }
-    uint8_t scancode = inb(KBD_ADDR);
-    if (scancode != 0) {
-      printf("%x\n", scancode);
+    ioe_read(AM_INPUT_KEYBRD, &input_kbd);
+    if (input_kbd.keycode != 0) {
+      if (input_kbd.keydown)
+        printf("DOWN %02x\n", input_kbd.keycode);
+      else
+        printf("UP   %02x\n", input_kbd.keycode);
     }
   }
 
