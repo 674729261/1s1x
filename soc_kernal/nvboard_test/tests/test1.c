@@ -52,8 +52,8 @@ loop:
     if (scancode != 0) {
       if (scancode == 0xf0)
         putch('\n');
-      else
-        printf("%x\n", scancode);
+
+      printf("%x\n", scancode);
     }
   }
 
