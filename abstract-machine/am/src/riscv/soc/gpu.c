@@ -5,7 +5,7 @@
 #include <soc.h>
 #include <stdint.h>
 
-#define SYNC_ADDR (VGACTL_ADDR + 4)
+// #define SYNC_ADDR (VGACTL_ADDR + 4)
 
 void __am_gpu_init() {}
 
@@ -30,9 +30,9 @@ void __am_gpu_fbdraw(AM_GPU_FBDRAW_T *ctl) {
       outl((uintptr_t)(&fb[(ctl->y + i) * w + ctl->x + j]),
            ((uint32_t *)ctl->pixels)[i * ctl->w + j]);
   }
-  if (ctl->sync) {
-    outl(SYNC_ADDR, 1);
-  }
+  // if (ctl->sync) {
+  //   outl(SYNC_ADDR, 1);
+  // }
 }
 
 void __am_gpu_status(AM_GPU_STATUS_T *status) {
