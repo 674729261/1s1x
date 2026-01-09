@@ -87,9 +87,8 @@ static const int ps2_scancode_e0_to_am[256] = {
     [0x4B] = AM_KEY_LEFT,        [0x4D] = AM_KEY_RIGHT,
     [0x4F] = AM_KEY_END,         [0x50] = AM_KEY_DOWN,
     [0x51] = AM_KEY_PAGEDOWN,    [0x52] = AM_KEY_INSERT,
-    [0x53] = AM_KEY_DELETE,      [0x12] = AM_KEY_PRTSCR, /* partial support */
-    [0x5B] = AM_KEY_APPLICATION, [0x5C] = AM_KEY_APPLICATION,
-    [0x5D] = AM_KEY_APPLICATION,
+    [0x53] = AM_KEY_DELETE,      [0x5B] = AM_KEY_APPLICATION,
+    [0x5C] = AM_KEY_APPLICATION, [0x5D] = AM_KEY_APPLICATION,
 };
 
 void __am_input_keybrd(AM_INPUT_KEYBRD_T *kbd) {

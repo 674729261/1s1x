@@ -70,7 +70,7 @@ void update() {
 }
 
 void video_test() {
-  unsigned long last = 0;
+  unsigned long last = -99999;
   unsigned long fps_last = 0;
   int fps = 0;
 
@@ -84,7 +84,7 @@ void video_test() {
     }
     if (upt - fps_last > 1000) {
       // display fps every 1s
-      printf("%d: FPS = %d\n", upt, fps);
+      printf("FPS = %d\n", fps);
       fps_last = upt;
       fps = 0;
     }
