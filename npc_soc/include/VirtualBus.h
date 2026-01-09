@@ -105,12 +105,12 @@ struct VirtualBus {
       log_and_throw<std::logic_error>(
           "Failed to write to address {:} : keyboard can not be written", addr);
     } else if (check_range(vga_field)) {
-      if (((addr & 0x0FFFFFFF) >> 2) >= vga_buffer.size()) {
+      if (((addr & 0x00FFFFFF) >> 2) >= vga_buffer.size()) {
         log_and_throw<std::logic_error>("VGA buffer write addr {:08x} overflow",
                                         addr);
       }
-      vga_buffer[(addr & 0x0FFFFFFF) >> 2] &= ~mask32;
-      vga_buffer[(addr & 0x0FFFFFFF) >> 2] |= wdata & mask32;
+      vga_buffer[(addr & 0x00FFFFFF) >> 2] &= ~mask32;
+      vga_buffer[(addr & 0x00FFFFFF) >> 2] |= wdata & mask32;
     } else {
       log_and_throw<std::logic_error>("Failed to decode write addr {:08x}",
                                       addr);
