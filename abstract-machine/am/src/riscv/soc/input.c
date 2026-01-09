@@ -36,7 +36,7 @@ void __am_input_keybrd(AM_INPUT_KEYBRD_T *kbd) {
       kbd->keydown = false;
       return;
     } else if (signal == 0xe1) {
-      // discard_cnt = 7;
+      discard_cnt = 7;
       kbd->keycode = (0xe100) | signal;
       kbd->keydown = is_keydown;
       is_keydown = true;

@@ -1,6 +1,8 @@
 #include "am.h"
 #include "amdev.h"
+#include "riscv/riscv.h"
 #include <klib.h>
+#include <soc.h>
 #include <stdint.h>
 
 #define LED_GPIO 0x10002000
@@ -40,16 +42,20 @@ loop:
     *(volatile uint16_t *)LED_GPIO = (1 << p);
     p = (p + 1) % 16;
   }
-  AM_INPUT_KEYBRD_T input_kbd;
+  // AM_INPUT_KEYBRD_T input_kbd;
 
   for (volatile int j = 0; j < 256; j++) {
-    ioe_read(AM_INPUT_KEYBRD, &input_kbd);
-    if (input_kbd.keycode != 0) {
-      if (input_kbd.keydown)
-        printf("DOWN %x\n", input_kbd.keycode);
-      else
-        printf("UP   %x\n", input_kbd.keycode);
+    uint8_t signal = inb(KBD_ADDR);
+    if (signal != 0) {
+      printf("%x\n", signal);
     }
+    // ioe_read(AM_INPUT_KEYBRD, &input_kbd);
+    // if (input_kbd.keycode != 0) {
+    //   if (input_kbd.keydown)
+    //     printf("DOWN %x\n", input_kbd.keycode);
+    //   else
+    //     printf("UP   %x\n", input_kbd.keycode);
+    // }
   }
 
   goto loop;
