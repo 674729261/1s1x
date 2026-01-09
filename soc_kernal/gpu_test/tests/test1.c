@@ -28,7 +28,7 @@ int main() {
     // unsigned long long upt = io_read(AM_TIMER_UPTIME).us;
     // if (upt - last > 1000000 / fps) {
     draw(colors[cycle]);
-    //   cycle = (cycle + 1) % LENGTH(colors);
+    cycle = (cycle + 1) % LENGTH(colors);
     //   last = upt;
     // }
     // AM_INPUT_KEYBRD_T ev = io_read(AM_INPUT_KEYBRD);
