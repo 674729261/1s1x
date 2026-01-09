@@ -1,3 +1,0 @@
-NAME = test1
-SRCS = tests/test1.c
-include /home/shitful/1s1x/ysyx-workbench/abstract-machine/Makefile
