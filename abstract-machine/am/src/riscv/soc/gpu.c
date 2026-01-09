@@ -13,11 +13,11 @@ void __am_gpu_config(AM_GPU_CONFIG_T *cfg) {
   // uint32_t ctl_lower = inl(VGACTL_ADDR);
   // int w = ctl_lower >> 16;
   // int h = ctl_lower & 0xFFFF;
-  // *cfg = (AM_GPU_CONFIG_T){.present = true,
-  //                          .has_accel = false,
-  //                          .width = w,
-  //                          .height = h,
-  //                          .vmemsz = w * h * sizeof(uint32_t)};
+  *cfg = (AM_GPU_CONFIG_T){.present = true,
+                           .has_accel = false,
+                           .width = 640,
+                           .height = 480,
+                           .vmemsz = 640 * 480 * sizeof(uint32_t)};
 }
 
 void __am_gpu_fbdraw(AM_GPU_FBDRAW_T *ctl) {
