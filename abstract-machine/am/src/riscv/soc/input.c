@@ -32,6 +32,9 @@ void __am_input_keybrd(AM_INPUT_KEYBRD_T *kbd) {
   case ST_FRESH:
     if (signal == 0xe0) {
       state = ST_E0;
+      kbd->keycode = 0;
+      kbd->keydown = false;
+      return;
     } else if (signal == 0xe1) {
       discard_cnt = 7;
       kbd->keycode = (0xe100) | signal;
