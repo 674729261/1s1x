@@ -22,23 +22,23 @@ void draw(uint32_t color) {
 int main() {
   ioe_init(); // initialization for GUI
   unsigned int cycle = 0;
-  unsigned long long last = 0;
-  unsigned long long fps = 2;
+  // unsigned long long last = 0;
+  // unsigned long long fps = 2;
   while (1) {
-    unsigned long long upt = io_read(AM_TIMER_UPTIME).us;
-    if (upt - last > 1000000 / fps) {
-      draw(colors[cycle]);
-      cycle = (cycle + 1) % LENGTH(colors);
-      last = upt;
-    }
-    AM_INPUT_KEYBRD_T ev = io_read(AM_INPUT_KEYBRD);
-    if (ev.keycode == AM_KEY_ESCAPE) {
-      break;
-    } else if (ev.keydown) {
-      fps = 16;
-    } else {
-      fps = 2;
-    }
+    // unsigned long long upt = io_read(AM_TIMER_UPTIME).us;
+    // if (upt - last > 1000000 / fps) {
+    draw(colors[cycle]);
+    //   cycle = (cycle + 1) % LENGTH(colors);
+    //   last = upt;
+    // }
+    // AM_INPUT_KEYBRD_T ev = io_read(AM_INPUT_KEYBRD);
+    // if (ev.keycode == AM_KEY_ESCAPE) {
+    //   break;
+    // } else if (ev.keydown) {
+    //   fps = 16;
+    // } else {
+    //   fps = 2;
+    // }
   }
   return 0;
 }
