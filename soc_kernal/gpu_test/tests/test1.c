@@ -13,8 +13,8 @@ void draw(uint32_t color) {
   for (int i = 0; i < LENGTH(color_buf); i++) {
     color_buf[i] = color;
   }
-  for (int x = 0; x < w; x++) {
-    for (int y = 0; y < h; y++) {
+  for (int y = 0; y < h; y++) {
+    for (int x = 0; x < w; x++) {
       io_write(AM_GPU_FBDRAW, x * N, y * N, color_buf, N, N, false);
     }
   }
