@@ -52,7 +52,7 @@ void __am_input_keybrd(AM_INPUT_KEYBRD_T *kbd) {
   default:
     state = ST_FRESH;
     if (signal == 0x12) {
-      discard_cnt = 2;
+      // discard_cnt = 2;
       kbd->keycode = AM_KEY_PRTSCR;
       kbd->keydown = is_keydown;
       is_keydown = true;
