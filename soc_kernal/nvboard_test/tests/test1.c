@@ -1,8 +1,6 @@
 #include "am.h"
 #include "amdev.h"
-#include "riscv/riscv.h"
 #include <klib.h>
-#include <soc.h>
 #include <stdint.h>
 
 #define LED_GPIO 0x10002000
@@ -20,42 +18,38 @@ int main() {
     *(volatile uint8_t *)(DIGIT_GPIO + i) = hex_2_digit_ctrl[marchid % 10];
     marchid /= 10;
   }
-  AM_UART_RX_T rx;
-  ioe_read(AM_UART_RX, &rx);
-  uint32_t x = rx.data - '0';
-  ioe_read(AM_UART_RX, &rx);
-  x = x * 10 + rx.data - '0';
-  ioe_read(AM_UART_RX, &rx);
-  x = x * 10 + rx.data - '0';
-  printf("%u + ", x);
+  // AM_UART_RX_T rx;
+  // ioe_read(AM_UART_RX, &rx);
+  // uint32_t x = rx.data - '0';
+  // ioe_read(AM_UART_RX, &rx);
+  // x = x * 10 + rx.data - '0';
+  // ioe_read(AM_UART_RX, &rx);
+  // x = x * 10 + rx.data - '0';
+  // printf("%u + ", x);
 
-  ioe_read(AM_UART_RX, &rx);
-  uint32_t y = rx.data - '0';
-  ioe_read(AM_UART_RX, &rx);
-  y = y * 10 + rx.data - '0';
-  ioe_read(AM_UART_RX, &rx);
-  y = y * 10 + rx.data - '0';
-  printf("%u = %u\n", y, x + y);
+  // ioe_read(AM_UART_RX, &rx);
+  // uint32_t y = rx.data - '0';
+  // ioe_read(AM_UART_RX, &rx);
+  // y = y * 10 + rx.data - '0';
+  // ioe_read(AM_UART_RX, &rx);
+  // y = y * 10 + rx.data - '0';
+  // printf("%u = %u\n", y, x + y);
   uint16_t p = 0;
 loop:
   if (*(volatile uint16_t *)SWITCH_GPIO == 0x8002) {
     *(volatile uint16_t *)LED_GPIO = (1 << p);
     p = (p + 1) % 16;
   }
-  // AM_INPUT_KEYBRD_T input_kbd;
+  AM_INPUT_KEYBRD_T input_kbd;
 
   for (volatile int j = 0; j < 256; j++) {
-    uint8_t signal = inb(KBD_ADDR);
-    if (signal != 0) {
-      printf("%x\n", signal);
+    ioe_read(AM_INPUT_KEYBRD, &input_kbd);
+    if (input_kbd.keycode != 0) {
+      if (input_kbd.keydown)
+        printf("DOWN %x\n", input_kbd.keycode);
+      else
+        printf("UP   %x\n", input_kbd.keycode);
     }
-    // ioe_read(AM_INPUT_KEYBRD, &input_kbd);
-    // if (input_kbd.keycode != 0) {
-    //   if (input_kbd.keydown)
-    //     printf("DOWN %x\n", input_kbd.keycode);
-    //   else
-    //     printf("UP   %x\n", input_kbd.keycode);
-    // }
   }
 
   goto loop;
