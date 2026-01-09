@@ -81,7 +81,7 @@ sim: npc
 
 nvboard: $(NXDC_CPP) nvboard-archive npc
 	$(call git_commit, "sim RTL with nvboard")
-	$(BIN) --image $(PROG) --log $(LOG_FILE)  --nvboard
+	$(BIN) --image $(PROG) --log $(LOG_FILE) --difftest --nvboard
 
 valgrind: PROG = test_progs/add.bin
 valgrind: ELF = test_progs/add.elf
