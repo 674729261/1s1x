@@ -56,7 +56,7 @@ struct VirtualBus {
     } else if (check_range(keyboard_field)) {
       return {0xdeadbeef, true};
     } else if (check_range(vga_field)) {
-      return {vga_buffer[(addr & 0x0FFFFFFF) >> 2], false};
+      return {vga_buffer[(addr & 0x00FFFFFF) >> 2], false};
     } else {
       log_and_throw<std::logic_error>(
           "Failed to decode read addr {:08x}, size = {}", addr, sz);

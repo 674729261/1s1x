@@ -1,5 +1,6 @@
 #include <am.h>
 #include <klib-macros.h>
+#include <klib.h>
 #include <stdint.h>
 #define N 64
 const uint32_t colors[] = {0x000000, 0xff0000, 0x00ff00, 0x0000ff,
@@ -14,6 +15,7 @@ void draw(uint32_t color) {
   }
   for (int x = 0; x <= w; x++) {
     for (int y = 0; y <= h; y++) {
+      printf("%d %d\n", x * N, y * N);
       io_write(AM_GPU_FBDRAW, x * N, y * N, color_buf, N, N, false);
     }
   }
