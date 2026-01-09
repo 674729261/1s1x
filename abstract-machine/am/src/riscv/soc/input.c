@@ -18,6 +18,8 @@ void __am_input_keybrd(AM_INPUT_KEYBRD_T *kbd) {
   }
   if (discard_cnt != 0) {
     discard_cnt--;
+    kbd->keycode = 0;
+    kbd->keydown = false;
     return;
   }
   if (signal == 0xf0) {
@@ -32,7 +34,7 @@ void __am_input_keybrd(AM_INPUT_KEYBRD_T *kbd) {
       state = ST_E0;
     } else if (signal == 0xe1) {
       discard_cnt = 7;
-      kbd->keycode = AM_KEY_PAUSEBRK;
+      kbd->keycode = (0xe100) | signal;
       kbd->keydown = is_keydown;
       is_keydown = true;
       return;
