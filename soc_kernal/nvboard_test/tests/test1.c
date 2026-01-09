@@ -45,7 +45,10 @@ loop:
   for (volatile int j = 0; j < 256; j++) {
     ioe_read(AM_INPUT_KEYBRD, &input_kbd);
     if (input_kbd.keycode != 0) {
-      printf("%02x\n", input_kbd.keycode);
+      if (input_kbd.keydown)
+        printf("DOWN %x\n", input_kbd.keycode);
+      else
+        printf("UP   %x\n", input_kbd.keycode);
     }
   }
 
