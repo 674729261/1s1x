@@ -50,9 +50,6 @@ loop:
     // }
     uint8_t scancode = inb(KBD_ADDR);
     if (scancode != 0) {
-      if (scancode == 0xf0)
-        putch('\n');
-
       printf("%x\n", scancode);
     }
   }
