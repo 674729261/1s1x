@@ -50,6 +50,7 @@ void __am_input_keybrd(AM_INPUT_KEYBRD_T *kbd) {
     break;
   case ST_E0:
   default:
+    state = ST_FRESH;
     if (signal == 0x12) {
       discard_cnt = 2;
       kbd->keycode = AM_KEY_PRTSCR;
