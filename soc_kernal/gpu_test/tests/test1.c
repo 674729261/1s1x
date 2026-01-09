@@ -2,7 +2,7 @@
 #include <klib-macros.h>
 #include <klib.h>
 #include <stdint.h>
-#define N 128
+#define N 32
 const uint32_t colors[] = {0xffffff, 0xff0000, 0x00ff00, 0x0000ff,
                            0xffff00, 0xff00ff, 0x00ffff, 0xffffff};
 
