@@ -1,7 +1,5 @@
 #pragma once
-#include "DUT.h"
-#include <chrono>
-#include <spdlog/spdlog.h>
+#include <string>
 
 struct InstTypeItem {
   long long count;
@@ -23,62 +21,5 @@ extern long long min_lsu_fetch_delay;
 extern long long max_lsu_fetch_delay;
 extern std::array<InstTypeItem, 13> inst_type_event;
 
-extern std::unique_ptr<Dut> dut;
-
-inline void clear_performance_count() {
-  ifu_event = 0;
-  lsu_read_event = 0;
-  exu_event = 0;
-  idu_event = 0;
-  wbu_event = 0;
-  inst_count = 0;
-  clock_count = 0;
-
-  sum_ifu_fetch_delay = 0;
-  min_ifu_fetch_delay = 1145141919810;
-  max_ifu_fetch_delay = 0;
-  sum_lsu_fetch_delay = 0;
-  min_lsu_fetch_delay = 1145141919810;
-  max_lsu_fetch_delay = 0;
-
-  for (InstTypeItem &item : inst_type_event)
-    item.count = 0;
-}
-
-inline void display_performance(auto start_time, auto end_time) {
-  auto elapsed_ms =
-      std::chrono::floor<std::chrono::milliseconds>(end_time - start_time);
-
-  spdlog::info("Total simulated instructions : {}", inst_count);
-  spdlog::info("Total ifu events : {}", ifu_event);
-  spdlog::info("Total lsu events : {}", lsu_read_event);
-  spdlog::info("Total exu events : {}", exu_event);
-  spdlog::info("Total idu events : {}", idu_event);
-  spdlog::info("Total wbu events : {}", wbu_event);
-  if (ifu_event > 0)
-    spdlog::info("Average/Min/Max IFU delay : {:.2f}/{}/{}",
-                 static_cast<double>(sum_ifu_fetch_delay) / ifu_event,
-                 min_ifu_fetch_delay, max_ifu_fetch_delay);
-  if (lsu_read_event > 0)
-    spdlog::info("Average/Min/Max LSU delay : {:.2f}/{}/{}",
-                 static_cast<double>(sum_lsu_fetch_delay) / lsu_read_event,
-                 min_lsu_fetch_delay, max_lsu_fetch_delay);
-
-  spdlog::info("------------Instruction Type Statistics------------");
-  long long sum_recorded_inst = 0;
-  for (InstTypeItem &item : inst_type_event) {
-    spdlog::info("{:35} |      {}", item.name, item.count);
-    sum_recorded_inst += item.count;
-  }
-  spdlog::info("---------------------------------------------------");
-  spdlog::info("{:35} |      {}", "Total", sum_recorded_inst);
-  spdlog::info("---------------------------------------------------");
-
-  spdlog::info("Total simulated clock periods : {}", clock_count);
-  spdlog::info("Clocks per instruction : {:.3f}",
-               static_cast<double>(clock_count) / inst_count);
-  spdlog::info("Total simulation time : {:%Hh %Mm %Ss}", elapsed_ms);
-  spdlog::info("Simulation speed : {:.2f} clocks/s , {:.2f} insts/s",
-               1000 * static_cast<double>(clock_count) / elapsed_ms.count(),
-               1000 * static_cast<double>(inst_count) / elapsed_ms.count());
-}
+void clear_performance_count();
+void display_performance(auto start_time, auto end_time);
