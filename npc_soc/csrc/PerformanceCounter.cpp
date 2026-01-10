@@ -56,7 +56,7 @@ extern "C" void notify_ifu_r_event() {
 }
 extern "C" void notify_lsu_r_event() {
   lsu_event++;
-  long long delay = dut->sim_time - last_ifu_time;
+  long long delay = dut->sim_time - last_lsu_time;
   sum_lsu_fetch_delay += delay;
   max_lsu_fetch_delay = std::max(max_lsu_fetch_delay, delay);
   min_lsu_fetch_delay = std::min(min_lsu_fetch_delay, delay);
