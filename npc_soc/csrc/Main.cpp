@@ -108,7 +108,7 @@ int simulate(int argc, char *argv[], Config config) {
   }
   dut->print_all_gpr();
   display_performance(start_time, end_time);
-
+  dut = nullptr;
   return result;
 }
 
