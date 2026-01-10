@@ -73,20 +73,21 @@ module PerformanceCounter (
 
       exu_clear <= next_clear(exu_clear, exu_ready, exu_valid);
       idu_clear <= next_clear(idu_clear, exu_ready, exu_valid);
-
-      if (inst_type_is_arithmetic_imm) notify_inst_type_is_arithmetic_imm();
-      if (inst_type_is_arithmetic_reg) notify_inst_type_is_arithmetic_reg();
-      if (inst_type_is_store) notify_inst_type_is_store();
-      if (inst_type_is_load) notify_inst_type_is_load();
-      if (inst_type_is_branch) notify_inst_type_is_branch();
-      if (inst_type_is_jal) notify_inst_type_is_jal();
-      if (inst_type_is_jalr) notify_inst_type_is_jalr();
-      if (inst_type_is_lui) notify_inst_type_is_lui();
-      if (inst_type_is_auipc) notify_inst_type_is_auipc();
-      if (inst_type_is_ebreak) notify_inst_type_is_ebreak();
-      if (inst_type_is_ecall) notify_inst_type_is_ecall();
-      if (inst_type_is_mret) notify_inst_type_is_mret();
-      if (inst_type_is_csrop) notify_inst_type_is_csrop();
+      if (wbu_valid) begin
+        if (inst_type_is_arithmetic_imm) notify_inst_type_is_arithmetic_imm();
+        if (inst_type_is_arithmetic_reg) notify_inst_type_is_arithmetic_reg();
+        if (inst_type_is_store) notify_inst_type_is_store();
+        if (inst_type_is_load) notify_inst_type_is_load();
+        if (inst_type_is_branch) notify_inst_type_is_branch();
+        if (inst_type_is_jal) notify_inst_type_is_jal();
+        if (inst_type_is_jalr) notify_inst_type_is_jalr();
+        if (inst_type_is_lui) notify_inst_type_is_lui();
+        if (inst_type_is_auipc) notify_inst_type_is_auipc();
+        if (inst_type_is_ebreak) notify_inst_type_is_ebreak();
+        if (inst_type_is_ecall) notify_inst_type_is_ecall();
+        if (inst_type_is_mret) notify_inst_type_is_mret();
+        if (inst_type_is_csrop) notify_inst_type_is_csrop();
+      end
 
     end
   end
