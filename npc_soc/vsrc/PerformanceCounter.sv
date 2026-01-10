@@ -35,7 +35,7 @@ module PerformanceCounter (
       if (idu_clear && idu_valid) notify_idu_event();
 
       exu_clear <= next_clear(exu_clear, exu_ready, exu_valid);
-      idu_clear <= next_clear(idu_clear, exu_ready, exu_valid);
+      idu_clear <= next_clear(idu_clear, idu_ready, idu_valid);
 
     end
   end
