@@ -5,6 +5,7 @@ extern long long ifu_event;
 extern long long lsu_event;
 extern long long exu_event;
 extern long long idu_event;
+extern long long wbu_event;
 extern long long inst_count;
 extern long long clock_count;
 
@@ -26,6 +27,7 @@ inline void display_performance(auto start_time, auto end_time) {
   spdlog::info("Total lsu events : {}", lsu_event);
   spdlog::info("Total exu events : {}", exu_event);
   spdlog::info("Total idu events : {}", idu_event);
+  spdlog::info("Total wbu events : {}", wbu_event);
 
   spdlog::info("Total simulated clock periods : {}", clock_count);
   spdlog::info("Clocks per instruction : {:.3f}",

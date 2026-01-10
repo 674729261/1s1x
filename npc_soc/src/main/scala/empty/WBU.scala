@@ -22,6 +22,8 @@ class WBU() extends Module {
 
     val ok_to_step = Output(Bool())
 
+    val inst_type = Output(new InstType)
+
   })
 
   out.ebreak := in.bits.itype.is_ebreak && in.valid
@@ -41,4 +43,5 @@ class WBU() extends Module {
 
   in.ready := in.valid
   out.ok_to_step := in.valid
+  out.inst_type := in.bits.itype
 }

@@ -32,14 +32,20 @@ class MemAccessBus extends Bundle {
 class PerformanceCounter extends ExtModule {
   val clock = IO(Input(Clock()))
   val reset = IO(Input(Reset()))
+  val ifu_arready = IO(Input(Bool()))
+  val ifu_arvalid = IO(Input(Bool()))
   val ifu_rready = IO(Input(Bool()))
   val ifu_rvalid = IO(Input(Bool()))
+  val lsu_arready = IO(Input(Bool()))
+  val lsu_arvalid = IO(Input(Bool()))
   val lsu_rready = IO(Input(Bool()))
   val lsu_rvalid = IO(Input(Bool()))
   val exu_ready = IO(Input(Bool()))
   val exu_valid = IO(Input(Bool()))
   val idu_ready = IO(Input(Bool()))
   val idu_valid = IO(Input(Bool()))
+  val wbu_valid = IO(Input(Bool()))
+  val inst_type = IO(Input(new InstType))
 }
 
 class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
@@ -115,8 +121,15 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
     m_performance_counter.exu_valid := exu.out.valid
     m_performance_counter.idu_ready := idu.out.ready
     m_performance_counter.idu_valid := idu.out.valid
+    m_performance_counter.wbu_valid := wbu.out.ok_to_step
+    m_performance_counter.inst_type := wbu.out.inst_type
+
+    m_performance_counter.ifu_arready := ifu.fetch_port.ar.ready
+    m_performance_counter.ifu_arvalid := ifu.fetch_port.ar.valid
     m_performance_counter.ifu_rready := ifu.fetch_port.r.ready
     m_performance_counter.ifu_rvalid := ifu.fetch_port.r.valid
+    m_performance_counter.lsu_arready := lsu.fetch_port.ar.ready
+    m_performance_counter.lsu_arvalid := lsu.fetch_port.ar.valid
     m_performance_counter.lsu_rready := lsu.fetch_port.r.ready
     m_performance_counter.lsu_rvalid := lsu.fetch_port.r.valid
 
