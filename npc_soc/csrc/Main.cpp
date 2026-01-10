@@ -7,6 +7,7 @@
 #include <Ref.h>
 #include <VysyxSoCFull.h>
 #include <VysyxSoCFull___024root.h>
+#include <chrono>
 #include <exception>
 #include <iostream>
 #include <memory>
@@ -60,8 +61,8 @@ int simulate(int argc, char *argv[], Config config) {
   }
   ref.reset(dut);
   dut.reset();
-
   bool difftest_state = false;
+  auto start_time = std::chrono::steady_clock::now();
   while (!contextp->gotFinish()) {
     retire = false;
     if (dut.top->rootp
@@ -82,6 +83,8 @@ int simulate(int argc, char *argv[], Config config) {
       }
     }
   }
+  auto end_time = std::chrono::steady_clock::now();
+
   int result;
   if (contextp->gotFinish()) {
     if (dut.getGPR(10) == 0) {
@@ -99,6 +102,7 @@ int simulate(int argc, char *argv[], Config config) {
     result = -3;
   }
   dut.print_all_gpr();
+  spdlog::info("Total simulation time : {}", end_time - start_time);
   return result;
 }
 

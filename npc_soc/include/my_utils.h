@@ -68,7 +68,7 @@ constexpr T bits(T raw) {
 
   static_assert(High >= Low && High < std::numeric_limits<T>::digits &&
                     Low >= 0,
-                "High > Low && High < bitwidth && Low >= 0");
+                "High >= Low && High < bitwidth && Low >= 0");
   if constexpr (High == std::numeric_limits<T>::digits - 1)
     return raw >> Low;
   else {
