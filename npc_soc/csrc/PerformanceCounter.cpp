@@ -4,7 +4,7 @@ long long lsu_event;
 long long exu_event;
 long long idu_event;
 long long inst_count;
-long long longclock_count;
+long long clock_count;
 
 extern "C" void notify_ifu_event() { ifu_event++; }
 extern "C" void notify_lsu_event() { lsu_event++; }
