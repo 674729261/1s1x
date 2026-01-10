@@ -86,7 +86,8 @@ module PerformanceCounter (
         if (inst_type_is_ebreak) notify_inst_type_is_ebreak();
         if (inst_type_is_ecall) notify_inst_type_is_ecall();
         if (inst_type_is_mret) notify_inst_type_is_mret();
-        if (inst_type_is_csrop) notify_inst_type_is_csrop();
+        if (inst_type_is_csrop && !inst_type_is_mret && !inst_type_is_ecall && !inst_type_is_ebreak)
+          notify_inst_type_is_csrop();
       end
 
     end
