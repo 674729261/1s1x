@@ -43,10 +43,11 @@ inline void display_performance(auto start_time, auto end_time) {
   spdlog::info("------------Instruction Type Statistics------------");
   long long sum_recorded_inst = 0;
   for (InstTypeItem &item : inst_type_event) {
-    spdlog::info("{:35} :      {}", item.name, item.count);
+    spdlog::info("{:35} |      {}", item.name, item.count);
     sum_recorded_inst += item.count;
   }
-  spdlog::info("Total : {}", sum_recorded_inst);
+  spdlog::info("---------------------------------------------------");
+  spdlog::info("{:35} | {}", "Total", sum_recorded_inst);
   spdlog::info("---------------------------------------------------");
 
   spdlog::info("Total simulated clock periods : {}", clock_count);
