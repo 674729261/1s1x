@@ -17,25 +17,25 @@ module PerformanceCounter (
     input idu_valid
 );
 
-  reg exu_clear, idu_clear;
+  integer exu_delay_counter, idu_delay_counter;
 
-  function reg next_clear(input old_clear, input ready, input valid);
-    if (old_clear) return ready ? 1'b0 : 1'b1;
-    else return {ready, valid} == 2'b01;
+  function integer next_clear(integer old_cnt, input ready, input valid);
+    if (old_cnt != 'd0) return ready ? 'd0 : old_cnt + 'd1;
+    else return {ready, valid} == 2'b01 ? old_cnt + 'd1 : 'd0;
   endfunction
 
   always @(posedge clock) begin
     if (reset) begin
-      exu_clear <= 1'b0;
-      idu_clear <= 1'b0;
+      exu_delay_counter <= 'd0;
+      idu_delay_counter <= 'd0;
     end else begin
       if (ifu_rready && ifu_rvalid) notify_ifu_event();
       if (lsu_rready && lsu_rvalid) notify_lsu_event();
-      if (!exu_clear && exu_valid) notify_exu_event();
-      if (!idu_clear && idu_valid) notify_idu_event();
+      if (exu_delay_counter == 'd0 && exu_valid) notify_exu_event();
+      if (idu_delay_counter == 'd0 && idu_valid) notify_idu_event();
 
-      exu_clear <= next_clear(exu_clear, exu_ready, exu_valid);
-      idu_clear <= next_clear(idu_clear, idu_ready, idu_valid);
+      exu_delay_counter <= next_clear(exu_delay_counter, exu_ready, exu_valid);
+      idu_delay_counter <= next_clear(idu_delay_counter, idu_ready, idu_valid);
 
     end
   end
