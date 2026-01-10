@@ -29,6 +29,7 @@ module PerformanceCounter (
       exu_clear <= 1'b0;
       idu_clear <= 1'b0;
     end else begin
+      $display("!!??");
       if (ifu_rready && ifu_rvalid) notify_ifu_event();
       if (lsu_rready && lsu_rvalid) notify_lsu_event();
       if (exu_clear && exu_valid) notify_exu_event();
