@@ -1,6 +1,8 @@
+#include <DUT.h>
 #include <PerformanceCounter.h>
 #include <algorithm>
 #include <array>
+#include <spdlog/spdlog.h>
 long long ifu_event;
 long long lsu_read_event;
 long long exu_event;
