@@ -47,7 +47,7 @@ inline void display_performance(auto start_time, auto end_time) {
     sum_recorded_inst += item.count;
   }
   spdlog::info("---------------------------------------------------");
-  spdlog::info("{:35} | {}", "Total", sum_recorded_inst);
+  spdlog::info("{:35} |      {}", "Total", sum_recorded_inst);
   spdlog::info("---------------------------------------------------");
 
   spdlog::info("Total simulated clock periods : {}", clock_count);
