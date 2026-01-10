@@ -1,4 +1,6 @@
 #pragma once
+#include <chrono>
+#include <spdlog/spdlog.h>
 extern long long ifu_event;
 extern long long lsu_event;
 extern long long exu_event;
@@ -13,4 +15,23 @@ inline void clear_performance_count() {
   idu_event = 0;
   inst_count = 0;
   clock_count = 0;
+}
+
+inline void display_performance(auto start_time, auto end_time) {
+  auto elapsed_ms =
+      std::chrono::floor<std::chrono::milliseconds>(end_time - start_time);
+
+  spdlog::info("Total simulated instructions : {}", inst_count);
+  spdlog::info("Total ifu events : {}", ifu_event);
+  spdlog::info("Total lsu events : {}", lsu_event);
+  spdlog::info("Total exu events : {}", exu_event);
+  spdlog::info("Total idu events : {}", idu_event);
+
+  spdlog::info("Total simulated clock periods : {}", clock_count);
+  spdlog::info("Clocks per instruction : {:.3f}",
+               static_cast<double>(clock_count) / inst_count);
+  spdlog::info("Total simulation time : {:%Hh %Mm %Ss}", elapsed_ms);
+  spdlog::info("Simulation speed : {:.2f} clocks/s , {:.2f} insts/s",
+               1000 * static_cast<double>(clock_count) / elapsed_ms.count(),
+               1000 * static_cast<double>(inst_count) / elapsed_ms.count());
 }

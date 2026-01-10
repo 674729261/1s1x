@@ -106,17 +106,7 @@ int simulate(int argc, char *argv[], Config config) {
     result = -3;
   }
   dut.print_all_gpr();
-  auto elapsed_ms =
-      std::chrono::floor<std::chrono::milliseconds>(end_time - start_time);
-
-  spdlog::info("Total simulated instructions : {}", inst_count);
-  spdlog::info("Total simulated clock periods : {}", clock_count);
-  spdlog::info("Clocks per instruction : {:.3f}",
-               static_cast<double>(clock_count) / inst_count);
-  spdlog::info("Total simulation time : {:%Hh %Mm %Ss}", elapsed_ms);
-  spdlog::info("Simulation speed : {:.2f} clocks/s , {:.2f} insts/s",
-               1000 * static_cast<double>(clock_count) / elapsed_ms.count(),
-               1000 * static_cast<double>(inst_count) / elapsed_ms.count());
+  display_performance(start_time, end_time);
 
   return result;
 }
