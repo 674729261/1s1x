@@ -102,7 +102,8 @@ int simulate(int argc, char *argv[], Config config) {
     result = -3;
   }
   dut.print_all_gpr();
-  spdlog::info("Total simulation time : {:%H:%M:%.3S}", end_time - start_time);
+  spdlog::info("Total simulation time : {:%H:%M:%S}.{:03d}",
+               end_time - start_time);
   return result;
 }
 
