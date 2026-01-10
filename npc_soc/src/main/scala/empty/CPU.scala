@@ -1,6 +1,9 @@
 package empty
 import chisel3._
 import chisel3.util._
+import chisel3.layer._
+
+object PerformanceCounterLayer extends Layer(LayerConfig.Inline)
 
 object StageConnect {
   def apply[T <: Data](left: DecoupledIO[T], right: DecoupledIO[T]) = {
@@ -26,7 +29,20 @@ class MemAccessBus extends Bundle {
   val respReady = Output(Bool())
 }
 
-class CPU_Core(init_pc: UInt) extends Module {
+class PerformanceCounter extends ExtModule {
+  val clock = IO(Input(Clock()))
+  val reset = IO(Input(Reset()))
+  val ifu_rready = IO(Input(Bool()))
+  val ifu_rvalid = IO(Input(Bool()))
+  val lsu_rready = IO(Input(Bool()))
+  val lsu_rvalid = IO(Input(Bool()))
+  val exu_ready = IO(Input(Bool()))
+  val exu_valid = IO(Input(Bool()))
+  val idu_ready = IO(Input(Bool()))
+  val idu_valid = IO(Input(Bool()))
+}
+
+class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
   val io = IO(new Bundle {
     val pc = Output(UInt(32.W))
     // val inst_bus_axi = new AXI_Lite
@@ -90,4 +106,19 @@ class CPU_Core(init_pc: UInt) extends Module {
   // val ebreak_reg = RegInit(false.B)
   // ebreak_reg := ebreak_reg | wbu.out.ebreak
   io.ebreak := wbu.out.ebreak
+
+  block(PerformanceCounterLayer) {
+    val m_performance_counter = Module(new PerformanceCounter)
+    m_performance_counter.clock := clock
+    m_performance_counter.reset := reset
+    m_performance_counter.exu_ready := exu.out.ready
+    m_performance_counter.exu_valid := exu.out.valid
+    m_performance_counter.idu_ready := idu.out.ready
+    m_performance_counter.idu_valid := idu.out.valid
+    m_performance_counter.ifu_rready := ifu.fetch_port.r.ready
+    m_performance_counter.ifu_rvalid := ifu.fetch_port.r.valid
+    m_performance_counter.lsu_rready := lsu.fetch_port.r.ready
+    m_performance_counter.lsu_rvalid := lsu.fetch_port.r.valid
+
+  }
 }

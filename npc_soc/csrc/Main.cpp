@@ -4,6 +4,7 @@
 #include "spdlog/spdlog.h"
 #include <Args.h>
 #include <MROM.h>
+#include <PerformanceCounter.h>
 #include <Ref.h>
 #include <VysyxSoCFull.h>
 #include <VysyxSoCFull___024root.h>
@@ -56,20 +57,20 @@ int simulate(int argc, char *argv[], Config config) {
   Ref ref(config, dut);
   if (config.nvboard) {
     nvboard_bind_all_pins(dut.top.get());
-
     nvboard_init();
   }
   ref.reset(dut);
   dut.reset();
+  clear_performance_count();
   bool difftest_state = false;
   auto start_time = std::chrono::steady_clock::now();
-  long long inst_count = 0, clock_count = 0;
   while (!contextp->gotFinish()) {
     retire = false;
     if (dut.top->rootp
             ->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__reset) {
       ref.reset(dut);
       ref.sync_state();
+      clear_performance_count();
     }
     if (config.nvboard)
       nvboard_update();

@@ -8,7 +8,7 @@ object AddMain extends App {
   println("Generating the CPU RTL")
 
   ChiselStage.emitSystemVerilogFile(
-    new ysyx_25080216,
+    new ysyx_25080216(performance_counter = true, axiasset = true),
     Array(
       "--target-dir",
       "generated_svsrc"

@@ -1,6 +1,7 @@
 package empty
 import chisel3._
 import chisel3.util._
+import chisel3.layer._
 
 class AXI_Flatten extends Bundle {
   val awready = Input(Bool())
@@ -63,13 +64,21 @@ class Inst_Retire extends ExtModule {
   val pc = IO(Input(UInt(32.W)))
 }
 
-class ysyx_25080216 extends Module {
+class ysyx_25080216(performance_counter: Boolean, axiasset: Boolean)
+    extends Module {
   val io = IO(new Bundle {
     val interrupt = Input(Bool())
     val master = new AXI_Flatten
     val slave = Flipped(new AXI_Flatten)
   })
-  val cpu = Module(new CPU_Core(init_pc = "h30000000".U(32.W)))
+  if (performance_counter) enable(PerformanceCounterLayer)
+  if (axiasset) enable(AXIAssertLayer)
+  val cpu = Module(
+    new CPU_Core(
+      init_pc = "h30000000".U(32.W),
+      performance_counter = performance_counter
+    )
+  )
   val ebreaker = Module(new Ebreaker)
   val axi_checker = Module(new AXI_Checker)
   val inst_retire = Module(new Inst_Retire)
