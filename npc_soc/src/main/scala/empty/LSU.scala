@@ -134,17 +134,49 @@ class LSU() extends Module {
   in.ready := cpu_fire
 
   block(AXIAssertLayer) {
-    withDisable(Disable.Never) {
+    check_signal_stable(
+      fetch_port.ar.ready,
+      fetch_port.ar.valid,
+      Cat(
+        fetch_port.ar.addr,
+        fetch_port.ar.burst,
+        fetch_port.ar.id,
+        fetch_port.ar.len,
+        fetch_port.ar.size
+      ),
+      "IFU.ar"
+    )
+    check_signal_stable(
+      fetch_port.w.ready,
+      fetch_port.w.valid,
+      Cat(
+        fetch_port.w.data,
+        fetch_port.w.last,
+        fetch_port.w.strb
+      ),
+      "IFU.w"
+    )
+    check_signal_stable(
+      fetch_port.aw.ready,
+      fetch_port.aw.valid,
+      Cat(
+        fetch_port.aw.addr,
+        fetch_port.aw.burst,
+        fetch_port.aw.id,
+        fetch_port.aw.len,
+        fetch_port.aw.size
+      ),
+      "IFU.aw"
+    )
+    when(r_fire) {
+      assert(fetch_port.r.last, "lsu.axi.rlast is not set")
+      assert(fetch_port.r.resp === "b00".U, "lsu.axi.rresp is not b00")
+      assert(fetch_port.r.id === "b1000".U, "lsu.axi.rid is not b1000")
+    }
+    when(b_fire) {
+      assert(fetch_port.b.resp === 0.U, "lsu.axi.bresp is not 0")
+      assert(fetch_port.b.id === "b1000".U)
 
-      when(r_fire) {
-        assert(fetch_port.r.last, "lsu.axi.rlast is not set")
-        assert(fetch_port.r.resp === "b00".U, "lsu.axi.rresp is not b00")
-        assert(fetch_port.r.id === "b1000".U, "lsu.axi.rid is not b1000")
-      }
-      when(b_fire) {
-        assert(fetch_port.b.resp === 0.U, "lsu.axi.bresp is not 0")
-        assert(fetch_port.b.id === "b1000".U)
-      }
     }
   }
 }

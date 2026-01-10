@@ -51,12 +51,24 @@ class IFU() extends Module {
   out.bits.pc := in.pc
 
   block(AXIAssertLayer) {
-    withDisable(Disable.Never) {
-      when(r_fire) {
-        assert(fetch_port.r.last, "ifu.axi.rlast is not set")
-        assert(fetch_port.r.resp === "b00".U, "ifu.axi.rresp is not b00")
-        assert(fetch_port.r.id === "b0000".U, "ifu.axi.rid is not b0000")
-      }
+    check_signal_stable(
+      fetch_port.ar.ready,
+      fetch_port.ar.valid,
+      Cat(
+        fetch_port.ar.addr,
+        fetch_port.ar.burst,
+        fetch_port.ar.id,
+        fetch_port.ar.len,
+        fetch_port.ar.size
+      ),
+      "IFU.ar"
+    )
+    assert(!fetch_port.aw.valid && !fetch_port.w.valid, "ifu should not write")
+    when(r_fire) {
+      assert(fetch_port.r.last, "ifu.axi.rlast is not set")
+      assert(fetch_port.r.resp === "b00".U, "ifu.axi.rresp is not b00")
+      assert(fetch_port.r.id === "b0000".U, "ifu.axi.rid is not b0000")
+
     }
   }
 }

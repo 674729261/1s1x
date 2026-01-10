@@ -102,3 +102,24 @@ object set_flipped_AXIfull_zero {
     axi.b.id := 0.U
   }
 }
+
+object check_signal_stable {
+  def apply(ready: Bool, valid: Bool, signals: UInt, module_name: String) = {
+    val sIDLE :: sVALID :: Nil = Enum(2)
+    val state = RegInit(sIDLE)
+    val latched = RegEnable(signals, 0.U, state === sIDLE && valid)
+    state := MuxLookup(state, sIDLE)(
+      Seq(
+        sIDLE -> Mux(valid && !ready, sVALID, sIDLE),
+        sVALID -> Mux(ready, sIDLE, sVALID)
+      )
+    )
+    when(state === sVALID) {
+      assert(valid, "In " + module_name + " valid dropped before fire")
+      assert(
+        latched === signals,
+        "In " + module_name + " signals changed before fire"
+      )
+    }
+  }
+}
