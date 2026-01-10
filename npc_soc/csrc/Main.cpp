@@ -14,7 +14,6 @@
 #include <memory>
 #include <nvboard.h>
 #include <print>
-#include <type_traits>
 #include <verilated.h>
 #include <verilated_vcd_c.h>
 
@@ -62,7 +61,7 @@ int simulate(int argc, char *argv[], Config config) {
     nvboard_init();
   }
   ref.reset(*dut);
-  dut.reset();
+  dut->reset();
   clear_performance_count();
   bool difftest_state = false;
   auto start_time = std::chrono::steady_clock::now();
