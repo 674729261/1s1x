@@ -64,8 +64,13 @@ class Inst_Retire extends ExtModule {
   val pc = IO(Input(UInt(32.W)))
 }
 
-class ysyx_25080216(performance_counter: Boolean, axiasset: Boolean)
-    extends Module {
+object Verifying extends Layer(LayerConfig.Inline)
+
+class ysyx_25080216(
+    performance_counter: Boolean,
+    axiasset: Boolean,
+    verifying: Boolean
+) extends Module {
   val io = IO(new Bundle {
     val interrupt = Input(Bool())
     val master = new AXI_Flatten
@@ -73,34 +78,37 @@ class ysyx_25080216(performance_counter: Boolean, axiasset: Boolean)
   })
   if (performance_counter) enable(PerformanceCounterLayer)
   if (axiasset) enable(AXIAssertLayer)
+  if (verifying) enable(Verifying)
   val cpu = Module(
     new CPU_Core(
       init_pc = "h30000000".U(32.W),
       performance_counter = performance_counter
     )
   )
-  val ebreaker = Module(new Ebreaker)
-  val axi_checker = Module(new AXI_Checker)
-  val inst_retire = Module(new Inst_Retire)
 
-  inst_retire.clock := clock
-  inst_retire.reset := reset
-  inst_retire.pc := cpu.io.pc
-  inst_retire.retire := cpu.io.ok_to_step
-  inst_retire.inst := 0.U(32.W)
+  block(Verifying) {
+    val ebreaker = Module(new Ebreaker)
+    val axi_checker = Module(new AXI_Checker)
+    val inst_retire = Module(new Inst_Retire)
+    inst_retire.clock := clock
+    inst_retire.reset := reset
+    inst_retire.pc := cpu.io.pc
+    inst_retire.retire := cpu.io.ok_to_step
+    inst_retire.inst := 0.U(32.W)
 
-  axi_checker.clock := clock
-  axi_checker.reset := reset
-  axi_checker.bvalid := io.master.bvalid
-  axi_checker.bready := io.master.bready
-  axi_checker.bresp := io.master.bresp
-  axi_checker.rvalid := io.master.rvalid
-  axi_checker.rready := io.master.rready
-  axi_checker.rresp := io.master.rresp
+    axi_checker.clock := clock
+    axi_checker.reset := reset
+    axi_checker.bvalid := io.master.bvalid
+    axi_checker.bready := io.master.bready
+    axi_checker.bresp := io.master.bresp
+    axi_checker.rvalid := io.master.rvalid
+    axi_checker.rready := io.master.rready
+    axi_checker.rresp := io.master.rresp
 
-  ebreaker.clock := clock
-  ebreaker.reset := reset
-  ebreaker.ebreak := cpu.io.ebreak
+    ebreaker.clock := clock
+    ebreaker.reset := reset
+    ebreaker.ebreak := cpu.io.ebreak
+  }
 
   io.master.awvalid := cpu.io.axi_bus.aw.valid
   io.master.awaddr := cpu.io.axi_bus.aw.addr

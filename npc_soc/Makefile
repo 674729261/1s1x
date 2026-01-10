@@ -38,7 +38,7 @@ V_CXXFLAGS += -CFLAGS "$(VERILATOR_CFLAGS) -std=c++23 -I$(SOC_NPC_HOME)/include 
 -LDFLAGS "-lSDL2 -lSDL2_image -lSDL2_ttf" 
 # VERILATORFLAGS += --noassert --trace --no-coverage --x-assign fast --x-initial fast -O3 --threads 1 --cc --exe --build -j 8 
 VERILATORFLAGS += --autoflush -I$(SOC_HOME)/perip/uart16550/rtl -I$(SOC_HOME)/perip/spi/rtl --trace \
---timescale "1ns/1ns" --no-timing -O3 --threads 1 --cc --exe --build -j 8 
+--timescale "1ns/1ns" --no-timing -O3 --threads 1 --cc --exe --build -j 8 '-Dlayer$$Verifying'
 VERILATOR_DISABLE_WARNINGS += -Wno-UNUSEDSIGNAL -Wno-DECLFILENAME -Wno-SYNCASYNCNET -Wno-PINCONNECTEMPTY \
 -Wno-ASSIGNDLY -Wno-DEFPARAM -Wno-UNUSEDPARAM -Wno-PROCASSINIT -Wno-UNOPTFLAT
 
