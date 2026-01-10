@@ -9,6 +9,7 @@
 #include <format>
 #include <fstream>
 #include <my_utils.h>
+#include <ostream>
 #include <stdexcept>
 // std::ofstream ref_trace_file;
 struct Ref {
@@ -274,11 +275,11 @@ inline void Ref::step() {
   try_this("??????? ????? ????? 001 ????? 11100 11", csrrw,
            uint32_t csr = inst >> 20;
            uint32_t &which = csr_id(csr); cpu.gpr[d.dst_id] = which;
-           which = cpu.gpr[d.src1_id];);
+           which = cpu.gpr[d.src1_id]; std::println("{:08x}", cpu.pc));
   try_this("??????? ????? ????? 010 ????? 11100 11", csrrs,
            uint32_t csr = inst >> 20;
            uint32_t &which = csr_id(csr); cpu.gpr[d.dst_id] = which;
-           which = which | cpu.gpr[d.src1_id]);
+           which = which | cpu.gpr[d.src1_id]; std::println("{:08x}", cpu.pc));
   try_this("??????? ????? ????? ??? ????? ????? ??", invalid,
            log_and_throw<std::logic_error>(
                "Encountered invalid instruction {:#010x} @PC={:#010x}", inst,
