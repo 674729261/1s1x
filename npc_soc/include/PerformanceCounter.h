@@ -1,8 +1,5 @@
 #pragma once
-#include "my_utils.h"
-#include <algorithm>
 #include <chrono>
-#include <ranges>
 #include <spdlog/spdlog.h>
 
 struct InstTypeItem {
@@ -45,7 +42,7 @@ inline void display_performance(auto start_time, auto end_time) {
 
   spdlog::info("------------Instruction Type Statistics------------");
   for (InstTypeItem &item : inst_type_event) {
-    spdlog::info("{:20} : {}", item.name, item.count);
+    spdlog::info("{:40} : {}", item.name, item.count);
   }
   spdlog::info("---------------------------------------------------");
 
