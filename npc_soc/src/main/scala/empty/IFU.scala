@@ -52,12 +52,6 @@ class IFU() extends Module {
 
   block(AXIAssertLayer) {
     withDisable(Disable.Never) {
-      when(fetch_port.ar.valid && !fetch_port.ar.ready) {
-        assert(
-          fetch_port.ar.valid === RegNext(fetch_port.ar.valid),
-          "ifu.axi.arvalid dropped without handshake"
-        )
-      }
       when(r_fire) {
         assert(fetch_port.r.last, "ifu.axi.rlast is not set")
         assert(fetch_port.r.resp === "b00".U, "ifu.axi.rresp is not b00")

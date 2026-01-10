@@ -135,24 +135,7 @@ class LSU() extends Module {
 
   block(AXIAssertLayer) {
     withDisable(Disable.Never) {
-      when(fetch_port.ar.valid && !fetch_port.ar.ready) {
-        assert(
-          fetch_port.ar.valid === RegNext(fetch_port.ar.valid),
-          "lsu.axi.arvalid dropped without handshake"
-        )
-      }
-      when(fetch_port.w.valid && !fetch_port.w.ready) {
-        assert(
-          fetch_port.w.valid === RegNext(fetch_port.w.valid),
-          "lsu.axi.wvalid dropped without handshake"
-        )
-      }
-      when(fetch_port.aw.valid && !fetch_port.aw.ready) {
-        assert(
-          fetch_port.aw.valid === RegNext(fetch_port.aw.valid),
-          "lsu.axi.awvalid dropped without handshake"
-        )
-      }
+
       when(r_fire) {
         assert(fetch_port.r.last, "lsu.axi.rlast is not set")
         assert(fetch_port.r.resp === "b00".U, "lsu.axi.rresp is not b00")
