@@ -1,4 +1,5 @@
 #include <PerformanceCounter.h>
+#include <algorithm>
 #include <array>
 long long ifu_event;
 long long lsu_event;
@@ -48,11 +49,17 @@ enum {
 };
 extern "C" void notify_ifu_r_event() {
   ifu_event++;
-  sum_ifu_fetch_delay += dut->sim_time - last_ifu_time;
+  long long delay = dut->sim_time - last_ifu_time;
+  sum_ifu_fetch_delay += delay;
+  max_ifu_fetch_delay = std::max(max_ifu_fetch_delay, delay);
+  min_ifu_fetch_delay = std::min(min_ifu_fetch_delay, delay);
 }
 extern "C" void notify_lsu_r_event() {
   lsu_event++;
-  sum_lsu_fetch_delay += dut->sim_time - last_lsu_time;
+  long long delay = dut->sim_time - last_ifu_time;
+  sum_lsu_fetch_delay += delay;
+  max_lsu_fetch_delay = std::max(max_lsu_fetch_delay, delay);
+  min_lsu_fetch_delay = std::min(min_lsu_fetch_delay, delay);
 }
 extern "C" void notify_ifu_ar_event() { last_ifu_time = dut->sim_time; }
 extern "C" void notify_lsu_ar_event() { last_lsu_time = dut->sim_time; }

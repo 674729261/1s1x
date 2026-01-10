@@ -34,6 +34,13 @@ inline void clear_performance_count() {
   inst_count = 0;
   clock_count = 0;
 
+  sum_ifu_fetch_delay = 0;
+  min_ifu_fetch_delay = 0;
+  max_ifu_fetch_delay = 1145141919810;
+  sum_lsu_fetch_delay = 0;
+  min_lsu_fetch_delay = 0;
+  max_lsu_fetch_delay = 1145141919810;
+
   for (InstTypeItem &item : inst_type_event)
     item.count = 0;
 }
