@@ -73,7 +73,7 @@ $(NXDC_CPP): $(NXDC)
 	mkdir -p $(NXDC_CPP_PATH) || true
 	$(PYTHON) $(NVBOARD_HOME)/scripts/auto_pin_bind.py $(NXDC) $(NXDC_CPP)
 
-sim: VERILATORFLAGS += '-Dlayer$PerformanceCounterLayer'
+sim: VERILATORFLAGS += -Dlayer\$PerformanceCounterLayer
 sim: npc
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
 	$(BIN) --image $(PROG) --log $(LOG_FILE) --difftest
