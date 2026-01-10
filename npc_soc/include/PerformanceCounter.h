@@ -16,7 +16,11 @@ extern long long wbu_event;
 extern long long inst_count;
 extern long long clock_count;
 extern long long sum_ifu_fetch_delay;
+extern long long min_ifu_fetch_delay;
+extern long long max_ifu_fetch_delay;
 extern long long sum_lsu_fetch_delay;
+extern long long min_lsu_fetch_delay;
+extern long long max_lsu_fetch_delay;
 extern std::array<InstTypeItem, 13> inst_type_event;
 
 extern std::unique_ptr<Dut> dut;
@@ -45,11 +49,13 @@ inline void display_performance(auto start_time, auto end_time) {
   spdlog::info("Total idu events : {}", idu_event);
   spdlog::info("Total wbu events : {}", wbu_event);
   if (ifu_event > 0)
-    spdlog::info("Average IFU delay : {:.2f}",
-                 static_cast<double>(sum_ifu_fetch_delay) / ifu_event);
+    spdlog::info("Average/Min/Max IFU delay : {:.2f}/{}/{}",
+                 static_cast<double>(sum_ifu_fetch_delay) / ifu_event,
+                 min_ifu_fetch_delay, max_ifu_fetch_delay);
   if (lsu_event > 0)
-    spdlog::info("Average LSU delay : {:.2f}",
-                 static_cast<double>(sum_lsu_fetch_delay) / lsu_event);
+    spdlog::info("Average/Min/Max LSU delay : {:.2f}/{}/{}",
+                 static_cast<double>(sum_lsu_fetch_delay) / lsu_event,
+                 min_lsu_fetch_delay, max_lsu_fetch_delay);
 
   spdlog::info("------------Instruction Type Statistics------------");
   long long sum_recorded_inst = 0;

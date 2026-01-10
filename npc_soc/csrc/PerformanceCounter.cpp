@@ -8,7 +8,11 @@ long long wbu_event;
 long long inst_count;
 long long clock_count;
 long long sum_ifu_fetch_delay;
+long long min_ifu_fetch_delay;
+long long max_ifu_fetch_delay;
 long long sum_lsu_fetch_delay;
+long long min_lsu_fetch_delay;
+long long max_lsu_fetch_delay;
 static long long last_ifu_time;
 static long long last_lsu_time;
 
