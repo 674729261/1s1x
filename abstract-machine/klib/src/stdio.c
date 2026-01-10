@@ -437,10 +437,10 @@ int printf(const char *fmt, ...) {
 
   va_end(argp);
 }
-#endif
+// #endif
 
 int vsprintf(char *out, const char *fmt, va_list ap) {
   return __vasprintf(update_to_str, out, fmt, ap, -1);
 }
 
-// #endif
+#endif
