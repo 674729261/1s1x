@@ -6,8 +6,10 @@ long long wbu_event;
 long long inst_count;
 long long clock_count;
 
-extern "C" void notify_ifu_event() { ifu_event++; }
-extern "C" void notify_lsu_event() { lsu_event++; }
+extern "C" void notify_ifu_r_event() { ifu_event++; }
+extern "C" void notify_lsu_r_event() { lsu_event++; }
+extern "C" void notify_ifu_ar_event() {}
+extern "C" void notify_lsu_ar_event() {}
 extern "C" void notify_exu_event() { exu_event++; }
 extern "C" void notify_idu_event() { idu_event++; }
 extern "C" void notify_wbu_event() { wbu_event++; }
