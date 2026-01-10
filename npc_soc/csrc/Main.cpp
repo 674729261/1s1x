@@ -104,7 +104,7 @@ int simulate(int argc, char *argv[], Config config) {
   dut.print_all_gpr();
   auto elapsed =
       std::chrono::floor<std::chrono::milliseconds>(end_time - start_time);
-  spdlog::info("Total simulation time : {:%H:%M:%S}", elapsed);
+  spdlog::info("Total simulation time : {:%Hh %Mm %Ss}", elapsed);
   return result;
 }
 
