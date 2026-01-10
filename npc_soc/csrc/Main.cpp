@@ -14,7 +14,6 @@
 #include <memory>
 #include <nvboard.h>
 #include <print>
-#include <type_traits>
 #include <verilated.h>
 #include <verilated_vcd_c.h>
 

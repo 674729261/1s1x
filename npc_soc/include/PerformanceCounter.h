@@ -44,10 +44,12 @@ inline void display_performance(auto start_time, auto end_time) {
   spdlog::info("Total exu events : {}", exu_event);
   spdlog::info("Total idu events : {}", idu_event);
   spdlog::info("Total wbu events : {}", wbu_event);
-  spdlog::info("Average IFU delay : {}",
-               static_cast<double>(sum_ifu_fetch_delay) / ifu_event);
-  spdlog::info("Average LSU delay : {}",
-               static_cast<double>(sum_lsu_fetch_delay) / lsu_event);
+  if (ifu_event > 0)
+    spdlog::info("Average IFU delay : {}",
+                 static_cast<double>(sum_ifu_fetch_delay) / ifu_event);
+  if (lsu_event > 0)
+    spdlog::info("Average LSU delay : {}",
+                 static_cast<double>(sum_lsu_fetch_delay) / lsu_event);
 
   spdlog::info("------------Instruction Type Statistics------------");
   long long sum_recorded_inst = 0;
