@@ -110,10 +110,10 @@ int simulate(int argc, char *argv[], Config config) {
 
   spdlog::info("Total simulated instructions : {}", inst_count);
   spdlog::info("Total simulated clock periods : {}", clock_count);
-  spdlog::info("Clocks per instruction : {:.3}",
+  spdlog::info("Clocks per instruction : {:.3f}",
                static_cast<double>(clock_count) / inst_count);
   spdlog::info("Total simulation time : {:%Hh %Mm %Ss}", elapsed);
-  spdlog::info("Simulation speed : {:.2} clocks/s , {:.2} insts/s",
+  spdlog::info("Simulation speed : {:.2f} clocks/s , {:.2f} insts/s",
                static_cast<double>(clock_count) / elapsed.count(),
                static_cast<double>(inst_count) / elapsed.count());
 
