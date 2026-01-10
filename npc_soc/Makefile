@@ -88,8 +88,8 @@ nvboard: $(NXDC_CPP) nvboard-archive npc
 sta: sbt
 	mkdir -p $(STA_DIR)/result || true
 	make -C $(STA_HOME) sta \
-	DESIGN=ysyx_25080216 SDC_FILE=$(SDC_FILE) \
-	CLK_FREQ_MHZ=400 CLK_PORT_NAME=clock O=$(STA_DIR)/result \
+	DESIGN=ysyx_25080216 SDC_FILE=$(SDC_FILE) PDK=nangate45 \
+	CLK_FREQ_MHZ=4000 CLK_PORT_NAME=clock O=$(STA_DIR)/result \
 	RTL_FILES="$(SVSRC)"
 
 

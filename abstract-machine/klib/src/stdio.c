@@ -411,18 +411,31 @@ int vsnprintf(char *out, size_t n, const char *fmt, va_list ap) {
   return __vasprintf(update_to_str, out, fmt, ap, n - 1);
 }
 
+#ifndef __ISA_NATIVE__
+#if defined(__ARCH_X86_NEMU)
+#define DEVICE_BASE 0x0
+#else
+#if defined(_SOC_)
+#define SERIAL_PORT 0x10000000
+#else
+#define DEVICE_BASE 0xa0000000
+#define MMIO_BASE 0xa0000000
+#define SERIAL_PORT (DEVICE_BASE + 0x00003f8)
+#endif
+#endif
+
 static char *update_to_serial(char *addr, char c, char *begin, size_t max_len) {
-  putch(c);
+  *(volatile char *)addr = c;
   return addr;
 }
 
 int printf(const char *fmt, ...) {
   va_list argp;
   va_start(argp, fmt);
-  return __vasprintf(update_to_serial, NULL, fmt, argp, -1);
-
+  return __vasprintf(update_to_serial, (char *)SERIAL_PORT, fmt, argp, -1);
   va_end(argp);
 }
+#endif
 
 int vsprintf(char *out, const char *fmt, va_list ap) {
   return __vasprintf(update_to_str, out, fmt, ap, -1);

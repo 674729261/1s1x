@@ -1,6 +1,6 @@
-#include "Blockchain.h"
 #include <am.h>
-#include <klib.h>
+#include <stdio.h>
+#include "Blockchain.h"
 
 int main(const char *args) {
   int difficulty = 3;
@@ -12,14 +12,14 @@ int main(const char *args) {
   ioe_init();
 
   Blockchain bChain(difficulty);
-  printf("Mining block 1...\n");
-  bChain.AddBlock(1, "Block 1 Data");
+	printf("Mining block 1...\n");
+	bChain.AddBlock(1, "Block 1 Data");
 
-  printf("Mining block 2...\n");
-  bChain.AddBlock(2, "Block 2 Data");
+	printf("Mining block 2...\n");
+	bChain.AddBlock(2, "Block 2 Data");
 
-  printf("Mining block 3...\n");
-  bChain.AddBlock(3, "Block 3 Data");
+	printf("Mining block 3...\n");
+	bChain.AddBlock(3, "Block 3 Data");
 
-  return 0;
+	return 0;
 }
