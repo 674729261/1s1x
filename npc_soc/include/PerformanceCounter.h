@@ -9,7 +9,7 @@ struct InstTypeItem {
 };
 
 extern long long ifu_event;
-extern long long lsu_event;
+extern long long lsu_read_event;
 extern long long exu_event;
 extern long long idu_event;
 extern long long wbu_event;
@@ -27,7 +27,7 @@ extern std::unique_ptr<Dut> dut;
 
 inline void clear_performance_count() {
   ifu_event = 0;
-  lsu_event = 0;
+  lsu_read_event = 0;
   exu_event = 0;
   idu_event = 0;
   wbu_event = 0;
@@ -51,7 +51,7 @@ inline void display_performance(auto start_time, auto end_time) {
 
   spdlog::info("Total simulated instructions : {}", inst_count);
   spdlog::info("Total ifu events : {}", ifu_event);
-  spdlog::info("Total lsu events : {}", lsu_event);
+  spdlog::info("Total lsu events : {}", lsu_read_event);
   spdlog::info("Total exu events : {}", exu_event);
   spdlog::info("Total idu events : {}", idu_event);
   spdlog::info("Total wbu events : {}", wbu_event);
@@ -59,9 +59,9 @@ inline void display_performance(auto start_time, auto end_time) {
     spdlog::info("Average/Min/Max IFU delay : {:.2f}/{}/{}",
                  static_cast<double>(sum_ifu_fetch_delay) / ifu_event,
                  min_ifu_fetch_delay, max_ifu_fetch_delay);
-  if (lsu_event > 0)
+  if (lsu_read_event > 0)
     spdlog::info("Average/Min/Max LSU delay : {:.2f}/{}/{}",
-                 static_cast<double>(sum_lsu_fetch_delay) / lsu_event,
+                 static_cast<double>(sum_lsu_fetch_delay) / lsu_read_event,
                  min_lsu_fetch_delay, max_lsu_fetch_delay);
 
   spdlog::info("------------Instruction Type Statistics------------");

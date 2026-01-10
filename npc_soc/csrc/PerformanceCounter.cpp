@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <array>
 long long ifu_event;
-long long lsu_event;
+long long lsu_read_event;
 long long exu_event;
 long long idu_event;
 long long wbu_event;
@@ -55,7 +55,7 @@ extern "C" void notify_ifu_r_event() {
   min_ifu_fetch_delay = std::min(min_ifu_fetch_delay, delay);
 }
 extern "C" void notify_lsu_r_event() {
-  lsu_event++;
+  lsu_read_event++;
   long long delay = dut->sim_time - last_lsu_time;
   sum_lsu_fetch_delay += delay;
   max_lsu_fetch_delay = std::max(max_lsu_fetch_delay, delay);
