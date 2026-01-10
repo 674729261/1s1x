@@ -7,6 +7,10 @@ long long idu_event;
 long long wbu_event;
 long long inst_count;
 long long clock_count;
+long long sum_ifu_fetch_delay;
+long long sum_lsu_fetch_delay;
+static long long last_ifu_time;
+static long long last_lsu_time;
 
 std::array<InstTypeItem, 13> inst_type_event = {
     {{0, "Arithmetic immediate"},
@@ -38,10 +42,16 @@ enum {
   TYPE_mret,
   TYPE_csrop
 };
-extern "C" void notify_ifu_r_event() { ifu_event++; }
-extern "C" void notify_lsu_r_event() { lsu_event++; }
-extern "C" void notify_ifu_ar_event() {}
-extern "C" void notify_lsu_ar_event() {}
+extern "C" void notify_ifu_r_event() {
+  ifu_event++;
+  sum_ifu_fetch_delay += dut->sim_time - last_ifu_time;
+}
+extern "C" void notify_lsu_r_event() {
+  lsu_event++;
+  sum_lsu_fetch_delay += dut->sim_time - last_lsu_time;
+}
+extern "C" void notify_ifu_ar_event() { last_ifu_time = dut->sim_time; }
+extern "C" void notify_lsu_ar_event() { last_lsu_time = dut->sim_time; }
 extern "C" void notify_exu_event() { exu_event++; }
 extern "C" void notify_idu_event() { idu_event++; }
 extern "C" void notify_wbu_event() { wbu_event++; }

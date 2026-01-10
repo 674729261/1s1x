@@ -1,4 +1,5 @@
 #pragma once
+#include "DUT.h"
 #include <chrono>
 #include <spdlog/spdlog.h>
 
@@ -14,7 +15,11 @@ extern long long idu_event;
 extern long long wbu_event;
 extern long long inst_count;
 extern long long clock_count;
+extern long long sum_ifu_fetch_delay;
+extern long long sum_lsu_fetch_delay;
 extern std::array<InstTypeItem, 13> inst_type_event;
+
+extern std::unique_ptr<Dut> dut;
 
 inline void clear_performance_count() {
   ifu_event = 0;
@@ -39,6 +44,10 @@ inline void display_performance(auto start_time, auto end_time) {
   spdlog::info("Total exu events : {}", exu_event);
   spdlog::info("Total idu events : {}", idu_event);
   spdlog::info("Total wbu events : {}", wbu_event);
+  spdlog::info("Average IFU delay : {}",
+               static_cast<double>(sum_ifu_fetch_delay) / ifu_event);
+  spdlog::info("Average LSU delay : {}",
+               static_cast<double>(sum_lsu_fetch_delay) / lsu_event);
 
   spdlog::info("------------Instruction Type Statistics------------");
   long long sum_recorded_inst = 0;

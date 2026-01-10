@@ -4,10 +4,8 @@
 #include "Setup.h"
 #include <InstPattern/InstPattern.h>
 #include <VirtualBus.h>
-#include <algorithm>
 #include <cstdint>
 #include <format>
-#include <fstream>
 #include <my_utils.h>
 #include <stdexcept>
 // std::ofstream ref_trace_file;

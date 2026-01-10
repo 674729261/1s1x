@@ -14,12 +14,14 @@
 #include <memory>
 #include <nvboard.h>
 #include <print>
+#include <type_traits>
 #include <verilated.h>
 #include <verilated_vcd_c.h>
 
 using std::string;
 
-bool retire;
+std::unique_ptr<Dut> dut;
+static bool retire;
 
 extern "C" void notify_retire(int32_t pc, int32_t inst) { retire = true; }
 
@@ -53,35 +55,35 @@ int simulate(int argc, char *argv[], Config config) {
 
   Verilated::traceEverOn(true);
 
-  Dut dut(config, contextp.get());
-  Ref ref(config, dut);
+  dut = std::make_unique<Dut>(config, contextp.get());
+  Ref ref(config, *dut);
   if (config.nvboard) {
-    nvboard_bind_all_pins(dut.top.get());
+    nvboard_bind_all_pins(dut->top.get());
     nvboard_init();
   }
-  ref.reset(dut);
+  ref.reset(*dut);
   dut.reset();
   clear_performance_count();
   bool difftest_state = false;
   auto start_time = std::chrono::steady_clock::now();
   while (!contextp->gotFinish()) {
     retire = false;
-    if (dut.top->rootp
+    if (dut->top->rootp
             ->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__reset) {
-      ref.reset(dut);
+      ref.reset(*dut);
       ref.sync_state();
       clear_performance_count();
     }
     if (config.nvboard)
       nvboard_update();
     clock_count++;
-    dut.step_one_cycle();
+    dut->step_one_cycle();
 
     if (retire) {
       inst_count++;
       if (config.difftest) {
         ref.step();
-        difftest_state = check_difftest(dut, ref);
+        difftest_state = check_difftest(*dut, ref);
         if (difftest_state)
           break;
       }
@@ -91,11 +93,11 @@ int simulate(int argc, char *argv[], Config config) {
 
   int result;
   if (contextp->gotFinish()) {
-    if (dut.getGPR(10) == 0) {
+    if (dut->getGPR(10) == 0) {
       spdlog::info("HIT GOOD TRAP");
       result = 0;
     } else {
-      spdlog::warn("HIT BAD TRAP with a0 = {:010x}", dut.getGPR(10));
+      spdlog::warn("HIT BAD TRAP with a0 = {:010x}", dut->getGPR(10));
       result = -1;
     }
   } else if (difftest_state) {
@@ -105,7 +107,7 @@ int simulate(int argc, char *argv[], Config config) {
     spdlog::warn("FAILED TO HALT");
     result = -3;
   }
-  dut.print_all_gpr();
+  dut->print_all_gpr();
   display_performance(start_time, end_time);
 
   return result;
