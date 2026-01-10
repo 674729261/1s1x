@@ -31,8 +31,8 @@ module PerformanceCounter (
     end else begin
       if (ifu_rready && ifu_rvalid) notify_ifu_event();
       if (lsu_rready && lsu_rvalid) notify_lsu_event();
-      if (exu_clear && exu_valid) notify_exu_event();
-      if (idu_clear && idu_valid) notify_idu_event();
+      if (!exu_clear && exu_valid) notify_exu_event();
+      if (!idu_clear && idu_valid) notify_idu_event();
 
       exu_clear <= next_clear(exu_clear, exu_ready, exu_valid);
       idu_clear <= next_clear(idu_clear, idu_ready, idu_valid);
