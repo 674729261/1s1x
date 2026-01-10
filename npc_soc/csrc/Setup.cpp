@@ -1,7 +1,5 @@
 #include "Setup.h"
-#include "my_utils.h"
 #include "spdlog/spdlog.h"
-using std::println, std::cerr;
 using std::string;
 
 void register_argparse(argparse::ArgumentParser &program) {
