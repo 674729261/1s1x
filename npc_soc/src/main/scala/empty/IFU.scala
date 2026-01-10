@@ -45,9 +45,9 @@ class IFU() extends Module {
   fetch_port.aw.id := "b0000".U(4.W)
   fetch_port.ar.id := "b0000".U(4.W)
   fetch_port.w.last := true.B
-  out.valid := state === sWAIT || r_fire
+  out.valid := state === sWAIT
 
-  out.bits.inst := Mux(state === sWAIT_RESP, fetch_port.r.data, inst_reg)
+  out.bits.inst := inst_reg
   out.bits.pc := in.pc
 
   block(AXIAssertLayer) {

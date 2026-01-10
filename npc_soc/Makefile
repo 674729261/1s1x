@@ -21,12 +21,14 @@ BIN = $(MDIR)/V$(TOPNAME)
 SV_FILELIST=generated_svsrc/filelist.f
 
 SVSRC_FILES = $(shell cat $(SV_FILELIST))
-SVSRC = $(patsubst %,generated_svsrc/%,$(SVSRC_FILES))
+SVSRC = $(patsubst %,$(SOC_NPC_HOME)/generated_svsrc/%,$(SVSRC_FILES))
 
 VERILATOR = verilator
 PYTHON = python
 
-
+STA_DIR = $(SOC_NPC_HOME)/sta
+SDC_FILE = $(STA_DIR)/npc.sdc
+SCRIPT_FILE = $(STA_DIR)/sta.tcl
 
 VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -Ofast   \
 -march=native -mtune=native \
@@ -38,7 +40,8 @@ V_CXXFLAGS += -CFLAGS "$(VERILATOR_CFLAGS) -std=c++23 -I$(SOC_NPC_HOME)/include 
 -LDFLAGS "-lSDL2 -lSDL2_image -lSDL2_ttf" 
 # VERILATORFLAGS += --noassert --trace --no-coverage --x-assign fast --x-initial fast -O3 --threads 1 --cc --exe --build -j 8 
 VERILATORFLAGS += --autoflush -I$(SOC_HOME)/perip/uart16550/rtl -I$(SOC_HOME)/perip/spi/rtl --trace \
---timescale "1ns/1ns" --no-timing -O3 --threads 1 --cc --exe --build -j 8 '-Dlayer$$Verifying'
+--timescale "1ns/1ns" --no-timing -O3 --threads 1 --cc --exe --build -j 8 \
+'-Dlayer$$Verifying' '-Dlayer$$PerformanceCounterLayer' '-Dlayer$$AXIAssertLayer'
 VERILATOR_DISABLE_WARNINGS += -Wno-UNUSEDSIGNAL -Wno-DECLFILENAME -Wno-SYNCASYNCNET -Wno-PINCONNECTEMPTY \
 -Wno-ASSIGNDLY -Wno-DEFPARAM -Wno-UNUSEDPARAM -Wno-PROCASSINIT -Wno-UNOPTFLAT
 
@@ -73,7 +76,6 @@ $(NXDC_CPP): $(NXDC)
 	mkdir -p $(NXDC_CPP_PATH) || true
 	$(PYTHON) $(NVBOARD_HOME)/scripts/auto_pin_bind.py $(NXDC) $(NXDC_CPP)
 
-sim: VERILATORFLAGS += '-Dlayer$$PerformanceCounterLayer' '-Dlayer$$AXIAssertLayer'
 sim: npc
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
 	$(BIN) --image $(PROG) --log $(LOG_FILE) --difftest
@@ -83,8 +85,14 @@ nvboard: $(NXDC_CPP) nvboard-archive npc
 	$(call git_commit, "sim RTL with nvboard")
 	$(BIN) --image $(PROG) --log $(LOG_FILE) --difftest --nvboard
 
-valgrind: PROG = test_progs/add.bin
-valgrind: ELF = test_progs/add.elf
+sta: sbt
+	mkdir -p $(STA_DIR)/result || true
+	make -C $(STA_HOME) sta \
+	DESIGN=ysyx_25080216 SDC_FILE=$(SDC_FILE) \
+	CLK_FREQ_MHZ=400 CLK_PORT_NAME=clock O=$(STA_DIR)/result \
+	RTL_FILES="$(SVSRC)"
+
+
 valgrind: FAST_FLAGS = -O0 -g
 valgrind: VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -O0 -g
 valgrind: MDIR = ./build/valgrind/
@@ -108,9 +116,13 @@ clean:
 	rm -rf generated_svsrc/*
 
 clean_log:
-	rm -rf log/*
+	rm -rf $(SOC_NPC_HOME)/log/*
+
+clean_sta:
+	rm -rf $(STA_DIR)/result/*
 
 
-.PHONY: npc sim sim_full_speed sim_ftracer sim_swap clean sbt gdb valgrind
+
+.PHONY: npc sim nvboard sta clean clean_log clean_sta sbt gdb valgrind
 
 include ../Makefile

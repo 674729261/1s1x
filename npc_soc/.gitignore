@@ -34,3 +34,6 @@ thirdparty/**/*
 !thirdparty/Makefile
 log
 replxx_history
+!*.sdc
+!*.tcl
+/sta/result

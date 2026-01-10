@@ -18,12 +18,13 @@ object AddMain extends App {
       "generated_svsrc"
     ),
     Array(
+      "--disable-all-randomization",
       "--disable-layers=Verification",
       "--lowering-options=" + List(
         // make yosys happy
         // see https://github.com/llvm/circt/blob/main/docs/VerilogGeneration.md
         "disallowLocalVariables",
-        // "disallowPackedArrays",
+        "disallowPackedArrays",
         "locationInfoStyle=wrapInAtSquareBracket"
       ).reduce(_ + "," + _)
     )
