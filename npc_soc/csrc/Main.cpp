@@ -63,6 +63,7 @@ int simulate(int argc, char *argv[], Config config) {
   dut.reset();
   bool difftest_state = false;
   auto start_time = std::chrono::steady_clock::now();
+  long long inst_count = 0, clock_count = 0;
   while (!contextp->gotFinish()) {
     retire = false;
     if (dut.top->rootp
@@ -72,9 +73,11 @@ int simulate(int argc, char *argv[], Config config) {
     }
     if (config.nvboard)
       nvboard_update();
+    clock_count++;
     dut.step_one_cycle();
 
     if (retire) {
+      inst_count++;
       if (config.difftest) {
         ref.step();
         difftest_state = check_difftest(dut, ref);
@@ -105,6 +108,11 @@ int simulate(int argc, char *argv[], Config config) {
   auto elapsed =
       std::chrono::floor<std::chrono::milliseconds>(end_time - start_time);
   spdlog::info("Total simulation time : {:%Hh %Mm %Ss}", elapsed);
+  spdlog::info("Total simulated instructions : {}", inst_count);
+  spdlog::info("Total simulated clock periods : {}", clock_count);
+  spdlog::info("Clocks per instruction : {:.3}",
+               static_cast<double>(clock_count) / inst_count);
+
   return result;
 }
 
