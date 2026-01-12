@@ -92,8 +92,11 @@ sta: sbt
 	CLK_FREQ_MHZ=4000 CLK_PORT_NAME=clock O=$(STA_DIR)/result \
 	RTL_FILES="$(SVSRC)"
 
+perf: LOG_FILE = /tmp/perf.log
 perf: npc
-	$(BIN) --image $(PROG) --log $(LOG_FILE) --difftest
+	make -C $(AM_HOME)/../am-kernels/benchmarks/microbench ARCH=riscv32e-soc run mainargs=test LOG_FILE=$(LOG_FILE)
+
+	
 
 
 valgrind: FAST_FLAGS = -O0 -g
