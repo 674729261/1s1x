@@ -51,7 +51,7 @@ class LSU() extends Module {
     out_ar,
     Seq(
       ar_fire -> true.B,
-      r_fire -> false.B
+      cpu_out_fire -> false.B
     )
   )
   val has_r = RegInit(false.B)
@@ -68,14 +68,14 @@ class LSU() extends Module {
     out_aw,
     Seq(
       aw_fire -> true.B,
-      b_fire -> false.B
+      cpu_out_fire -> false.B
     )
   )
   out_w := MuxCase(
     out_w,
     Seq(
       w_fire -> true.B,
-      b_fire -> false.B
+      cpu_out_fire -> false.B
     )
   )
   val has_b = RegInit(false.B)
@@ -155,7 +155,7 @@ class LSU() extends Module {
         fetch_port.ar.len,
         fetch_port.ar.size
       ),
-      "IFU.ar"
+      "LSU.ar"
     )
     check_signal_stable(
       fetch_port.w.ready,
@@ -165,7 +165,7 @@ class LSU() extends Module {
         fetch_port.w.last,
         fetch_port.w.strb
       ),
-      "IFU.w"
+      "LSU.w"
     )
     check_signal_stable(
       fetch_port.aw.ready,
@@ -177,7 +177,7 @@ class LSU() extends Module {
         fetch_port.aw.len,
         fetch_port.aw.size
       ),
-      "IFU.aw"
+      "LSU.aw"
     )
     when(r_fire) {
       assert(fetch_port.r.last, "lsu.axi.rlast is not set")
