@@ -64,7 +64,11 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
   val lsu = Module(new LSU)
   val wbu = Module(new WBU)
 
-  val pc = RegNext(next = Cat(wbu.out.dnpc(31, 1), 0.U(1.W)), init = init_pc)
+  val pc = RegEnable(
+    Cat(wbu.out.dnpc(31, 1), 0.U(1.W)),
+    init_pc,
+    wbu.out.ok_to_step
+  )
   val gpr = Module(new GPR(CNT = 32, BITWIDTH = 32))
   val csrBank = Module(new CSR)
 
