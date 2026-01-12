@@ -138,7 +138,7 @@ class LSU() extends Module {
   signals_nxt.itype := in.bits.itype
   signals_nxt.write_info := in.bits.write_info
 
-  val signals_r = RegEnable(signals_nxt, cpu_in_fire && no_mem_access)
+  val signals_r = RegEnable(signals_nxt, in.valid && no_mem_access)
   out.bits := signals_r
   val cpu_in_latched = RegInit(Bool(), false.B)
   cpu_in_latched := MuxCase(
