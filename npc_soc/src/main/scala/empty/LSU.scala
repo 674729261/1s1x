@@ -123,7 +123,7 @@ class LSU() extends Module {
   }
 
   out.valid := has_signal && ((should_mem_access_r && has_r) || (should_mem_access_w && has_b) || (!should_mem_access_r && !should_mem_access_w))
-  in.ready := should_signal_in_latch
+  in.ready := !has_signal
   block(AXIAssertLayer) {
     check_signal_stable(
       fetch_port.ar.ready,
