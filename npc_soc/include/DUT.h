@@ -43,7 +43,7 @@ struct Dut {
     // m_trace->dump(sim_time * 2);
     top->clock = 1;
     top->eval();
-    m_trace->dump(sim_time);
+    // m_trace->dump(sim_time * 2 + 1);
     sim_time++;
   }
 

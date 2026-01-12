@@ -92,6 +92,9 @@ sta: sbt
 	CLK_FREQ_MHZ=4000 CLK_PORT_NAME=clock O=$(STA_DIR)/result \
 	RTL_FILES="$(SVSRC)"
 
+perf:
+	
+
 
 valgrind: FAST_FLAGS = -O0 -g
 valgrind: VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -O0 -g
@@ -123,6 +126,6 @@ clean_sta:
 
 
 
-.PHONY: npc sim nvboard sta clean clean_log clean_sta sbt gdb valgrind
+.PHONY: npc sim nvboard sta clean clean_log clean_sta sbt gdb valgrind perf
 
 include ../Makefile

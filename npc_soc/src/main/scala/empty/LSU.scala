@@ -25,7 +25,9 @@ class LSU() extends Module {
   val should_mem_access_r = Wire(Bool())
   val should_mem_access_w = Wire(Bool())
 
-  val cpu_fire = out.valid && out.ready
+  val cpu_out_fire = out.valid && out.ready
+  val cpu_in_fire = in.valid && in.ready
+
   val aw_fire = fetch_port.aw.ready && fetch_port.aw.valid
   val w_fire = fetch_port.w.ready && fetch_port.w.valid
   val ar_fire = fetch_port.ar.ready && fetch_port.ar.valid
@@ -38,7 +40,7 @@ class LSU() extends Module {
     Seq(
       sIDLE_r -> Mux(should_mem_access_r && ar_fire, sWAIT_RESP_r, sIDLE_r),
       sWAIT_RESP_r -> Mux(r_fire, sWAIT_r, sWAIT_RESP_r),
-      sWAIT_r -> Mux(cpu_fire, sIDLE_r, sWAIT_r)
+      sWAIT_r -> Mux(cpu_out_fire, sIDLE_r, sWAIT_r)
     )
   )
 
@@ -49,21 +51,21 @@ class LSU() extends Module {
     out_aw,
     Seq(
       aw_fire -> true.B,
-      cpu_fire -> false.B
+      cpu_out_fire -> false.B
     )
   )
   out_w := MuxCase(
     out_w,
     Seq(
       w_fire -> true.B,
-      cpu_fire -> false.B
+      cpu_out_fire -> false.B
     )
   )
   has_b := MuxCase(
     has_b,
     Seq(
       b_fire -> true.B,
-      cpu_fire -> false.B
+      cpu_out_fire -> false.B
     )
   )
 
@@ -117,11 +119,11 @@ class LSU() extends Module {
   should_mem_access_r := in.bits.controls.is_ram_valid && !in.bits.controls.is_ram_wen && in.valid
   should_mem_access_w := in.bits.controls.is_ram_valid && in.bits.controls.is_ram_wen && in.valid
 
-  out.bits.pc := in.bits.pc
-  out.bits.controls := in.bits.controls
-  out.bits.itype := in.bits.itype
+  // out.bits.pc := in.bits.pc
+  // out.bits.controls := in.bits.controls
+  // out.bits.itype := in.bits.itype
+  // out.bits.write_info := in.bits.write_info
 
-  out.bits.write_info := in.bits.write_info
   when(in.bits.controls.is_gpr_wdata_from_ram) {
     out.bits.write_info.gpr_wdata := rdata_reg
   }
@@ -130,8 +132,25 @@ class LSU() extends Module {
   val load_finished = state_r === sWAIT_r
   val save_finished = out_aw && out_w && has_b
 
-  out.valid := no_mem_access || (should_mem_access_r && load_finished) || (should_mem_access_w && save_finished)
-  in.ready := cpu_fire
+  val signals_nxt = Wire(new MessageLSU2WBU)
+  signals_nxt.pc := in.bits.pc
+  signals_nxt.controls := in.bits.controls
+  signals_nxt.itype := in.bits.itype
+  signals_nxt.write_info := in.bits.write_info
+
+  val signals_r = RegEnable(signals_nxt, cpu_in_fire && no_mem_access)
+  out.bits := signals_r
+  val cpu_in_latched = RegInit(Bool(), false.B)
+  cpu_in_latched := MuxCase(
+    cpu_in_latched,
+    Seq(
+      (cpu_in_fire && no_mem_access) -> true.B,
+      (cpu_out_fire) -> false.B
+    )
+  )
+
+  out.valid := (no_mem_access && state_r === sWAIT_r) || (should_mem_access_r && load_finished) || (should_mem_access_w && save_finished)
+  in.ready := cpu_out_fire
 
   block(AXIAssertLayer) {
     check_signal_stable(
