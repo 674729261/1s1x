@@ -144,7 +144,7 @@ class LSU() extends Module {
   cpu_in_latched := MuxCase(
     cpu_in_latched,
     Seq(
-      (cpu_in_fire && no_mem_access) -> true.B,
+      (in.valid && no_mem_access) -> true.B,
       (cpu_out_fire) -> false.B
     )
   )
