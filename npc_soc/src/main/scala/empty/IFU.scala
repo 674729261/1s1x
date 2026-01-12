@@ -17,31 +17,40 @@ class IFU() extends Module {
   set_AXIfull_zero(fetch_port)
   val out = IO(DecoupledIO(new MessageIFU2IDU))
 
-  val sIDLE :: sWAIT_RESP :: sWAIT :: Nil = Enum(3)
-
-  val state = RegInit(sIDLE)
-
   val ar_fire = fetch_port.ar.valid && fetch_port.ar.ready
   val r_fire = fetch_port.r.valid && fetch_port.r.ready
 
-  state := MuxLookup(state, sIDLE)(
+  val out_ar = RegInit(Bool(), false.B)
+  val has_r = RegInit(Bool(), false.B)
+  val cpu_out_fire = out.valid && out.ready
+
+  out_ar := MuxCase(
+    out_ar,
     Seq(
-      sIDLE -> Mux(ar_fire, sWAIT_RESP, sIDLE),
-      sWAIT_RESP -> Mux(r_fire, sWAIT, sWAIT_RESP),
-      sWAIT -> Mux(out.ready, sIDLE, sWAIT)
+      ar_fire -> true.B,
+      cpu_out_fire -> false.B
     )
   )
 
+  has_r := MuxCase(
+    has_r,
+    Seq(
+      r_fire -> true.B,
+      cpu_out_fire -> false.B
+    )
+  )
+
+  fetch_port.ar.valid := !out_ar
+  fetch_port.r.ready := !has_r
   val inst_reg =
     RegEnable(fetch_port.r.data, r_fire)
 
-  fetch_port.ar.addr := Mux(state === sIDLE, in.pc, 12345.U(32.W))
-  fetch_port.ar.valid := state === sIDLE
-  fetch_port.r.ready := state === sWAIT_RESP
+  fetch_port.ar.addr := in.pc
+
   fetch_port.aw.id := "b0000".U(4.W)
   fetch_port.ar.id := "b0000".U(4.W)
   fetch_port.w.last := true.B
-  out.valid := state === sWAIT
+  out.valid := has_r
 
   out.bits.inst := inst_reg
   out.bits.pc := in.pc
