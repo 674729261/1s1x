@@ -25,7 +25,7 @@ class apb_delayer extends BlackBox {
 class APBDelayerChisel(ratio: Double = 6.87, scale_2pow: Long = 6)
     extends Module {
   val io = IO(new APBDelayerIO)
-  val countup_amount = math.round(ratio * math.pow(2.0, scale_2pow))
+  val countup_amount = math.round((ratio - 1.0) * math.pow(2.0, scale_2pow))
   val countdown_amount = (1 << scale_2pow)
   val counter = RegInit(UInt(32.W), 0.U)
   val sIDLE :: sWAIT :: sDELAY :: sRESP :: Nil = Enum(4)
