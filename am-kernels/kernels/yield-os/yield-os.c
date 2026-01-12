@@ -16,7 +16,7 @@ static void f(void *arg) {
     c++;
     putch("?AB"[(uintptr_t)arg > 2 ? 0 : (uintptr_t)arg]);
 	putch('\n');
-    for (int volatile i = 0; i < 100000; i++)
+    for (int volatile i = 0; i < 10000; i++)
       ;
     if (c == 50)
       halt(0);
