@@ -28,67 +28,80 @@ class EXU() extends Module {
 
   val out = IO(DecoupledIO(new MessageEXU2LSU))
 
-  out.bits.pc := in.bits.pc
-  out.bits.controls := in.bits.controls
-  out.bits.itype := in.bits.itype
+  val is_signal_in_latched = RegInit(Bool(), false.B)
+
+  val cpu_out_fire = out.ready && out.valid
+  val should_signal_in_latch = in.valid && !is_signal_in_latched
+  val signals_in_r = RegEnable(in.bits, should_signal_in_latch)
+  is_signal_in_latched := MuxCase(
+    is_signal_in_latched,
+    Seq(
+      should_signal_in_latch -> true.B,
+      cpu_out_fire -> false.B
+    )
+  )
+
+  out.bits.pc := signals_in_r.pc
+  out.bits.controls := signals_in_r.controls
+  out.bits.itype := signals_in_r.itype
 
   val alu = Module(new ALU(32))
   val branch = Module(new Branch(32))
 
   alu.io.A := Mux(
-    in.bits.controls.is_alu_a_pc,
-    in.bits.pc,
-    in.bits.sources.src1
+    signals_in_r.controls.is_alu_a_pc,
+    signals_in_r.pc,
+    signals_in_r.sources.src1
   )
   alu.io.B := Mux(
-    in.bits.controls.is_alu_b_reg,
-    in.bits.sources.src2,
-    in.bits.fields.imm
+    signals_in_r.controls.is_alu_b_reg,
+    signals_in_r.sources.src2,
+    signals_in_r.fields.imm
   )
-  alu.io.funct3 := in.bits.fields.funct3
-  alu.io.is_sub_sra := in.bits.controls.is_alu_sub_sra
-  alu.io.is_force_add := in.bits.controls.is_alu_force_add
+  alu.io.funct3 := signals_in_r.fields.funct3
+  alu.io.is_sub_sra := signals_in_r.controls.is_alu_sub_sra
+  alu.io.is_force_add := signals_in_r.controls.is_alu_force_add
 
   out.bits.write_info.alu_out := alu.io.out
 
-  branch.io.A := in.bits.sources.src1
-  branch.io.B := in.bits.sources.src2
-  branch.io.funct3 := in.bits.fields.funct3
+  branch.io.A := signals_in_r.sources.src1
+  branch.io.B := signals_in_r.sources.src2
+  branch.io.funct3 := signals_in_r.fields.funct3
 
-  out.bits.write_info.gpr_waddr := in.bits.fields.rd
+  out.bits.write_info.gpr_waddr := signals_in_r.fields.rd
 
-  val snpc = in.bits.pc + 4.U(32.W)
+  val snpc = signals_in_r.pc + 4.U(32.W)
 
   out.bits.write_info.gpr_wdata := Mux1H(
     Seq(
-      // in.bits.controls.is_gpr_wdata_from_ram -> fetch_port_in.bits.mem_rdata,
-      in.bits.controls.is_gpr_wdata_from_snpc -> snpc,
-      in.bits.controls.is_gpr_wdata_from_imm -> in.bits.fields.imm,
-      in.bits.controls.is_gpr_wdata_from_alu -> alu.io.out,
-      in.bits.controls.is_gpr_wdata_from_csr -> in.bits.sources.csr
+      // signals_in_r.controls.is_gpr_wdata_from_ram -> fetch_port_signals_in_r.mem_rdata,
+      signals_in_r.controls.is_gpr_wdata_from_snpc -> snpc,
+      signals_in_r.controls.is_gpr_wdata_from_imm -> signals_in_r.fields.imm,
+      signals_in_r.controls.is_gpr_wdata_from_alu -> alu.io.out,
+      signals_in_r.controls.is_gpr_wdata_from_csr -> signals_in_r.sources.csr
     )
   )
 
-  out.bits.write_info.mem_word := in.bits.sources.src2
+  out.bits.write_info.mem_word := signals_in_r.sources.src2
   out.bits.write_info.csr_wdata := Mux(
-    in.bits.controls.is_csr_masked,
-    in.bits.sources.src1 | in.bits.sources.csr,
-    in.bits.sources.src1
+    signals_in_r.controls.is_csr_masked,
+    signals_in_r.sources.src1 | signals_in_r.sources.csr,
+    signals_in_r.sources.src1
   )
-  out.bits.write_info.csr_addr := in.bits.fields.csr
+  out.bits.write_info.csr_addr := signals_in_r.fields.csr
 
-  val should_branch = in.bits.itype.is_branch && branch.io.jump
+  val should_branch = signals_in_r.itype.is_branch && branch.io.jump
 
   out.bits.write_info.dnpc := MuxCase(
-    in.bits.pc + 4.U(32.W),
+    signals_in_r.pc + 4.U(32.W),
     Seq(
       should_branch -> alu.io.out,
-      in.bits.itype.is_jal -> alu.io.out,
-      in.bits.itype.is_jalr -> alu.io.out,
-      in.bits.itype.is_ecall -> in.bits.sources.mtvec,
-      in.bits.itype.is_mret -> in.bits.sources.mepc
+      signals_in_r.itype.is_jal -> alu.io.out,
+      signals_in_r.itype.is_jalr -> alu.io.out,
+      signals_in_r.itype.is_ecall -> signals_in_r.sources.mtvec,
+      signals_in_r.itype.is_mret -> signals_in_r.sources.mepc
     )
   )
-  out.valid := in.valid
+  out.valid := is_signal_in_latched
   in.ready := out.ready
 }
