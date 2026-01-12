@@ -106,7 +106,8 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
   gpr.io.wdata := wbu.out.gpr_wdata
   gpr.io.wen := wbu.out.gpr_wen
 
-  csrBank.io.csr := wbu.out.csr_waddr
+  csrBank.io.csr_w := wbu.out.csr_waddr
+  csrBank.io.csr_r := idu.fetch_port_out.csr_raddr
   csrBank.io.cur_pc := wbu.out.csr_cur_pc
   csrBank.io.interruption := wbu.out.csr_interruption
   csrBank.io.wdata := wbu.out.csr_wdata

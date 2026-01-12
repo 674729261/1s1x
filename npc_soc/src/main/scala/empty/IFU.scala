@@ -27,11 +27,7 @@ class IFU() extends Module {
   state := MuxLookup(state, sIDLE)(
     Seq(
       sIDLE -> Mux(ar_fire, sWAIT_RESP, sIDLE),
-      sWAIT_RESP -> Mux(
-        r_fire,
-        sWAIT,
-        sWAIT_RESP
-      ),
+      sWAIT_RESP -> Mux(r_fire, sWAIT, sWAIT_RESP),
       sWAIT -> Mux(out.ready, sIDLE, sWAIT)
     )
   )

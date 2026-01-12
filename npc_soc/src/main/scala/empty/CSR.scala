@@ -5,7 +5,9 @@ import chisel3.util._
 
 class CSR extends Module {
   val io = IO(new Bundle {
-    val csr = Input(UInt(12.W))
+    val csr_w = Input(UInt(12.W))
+    val csr_r = Input(UInt(12.W))
+
     val wen = Input(Bool())
     val wdata = Input(UInt(32.W))
     val rdata = Output(UInt(32.W))
@@ -19,13 +21,21 @@ class CSR extends Module {
     val ok_to_step = Input(Bool())
   })
 
-  val is_mvendorid = io.csr === 0xf11.U(12.W)
-  val is_marchid = io.csr === 0xf12.U(12.W)
-  val is_mcycle = io.csr === 0xb00.U(12.W)
-  val is_mstatus = io.csr === 0x300.U(12.W)
-  val is_mcause = io.csr === 0x342.U(12.W)
-  val is_mtvec = io.csr === 0x305.U(12.W)
-  val is_mepc = io.csr === 0x341.U(12.W)
+  val is_mvendorid_r = io.csr_r === 0xf11.U(12.W)
+  val is_marchid_r = io.csr_r === 0xf12.U(12.W)
+  val is_mcycle_r = io.csr_r === 0xb00.U(12.W)
+  val is_mstatus_r = io.csr_r === 0x300.U(12.W)
+  val is_mcause_r = io.csr_r === 0x342.U(12.W)
+  val is_mtvec_r = io.csr_r === 0x305.U(12.W)
+  val is_mepc_r = io.csr_r === 0x341.U(12.W)
+
+  val is_mvendorid_w = io.csr_w === 0xf11.U(12.W)
+  val is_marchid_w = io.csr_w === 0xf12.U(12.W)
+  val is_mcycle_w = io.csr_w === 0xb00.U(12.W)
+  val is_mstatus_w = io.csr_w === 0x300.U(12.W)
+  val is_mcause_w = io.csr_w === 0x342.U(12.W)
+  val is_mtvec_w = io.csr_w === 0x305.U(12.W)
+  val is_mepc_w = io.csr_w === 0x341.U(12.W)
 
   val csr_mvendorid = 0x79737978.U(32.W)
   val csr_marchid = 0x17eb198.U(32.W)
@@ -33,32 +43,32 @@ class CSR extends Module {
   val mcycle_nxt = Wire(UInt(32.W))
   val csr_mcycle = RegNext(mcycle_nxt, 0.U(32.W))
   mcycle_nxt := Mux(
-    io.wen && is_mcycle,
+    io.wen && is_mcycle_w,
     io.wdata,
     Mux(io.ok_to_step, csr_mcycle + 1.U(32.W), csr_mcycle)
   )
 
-  val csr_mstatus = RegEnable(io.wdata, "h1800".U(32.W), io.wen && is_mstatus)
+  val csr_mstatus = RegEnable(io.wdata, "h1800".U(32.W), io.wen && is_mstatus_w)
   val csr_mcause =
     RegEnable(
       Mux(io.interruption, io.new_cause, io.wdata),
-      (io.wen && is_mcause) || io.interruption
+      (io.wen && is_mcause_w) || io.interruption
     )
-  val csr_mtvec = RegEnable(io.wdata, io.wen && is_mtvec)
+  val csr_mtvec = RegEnable(io.wdata, io.wen && is_mtvec_w)
   val csr_mepc = RegEnable(
     Mux(io.interruption, io.cur_pc, io.wdata),
-    (io.wen && is_mepc) || io.interruption
+    (io.wen && is_mepc_w) || io.interruption
   )
 
   io.rdata := Mux1H(
     Seq(
-      is_mvendorid -> csr_mvendorid,
-      is_marchid -> csr_marchid,
-      is_mcycle -> csr_mcycle,
-      is_mstatus -> csr_mstatus,
-      is_mcause -> csr_mcause,
-      is_mtvec -> csr_mtvec,
-      is_mepc -> csr_mepc
+      is_mvendorid_r -> csr_mvendorid,
+      is_marchid_r -> csr_marchid,
+      is_mcycle_r -> csr_mcycle,
+      is_mstatus_r -> csr_mstatus,
+      is_mcause_r -> csr_mcause,
+      is_mtvec_r -> csr_mtvec,
+      is_mepc_r -> csr_mepc
     )
   )
 
