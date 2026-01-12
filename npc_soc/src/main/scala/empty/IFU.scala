@@ -29,7 +29,7 @@ class IFU() extends Module {
       sIDLE -> Mux(ar_fire, sWAIT_RESP, sIDLE),
       sWAIT_RESP -> Mux(
         r_fire,
-        Mux(out.ready, sIDLE, sWAIT),
+        sWAIT,
         sWAIT_RESP
       ),
       sWAIT -> Mux(out.ready, sIDLE, sWAIT)
