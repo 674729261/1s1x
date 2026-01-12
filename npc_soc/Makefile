@@ -104,7 +104,7 @@ perf: npc
 	@echo -n "Max Freq(MHz) : "
 	@cat $(shell find $(STA_DIR)/result -name "ysyx_25080216.rpt") | grep "Freq" -A 2 | grep -oP "\|\s*\d+(\.\d+)\s*\|\s*$$" | grep -oP "\d+(\.\d+)?"
 	@echo -n "Area : "
-	@cat $(shell find $(STA_DIR)/result -name "synth_stat.txt") | grep "Chip area" | grep -oP "\d+(\.\d+)?\s*$"
+	@cat $(shell find $(STA_DIR)/result -name "synth_stat.txt") | grep "Chip area" | grep -oP "\d+(\.\d+)?\s*$$"
 	@cat /tmp/perf.log | grep -oP "Average/Min/Max.*$$"
 	@echo "------------Instruction Type Statistics------------"
 	@cat /tmp/perf.log | grep "Instruction Type Statistics" -A 13 | grep -oP "[a-zA-Z ]*\|\s*\d+\s*$$"
