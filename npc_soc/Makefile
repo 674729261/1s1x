@@ -94,10 +94,10 @@ sta: sbt
 
 perf: LOG_FILE = /tmp/perf.log
 perf: npc
-	make -C $(AM_HOME)/../am-kernels/benchmarks/microbench ARCH=riscv32e-soc run mainargs=test LOG_FILE=$(LOG_FILE)
-	rm -rf $(STA_DIR)/result
-	make sta
-	clear
+# 	make -C $(AM_HOME)/../am-kernels/benchmarks/microbench ARCH=riscv32e-soc run mainargs=test LOG_FILE=$(LOG_FILE)
+# 	rm -rf $(STA_DIR)/result
+# 	make sta
+# 	clear
 	@cat /tmp/perf.log | grep -oP "Total simulated clock periods : \d+"
 	@cat /tmp/perf.log | grep -oP "Total simulated instructions : \d+"
 	@cat /tmp/perf.log | grep -oP "Clocks per instruction : \d+(\.\d+)?"
