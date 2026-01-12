@@ -92,8 +92,8 @@ sta: sbt
 	CLK_FREQ_MHZ=4000 CLK_PORT_NAME=clock O=$(STA_DIR)/result \
 	RTL_FILES="$(SVSRC)"
 
-perf:
-	
+perf: npc
+	$(BIN) --image $(PROG) --log $(LOG_FILE) --difftest
 
 
 valgrind: FAST_FLAGS = -O0 -g

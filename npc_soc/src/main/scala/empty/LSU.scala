@@ -149,7 +149,7 @@ class LSU() extends Module {
     )
   )
 
-  out.valid := (no_mem_access && state_r === sWAIT_r) || (should_mem_access_r && load_finished) || (should_mem_access_w && save_finished)
+  out.valid := (no_mem_access && cpu_in_latched) || (should_mem_access_r && load_finished) || (should_mem_access_w && save_finished)
   in.ready := cpu_out_fire
 
   block(AXIAssertLayer) {
