@@ -94,9 +94,9 @@ sta: sbt
 
 perf: LOG_FILE = /tmp/perf.log
 perf: npc
-# 	make -C $(AM_HOME)/../am-kernels/benchmarks/microbench ARCH=riscv32e-soc run mainargs=test LOG_FILE=$(LOG_FILE)
+	make -C $(AM_HOME)/../am-kernels/benchmarks/microbench ARCH=riscv32e-soc run mainargs=test LOG_FILE=$(LOG_FILE)
 	rm -rf $(STA_DIR)/result
-# 	make sta
+	make sta
 	clear
 	@cat /tmp/perf.log | grep -oP "Total simulated clock periods : \d+"
 	@cat /tmp/perf.log | grep -oP "Total simulated instructions : \d+"
@@ -105,6 +105,11 @@ perf: npc
 	@cat $(shell find $(STA_DIR)/result -name "ysyx_25080216.rpt") | grep "Freq" -A 2 | grep -oP "\|\s*\d+(\.\d+)\s*\|\s*$$" | grep -oP "\d+(\.\d+)?"
 	@echo -n "Area : "
 	@cat $(shell find $(STA_DIR)/result -name "synth_stat.txt") | grep "Chip area" | grep -oP "\d+(\.\d+)?\s*$"
+	@cat /tmp/perf.log | grep -oP "Average/Min/Max.*$$"
+	@echo "------------Instruction Type Statistics------------"
+	@cat /tmp/perf.log | grep "Instruction Type Statistics" -A 13 | grep -oP "[a-zA-Z ]*\|\s*\d+\s*$$"
+	@cat /tmp/perf.log | grep -oP "Total ifu events : \d+"
+	@cat /tmp/perf.log | grep -oP "Total lsu read events : \d+"
 
 
 valgrind: FAST_FLAGS = -O0 -g
