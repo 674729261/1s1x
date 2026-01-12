@@ -36,10 +36,6 @@ class LSU() extends Module {
   val has_signal = RegInit(false.B)
   val should_signal_in_latch = in.valid && !has_signal
 
-  fetch_port.aw.id := "b1000".U(4.W)
-  fetch_port.ar.id := "b1000".U(4.W)
-  fetch_port.w.last := true.B
-
   val signal_in_r = RegEnable(in.bits, should_signal_in_latch)
 
   has_signal := MuxCase(
@@ -121,6 +117,30 @@ class LSU() extends Module {
   when(signal_in_r.controls.is_gpr_wdata_from_ram) {
     out.bits.write_info.gpr_wdata := rdata_latched
   }
+
+  fetch_port.ar.addr := signal_in_r.write_info.alu_out
+  fetch_port.ar.size := Mux1H(
+    Seq(
+      signal_in_r.controls.is_ram_byte -> "b000".U(3.W),
+      signal_in_r.controls.is_ram_half -> "b001".U(3.W),
+      signal_in_r.controls.is_ram_word -> "b010".U(3.W)
+    )
+  )
+
+  fetch_port.ar.id := "b1000".U(4.W)
+  fetch_port.aw.addr := signal_in_r.write_info.alu_out
+  fetch_port.aw.id := "b1000".U(4.W)
+
+  fetch_port.w.data := ramWriter.io.out
+  fetch_port.w.strb := ramWriter.io.mask
+  fetch_port.aw.size := Mux1H(
+    Seq(
+      signal_in_r.controls.is_ram_byte -> "b000".U(3.W),
+      signal_in_r.controls.is_ram_half -> "b001".U(3.W),
+      signal_in_r.controls.is_ram_word -> "b010".U(3.W)
+    )
+  )
+  fetch_port.w.last := true.B
 
   out.valid := has_signal && ((should_mem_access_r && has_r) || (should_mem_access_w && has_b) || (!should_mem_access_r && !should_mem_access_w))
   in.ready := out.ready
