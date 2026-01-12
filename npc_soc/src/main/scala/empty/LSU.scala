@@ -33,15 +33,15 @@ class LSU() extends Module {
   val ar_fire = fetch_port.ar.ready && fetch_port.ar.valid
   val r_fire = fetch_port.r.ready && fetch_port.r.valid
   val b_fire = fetch_port.b.ready && fetch_port.b.valid
-
-  val should_signal_in_latch = in.valid
+  val has_signal = RegInit(false.B)
+  val should_signal_in_latch = in.valid && !has_signal
 
   fetch_port.aw.id := "b1000".U(4.W)
   fetch_port.ar.id := "b1000".U(4.W)
   fetch_port.w.last := true.B
 
   val signal_in_r = RegEnable(in.bits, should_signal_in_latch)
-  val has_signal = RegInit(false.B)
+
   has_signal := MuxCase(
     has_signal,
     Seq(
