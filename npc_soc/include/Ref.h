@@ -22,7 +22,7 @@ struct Ref {
   void reset(Dut &dut) {
     inst_count = 0;
     // std::fill(cpu.gpr.begin(), cpu.gpr.end(), 0);
-    for (int i = 0; i < 32; i++) {
+    for (int i = 0; i < 16; i++) {
       cpu.gpr[i] = dut.getGPR(i);
     }
     cpu.pc = 0x30000000;
@@ -31,7 +31,7 @@ struct Ref {
   unsigned long long instrCount() { return inst_count; }
 
   void sync_state() {
-    for (int i = 1; i < 32; i++) {
+    for (int i = 1; i < 16; i++) {
       cpu.gpr[i] = dut.getGPR(i);
     }
     cpu.pc = dut.getPC();
@@ -73,7 +73,7 @@ struct Ref {
   } csr;
 
   struct CPU_State {
-    std::array<uint32_t, 32> gpr;
+    std::array<uint32_t, 16> gpr;
     uint32_t pc;
   };
 
