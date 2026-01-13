@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Device/Memory.h"
 #include "RISCV32.h"
 #include "verilated.h"
 #include <Device/Audio.h>
@@ -23,7 +24,7 @@ class ProgSymTab;
 
 class NPCemu : public RISCV32 {
 public:
-  NPCemu();
+  NPCemu(int mem_size);
 
   addr_t getPC() override final;
 
@@ -44,6 +45,7 @@ public:
   ~NPCemu();
 
 private:
+  Memory mem;
   VerilatedContext context;
   VerilatedVcdC *m_trace;
   TOP_NAME dut;

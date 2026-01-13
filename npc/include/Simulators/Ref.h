@@ -1,18 +1,20 @@
 #pragma once
 
 #include "Device/Device.h"
+#include "Device/Memory.h"
 #include "InstPattern/InstPattern.h"
 #include "my_utils.h"
 #include <Simulators/RISCV32.h>
 #include <algorithm>
 #include <cstdint>
 #include <stdexcept>
+#include <vector>
 class Ref : public RISCV32 {
 public:
-  Ref()
-      : inst_count(0), csr({.mstatus = 0x1800,
-                            .mvendorid = 0x79737978,
-                            .marchid = 0x17eb198}) {}
+  Ref(int memory_size)
+      : inst_count(0),
+        csr({.mstatus = 0x1800, .mvendorid = 0x79737978, .marchid = 0x17eb198}),
+        mem(memory_size) {}
 
   addr_t getPC() override final { return cpu.pc; };
 
@@ -36,6 +38,7 @@ public:
   ~Ref() {}
 
 private:
+  Memory mem;
   uint32_t isa_raise_intr(int intr_id) {
     csr.mepc = cpu.pc;
     csr.mcause = intr_id;
@@ -178,24 +181,26 @@ inline void Ref::step() {
   try_this("??????? ????? ????? 000 ????? 00000 11", lb,
            uint32_t addr = cpu.gpr[d.src1_id] + d.imm_I;
            int shift = (addr & 0x3) * 8;
-           cpu.gpr[d.dst_id] =
-               sign_ext<8>((devices->readMemory(addr) >> shift) & 0xFF));
+           cpu.gpr[d.dst_id] = sign_ext<8>(
+               (mem.readMemory(addr, devices.get()) >> shift) & 0xFF));
   try_this("??????? ????? ????? 100 ????? 00000 11", lbu,
            uint32_t addr = cpu.gpr[d.src1_id] + d.imm_I;
            int shift = (addr & 0x3) * 8;
-           cpu.gpr[d.dst_id] = (devices->readMemory(addr) >> shift) & 0xFF);
+           cpu.gpr[d.dst_id] =
+               (mem.readMemory(addr, devices.get()) >> shift) & 0xFF);
   try_this("??????? ????? ????? 001 ????? 00000 11", lh,
            uint32_t addr = cpu.gpr[d.src1_id] + d.imm_I;
            int shift = (addr & 0x3) * 8;
-           cpu.gpr[d.dst_id] =
-               sign_ext<16>((devices->readMemory(addr) >> shift) & 0xFFFF));
+           cpu.gpr[d.dst_id] = sign_ext<16>(
+               (mem.readMemory(addr, devices.get()) >> shift) & 0xFFFF));
   try_this("??????? ????? ????? 101 ????? 00000 11", lhu,
            uint32_t addr = cpu.gpr[d.src1_id] + d.imm_I;
            int shift = (addr & 0x3) * 8;
-           cpu.gpr[d.dst_id] = (devices->readMemory(addr) >> shift) & 0xFFFF);
+           cpu.gpr[d.dst_id] =
+               (mem.readMemory(addr, devices.get()) >> shift) & 0xFFFF);
   try_this("??????? ????? ????? 010 ????? 00000 11", lw,
            cpu.gpr[d.dst_id] =
-               devices->readMemory(cpu.gpr[d.src1_id] + d.imm_I));
+               mem.readMemory(cpu.gpr[d.src1_id] + d.imm_I, devices.get()));
 
   try_this("??????? ????? ????? ??? ????? 11011 11", jal,
            cpu.gpr[d.dst_id] = cpu.pc + 4;
@@ -225,15 +230,17 @@ inline void Ref::step() {
 
   try_this("??????? ????? ????? 000 ????? 01000 11", sb,
            uint32_t addr = cpu.gpr[d.src1_id] + d.imm_S;
-           uint32_t shift = addr & 0x3; devices->writeMemory(
-               addr, cpu.gpr[d.src2_id] << (shift * 8), 1 << shift));
+           uint32_t shift = addr & 0x3;
+           mem.writeMemory(addr, cpu.gpr[d.src2_id] << (shift * 8), 1 << shift,
+                           devices.get()));
   try_this("??????? ????? ????? 001 ????? 01000 11", sh,
            uint32_t addr = cpu.gpr[d.src1_id] + d.imm_S;
-           uint32_t shift = addr & 0x3; devices->writeMemory(
-               addr, cpu.gpr[d.src2_id] << (shift * 8), 0x3 << shift));
+           uint32_t shift = addr & 0x3;
+           mem.writeMemory(addr, cpu.gpr[d.src2_id] << (shift * 8),
+                           0x3 << shift, devices.get()));
   try_this("??????? ????? ????? 010 ????? 01000 11", sw,
-           devices->writeMemory(cpu.gpr[d.src1_id] + d.imm_S,
-                                cpu.gpr[d.src2_id], 0xF));
+           mem.writeMemory(cpu.gpr[d.src1_id] + d.imm_S, cpu.gpr[d.src2_id],
+                           0xF, devices.get()));
 
   try_this("0000000 00001 00000 000 00000 11100 11", ebreak,
            EMUstate = RISCV32::Interrupt::EBREAK); // R(10) is $a0

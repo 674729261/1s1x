@@ -36,8 +36,6 @@ public:
 
   void set_multiple_emu() { multiple_emu = true; }
 
-  void writeMemory(uint32_t waddr, uint32_t wdata, uint32_t wmask);
-  uint32_t readMemory(uint32_t raddr);
   uint32_t get_instruction(uint32_t pc) {
 #ifndef DISABLE_ADDR_CHECK
     if (pc < Devices::memOffset) [[unlikely]] {
