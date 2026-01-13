@@ -52,6 +52,7 @@ FAST_FLAGS = -Ofast -march=native -mtune=native
 MDIR = $(SOC_NPC_HOME)/build/default/
 
 npc: $(SV_FILELIST) $(LIBCAPSTONE) $(SO_PATH_NEMU)
+	make -C $(SOC_HOME) verilog
 	mkdir -p $(MDIR) || true
 	$(VERILATOR)  $(VERILATORFLAGS) \
 	--top-module $(TOPNAME) --public-flat-rw  \
