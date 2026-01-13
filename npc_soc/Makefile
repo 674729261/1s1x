@@ -51,7 +51,8 @@ FAST_FLAGS = -Ofast -march=native -mtune=native
 
 MDIR = $(SOC_NPC_HOME)/build/default/
 
-npc: $(SV_FILELIST) $(LIBCAPSTONE) $(SO_PATH_NEMU)
+npc: $(SV_FILELIST) $(LIBCAPSTONE) $(NXDC_CPP)
+	make -C $(SOC_HOME) verilog
 	mkdir -p $(MDIR) || true
 	$(VERILATOR)  $(VERILATORFLAGS) \
 	--top-module $(TOPNAME) --public-flat-rw  \
@@ -97,6 +98,8 @@ perf: npc
 	make -C $(AM_HOME)/../am-kernels/benchmarks/microbench ARCH=riscv32e-soc run mainargs=test LOG_FILE=$(LOG_FILE)
 	rm -rf $(STA_DIR)/result
 	make sta
+	@echo Extracting Statistics
+	sleep 3
 	clear
 	@cat /tmp/perf.log | grep -oP "Total simulated clock periods : \d+"
 	@cat /tmp/perf.log | grep -oP "Total simulated instructions : \d+"
