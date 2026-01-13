@@ -119,7 +119,8 @@ struct Dut {
       // case 31:
       //   return top->gprname(30);
     }
-    log_and_throw<std::logic_error>("Invalid register index : {}", idx);
+    log_and_throw<std::logic_error>("Invalid register index : {} @PC={:08x}",
+                                    idx, getPC());
   }
 
   void print_all_gpr() {
