@@ -42,7 +42,7 @@ struct Dut {
     top->eval();
     top->clock = 1;
     top->eval();
-    m_trace->dump(sim_time);
+    // m_trace->dump(sim_time);
     sim_time++;
   }
 
