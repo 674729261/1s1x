@@ -12,6 +12,15 @@ class CacheLine(linesize_2pow: Int, linecount_2pow: Int) extends Bundle {
 
 }
 
+object ShouldCache {
+  def apply(addr: UInt): Bool = {
+    val high_4bit = addr(31, 28)
+    return high_4bit === 0x3.U(4.W) || high_4bit === 0x8.U(
+      4.W
+    ) || high_4bit === 0xa.U(4.W)
+  }
+}
+
 class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
   val io = IO(new Bundle {
     val addr = Input(UInt(32.W))
@@ -58,7 +67,11 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
     )
   )
 
-  val in_cache = valid_flags(input_cache_index) && cache_rdata.tag === input_tag
+  val should_cache = ShouldCache(io.addr)
+
+  val in_cache = should_cache && valid_flags(
+    input_cache_index
+  ) && cache_rdata.tag === input_tag
   fetch_port.ar.valid := !out_ar && !in_cache && io.valid
   fetch_port.r.ready := out_ar && !has_r
   io.ready := io.valid && (in_cache || has_r)
@@ -72,7 +85,7 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
   cache_wdata.data := axi_rdata_latched
   cache_wdata.tag := input_tag
 
-  when(!in_cache && ifu_fire) {
+  when(!in_cache && ifu_fire && should_cache) {
     content.write(input_cache_index, cache_wdata)
     valid_flags(input_cache_index) := true.B
   }
