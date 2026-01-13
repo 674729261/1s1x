@@ -34,3 +34,5 @@ thirdparty/**/*
 !thirdparty/Makefile
 log
 replxx_history
+!vsrc
+!src
