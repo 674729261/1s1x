@@ -5,10 +5,10 @@ import chisel3.util._
 import chisel3.layer.block
 
 class CacheLine(linesize_2pow: Int, linecount_2pow: Int) extends Bundle {
-  val bytes = (1 << linesize_2pow)
+  val words = (1 << (linesize_2pow - 2))
   val tag_width = 32 - linesize_2pow - linecount_2pow
   val tag = UInt(tag_width.W)
-  val data = UInt(bytes.W)
+  val data = Vec(words, UInt(32.W))
 
 }
 
@@ -43,7 +43,7 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
     RegInit(Vec(line_count, Bool()), VecInit(Seq.fill(line_count)(false.B)))
 
   val cache_rdata =
-    content.read(io.addr(linecount_2pow + linesize_2pow - 1, linesize_2pow))
+    content.read(input_cache_index)
   val ar_fire = fetch_port.ar.valid && fetch_port.ar.ready
   val r_fire = fetch_port.r.valid && fetch_port.r.ready
   val out_ar = RegInit(Bool(), false.B)
@@ -78,11 +78,11 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
 
   val axi_rdata_latched = RegEnable(fetch_port.r.data, r_fire)
 
-  io.rdata := Mux(in_cache, cache_rdata.data, axi_rdata_latched)
+  io.rdata := Mux(in_cache, cache_rdata.data.asUInt, axi_rdata_latched)
   io.ready := io.valid && (has_r || in_cache)
 
   val cache_wdata = Wire(new CacheLine(linesize_2pow, linecount_2pow))
-  cache_wdata.data := axi_rdata_latched
+  cache_wdata.data := axi_rdata_latched.asTypeOf(Vec(1, UInt(32.W)))
   cache_wdata.tag := input_tag
 
   when(!in_cache && ifu_fire && should_cache) {
