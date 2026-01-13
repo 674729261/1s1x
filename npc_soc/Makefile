@@ -113,6 +113,7 @@ perf: npc
 	@cat /tmp/perf.log | grep "Instruction Type Statistics" -A 13 | grep -oP "[a-zA-Z ]*\|\s*\d+\s*$$"
 	@cat /tmp/perf.log | grep -oP "Total ifu events : \d+"
 	@cat /tmp/perf.log | grep -oP "Total lsu read events : \d+"
+	@cat /tmp/perf.log | grep -oP "Total icache hit events : \d+"
 
 
 valgrind: FAST_FLAGS = -O0 -g

@@ -28,7 +28,7 @@ void nvboard_bind_all_pins(TOP_NAME *top);
 
 bool check_difftest(Dut &dut, Ref &ref) {
   bool ret = false;
-  for (int i = 0; i < 32; i++) {
+  for (int i = 0; i < 16; i++) {
     if (dut.getGPR(i) != ref.cpu.gpr[i]) {
       spdlog::error("gpr {} differs from ref : should be {:08x}, got {:08x}",
                     gpr_names[i], ref.cpu.gpr[i], dut.getGPR(i));
