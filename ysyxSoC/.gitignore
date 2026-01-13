@@ -1,3 +1,7 @@
 build/
 out/
+ready-to-run
 !src/**/*
+!rocket-chip/**/*
+!perip/**/*
+!patch/*
