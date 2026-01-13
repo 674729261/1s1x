@@ -64,7 +64,7 @@ npc: $(SV_FILELIST) $(LIBCAPSTONE) $(NXDC_CPP)
 sbt: $(SV_FILELIST)
 
 $(SV_FILELIST): $(CHISELSRC)
-	sbt run 
+	sbt "run --init-pc 0x30000000 --to-soc" 
 # 	bash -c "find generated_svsrc/ -name *.sv -exec sed -i 's+src/main/scala/empty/++g' {} \\;"
 
 
