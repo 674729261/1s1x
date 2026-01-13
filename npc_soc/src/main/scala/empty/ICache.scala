@@ -4,6 +4,13 @@ import chisel3._
 import chisel3.util._
 import chisel3.layer.block
 
+class PerformanceCounter_ICache extends ExtModule {
+  val clock = IO(Input(Clock()))
+  val reset = IO(Input(Reset()))
+  val icache_hit = IO(Input(Bool()))
+
+}
+
 class CacheLine(linesize_2pow: Int, linecount_2pow: Int) extends Bundle {
   val words = (1 << (linesize_2pow - 2))
   val tag_width = 32 - linesize_2pow - linecount_2pow
@@ -95,6 +102,13 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
   fetch_port.aw.id := "b0000".U(4.W)
   fetch_port.ar.id := "b0000".U(4.W)
   fetch_port.w.last := true.B
+
+  block(PerformanceCounterLayer) {
+    val performancecounter_icache = Module(new PerformanceCounter_ICache)
+    performancecounter_icache.clock := clock
+    performancecounter_icache.reset := reset
+    performancecounter_icache.icache_hit := ifu_fire && in_cache
+  }
 
   block(AXIAssertLayer) {
     check_signal_stable(
