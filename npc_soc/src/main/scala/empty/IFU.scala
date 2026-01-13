@@ -16,11 +16,10 @@ class IFU() extends Module {
   val fetch_port = IO(new AXI)
 
   val icache = Module(new ICache(2, 4))
-  fetch_port <> icache.fetch_port
-  icache.io.valid := true.B
-  icache.io.addr := in.pc
-
   val has_inst = RegInit(Bool(), false.B)
+  fetch_port <> icache.fetch_port
+  icache.io.valid := !has_inst
+  icache.io.addr := in.pc
 
   val out = IO(DecoupledIO(new MessageIFU2IDU))
   val cpu_out_fire = out.valid && out.ready
