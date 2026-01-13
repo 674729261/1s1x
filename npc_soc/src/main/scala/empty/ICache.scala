@@ -90,6 +90,8 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
     valid_flags(input_cache_index) := true.B
   }
 
+  fetch_port.ar.addr := io.addr
+
   fetch_port.aw.id := "b0000".U(4.W)
   fetch_port.ar.id := "b0000".U(4.W)
   fetch_port.w.last := true.B
