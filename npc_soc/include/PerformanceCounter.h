@@ -9,6 +9,7 @@ struct InstTypeItem {
 };
 
 extern long long ifu_event;
+extern long long icache_hit_event;
 extern long long lsu_read_event;
 extern long long exu_event;
 extern long long idu_event;
@@ -27,6 +28,7 @@ extern std::unique_ptr<Dut> dut;
 
 inline void clear_performance_count() {
   ifu_event = 0;
+  icache_hit_event = 0;
   lsu_read_event = 0;
   exu_event = 0;
   idu_event = 0;
@@ -51,6 +53,7 @@ inline void display_performance(auto start_time, auto end_time) {
 
   spdlog::info("Total simulated instructions : {}", inst_count);
   spdlog::info("Total ifu events : {}", ifu_event);
+  spdlog::info("Total icache hit events : {}", icache_hit_event);
   spdlog::info("Total lsu read events : {}", lsu_read_event);
   spdlog::info("Total exu events : {}", exu_event);
   spdlog::info("Total idu events : {}", idu_event);

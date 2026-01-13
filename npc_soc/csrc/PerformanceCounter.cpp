@@ -4,6 +4,7 @@
 #include <array>
 #include <spdlog/spdlog.h>
 long long ifu_event;
+long long icache_hit_event;
 long long lsu_read_event;
 long long exu_event;
 long long idu_event;
@@ -57,6 +58,7 @@ extern "C" void notify_ifu_r_event() {
   max_ifu_fetch_delay = std::max(max_ifu_fetch_delay, delay);
   min_ifu_fetch_delay = std::min(min_ifu_fetch_delay, delay);
 }
+extern "C" void notify_icache_hit_event() { icache_hit_event++; }
 extern "C" void notify_lsu_r_event() {
   lsu_read_event++;
   long long delay = dut->sim_time - last_lsu_time;

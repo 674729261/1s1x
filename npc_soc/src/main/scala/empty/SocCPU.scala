@@ -69,7 +69,8 @@ object Verifying extends Layer(LayerConfig.Inline)
 class ysyx_25080216(
     performance_counter: Boolean,
     axiasset: Boolean,
-    verifying: Boolean
+    verifying: Boolean,
+    init_pc: Long
 ) extends Module {
   val io = IO(new Bundle {
     val interrupt = Input(Bool())
@@ -81,7 +82,7 @@ class ysyx_25080216(
   if (verifying) enable(Verifying)
   val cpu = Module(
     new CPU_Core(
-      init_pc = "h30000000".U(32.W),
+      init_pc = init_pc.U(32.W),
       performance_counter = performance_counter
     )
   )

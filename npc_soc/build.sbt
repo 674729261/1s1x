@@ -40,6 +40,8 @@ libraryDependencies += "org.chipsalliance" %% "chisel" % chiselVersion
 // dependencyOverrides += "org.scalatest" %% "scalatest" % "3.2.10"
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.19" % Test
 
+libraryDependencies += "com.github.scopt" %% "scopt" % "4.1.0"
+
 // DO NOT EDIT! This file is auto-generated.
 
 // This plugin enables semantic information to be produced by sbt.
