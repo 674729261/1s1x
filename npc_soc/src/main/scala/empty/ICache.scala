@@ -41,8 +41,10 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
   val input_tag = io.addr(31, linecount_2pow + linesize_2pow)
   val input_cache_index =
     io.addr(linecount_2pow + linesize_2pow - 1, linesize_2pow)
+  val input_index_inside_cacheline = io.addr(linesize_2pow - 1, 2)
 
   val bytes = (1 << linesize_2pow)
+  val words = (1 << (linesize_2pow - 2))
   val line_count = (1 << linecount_2pow)
   val content =
     Mem(line_count, new CacheLine(linesize_2pow, linecount_2pow))
@@ -53,6 +55,8 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
     content.read(input_cache_index)
   val ar_fire = fetch_port.ar.valid && fetch_port.ar.ready
   val r_fire = fetch_port.r.valid && fetch_port.r.ready
+  val r_fire_last = r_fire && fetch_port.r.last
+
   val out_ar = RegInit(Bool(), false.B)
   val has_r = RegInit(Bool(), false.B)
 
@@ -69,7 +73,7 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
   has_r := MuxCase(
     has_r,
     Seq(
-      r_fire -> true.B,
+      r_fire_last -> true.B,
       ifu_fire -> false.B
     )
   )
@@ -83,13 +87,21 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
   fetch_port.r.ready := out_ar && !has_r
   io.ready := io.valid && (in_cache || has_r)
 
-  val axi_rdata_latched = RegEnable(fetch_port.r.data, r_fire)
+  val axi_rdata_latched_next = Wire(Vec(words, UInt(32.W)))
+  val axi_rdata_latched = RegEnable(axi_rdata_latched_next, r_fire)
+  axi_rdata_latched_next(words - 1) := fetch_port.r.data
+  for (i <- 0 until (words - 1))
+    axi_rdata_latched_next(i) := axi_rdata_latched(i + 1)
 
-  io.rdata := Mux(in_cache, cache_rdata.data.asUInt, axi_rdata_latched)
+  io.rdata := Mux(
+    in_cache,
+    cache_rdata.data(input_index_inside_cacheline),
+    axi_rdata_latched(input_index_inside_cacheline)
+  )
   io.ready := io.valid && (has_r || in_cache)
 
   val cache_wdata = Wire(new CacheLine(linesize_2pow, linecount_2pow))
-  cache_wdata.data := axi_rdata_latched.asTypeOf(Vec(1, UInt(32.W)))
+  cache_wdata.data := axi_rdata_latched.asTypeOf(Vec(words, UInt(32.W)))
   cache_wdata.tag := input_tag
 
   when(!in_cache && ifu_fire && should_cache) {
@@ -97,11 +109,12 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
     valid_flags(input_cache_index) := true.B
   }
 
-  fetch_port.ar.addr := io.addr
+  fetch_port.ar.addr := Cat(io.addr(31, linesize_2pow), 0.U(linesize_2pow.W))
 
   fetch_port.aw.id := "b0000".U(4.W)
   fetch_port.ar.id := "b0000".U(4.W)
   fetch_port.w.last := true.B
+  fetch_port.ar.len := (words - 1).U(8.W)
 
   block(PerformanceCounterLayer) {
     val performancecounter_icache = Module(new PerformanceCounter_ICache)
