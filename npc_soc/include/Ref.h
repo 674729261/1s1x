@@ -81,7 +81,7 @@ struct Ref {
     uint32_t pc;
   };
 
-  int cache_hit;
+  long long cache_hit;
   bool is_halt;
 
   Dut &dut;

@@ -19,13 +19,35 @@ MDIR = $(SOC_EMU_HOME)/build
 $(MDIR):
 	mkdir -p $@ || true
 
-build: $(MDIR) $(CSRCS)
-	$(CC) $(EMU_CXXFLAGS) $(CSRCS) -o $(MDIR)/soc_emu 
+OBJDIR := $(MDIR)/obj
+OBJS := $(patsubst $(SOC_EMU_HOME)/src/%.cpp,$(OBJDIR)/%.o,$(CSRCS))
 
-BIN ?= $(SOC_EMU_HOME)/images/microbench_train.bin
+build: $(MDIR)/soc_emu
 
-sim: build
-	$(MDIR)/soc_emu --image $(BIN) --nr_cacheline 4 --nr_cachesize 0
+$(MDIR)/soc_emu: $(OBJS)
+	$(CC) $(EMU_CXXFLAGS) -o $@ $^
+
+$(OBJDIR)/%.o: $(SOC_EMU_HOME)/src/%.cpp | $(OBJDIR)
+	@echo "CC $(shell basename $<)"
+	@$(CC) $(EMU_CXXFLAGS) -c $< -o $@
+
+$(OBJDIR):
+	mkdir -p $@
+
+TIME_STAMP := $(shell date +"%Y_%m_%d_%H_%M_%S")
+BIN ?= $(SOC_EMU_HOME)/images/microbench_ref.bin
+LOG_DIR ?= $(SOC_EMU_HOME)/logs
+LOG_FILE ?= $(LOG_DIR)/$(TIME_STAMP).log
+CACHE_N ?= 4
+CACHE_M ?= 0
+
+
+$(LOG_DIR):
+	mkdir -p $@ || true
+
+sim: build $(LOG_DIR)
+	$(MDIR)/soc_emu --image $(BIN) \
+	--nr_cacheline $(CACHE_N) --nr_cachesize $(CACHE_M) --log $(LOG_FILE)
 
 clean:
 	rm -rf build

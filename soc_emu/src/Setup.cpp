@@ -1,0 +1,55 @@
+#include "Setup.h"
+#include "spdlog/spdlog.h"
+using std::string;
+
+void register_argparse(argparse::ArgumentParser &program) {
+  program.add_argument("-i", "--image")
+      .help("Path to log file")
+      .nargs(1)
+      .required();
+  program.add_argument("-l", "--log").help("The program image file");
+  program.add_argument("-b", "--batch").help("Use batch mode").flag();
+  program.add_argument("--nr_cacheline")
+      .help("Number of cache lines (2's pow)")
+      .scan<'i', unsigned>();
+  program.add_argument("--nr_cachesize")
+      .help("Number of words in each cache line (2's pow)")
+      .scan<'i', unsigned>();
+}
+
+void register_logger(argparse::ArgumentParser &program) {
+  bool provided_logfile = program.is_used("--log");
+  if (provided_logfile) {
+    string log_path = program.get("--log");
+    auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+    console_sink->set_pattern(
+        "[%Y-%m-%d %H:%M:%S.%e] [thread %t] [%^%l%$] - %v");
+
+    auto file_sink =
+        std::make_shared<spdlog::sinks::basic_file_sink_mt>(log_path, true);
+    file_sink->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [thread %t] [%^%l%$] - %v");
+    spdlog::logger logger("multi_logger", {console_sink, file_sink});
+    spdlog::set_default_logger(std::make_shared<spdlog::logger>(logger));
+    spdlog::info("Logging to file : {}", log_path);
+  }
+
+  spdlog::flush_every(std::chrono::seconds(5));
+  spdlog::flush_on(spdlog::level::warn);
+}
+
+Config setup(argparse::ArgumentParser &program) {
+
+  Config ret = {};
+
+  ret.image_path = program.get("--image");
+  ret.batch_mode = program.get<bool>("--batch");
+  ret.nr_cachelines_2pow = program.get<unsigned>("--nr_cacheline");
+  ret.nr_cacheline_words_2pow = program.get<unsigned>("--nr_cachesize");
+
+  spdlog::info("Image path  : {}", ret.image_path);
+  spdlog::info("Cacheline count  : 2^{}", ret.nr_cachelines_2pow);
+  spdlog::info("Word count in eachcacheline  : 2^{}",
+               ret.nr_cacheline_words_2pow);
+
+  return ret;
+}
