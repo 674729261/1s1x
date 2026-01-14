@@ -1,0 +1,38 @@
+#pragma once
+
+#include <algorithm>
+#include <cstdint>
+#include <sys/types.h>
+#include <vector>
+struct Cache {
+  Cache(int nr_words_per_line_2pow, int nr_lines_2pow)
+      : nr_words_per_line_2pow(nr_words_per_line_2pow),
+        nr_lines_2pow(nr_lines_2pow), cache(1 << nr_lines_2pow) {}
+  struct CacheLine {
+    uint32_t tag;
+    bool valid;
+  };
+
+  bool fetch(uint32_t addr) {
+    if (!should_cache(addr))
+      return false;
+    uint32_t index =
+        (addr >> (2 + nr_words_per_line_2pow)) & ((1 << nr_lines_2pow) - 1);
+    uint32_t tag = addr >> (nr_lines_2pow + nr_words_per_line_2pow);
+    if (cache[index].valid && cache[index].tag == tag)
+      return true;
+    cache[index].valid = true;
+    cache[index].tag = tag;
+    return false;
+  }
+
+  void reset() { std::ranges::fill(cache, CacheLine{}); }
+
+  bool should_cache(uint32_t addr) {
+    return (addr >> 28) == 0xa || (addr >> 28) == 0x8 || (addr >> 28) == 0x3;
+  }
+
+  std::vector<CacheLine> cache;
+  int nr_words_per_line_2pow;
+  int nr_lines_2pow;
+};

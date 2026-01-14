@@ -17,8 +17,6 @@ long long max_ifu_fetch_delay;
 long long sum_lsu_fetch_delay;
 long long min_lsu_fetch_delay;
 long long max_lsu_fetch_delay;
-long long total_clocks_on_inst_fetch;
-long long total_clocks_on_data_fetch;
 static long long last_ifu_time;
 static long long last_lsu_time;
 extern std::unique_ptr<Dut> dut;
