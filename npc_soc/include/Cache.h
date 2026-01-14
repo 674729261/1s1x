@@ -16,9 +16,9 @@ struct Cache {
   bool fetch(uint32_t addr) {
     if (!should_cache(addr))
       return false;
-    uint32_t index =
+    const uint32_t index =
         (addr >> (2 + nr_words_per_line_2pow)) & ((1 << nr_lines_2pow) - 1);
-    uint32_t tag = addr >> (nr_lines_2pow + nr_words_per_line_2pow);
+    const uint32_t tag = addr >> (nr_lines_2pow + nr_words_per_line_2pow + 2);
     if (cache[index].valid && cache[index].tag == tag)
       return true;
     cache[index].valid = true;
