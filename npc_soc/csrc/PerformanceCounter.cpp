@@ -17,6 +17,8 @@ long long max_ifu_fetch_delay;
 long long sum_lsu_fetch_delay;
 long long min_lsu_fetch_delay;
 long long max_lsu_fetch_delay;
+long long total_clocks_on_inst_fetch;
+long long total_clocks_on_data_fetch;
 static long long last_ifu_time;
 static long long last_lsu_time;
 extern std::unique_ptr<Dut> dut;
@@ -54,7 +56,7 @@ enum {
 extern "C" void notify_ifu_r_event() {
   ifu_event++;
   long long delay = dut->sim_time - last_ifu_time;
-  sum_ifu_fetch_delay += delay;
+  total_clocks_on_inst_fetch += delay;
   max_ifu_fetch_delay = std::max(max_ifu_fetch_delay, delay);
   min_ifu_fetch_delay = std::min(min_ifu_fetch_delay, delay);
 }
