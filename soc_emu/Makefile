@@ -22,7 +22,7 @@ $(MDIR):
 build: $(MDIR) $(CSRCS)
 	$(CC) $(EMU_CXXFLAGS) $(CSRCS) -o $(MDIR)/soc_emu 
 
-BIN ?= $(SOC_EMU_HOME)/images/microbench.bin
+BIN ?= $(SOC_EMU_HOME)/images/microbench_train.bin
 
 sim: build
 	$(MDIR)/soc_emu --image $(BIN) --nr_cacheline 4 --nr_cachesize 0
