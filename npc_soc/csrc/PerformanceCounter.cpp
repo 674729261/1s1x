@@ -56,7 +56,7 @@ enum {
 extern "C" void notify_ifu_r_event() {
   ifu_event++;
   long long delay = dut->sim_time - last_ifu_time;
-  total_clocks_on_inst_fetch += delay;
+  sum_ifu_fetch_delay += delay;
   max_ifu_fetch_delay = std::max(max_ifu_fetch_delay, delay);
   min_ifu_fetch_delay = std::min(min_ifu_fetch_delay, delay);
 }
