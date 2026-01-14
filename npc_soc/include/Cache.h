@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <print>
 #include <sys/types.h>
 #include <vector>
 struct Cache {
@@ -19,8 +20,10 @@ struct Cache {
     const uint32_t index =
         (addr >> (2 + nr_words_per_line_2pow)) & ((1 << nr_lines_2pow) - 1);
     const uint32_t tag = addr >> (nr_lines_2pow + nr_words_per_line_2pow + 2);
-    if (cache[index].valid && cache[index].tag == tag)
+    if (cache[index].valid && cache[index].tag == tag) {
+      std::println("PC = {:08x}", addr);
       return true;
+    }
     cache[index].valid = true;
     cache[index].tag = tag;
     return false;
