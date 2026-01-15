@@ -120,6 +120,7 @@ module sdram_axi_core (
       ST_READ_WAIT: state_nxt = (wait_count == 'd0) ? ST_READ : ST_READ_WAIT;
       ST_READ: state_nxt = (read_count == 'd0) ? ST_IDLE : ST_READ;
       ST_WRITE_ACTIVATE: state_nxt = ST_WRITE;
+      ST_WRITE: state_nxt = ST_IDLE;
       default: state_nxt = state;
     endcase
   end
