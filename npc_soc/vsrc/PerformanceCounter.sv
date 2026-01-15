@@ -74,8 +74,8 @@ module PerformanceCounter (
       if (!exu_clear && exu_valid) notify_exu_event();
       if (!idu_clear && idu_valid) notify_idu_event();
       if (wbu_valid) notify_wbu_event();
-      if (pc[31:28] != 4'h3) notify_new_cycle_not_on_flash();
-      if (pc[31:28] != 4'h3 && wbu_valid) notify_new_inst_not_on_flash();
+      if (pc[31:28] == 4'ha) notify_new_cycle_not_on_flash();
+      if (pc[31:28] == 4'ha && wbu_valid) notify_new_inst_not_on_flash();
 
       exu_clear <= next_clear(exu_clear, exu_ready, exu_valid);
       idu_clear <= next_clear(idu_clear, exu_ready, exu_valid);
