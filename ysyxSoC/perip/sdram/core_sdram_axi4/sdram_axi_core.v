@@ -85,6 +85,7 @@ module sdram_axi_core (
     if (rst_i) cke_q <= 1'b0;
     else cke_q <= 1'b1;
   end
+  assign sdram_cke_o = cke_q;
 
   assign inport_error_o = 1'b0;
 
