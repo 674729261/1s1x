@@ -26,9 +26,12 @@ class axi4_delayer extends BlackBox {
   val io = IO(new AXI4DelayerIO)
 }
 
-class AXI4DelayerChisel extends Module {
+class AXI4DelayerChisel(ratio: Double = 10.41978, scale_2pow: Long = 6)
+    extends Module {
   val io = IO(new AXI4DelayerIO)
-  io.out <> io.in
+  val countup_amount = math.round((ratio - 1.0) * math.pow(2.0, scale_2pow))
+  val countdown_amount = (1 << scale_2pow)
+
 }
 
 class AXI4DelayerWrapper(implicit p: Parameters) extends LazyModule {
