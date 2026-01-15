@@ -166,6 +166,10 @@ module sdram_axi_core (
 
   assign sdram_ba_o = addr_bank_w;
   assign sdram_clk_o = ~clk_i;
+
+  assign inport_read_data_o = which_chip ? {sdram_data_input1_high_i, sdram_data_input1_low_i} : {sdram_data_input0_high_i, sdram_data_input0_low_i};
+
+
   assign inport_ack_o = state == ST_READ || state == ST_WRITE;
 
 `ifdef verilator
