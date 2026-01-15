@@ -42,7 +42,7 @@ module sdram_axi_core (
   parameter SDRAM_MHZ = 50;
   parameter SDRAM_ADDR_W = 24;
   parameter SDRAM_COL_W = 9;
-  parameter SDRAM_READ_LATENCY = 1;
+  parameter SDRAM_READ_LATENCY = 0;
 
   localparam ST_INIT = 4'd0;
   localparam ST_MODE = 4'd1;
