@@ -38,13 +38,16 @@ struct Dut {
   }
 
   void step_one_cycle() {
+    static bool b = false;
+    if (getPC() >= 0xa0000000)
+      b = true;
     top->clock = 0;
     top->eval();
-    if (getPC() >= 0xa0000000)
+    if (b)
       m_trace->dump(2 * sim_time);
     top->clock = 1;
     top->eval();
-    if (getPC() >= 0xa0000000)
+    if (b)
       m_trace->dump(2 * sim_time + 1);
     sim_time++;
   }
