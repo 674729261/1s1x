@@ -43,7 +43,7 @@ VERILATORFLAGS += --autoflush -I$(SOC_HOME)/perip/uart16550/rtl -I$(SOC_HOME)/pe
 --timescale "1ns/1ns" --no-timing -O3 --threads 1 --cc --exe --build -j 8 \
 '-Dlayer$$Verifying' '-Dlayer$$PerformanceCounterLayer' '-Dlayer$$AXIAssertLayer'
 VERILATOR_DISABLE_WARNINGS += -Wno-UNUSEDSIGNAL -Wno-DECLFILENAME -Wno-SYNCASYNCNET -Wno-PINCONNECTEMPTY \
--Wno-ASSIGNDLY -Wno-DEFPARAM -Wno-UNUSEDPARAM -Wno-PROCASSINIT -Wno-UNOPTFLAT
+-Wno-ASSIGNDLY -Wno-DEFPARAM -Wno-UNUSEDPARAM -Wno-PROCASSINIT
 
 FAST_FLAGS = -Ofast -march=native -mtune=native
 
