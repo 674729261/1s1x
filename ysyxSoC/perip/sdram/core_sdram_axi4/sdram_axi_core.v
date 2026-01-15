@@ -158,7 +158,7 @@ module sdram_axi_core (
 
   assign sdram_ba_o = addr_bank_w;
 
-  assign inport_ack_o = state == ST_READ;
+  assign inport_ack_o = state == ST_READ || state == ST_WRITE;
 
 `ifdef verilator
   reg [79:0] dbg_state;
