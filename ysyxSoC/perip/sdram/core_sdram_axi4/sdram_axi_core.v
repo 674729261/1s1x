@@ -613,24 +613,24 @@ module sdram_axi_core (
       else ack_q <= 1'b0;
     end
 
-  assign ram_ack_w                 = ack_q;
+  assign ram_ack_w = ack_q;
 
   // Accept command in READ or WRITE0 states
-  // assign ram_accept_w              = (state_q == STATE_READ || state_q == STATE_WRITE0);
-  assign ram_accept_w              = 1'b1;
+  assign ram_accept_w              = (state_q == STATE_READ || state_q == STATE_READ_WAIT || state_q == STATE_WRITE0);
+
   //-----------------------------------------------------------------
   // SDRAM I/O
   //-----------------------------------------------------------------
-  assign sdram_clk_o               = ~clk_i;
-  assign sdram_data_out_en_o       = ~data_rd_en_q;
-  assign sdram_data_output0_low_o  = ram_write_data_w[15:0];
+  assign sdram_clk_o = ~clk_i;
+  assign sdram_data_out_en_o = ~data_rd_en_q;
+  assign sdram_data_output0_low_o = ram_write_data_w[15:0];
   assign sdram_data_output0_high_o = ram_write_data_w[31:16];
-  assign sdram_data_output1_low_o  = ram_write_data_w[15:0];
+  assign sdram_data_output1_low_o = ram_write_data_w[15:0];
   assign sdram_data_output1_high_o = ram_write_data_w[31:16];
-  assign sdram_data_in0_low_w      = sdram_data_input0_low_i;
-  assign sdram_data_in0_high_w     = sdram_data_input0_high_i;
-  assign sdram_data_in1_low_w      = sdram_data_input1_low_i;
-  assign sdram_data_in1_high_w     = sdram_data_input1_high_i;
+  assign sdram_data_in0_low_w = sdram_data_input0_low_i;
+  assign sdram_data_in0_high_w = sdram_data_input0_high_i;
+  assign sdram_data_in1_low_w = sdram_data_input1_low_i;
+  assign sdram_data_in1_high_w = sdram_data_input1_high_i;
 
 
   reg [3:0] msk_r;
