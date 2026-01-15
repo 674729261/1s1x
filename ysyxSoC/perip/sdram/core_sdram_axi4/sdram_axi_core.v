@@ -157,7 +157,7 @@ module sdram_axi_core (
   assign sdram_data_output1_high_o = inport_write_data_i[31:16];
 
   assign sdram_ba_o = addr_bank_w;
-
+  assign sdram_clk_o = ~clk_i;
   assign inport_ack_o = state == ST_READ || state == ST_WRITE;
 
 `ifdef verilator
