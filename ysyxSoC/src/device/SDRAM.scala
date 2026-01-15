@@ -195,7 +195,7 @@ class sdramChisel extends RawModule {
 
     when(state =/= sIDLE) {
       assert(
-        cmd_write,
+        !cmd_write,
         "Invalid command 'write' during active operation"
       )
     }
