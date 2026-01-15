@@ -109,7 +109,10 @@ int simulate(int argc, char *argv[], Config config) {
     result = -3;
   }
   dut->print_all_gpr();
-  spdlog::info("Reference cache hit counter : {}", ref.cache_hit);
+  spdlog::info("Reference cache hit count after bootloader: {}", ref.cache_hit);
+  spdlog::info("Reference instruction count after bootloader: {}",
+               ref.instrCount());
+
   display_performance(start_time, end_time);
   dut = nullptr;
   return result;

@@ -103,7 +103,8 @@ struct Ref {
 
 inline void Ref::step() {
   if (cache.fetch(cpu.pc))
-    cache_hit++;
+    if ((cpu.pc & 0xf0000000) != 0x30000000)
+      cache_hit++;
   auto ifnst_fetch = vbus.readMemory(cpu.pc, 4);
   if (ifnst_fetch.read_nonmemory) {
     log_and_throw<std::logic_error>(
@@ -290,7 +291,8 @@ inline void Ref::step() {
                "Encountered invalid instruction {:#010x} @PC={:#010x}", inst,
                cpu.pc));
   END_PATTERN
-  inst_count++;
+  if ((cpu.pc & 0xf0000000) != 0x30000000)
+    inst_count++;
 
   cpu.pc = dnpc;
   cpu.gpr[0] = 0;
