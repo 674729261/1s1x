@@ -94,9 +94,13 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
     axi_rdata_latched_next(i) := axi_rdata_latched(i + 1)
 
   io.rdata := Mux(
-    in_cache,
-    cache_rdata.data(input_index_inside_cacheline),
-    axi_rdata_latched(input_index_inside_cacheline)
+    should_cache,
+    Mux(
+      in_cache,
+      cache_rdata.data(input_index_inside_cacheline),
+      axi_rdata_latched(input_index_inside_cacheline)
+    ),
+    axi_rdata_latched_next(words - 1)
   )
   io.ready := io.valid && (has_r || in_cache)
 
@@ -109,12 +113,16 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
     valid_flags(input_cache_index) := true.B
   }
 
-  fetch_port.ar.addr := Cat(io.addr(31, linesize_2pow), 0.U(linesize_2pow.W))
+  fetch_port.ar.addr := Mux(
+    should_cache,
+    Cat(io.addr(31, linesize_2pow), 0.U(linesize_2pow.W)),
+    io.addr
+  )
 
   fetch_port.aw.id := "b0000".U(4.W)
   fetch_port.ar.id := "b0000".U(4.W)
   fetch_port.w.last := true.B
-  fetch_port.ar.len := (words - 1).U(8.W)
+  fetch_port.ar.len := Mux(should_cache, (words - 1).U(8.W), 0.U(8.W))
 
   block(PerformanceCounterLayer) {
     val performancecounter_icache = Module(new PerformanceCounter_ICache)
