@@ -71,6 +71,7 @@ module sdram_axi_core (
   localparam SDRAM_ROW_W = SDRAM_ADDR_W - SDRAM_COL_W - SDRAM_BANK_W;
 
   reg [3:0] state, state_nxt;
+  reg cke_q;
 
   always @(posedge clk_i or posedge rst_i) begin
     if (rst_i) begin
@@ -78,6 +79,11 @@ module sdram_axi_core (
     end else begin
       state <= state_nxt;
     end
+  end
+
+  always @(posedge clk_i or posedge rst_i) begin
+    if (rst_i) cke_q <= 1'b0;
+    else cke_q <= 1'b1;
   end
 
   assign inport_error_o = 1'b0;
