@@ -35,7 +35,7 @@ $(OBJDIR):
 	mkdir -p $@
 
 TIME_STAMP := $(shell date +"%Y_%m_%d_%H_%M_%S")
-BIN ?= $(SOC_EMU_HOME)/images/microbench_ref.bin
+BIN ?= $(SOC_EMU_HOME)/images/rtthread.bin
 LOG_DIR ?= $(SOC_EMU_HOME)/logs
 LOG_FILE ?= $(LOG_DIR)/$(TIME_STAMP).log
 CACHE_N ?= 4
