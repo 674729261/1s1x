@@ -31,7 +31,7 @@ struct Cache {
   void reset() { std::ranges::fill(cache, CacheLine{}); }
 
   bool should_cache(uint32_t addr) {
-    return (addr >> 28) == 0xa || (addr >> 28) == 0x8 || (addr >> 28) == 0x3;
+    return (addr >> 28) == 0xb || (addr >> 28) == 0xa || (addr >> 28) == 0x8;
   }
 
   std::vector<CacheLine> cache;
