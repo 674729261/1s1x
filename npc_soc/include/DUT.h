@@ -40,10 +40,10 @@ struct Dut {
   void step_one_cycle() {
     top->clock = 0;
     top->eval();
-    m_trace->dump(2 * sim_time);
+    // m_trace->dump(2 * sim_time);
     top->clock = 1;
     top->eval();
-    m_trace->dump(2 * sim_time + 1);
+    // m_trace->dump(2 * sim_time + 1);
     sim_time++;
   }
 

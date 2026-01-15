@@ -100,7 +100,7 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
       cache_rdata.data(input_index_inside_cacheline),
       axi_rdata_latched(input_index_inside_cacheline)
     ),
-    axi_rdata_latched_next(words - 1)
+    axi_rdata_latched(words - 1)
   )
   io.ready := io.valid && (has_r || in_cache)
 
