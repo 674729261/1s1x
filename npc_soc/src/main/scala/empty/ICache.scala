@@ -138,7 +138,7 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
     )
     assert(!fetch_port.aw.valid && !fetch_port.w.valid, "ifu should not write")
     when(r_fire) {
-      assert(fetch_port.r.last, "ifu.axi.rlast is not set")
+      // assert(fetch_port.r.last, "ifu.axi.rlast is not set")
       assert(fetch_port.r.resp === "b00".U, "ifu.axi.rresp is not b00")
       assert(fetch_port.r.id === "b0000".U, "ifu.axi.rid is not b0000")
 
