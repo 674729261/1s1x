@@ -42,7 +42,7 @@ module sdram_axi_core (
   parameter SDRAM_MHZ = 50;
   parameter SDRAM_ADDR_W = 24;
   parameter SDRAM_COL_W = 9;
-  parameter SDRAM_READ_LATENCY = 2;
+  parameter SDRAM_READ_LATENCY = 1;
 
   localparam ST_INIT = 4'd0;
   localparam ST_MODE = 4'd1;
@@ -79,6 +79,8 @@ module sdram_axi_core (
       state <= state_nxt;
     end
   end
+
+  assign inport_error_o = 1'b0;
 
   wire in_req = inport_wr_i != 4'b0000 || inport_rd_i;
 
@@ -156,7 +158,7 @@ module sdram_axi_core (
 
   assign sdram_ba_o = addr_bank_w;
 
-  assign inport_ack_o = in_req && (state == ST_READ || state == ST_WRITE);
+  assign inport_ack_o = state == ST_READ;
 
 `ifdef verilator
   reg [79:0] dbg_state;
