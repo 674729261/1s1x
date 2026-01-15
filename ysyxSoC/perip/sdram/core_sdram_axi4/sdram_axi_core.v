@@ -42,7 +42,7 @@ module sdram_axi_core (
   parameter SDRAM_MHZ = 50;
   parameter SDRAM_ADDR_W = 24;
   parameter SDRAM_COL_W = 9;
-  parameter SDRAM_READ_LATENCY = 0;
+  parameter SDRAM_READ_LATENCY = 'd1;
 
   localparam ST_INIT = 4'd0;
   localparam ST_MODE = 4'd1;
@@ -103,7 +103,8 @@ module sdram_axi_core (
   wire [SDRAM_ROW_W-1:0] addr_row_w = inport_addr_i[SDRAM_ADDR_W+1:SDRAM_COL_W+2+1+1];
   wire [SDRAM_BANK_W-1:0] addr_bank_w = inport_addr_i[SDRAM_COL_W+2+1:SDRAM_COL_W+2-1+1];
 
-  reg [7:0] wait_count, read_count;
+  reg [31:0] wait_count;
+  reg [7:0] read_count;
   always @(posedge clk_i) begin
     if (state == ST_IDLE) wait_count <= 'd0;
     else if (state == ST_READ_ACTIVATE) wait_count <= SDRAM_READ_LATENCY;

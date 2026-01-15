@@ -96,7 +96,7 @@ module sdram_axi (
   parameter SDRAM_MHZ = 50;
   parameter SDRAM_ADDR_W = 24;
   parameter SDRAM_COL_W = 9;
-  parameter SDRAM_READ_LATENCY = 2;
+  parameter SDRAM_READ_LATENCY = 'd2;
 
   //-----------------------------------------------------------------
   // AXI Interface
@@ -163,7 +163,7 @@ module sdram_axi (
       .SDRAM_MHZ(SDRAM_MHZ)
       , .SDRAM_ADDR_W(SDRAM_ADDR_W)
       , .SDRAM_COL_W(SDRAM_COL_W)
-      , .SDRAM_READ_LATENCY(SDRAM_READ_LATENCY)
+      , .SDRAM_READ_LATENCY(SDRAM_READ_LATENCY - 'd1)
   ) u_core (
         .clk_i(clk_i)
       , .rst_i(rst_i)
