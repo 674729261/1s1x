@@ -194,6 +194,7 @@ class sdramChisel extends RawModule {
     // }
 
     when(state === sIDLE && cmd_read) {
+      assert(burst_length === 0.U, "Only burst length = 1 is supported")
       assert(
         state_bank(io.ba) === sBANK_ACTIVATE,
         "Read command issued to precharged bank"
@@ -208,6 +209,7 @@ class sdramChisel extends RawModule {
       )
     }
     when(state === sIDLE && cmd_write) {
+      assert(burst_length === 0.U, "Only burst length = 1 is supported")
       assert(
         burst_length < 4.U,
         "Unsupported burst length for write operation"

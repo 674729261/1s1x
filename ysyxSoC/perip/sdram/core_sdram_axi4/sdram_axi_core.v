@@ -616,8 +616,8 @@ module sdram_axi_core (
   assign ram_ack_w                 = ack_q;
 
   // Accept command in READ or WRITE0 states
-  assign ram_accept_w              = (state_q == STATE_READ || state_q == STATE_WRITE0);
-
+  // assign ram_accept_w              = (state_q == STATE_READ || state_q == STATE_WRITE0);
+  assign ram_accept_w              = 1'b1;
   //-----------------------------------------------------------------
   // SDRAM I/O
   //-----------------------------------------------------------------
