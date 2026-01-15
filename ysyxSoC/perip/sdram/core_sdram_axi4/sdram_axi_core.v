@@ -116,7 +116,7 @@ module sdram_axi_core (
       if (inport_rd_i) state_nxt = ST_READ_ACTIVATE;
       else if (inport_wr_i != 4'b0000) state_nxt = ST_WRITE_ACTIVATE;
       else state_nxt = ST_IDLE;
-      ST_READ_ACTIVATE: state_nxt = ST_READ;
+      ST_READ_ACTIVATE: state_nxt = ST_READ_WAIT;
       ST_READ_WAIT: state_nxt = (wait_count == 'd0) ? ST_READ : ST_READ_WAIT;
       ST_READ: state_nxt = (read_count == 'd0) ? ST_IDLE : ST_READ;
       ST_WRITE_ACTIVATE: state_nxt = ST_WRITE;
