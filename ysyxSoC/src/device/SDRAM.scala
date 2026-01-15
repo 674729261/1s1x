@@ -9,6 +9,7 @@ import freechips.rocketchip.amba.apb._
 import org.chipsalliance.cde.config.Parameters
 import freechips.rocketchip.diplomacy._
 import freechips.rocketchip.util._
+import freechips.rocketchip.rocket.CSR.mode
 
 class SDRAMIO extends Bundle {
   val clk = Output(Bool())
@@ -83,7 +84,7 @@ class sdramChisel extends RawModule {
     val activated_row_bank = Reg(Vec(4, UInt(13.W)))
     val state_bank = RegInit(VecInit(Seq.fill(4)(sBANK_IDLE)))
 
-    val sIDLE :: sREAD_WAIT :: sBURST_READ :: sBURST_WRITE :: Nil = Enum(4)
+    val sIDLE :: sREAD_WAIT :: sBURST_READ :: Nil = Enum(3)
     val state = RegInit(sIDLE)
 
     val cmd_nop =
@@ -94,7 +95,20 @@ class sdramChisel extends RawModule {
     val cmd_burst_terminate = !io.cs && io.ras && io.cas && !io.we
     val cmd_mode = !io.cs && !io.ras && !io.cas && !io.we
     val cl_counter = Reg(UInt(3.W))
-    val burst_counter = Reg(UInt(4.W))
+
+    class ReadItem extends Bundle {
+      val ba = UInt(2.W)
+      val a = UInt(9.W)
+    }
+
+    val read_fifo = Mem(8, new ReadItem)
+    val read_fifo_pointer_r = RegInit(UInt(4.W), 0.U)
+    val read_fifo_pointer_w = RegInit(UInt(4.W), 0.U)
+    val read_fifo_empty = read_fifo_pointer_r === read_fifo_pointer_w
+    val read_fifo_full = read_fifo_pointer_r(2, 0) === read_fifo_pointer_w(
+      2,
+      0
+    ) && read_fifo_pointer_r(3) =/= read_fifo_pointer_w(3)
 
     val cas_latency = mode_reg(6, 4)
     val burst_length = mode_reg(2, 0)
@@ -106,7 +120,7 @@ class sdramChisel extends RawModule {
           Seq(
             // cmd_read -> Mux(cas_latency === 1.U(3.W), sBURST_READ, sREAD_WAIT),
             cmd_read -> sREAD_WAIT,
-            cmd_write -> Mux(burst_length === 0.U, sIDLE, sBURST_WRITE)
+            cmd_write -> sIDLE
           )
         ),
         sREAD_WAIT -> Mux(
@@ -115,19 +129,30 @@ class sdramChisel extends RawModule {
           sREAD_WAIT
         ),
         sBURST_READ -> Mux(
-          burst_counter === burst_end - 1.U(4.W) || cmd_burst_terminate,
+          read_fifo_empty || cmd_burst_terminate,
           sIDLE,
           sBURST_READ
-        ),
-        sBURST_WRITE -> Mux(
-          burst_counter === burst_end - 2.U(4.W) || cmd_burst_terminate,
-          sIDLE,
-          sBURST_WRITE
         )
       )
     )
-    val block_id = RegEnable(io.ba, state === sIDLE && (cmd_read || cmd_write))
-    val addr_counter = Reg(UInt(9.W))
+
+    read_fifo_pointer_w :=
+      Mux(cmd_read, read_fifo_pointer_w + 1.U, read_fifo_pointer_w)
+
+    read_fifo_pointer_r := Mux(
+      state === sBURST_READ,
+      read_fifo_pointer_r + 1.U,
+      Mux(state === sIDLE, read_fifo_pointer_w, read_fifo_pointer_r)
+    )
+
+    when(cmd_read) {
+      val newitem = Wire(new ReadItem)
+      newitem.a := io.a(9, 0)
+      newitem.ba := io.ba
+      read_fifo.write(read_fifo_pointer_w, newitem)
+    }
+
+    val current_readitem = read_fifo.read(read_fifo_pointer_r(2, 0))
 
     for (i <- 0 until 4) {
       when(state === sIDLE && cmd_active && (io.ba === i.U)) {
@@ -146,40 +171,22 @@ class sdramChisel extends RawModule {
       )
     )
 
-    burst_counter := MuxCase(
-      0.U,
-      Seq(
-        (state === sBURST_READ) -> (burst_counter + 1.U),
-        (state === sBURST_WRITE) -> (burst_counter + 1.U),
-        (state === sIDLE) -> 0.U
-      )
-    )
-
-    addr_counter := MuxCase(
-      addr_counter,
-      Seq(
-        (state === sIDLE && cmd_read) -> io.a(8, 0),
-        (state === sIDLE && cmd_write) -> (io.a(8, 0) + 1.U(9.W)),
-        (state === sBURST_READ) -> (addr_counter + 1.U),
-        (state === sBURST_WRITE) -> (addr_counter + 1.U)
-      )
-    )
     val pointer_r =
       Cat(
-        block_id,
-        activated_row_bank(block_id),
-        addr_counter
+        current_readitem.ba,
+        activated_row_bank(current_readitem.ba),
+        current_readitem.a
       )
     val pointer_w =
       Cat(
-        Mux(state === sIDLE, io.ba, block_id),
-        activated_row_bank(Mux(state === sIDLE, io.ba, block_id)),
-        Mux(state === sIDLE, io.a(8, 0), addr_counter)
+        Mux(state === sIDLE, io.ba, current_readitem.ba),
+        activated_row_bank(Mux(state === sIDLE, io.ba, current_readitem.ba)),
+        Mux(state === sIDLE, io.a(8, 0), current_readitem.a)
       )
     sen := state === sBURST_READ
     sout := mem.read(pointer_r).asUInt
 
-    when(state === sBURST_WRITE || (state === sIDLE && cmd_write)) {
+    when(state === sIDLE && cmd_write) {
       // val mask64 = Cat(Fill(8, ~io.dqm(1)), Fill(8, ~io.dqm(0)))
       // val new_data = (mem.read(pointer_w) & ~mask64) | (di.asUInt & mask64)
       val vec_din = di.asTypeOf(Vec(2, UInt(8.W)))
@@ -188,12 +195,13 @@ class sdramChisel extends RawModule {
 
     when(state =/= sIDLE) {
       assert(
-        cmd_nop || cmd_burst_terminate,
-        "Invalid command during active operation"
+        cmd_write,
+        "Invalid command 'write' during active operation"
       )
     }
 
     when(state === sIDLE && cmd_read) {
+      assert(burst_length === 0.U, "Burst length mush be 1")
       assert(
         state_bank(io.ba) === sBANK_ACTIVATE,
         "Read command issued to precharged bank"
@@ -208,6 +216,7 @@ class sdramChisel extends RawModule {
       )
     }
     when(state === sIDLE && cmd_write) {
+      assert(burst_length === 0.U, "Burst length mush be 1")
       assert(
         burst_length < 4.U,
         "Unsupported burst length for write operation"
