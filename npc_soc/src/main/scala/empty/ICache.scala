@@ -22,9 +22,7 @@ class CacheLine(linesize_2pow: Int, linecount_2pow: Int) extends Bundle {
 object ShouldCache {
   def apply(addr: UInt): Bool = {
     val high_4bit = addr(31, 28)
-    return high_4bit === 0x3.U(4.W) || high_4bit === 0x8.U(
-      4.W
-    ) || high_4bit === 0xa.U(4.W)
+    return high_4bit === 0x8.U(4.W) || high_4bit === 0xa.U(4.W)
   }
 }
 
