@@ -145,7 +145,7 @@ module sdram_axi_core (
 
   assign sdram_addr_o = (state == ST_MODE) ? MODE_REG : (state == ST_READ_ACTIVATE || state == ST_WRITE_ACTIVATE ? addr_row_w : addr_col_w);
 
-  reg [3:0] msk_r = ~inport_wr_i;
+  wire [3:0] msk_r = ~inport_wr_i;
   assign sdram_dqm0_low_o = which_chip ? 2'b11 : msk_r[1:0];
   assign sdram_dqm0_high_o = which_chip ? 2'b11 : msk_r[3:2];
   assign sdram_dqm1_low_o = which_chip ? msk_r[1:0] : 2'b11;
