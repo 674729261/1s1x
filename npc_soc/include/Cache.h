@@ -21,7 +21,6 @@ struct Cache {
         (addr >> (2 + nr_words_per_line_2pow)) & ((1 << nr_lines_2pow) - 1);
     const uint32_t tag = addr >> (nr_lines_2pow + nr_words_per_line_2pow + 2);
     if (cache[index].valid && cache[index].tag == tag) {
-      std::println("PC = {:08x}", addr);
       return true;
     }
     cache[index].valid = true;
