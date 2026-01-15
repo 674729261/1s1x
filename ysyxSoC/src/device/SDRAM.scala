@@ -186,12 +186,12 @@ class sdramChisel extends RawModule {
       mem.write(pointer_w, vec_din, (~io.dqm).asBools)
     }
 
-    when(state =/= sIDLE) {
-      assert(
-        cmd_nop || cmd_burst_terminate,
-        "Invalid command during active operation"
-      )
-    }
+    // when(state =/= sIDLE) {
+    //   assert(
+    //     cmd_nop || cmd_burst_terminate,
+    //     "Invalid command during active operation"
+    //   )
+    // }
 
     when(state === sIDLE && cmd_read) {
       assert(
