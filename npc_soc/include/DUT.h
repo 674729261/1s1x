@@ -43,8 +43,8 @@ struct Dut {
     // m_trace->dump(2 * sim_time);
     top->clock = 1;
     top->eval();
-    if (getPC() >= 0xa0000000)
-      m_trace->dump(sim_time);
+    // if (getPC() >= 0xa0000000)
+    //   m_trace->dump(sim_time);
     sim_time++;
   }
 
