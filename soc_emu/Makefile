@@ -38,7 +38,7 @@ TIME_STAMP := $(shell date +"%Y_%m_%d_%H_%M_%S")
 BIN ?= $(SOC_EMU_HOME)/images/microbench_train.bin
 LOG_DIR ?= $(SOC_EMU_HOME)/logs
 LOG_FILE ?= $(LOG_DIR)/$(TIME_STAMP).log
-CACHE_N ?= 3
+CACHE_N ?= 2
 CACHE_M ?= 2
 
 
