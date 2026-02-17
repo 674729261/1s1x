@@ -23,6 +23,9 @@ extern long long sum_lsu_fetch_delay;
 extern long long min_lsu_fetch_delay;
 extern long long max_lsu_fetch_delay;
 
+extern long long cycles_not_on_flash;
+extern long long insts_not_on_flash;
+
 extern std::array<InstTypeItem, 13> inst_type_event;
 
 extern std::unique_ptr<Dut> dut;
@@ -36,6 +39,8 @@ inline void clear_performance_count() {
   wbu_event = 0;
   inst_count = 0;
   clock_count = 0;
+  cycles_not_on_flash = 0;
+  insts_not_on_flash = 0;
 
   sum_ifu_fetch_delay = 0;
   min_ifu_fetch_delay = 1145141919810;
@@ -81,8 +86,14 @@ inline void display_performance(auto start_time, auto end_time) {
   spdlog::info("---------------------------------------------------");
 
   spdlog::info("Total simulated clock periods : {}", clock_count);
+  spdlog::info("Total simulated clock periods outsize flash: {}",
+               cycles_not_on_flash);
+  spdlog::info("Total simulated instructions periods outsize flash: {}",
+               insts_not_on_flash);
   spdlog::info("Clocks per instruction : {:.3f}",
                static_cast<double>(clock_count) / inst_count);
+  spdlog::info("Clocks per instruction outside flash : {:.3f}",
+               static_cast<double>(cycles_not_on_flash) / insts_not_on_flash);
   spdlog::info("Total simulation time : {:%Hh %Mm %Ss}", elapsed_ms);
   spdlog::info("Simulation speed : {:.2f} clocks/s , {:.2f} insts/s",
                1000 * static_cast<double>(clock_count) / elapsed_ms.count(),

@@ -21,7 +21,6 @@ struct Cache {
         (addr >> (2 + nr_words_per_line_2pow)) & ((1 << nr_lines_2pow) - 1);
     const uint32_t tag = addr >> (nr_lines_2pow + nr_words_per_line_2pow + 2);
     if (cache[index].valid && cache[index].tag == tag) {
-      std::println("PC = {:08x}", addr);
       return true;
     }
     cache[index].valid = true;
@@ -32,7 +31,7 @@ struct Cache {
   void reset() { std::ranges::fill(cache, CacheLine{}); }
 
   bool should_cache(uint32_t addr) {
-    return (addr >> 28) == 0xa || (addr >> 28) == 0x8 || (addr >> 28) == 0x3;
+    return (addr >> 28) == 0xb || (addr >> 28) == 0xa || (addr >> 28) == 0x8;
   }
 
   std::vector<CacheLine> cache;
