@@ -41,11 +41,11 @@ struct Dut {
     top->clock = 0;
     top->eval();
     // if (getPC() >= 0x80000000)
-    m_trace->dump(2 * sim_time);
+    // m_trace->dump(2 * sim_time);
     top->clock = 1;
     top->eval();
     // if (getPC() >= 0x80000000)
-    m_trace->dump(2 * sim_time + 1);
+    // m_trace->dump(2 * sim_time + 1);
     sim_time++;
     // println("PC : {:08x}", getPC());
   }
