@@ -57,8 +57,8 @@ class AXI4DelayerChisel(ratio: Double = 10.41978, scale_2pow: Long = 6)
   )
 
   val state_aw = RegInit(sIDLE)
-  val trigger_aw = io.in.ar.valid
-  val fire_aw = io.in.ar.valid && io.in.ar.ready
+  val trigger_aw = io.in.aw.valid
+  val fire_aw = io.in.aw.valid && io.in.aw.ready
   val counter_aw = RegInit(UInt(32.W), 0.U)
 
   io.out.aw.valid := state_aw === sWAIT
