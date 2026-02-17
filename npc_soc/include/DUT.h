@@ -47,7 +47,7 @@ struct Dut {
     // if (getPC() >= 0x0f000000 && getPC() < 0x30000000)
     //   m_trace->dump(2 * sim_time + 1);
     sim_time++;
-    println("PC : {:08x}, a5 = {:08x}", getPC(), getGPR(15));
+    // println("PC : {:08x}, a5 = {:08x}", getPC(), getGPR(15));
   }
 
   void step_one_inst() {}
