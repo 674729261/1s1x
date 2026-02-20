@@ -1,44 +1,42 @@
 #pragma once
 
-#include "Device/Device.h"
-#include "Device/Memory.h"
-#include "InstPattern/InstPattern.h"
-#include "my_utils.h"
-#include <Simulators/RISCV32.h>
-#include <algorithm>
+#include "DUT.h"
+#include <InstPattern/InstPattern.h>
+#include <VirtualBus.h>
 #include <cstdint>
+#include <format>
+#include <my_utils.h>
 #include <stdexcept>
-#include <vector>
-class Ref : public RISCV32 {
-public:
-  Ref(int memory_size)
-      : inst_count(0),
-        csr({.mstatus = 0x1800, .mvendorid = 0x79737978, .marchid = 0x17eb198}),
-        mem(memory_size) {}
+// std::ofstream ref_trace_file;
+struct Ref {
+  Ref(Dut &dut)
+      : cache_hit(0), inst_count(0), dut(dut), csr({.mstatus = 0x1800,
+                                                    .mvendorid = 0x79737978,
+                                                    .marchid = 0x17eb198}) {
+    // ref_trace_file.open("ref_trace.log");
+  }
 
-  addr_t getPC() override final { return cpu.pc; };
+  uint32_t getPC() { return cpu.pc; };
 
-  void reset() override final {
+  void reset(Dut &dut) {
     inst_count = 0;
-    std::fill(cpu.gpr.begin(), cpu.gpr.end(), 0);
-    cpu.pc = Devices::PC_Init;
+    // std::fill(cpu.gpr.begin(), cpu.gpr.end(), 0);
+    for (int i = 0; i < 16; i++) {
+      cpu.gpr[i] = dut.getGPR(i);
+    }
+    cache_hit = 0;
+    cpu.pc = 0x30000000;
   };
-  void step() override final;
-  unsigned long long instrCount() override final { return inst_count; }
+  void step();
+  unsigned long long instrCount() { return inst_count; }
 
-  uint32_t getGPR(int idx) override final {
-    if (idx < 32)
-      return cpu.gpr[idx];
-    else
-      return cpu.pc;
-  };
+  void sync_state() {
+    for (int i = 1; i < 16; i++) {
+      cpu.gpr[i] = dut.getGPR(i);
+    }
+    cpu.pc = dut.getPC();
+  }
 
-  void syncCPUState() override final {};
-
-  ~Ref() {}
-
-private:
-  Memory mem;
   uint32_t isa_raise_intr(int intr_id) {
     csr.mepc = cpu.pc;
     csr.mcause = intr_id;
@@ -63,7 +61,6 @@ private:
     log_and_throw<std::logic_error>("Visited invalid csr : {:x}", id);
   }
 
-private:
   unsigned long long inst_count;
 
   struct {
@@ -74,6 +71,18 @@ private:
     uint32_t mvendorid;
     uint32_t marchid;
   } csr;
+
+  struct CPU_State {
+    std::array<uint32_t, 16> gpr;
+    uint32_t pc;
+  };
+
+  long long cache_hit;
+  bool is_halt;
+
+  Dut &dut;
+  CPU_State cpu;
+  VirtualBus vbus;
 };
 
 #define BEGIN_PATTERN do {
@@ -88,8 +97,22 @@ private:
   }
 
 inline void Ref::step() {
-  uint32_t inst = devices->get_instruction(cpu.pc);
+  auto ifnst_fetch = vbus.readMemory(cpu.pc, 4);
+  if (ifnst_fetch.read_nonmemory) {
+    log_and_throw<std::logic_error>(
+        "Ref tried to fetch instruction in non-memory address {:#010x}",
+        cpu.pc);
+  }
+  const uint32_t inst = ifnst_fetch.data;
+  // std::println("PC = {:08x}, inst = {:08x}", cpu.pc, inst);
   Decoded d = decode(inst);
+  // ref_trace_file
+  //     << std::format(
+  //            "{:08x} {:08x} | {:08x} {:08x} {:08x} | {:08x} {:08x} {:08x}\n",
+  //            cpu.pc, inst, cpu.gpr[10], cpu.gpr[11], cpu.gpr[12],
+  //            cpu.gpr[13], cpu.gpr[14], cpu.gpr[15])
+  //     << std::flush;
+
   uint32_t dnpc = cpu.pc + 4;
   BEGIN_PATTERN
   try_this("??????? ????? ????? ??? ????? 00101 11", auipc,
@@ -180,27 +203,29 @@ inline void Ref::step() {
 
   try_this("??????? ????? ????? 000 ????? 00000 11", lb,
            uint32_t addr = cpu.gpr[d.src1_id] + d.imm_I;
-           int shift = (addr & 0x3) * 8;
-           cpu.gpr[d.dst_id] = sign_ext<8>(
-               (mem.readMemory(addr, devices.get()) >> shift) & 0xFF));
+           int shift = (addr & 0x3) * 8; auto result = vbus.readMemory(addr, 1);
+           if (result.read_nonmemory) cpu.gpr[d.dst_id] = dut.getGPR(d.dst_id);
+           else cpu.gpr[d.dst_id] = sign_ext<8>((result.data >> shift) & 0xFF));
   try_this("??????? ????? ????? 100 ????? 00000 11", lbu,
            uint32_t addr = cpu.gpr[d.src1_id] + d.imm_I;
-           int shift = (addr & 0x3) * 8;
-           cpu.gpr[d.dst_id] =
-               (mem.readMemory(addr, devices.get()) >> shift) & 0xFF);
+           int shift = (addr & 0x3) * 8; auto result = vbus.readMemory(addr, 1);
+           if (result.read_nonmemory) cpu.gpr[d.dst_id] = dut.getGPR(d.dst_id);
+           else cpu.gpr[d.dst_id] = (result.data >> shift) & 0xFF);
   try_this("??????? ????? ????? 001 ????? 00000 11", lh,
            uint32_t addr = cpu.gpr[d.src1_id] + d.imm_I;
-           int shift = (addr & 0x3) * 8;
-           cpu.gpr[d.dst_id] = sign_ext<16>(
-               (mem.readMemory(addr, devices.get()) >> shift) & 0xFFFF));
+           int shift = (addr & 0x3) * 8; auto result = vbus.readMemory(addr, 2);
+           if (result.read_nonmemory) cpu.gpr[d.dst_id] = dut.getGPR(d.dst_id);
+           else cpu.gpr[d.dst_id] =
+               sign_ext<16>((result.data >> shift) & 0xFFFF));
   try_this("??????? ????? ????? 101 ????? 00000 11", lhu,
            uint32_t addr = cpu.gpr[d.src1_id] + d.imm_I;
-           int shift = (addr & 0x3) * 8;
-           cpu.gpr[d.dst_id] =
-               (mem.readMemory(addr, devices.get()) >> shift) & 0xFFFF);
+           int shift = (addr & 0x3) * 8; auto result = vbus.readMemory(addr, 2);
+           if (result.read_nonmemory) cpu.gpr[d.dst_id] = dut.getGPR(d.dst_id);
+           else cpu.gpr[d.dst_id] = (result.data >> shift) & 0xFFFF);
   try_this("??????? ????? ????? 010 ????? 00000 11", lw,
-           cpu.gpr[d.dst_id] =
-               mem.readMemory(cpu.gpr[d.src1_id] + d.imm_I, devices.get()));
+           auto result = vbus.readMemory(cpu.gpr[d.src1_id] + d.imm_I, 4);
+           if (result.read_nonmemory) cpu.gpr[d.dst_id] = dut.getGPR(d.dst_id);
+           else cpu.gpr[d.dst_id] = result.data);
 
   try_this("??????? ????? ????? ??? ????? 11011 11", jal,
            cpu.gpr[d.dst_id] = cpu.pc + 4;
@@ -230,20 +255,18 @@ inline void Ref::step() {
 
   try_this("??????? ????? ????? 000 ????? 01000 11", sb,
            uint32_t addr = cpu.gpr[d.src1_id] + d.imm_S;
-           uint32_t shift = addr & 0x3;
-           mem.writeMemory(addr, cpu.gpr[d.src2_id] << (shift * 8), 1 << shift,
-                           devices.get()));
+           uint32_t shift = addr & 0x3; vbus.writeMemory(
+               addr & ~0x3, cpu.gpr[d.src2_id] << (shift * 8), 1 << shift));
   try_this("??????? ????? ????? 001 ????? 01000 11", sh,
            uint32_t addr = cpu.gpr[d.src1_id] + d.imm_S;
-           uint32_t shift = addr & 0x3;
-           mem.writeMemory(addr, cpu.gpr[d.src2_id] << (shift * 8),
-                           0x3 << shift, devices.get()));
+           uint32_t shift = addr & 0x3; vbus.writeMemory(
+               addr & ~0x3, cpu.gpr[d.src2_id] << (shift * 8), 0x3 << shift));
   try_this("??????? ????? ????? 010 ????? 01000 11", sw,
-           mem.writeMemory(cpu.gpr[d.src1_id] + d.imm_S, cpu.gpr[d.src2_id],
-                           0xF, devices.get()));
+           vbus.writeMemory((cpu.gpr[d.src1_id] + d.imm_S) & ~0x3,
+                            cpu.gpr[d.src2_id], 0xF));
 
   try_this("0000000 00001 00000 000 00000 11100 11", ebreak,
-           EMUstate = RISCV32::Interrupt::EBREAK); // R(10) is $a0
+           is_halt = true); // R(10) is $a0
   try_this("0000000 00000 00000 000 00000 11100 11", ecall,
            dnpc = isa_raise_intr(11));
   try_this("0011000 00010 00000 000 00000 11100 11", mret, dnpc = csr.mepc);

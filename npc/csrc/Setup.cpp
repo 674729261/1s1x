@@ -1,5 +1,6 @@
 #include "Setup.h"
 #include "spdlog/spdlog.h"
+#include <cstddef>
 using std::string;
 
 void register_argparse(argparse::ArgumentParser &program) {
@@ -8,13 +9,14 @@ void register_argparse(argparse::ArgumentParser &program) {
       .nargs(1)
       .required();
   program.add_argument("-l", "--log").help("The program image file");
+  program.add_argument("-d", "--difftest")
+      .help("Use NEMUemu as differential test")
+      .flag();
+  program.add_argument("-m", "--memsize")
+      .help("Capacity of memory in words")
+      .scan<'u', size_t>();
+  ;
   program.add_argument("-b", "--batch").help("Use batch mode").flag();
-  program.add_argument("--nr_cacheline")
-      .help("Number of cache lines (2's pow)")
-      .scan<'u', unsigned>();
-  program.add_argument("--nr_cachesize")
-      .help("Number of words in each cache line (2's pow)")
-      .scan<'u', unsigned>();
 }
 
 void register_logger(argparse::ArgumentParser &program) {
@@ -40,16 +42,13 @@ void register_logger(argparse::ArgumentParser &program) {
 Config setup(argparse::ArgumentParser &program) {
 
   Config ret = {};
-
+  ret.mem_size = program.get<size_t>("--memsize");
   ret.image_path = program.get("--image");
   ret.batch_mode = program.get<bool>("--batch");
-  ret.nr_cachelines_2pow = program.get<unsigned>("--nr_cacheline");
-  ret.nr_cacheline_words_2pow = program.get<unsigned>("--nr_cachesize");
-
   spdlog::info("Image path  : {}", ret.image_path);
-  spdlog::info("Cacheline count  : 2^{}", ret.nr_cachelines_2pow);
-  spdlog::info("Word count in eachcacheline  : 2^{}",
-               ret.nr_cacheline_words_2pow);
+  ret.difftest = program.get<bool>("--difftest");
+  if (ret.difftest)
+    spdlog::info("Using difftest");
 
   return ret;
 }
