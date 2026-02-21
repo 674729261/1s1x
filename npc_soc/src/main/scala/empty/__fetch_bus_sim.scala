@@ -57,7 +57,7 @@ class __sim_bus() extends Module {
     raddr_r,
     Seq(
       ar_fire -> (fetch_port.ar.addr),
-      r_fire -> (ar_fire + 4.U)
+      r_fire -> (raddr_r + 4.U)
     )
   )
   burst_read_cnt := MuxCase(
