@@ -1,20 +1,34 @@
 #include "Setup.h"
 #include "spdlog/spdlog.h"
+#include <cstddef>
+#include <cstdint>
 using std::string;
 
 void register_argparse(argparse::ArgumentParser &program) {
   program.add_argument("-i", "--image")
-      .help("Path to log file")
+      .help("The program image file")
       .nargs(1)
       .required();
-  program.add_argument("-l", "--log").help("The program image file");
+  program.add_argument("-w", "--waveform").help("Waveform file name").nargs(1);
+  program.add_argument("-l", "--log").help("Path to log file");
+  program.add_argument("-d", "--difftest").help("Use differential test").flag();
+  program.add_argument("--mem_size")
+      .help("Capacity of memory in bytes")
+      .scan<'x', size_t>();
+  program.add_argument("--mem_base")
+      .help("Address base of memory")
+      .scan<'x', uint32_t>()
+      .required();
+  program.add_argument("--device_size")
+      .help("Length of device space in bytes")
+      .scan<'x', size_t>()
+      .required();
+  program.add_argument("--device_base")
+      .help("Address base of device")
+      .scan<'x', uint32_t>()
+      .required();
+
   program.add_argument("-b", "--batch").help("Use batch mode").flag();
-  program.add_argument("--nr_cacheline")
-      .help("Number of cache lines (2's pow)")
-      .scan<'u', unsigned>();
-  program.add_argument("--nr_cachesize")
-      .help("Number of words in each cache line (2's pow)")
-      .scan<'u', unsigned>();
 }
 
 void register_logger(argparse::ArgumentParser &program) {
@@ -40,16 +54,21 @@ void register_logger(argparse::ArgumentParser &program) {
 Config setup(argparse::ArgumentParser &program) {
 
   Config ret = {};
-
+  ret.use_waveform = program.is_used("--waveform");
+  if (ret.use_waveform) {
+    ret.waveform_file = program.get("--waveform");
+    spdlog::info("Waveform path  : {}", ret.waveform_file);
+  }
+  ret.mem_size = program.get<size_t>("--mem_size");
+  ret.base_memory = program.get<uint32_t>("--mem_base");
+  ret.device_size = program.get<size_t>("--device_size");
+  ret.base_device = program.get<uint32_t>("--device_base");
   ret.image_path = program.get("--image");
   ret.batch_mode = program.get<bool>("--batch");
-  ret.nr_cachelines_2pow = program.get<unsigned>("--nr_cacheline");
-  ret.nr_cacheline_words_2pow = program.get<unsigned>("--nr_cachesize");
-
   spdlog::info("Image path  : {}", ret.image_path);
-  spdlog::info("Cacheline count  : 2^{}", ret.nr_cachelines_2pow);
-  spdlog::info("Word count in eachcacheline  : 2^{}",
-               ret.nr_cacheline_words_2pow);
+  ret.difftest = program.get<bool>("--difftest");
+  if (ret.difftest)
+    spdlog::info("Using difftest");
 
   return ret;
 }
