@@ -13,6 +13,8 @@ inline size_t init_mem(std::string_view image_path) {
   using std::ifstream;
   using std::ios;
 
+  mem.resize(config.mem_size);
+
   std::filesystem::path program_path = image_path;
   std::ifstream prog_file(program_path, ios::in | ios::binary);
   if (!prog_file.is_open()) {
@@ -23,7 +25,6 @@ inline size_t init_mem(std::string_view image_path) {
   prog_file.seekg(0, ios::end);
   size_prog = prog_file.tellg();
   prog_file.seekg(0, ios::beg);
-  mem.resize((size_prog + 3) / 4);
 
   prog_file.read(reinterpret_cast<char *>(mem.data()), size_prog);
   prog_file.close();
