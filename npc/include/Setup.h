@@ -1,5 +1,4 @@
 #pragma once
-
 #include <argparse/argparse.hpp>
 #include <cstddef>
 #include <print>
@@ -20,6 +19,6 @@ struct Config {
   std::string waveform_file;
 };
 
-extern Config config;
+inline Config config;
 
 Config setup(argparse::ArgumentParser &program);

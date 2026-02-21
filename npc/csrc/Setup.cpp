@@ -3,7 +3,7 @@
 #include <cstddef>
 #include <cstdint>
 using std::string;
-Config config;
+
 void register_argparse(argparse::ArgumentParser &program) {
   program.add_argument("-i", "--image")
       .help("The program image file")
