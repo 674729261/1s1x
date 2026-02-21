@@ -13,7 +13,7 @@ inline size_t init_mem(std::string_view image_path) {
   using std::ifstream;
   using std::ios;
 
-  mem.resize(config.mem_size);
+  mem.resize((config.mem_size + 3) / 4);
 
   std::filesystem::path program_path = image_path;
   std::ifstream prog_file(program_path, ios::in | ios::binary);
