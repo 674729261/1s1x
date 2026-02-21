@@ -17,8 +17,8 @@ module Mem_operator (
     output reg [31:0] rdata
 );
 
-  always @(posedge clock) begin
-    if (!reset) rdata <= mem_read(raddr);
+  always @(*) begin
+    rdata = mem_read(raddr);
   end
 
   always @(posedge clock) begin
