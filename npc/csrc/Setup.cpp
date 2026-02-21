@@ -50,7 +50,7 @@ void register_logger(argparse::ArgumentParser &program) {
 Config setup(argparse::ArgumentParser &program) {
 
   Config ret = {};
-  ret.mem_size = program.get<size_t>("--memsize");
+  ret.mem_size = program.get<size_t>("--mem_size");
   ret.image_path = program.get("--image");
   ret.batch_mode = program.get<bool>("--batch");
   spdlog::info("Image path  : {}", ret.image_path);
