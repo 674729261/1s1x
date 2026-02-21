@@ -25,6 +25,8 @@ class __sim_bus() extends Module {
 
   val ar_fire = fetch_port.ar.valid && fetch_port.ar.ready
   val r_fire = fetch_port.r.ready && fetch_port.r.valid
+  val r_fire_last =
+    fetch_port.r.ready && fetch_port.r.valid && fetch_port.r.last
 
   val aw_fire = fetch_port.aw.valid && fetch_port.aw.ready
   val w_fire = fetch_port.w.valid && fetch_port.w.ready
@@ -42,7 +44,7 @@ class __sim_bus() extends Module {
     Seq(
       sIDLE_r -> Mux(ar_fire, sDELAY_r, sIDLE_r),
       sDELAY_r -> Mux(ar_timeup, sWAIT_r, sDELAY_r),
-      sWAIT_r -> Mux(r_fire, sDELAY2_r, sWAIT_r),
+      sWAIT_r -> Mux(r_fire_last, sDELAY2_r, sWAIT_r),
       sDELAY2_r -> Mux(r_timeup, sIDLE_r, sDELAY2_r)
     )
   )
@@ -50,13 +52,21 @@ class __sim_bus() extends Module {
   val has_aw = RegInit(false.B)
   val has_w = RegInit(false.B)
   val do_response = RegInit(false.B)
-
+  val burst_read_counter = Reg(UInt(32.W))
   val wdata_reg = RegEnable(fetch_port.w.data, w_fire)
   val waddr_reg = RegEnable(fetch_port.aw.addr, aw_fire)
   val wstrb_reg = RegEnable(fetch_port.w.strb, w_fire)
   val arid_reg = RegEnable(fetch_port.ar.id, ar_fire)
   fetch_port.r.id := arid_reg
-  fetch_port.r.last := true.B
+  fetch_port.r.last := (burst_read_counter === 0.U)
+
+  burst_read_counter := MuxCase(
+    burst_read_counter,
+    Seq(
+      ar_fire -> fetch_port.ar.len,
+      r_fire -> (burst_read_counter - 1.U)
+    )
+  )
 
   val response = has_aw && has_w && !fetch_port.b.valid && b_timeup
 
@@ -91,10 +101,22 @@ class __sim_bus() extends Module {
   fetch_port.b.valid := do_response
   fetch_port.b.resp := "b00".U(2.W)
 
-  io.raddr := RegEnable(fetch_port.ar.addr, ar_fire)
+  // io.raddr := RegEnable(fetch_port.ar.addr, ar_fire)
+  val raddr_r = Reg(UInt(32.W))
+
+  raddr_r := MuxCase(
+    raddr_r,
+    Seq(
+      ar_fire -> (fetch_port.ar.addr + fetch_port.ar.len),
+      r_fire -> (raddr_r - burst_read_counter)
+    )
+  )
+
+  io.raddr := raddr_r
   io.waddr := RegEnable(fetch_port.aw.addr, aw_fire)
   io.wdata := RegEnable(fetch_port.w.data, w_fire)
   io.wmask := RegEnable(fetch_port.w.strb, w_fire)
   io.valid := (state_r === sDELAY_r && ar_timeup) || (response)
   io.wen := response
+
 }
