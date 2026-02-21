@@ -93,7 +93,7 @@ valgrind: npc
 
 
 gdb: FAST_FLAGS = -O0 -g
-gdb: VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -O0 -g -flto=auto -fsanitize=address 
+gdb: VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -O0 -g -fsanitize=address 
 gdb: MDIR = $(NPC_HOME)/build/gdb/
 gdb: npc
 	gdb --args $(BIN) --image $(PROG) \
