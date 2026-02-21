@@ -1,6 +1,7 @@
 package empty
 import chisel3._
 import chisel3.util._
+import chisel3.layer._
 
 class Mem_operator extends ExtModule {
   val clock = IO(Input(Clock()))
@@ -42,6 +43,29 @@ class npc_top(init_pc: Long, performance_counter: Boolean) extends Module {
   )
   // val __inst_fetch = Module(new __inst_fetch_bus)
   val fetcher = Module(new __sim_bus())
+  block(Verifying) {
+    val ebreaker = Module(new Ebreaker)
+    val axi_checker = Module(new AXI_Checker)
+    val inst_retire = Module(new Inst_Retire)
+    inst_retire.clock := clock
+    inst_retire.reset := reset
+    inst_retire.pc := cpu.io.pc
+    inst_retire.retire := cpu.io.ok_to_step
+    inst_retire.inst := 0.U(32.W)
+
+    axi_checker.clock := clock
+    axi_checker.reset := reset
+    axi_checker.bvalid := cpu.io.axi_bus.b.valid
+    axi_checker.bready := cpu.io.axi_bus.b.ready
+    axi_checker.bresp := cpu.io.axi_bus.b.resp
+    axi_checker.rvalid := cpu.io.axi_bus.r.valid
+    axi_checker.rready := cpu.io.axi_bus.r.ready
+    axi_checker.rresp := cpu.io.axi_bus.r.resp
+
+    ebreaker.clock := clock
+    ebreaker.reset := reset
+    ebreaker.ebreak := cpu.io.ebreak
+  }
 
   val mem_operator = Module(new Mem_operator())
   mem_operator.clock := clock
