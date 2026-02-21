@@ -81,9 +81,9 @@ sim_ftracer: npc
 	$(call git_commit, "sim RTL ftracer") # DO NOT REMOVE THIS LINE!!!
 	$(BIN) --elf $(ELF) --image $(PROG) --mem_size $(MEM_SIZE) --log $(LOG_FILE) $(NPC_FLAGS) --difftest
 
-# valgrind: FAST_FLAGS = -O0 -g
-valgrind: VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -O0 -g
-# valgrind: MDIR = $(NPC_HOME)/build/valgrind/
+valgrind: FAST_FLAGS = -O0 -g
+# valgrind: VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -O0 -g
+valgrind: MDIR = $(NPC_HOME)/build/valgrind/
 valgrind: npc
 	valgrind --leak-check=full --show-leak-kinds=all \
 	$(BIN) --image $(PROG) \
