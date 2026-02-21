@@ -56,7 +56,7 @@ int simulate(int argc, char *argv[]) {
       ref.reset(*dut);
       ref.sync_state();
     }
-    std::println("PC = {:08x}", dut->getPC());
+    // std::println("PC = {:08x}", dut->getPC());
     dut->step_one_cycle();
 
     if (retire) {

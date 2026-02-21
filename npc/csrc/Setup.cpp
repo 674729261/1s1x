@@ -33,10 +33,6 @@ void register_argparse(argparse::ArgumentParser &program) {
 
 void register_logger(argparse::ArgumentParser &program) {
   bool provided_logfile = program.is_used("--log");
-  config.use_waveform = program.is_used("--waveform");
-  if (config.use_waveform)
-    config.waveform_file = program.get("--waveform");
-
   if (provided_logfile) {
     string log_path = program.get("--log");
     auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
@@ -58,6 +54,11 @@ void register_logger(argparse::ArgumentParser &program) {
 Config setup(argparse::ArgumentParser &program) {
 
   Config ret = {};
+  ret.use_waveform = program.is_used("--waveform");
+  if (ret.use_waveform) {
+    ret.waveform_file = program.get("--waveform");
+    spdlog::info("Waveform path  : {}", ret.waveform_file);
+  }
   ret.mem_size = program.get<size_t>("--mem_size");
   ret.base_memory = program.get<uint32_t>("--mem_base");
   ret.device_size = program.get<size_t>("--device_size");
