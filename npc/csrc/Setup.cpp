@@ -21,14 +21,15 @@ void register_argparse(argparse::ArgumentParser &program) {
       .help("Address base of memory")
       .scan<'x', uint32_t>()
       .required();
+  program.add_argument("--device_size")
+      .help("Length of device space in bytes")
+      .scan<'x', size_t>()
+      .required();
   program.add_argument("--device_base")
       .help("Address base of device")
       .scan<'x', uint32_t>()
       .required();
-  program.add_argument("--device_size")
-      .help("Length of device space in bytes")
-      .scan<'x', uint32_t>()
-      .required();
+
   program.add_argument("-b", "--batch").help("Use batch mode").flag();
 }
 
