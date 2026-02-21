@@ -50,45 +50,45 @@ int simulate(int argc, char *argv[]) {
   dut->reset();
   bool difftest_state = false;
   auto start_time = std::chrono::steady_clock::now();
-  while (!contextp->gotFinish()) {
-    retire = false;
-    if (dut->top->rootp->npc_top__DOT__reset) {
-      ref.reset(*dut);
-      ref.sync_state();
-    }
-    // std::println("PC = {:08x}", dut->getPC());
-    dut->step_one_cycle();
+  // while (!contextp->gotFinish()) {
+  //   retire = false;
+  //   if (dut->top->rootp->npc_top__DOT__reset) {
+  //     ref.reset(*dut);
+  //     ref.sync_state();
+  //   }
+  //   // std::println("PC = {:08x}", dut->getPC());
+  //   dut->step_one_cycle();
 
-    if (retire) {
-      // std::println("{:08x}", ref.getPC());
-      if (config.difftest) {
-        ref.step();
-        difftest_state = check_difftest(*dut, ref);
-        if (difftest_state)
-          break;
-      }
-    }
-  }
+  //   if (retire) {
+  //     // std::println("{:08x}", ref.getPC());
+  //     if (config.difftest) {
+  //       ref.step();
+  //       difftest_state = check_difftest(*dut, ref);
+  //       if (difftest_state)
+  //         break;
+  //     }
+  //   }
+  // }
   auto end_time = std::chrono::steady_clock::now();
 
-  // int result;
-  // if (contextp->gotFinish()) {
-  //   if (dut->getGPR(10) == 0) {
-  //     spdlog::info("HIT GOOD TRAP");
-  //     result = 0;
-  //   } else {
-  //     spdlog::warn("HIT BAD TRAP with a0 = {:010x}", dut->getGPR(10));
-  //     result = -1;
-  //   }
-  // } else if (difftest_state) {
-  //   spdlog::warn("DIFFTEST FAILED");
-  //   result = -2;
-  // } else {
-  //   spdlog::warn("FAILED TO HALT");
-  //   result = -3;
-  // }
-  // dut->print_all_gpr();
+  int result;
+  if (contextp->gotFinish()) {
+    if (dut->getGPR(10) == 0) {
+      spdlog::info("HIT GOOD TRAP");
+      result = 0;
+    } else {
+      spdlog::warn("HIT BAD TRAP with a0 = {:010x}", dut->getGPR(10));
+      result = -1;
+    }
+  } else if (difftest_state) {
+    spdlog::warn("DIFFTEST FAILED");
+    result = -2;
+  } else {
+    spdlog::warn("FAILED TO HALT");
+    result = -3;
+  }
+  dut->print_all_gpr();
 
   dut = nullptr;
-  return 0;
+  return result;
 }
