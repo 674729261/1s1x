@@ -28,11 +28,12 @@ class LSU() extends Module {
   val cpu_out_fire = out.valid && out.ready
   val cpu_in_fire = in.valid && in.ready
 
-  val aw_fire = fetch_port.aw.ready && fetch_port.aw.valid
-  val w_fire = fetch_port.w.ready && fetch_port.w.valid
-  val ar_fire = fetch_port.ar.ready && fetch_port.ar.valid
-  val r_fire = fetch_port.r.ready && fetch_port.r.valid
-  val b_fire = fetch_port.b.ready && fetch_port.b.valid
+  // val aw_fire = fetch_port.aw.ready && fetch_port.aw.valid
+  // val w_fire = fetch_port.w.ready && fetch_port.w.valid
+  // val ar_fire = fetch_port.ar.ready && fetch_port.ar.valid
+  // val r_fire = fetch_port.r.ready && fetch_port.r.valid
+  // val b_fire = fetch_port.b.ready && fetch_port.b.valid
+  val fire = GenerateFireSignal(fetch_port)
   val has_signal = RegInit(false.B)
   val should_signal_in_latch = in.valid && !has_signal
 
@@ -50,7 +51,7 @@ class LSU() extends Module {
   out_ar := MuxCase(
     out_ar,
     Seq(
-      ar_fire -> true.B,
+      fire.ar_fire -> true.B,
       cpu_out_fire -> false.B
     )
   )
@@ -58,7 +59,7 @@ class LSU() extends Module {
   has_r := MuxCase(
     has_r,
     Seq(
-      r_fire -> true.B,
+      fire.r_fire -> true.B,
       cpu_out_fire -> false.B
     )
   )
@@ -67,14 +68,14 @@ class LSU() extends Module {
   out_aw := MuxCase(
     out_aw,
     Seq(
-      aw_fire -> true.B,
+      fire.aw_fire -> true.B,
       cpu_out_fire -> false.B
     )
   )
   out_w := MuxCase(
     out_w,
     Seq(
-      w_fire -> true.B,
+      fire.w_fire -> true.B,
       cpu_out_fire -> false.B
     )
   )
@@ -82,7 +83,7 @@ class LSU() extends Module {
   has_b := MuxCase(
     has_b,
     Seq(
-      b_fire -> true.B,
+      fire.b_fire -> true.B,
       cpu_out_fire -> false.B
     )
   )
@@ -108,7 +109,7 @@ class LSU() extends Module {
   ramWriter.io.is_byte := signal_in_r.controls.is_ram_byte
   ramWriter.io.lower2bit := signal_in_r.write_info.alu_out(1, 0)
 
-  val rdata_latched = RegEnable(ramLoader.io.out, r_fire)
+  val rdata_latched = RegEnable(ramLoader.io.out, fire.r_fire)
 
   out.bits.pc := signal_in_r.pc
   out.bits.controls := signal_in_r.controls
@@ -179,12 +180,12 @@ class LSU() extends Module {
       ),
       "LSU.aw"
     )
-    when(r_fire) {
+    when(fire.r_fire) {
       assert(fetch_port.r.last, "lsu.axi.rlast is not set")
       assert(fetch_port.r.resp === "b00".U, "lsu.axi.rresp is not b00")
       assert(fetch_port.r.id === "b1000".U, "lsu.axi.rid is not b1000")
     }
-    when(b_fire) {
+    when(fire.b_fire) {
       assert(fetch_port.b.resp === 0.U, "lsu.axi.bresp is not 0")
       assert(fetch_port.b.id === "b1000".U)
 

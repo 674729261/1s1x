@@ -53,9 +53,11 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
 
   val cache_rdata =
     content.read(input_cache_index)
-  val ar_fire = fetch_port.ar.valid && fetch_port.ar.ready
-  val r_fire = fetch_port.r.valid && fetch_port.r.ready
-  val r_fire_last = r_fire && fetch_port.r.last
+  // val ar_fire = fetch_port.ar.valid && fetch_port.ar.ready
+  // val r_fire = fetch_port.r.valid && fetch_port.r.ready
+  // val r_fire_last = r_fire && fetch_port.r.last
+
+  val fire = GenerateFireSignal(fetch_port)
 
   val out_ar = RegInit(Bool(), false.B)
   val has_r = RegInit(Bool(), false.B)
@@ -65,7 +67,7 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
   out_ar := MuxCase(
     out_ar,
     Seq(
-      ar_fire -> true.B,
+      fire.ar_fire -> true.B,
       ifu_fire -> false.B
     )
   )
@@ -73,7 +75,7 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
   has_r := MuxCase(
     has_r,
     Seq(
-      r_fire_last -> true.B,
+      fire.r_burst_last -> true.B,
       ifu_fire -> false.B
     )
   )
@@ -88,7 +90,7 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
   io.ready := io.valid && (in_cache || has_r)
 
   val axi_rdata_latched_next = Wire(Vec(words, UInt(32.W)))
-  val axi_rdata_latched = RegEnable(axi_rdata_latched_next, r_fire)
+  val axi_rdata_latched = RegEnable(axi_rdata_latched_next, fire.r_fire)
   axi_rdata_latched_next(words - 1) := fetch_port.r.data
   for (i <- 0 until (words - 1))
     axi_rdata_latched_next(i) := axi_rdata_latched(i + 1)
@@ -145,7 +147,7 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
       "IFU.ar"
     )
     assert(!fetch_port.aw.valid && !fetch_port.w.valid, "ifu should not write")
-    when(r_fire) {
+    when(fire.r_fire) {
       // assert(fetch_port.r.last, "ifu.axi.rlast is not set")
       assert(fetch_port.r.resp === "b00".U, "ifu.axi.rresp is not b00")
       assert(fetch_port.r.id === "b0000".U, "ifu.axi.rid is not b0000")
