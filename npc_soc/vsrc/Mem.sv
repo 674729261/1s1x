@@ -14,15 +14,13 @@ module Mem_operator (
     input [3:0] wmask,
     input valid,
     input wen,
-    output reg [31:0] rdata
+    output [31:0] rdata
 );
 
-  always @(*) begin
-    rdata = mem_read(raddr);
-  end
+  assign rdata = valid ? mem_read(raddr) : 32'hdeadbeef;
 
   always @(posedge clock) begin
-    if (wen && !reset) mem_write(waddr, {28'h0, wmask}, wdata);
+    if (valid && wen && !reset) mem_write(waddr, {28'h0, wmask}, wdata);
   end
 
 endmodule
