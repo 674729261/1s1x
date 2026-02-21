@@ -14,7 +14,7 @@ void register_argparse(argparse::ArgumentParser &program) {
   program.add_argument("-d", "--difftest")
       .help("Use NEMUemu as differential test")
       .flag();
-  program.add_argument("-m", "--memsize")
+  program.add_argument("-m", "--mem_size")
       .help("Capacity of memory in words")
       .scan<'u', size_t>();
   program.add_argument("--mem_base")
