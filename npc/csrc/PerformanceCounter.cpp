@@ -1,5 +1,4 @@
 #include <DUT.h>
-#include <PerformanceCounter.h>
 #include <algorithm>
 #include <array>
 #include <spdlog/spdlog.h>
