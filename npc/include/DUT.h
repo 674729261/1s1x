@@ -19,9 +19,11 @@ static constexpr std::array<std::string, 32> gpr_names = {
 struct Dut {
   Dut(VerilatedContext *contextp) : sim_time{0} {
     top = std::make_unique<Vnpc_top>(contextp);
-    m_trace = std::make_unique<VerilatedVcdC>();
-    top->trace(m_trace.get(), 5);
-    m_trace->open("waveform.vcd");
+    if (config.use_waveform) {
+      m_trace = std::make_unique<VerilatedVcdC>();
+      top->trace(m_trace.get(), 5);
+      m_trace->open(config.waveform_file.c_str());
+    }
   }
 
   void reset() {

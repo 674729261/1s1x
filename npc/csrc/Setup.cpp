@@ -1,26 +1,34 @@
 #include "Setup.h"
 #include "spdlog/spdlog.h"
 #include <cstddef>
+#include <cstdint>
 using std::string;
-
+Config config;
 void register_argparse(argparse::ArgumentParser &program) {
   program.add_argument("-i", "--image")
-      .help("Path to log file")
+      .help("The program image file")
       .nargs(1)
       .required();
-  program.add_argument("-l", "--log").help("The program image file");
+  program.add_argument("-w", "--waveform").help("Waveform file name").nargs(1);
+  program.add_argument("-l", "--log").help("Path to log file");
   program.add_argument("-d", "--difftest")
       .help("Use NEMUemu as differential test")
       .flag();
   program.add_argument("-m", "--memsize")
       .help("Capacity of memory in words")
       .scan<'u', size_t>();
-  ;
+  program.add_argument("--mem_base")
+      .help("Address base of memory")
+      .scan<'u', uint32_t>();
   program.add_argument("-b", "--batch").help("Use batch mode").flag();
 }
 
 void register_logger(argparse::ArgumentParser &program) {
   bool provided_logfile = program.is_used("--log");
+  config.use_waveform = program.is_used("--waveform");
+  if (config.use_waveform)
+    config.waveform_file = program.get("--waveform");
+
   if (provided_logfile) {
     string log_path = program.get("--log");
     auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();

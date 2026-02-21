@@ -13,8 +13,11 @@ void register_logger(argparse::ArgumentParser &program);
 struct Config {
   std::string image_path;
   size_t mem_size;
+  uint32_t base_memory;
   bool batch_mode;
   bool difftest;
+  bool use_waveform;
+  std::string waveform_file;
 };
 
 extern Config config;

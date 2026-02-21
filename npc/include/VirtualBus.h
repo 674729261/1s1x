@@ -2,7 +2,6 @@
 
 #include <cstdint>
 #include <my_utils.h>
-#include <ostream>
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 #include <vector>
@@ -41,10 +40,6 @@ struct VirtualBus {
   }
 
   void writeMemory(uint32_t addr, uint32_t wdata, uint32_t wmask) {
-    constexpr std::array<uint32_t, 16> lookup_mask32 = {
-        0x00000000, 0x000000FF, 0x0000FF00, 0x0000FFFF, 0x00FF0000, 0x00FF00FF,
-        0x00FFFF00, 0x00FFFFFF, 0xFF000000, 0xFF0000FF, 0xFF00FF00, 0xFF00FFFF,
-        0xFFFF0000, 0xFFFF00FF, 0xFFFFFF00, 0xFFFFFFFF};
     auto check_range = [=](Area area) {
       return addr >= area.from && addr <= area.to;
     };
