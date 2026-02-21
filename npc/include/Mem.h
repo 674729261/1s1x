@@ -7,7 +7,7 @@
 #include <stdexcept>
 #include <string_view>
 #include <vector>
-extern std::vector<uint32_t> mem;
+inline std::vector<uint32_t> mem;
 
 inline size_t init_mem(std::string_view image_path) {
   using std::ifstream;
