@@ -14,11 +14,19 @@ void register_argparse(argparse::ArgumentParser &program) {
   program.add_argument("-d", "--difftest")
       .help("Use NEMUemu as differential test")
       .flag();
-  program.add_argument("-m", "--mem_size")
+  program.add_argument("--mem_size")
       .help("Capacity of memory in bytes")
       .scan<'x', size_t>();
   program.add_argument("--mem_base")
       .help("Address base of memory")
+      .scan<'x', uint32_t>()
+      .required();
+  program.add_argument("--device_base")
+      .help("Address base of device")
+      .scan<'x', uint32_t>()
+      .required();
+  program.add_argument("--device_size")
+      .help("Length of device space in bytes")
       .scan<'x', uint32_t>()
       .required();
   program.add_argument("-b", "--batch").help("Use batch mode").flag();
@@ -53,6 +61,8 @@ Config setup(argparse::ArgumentParser &program) {
   Config ret = {};
   ret.mem_size = program.get<size_t>("--mem_size");
   ret.base_memory = program.get<uint32_t>("--mem_base");
+  ret.device_size = program.get<size_t>("--device_size");
+  ret.base_device = program.get<uint32_t>("--device_base");
   ret.image_path = program.get("--image");
   ret.batch_mode = program.get<bool>("--batch");
   spdlog::info("Image path  : {}", ret.image_path);

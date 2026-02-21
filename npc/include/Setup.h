@@ -13,6 +13,8 @@ struct Config {
   std::string image_path;
   size_t mem_size;
   uint32_t base_memory;
+  size_t device_size;
+  uint32_t base_device;
   bool batch_mode;
   bool difftest;
   bool use_waveform;

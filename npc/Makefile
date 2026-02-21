@@ -54,6 +54,8 @@ PROG ?= test_progs/add.bin
 ELF  ?= test_progs/add.elf
 MEM_SIZE ?= 0x8000000
 MEM_BASE ?= 0x80000000
+DEV_SIZE ?= 0x10000000
+DEV_BASE ?= 0xa0000000
 TIME_STAMP := $(shell date +"%Y_%m_%d_%H_%M_%S")
 LOG_FILE ?= "log/$(TIME_STAMP).log"
 
@@ -61,7 +63,10 @@ LOG_FILE ?= "log/$(TIME_STAMP).log"
 
 sim: npc
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
-	$(BIN) --image $(PROG) --mem_size $(MEM_SIZE) --mem_base $(MEM_BASE) --log $(LOG_FILE) 	
+	$(BIN) --image $(PROG) \
+	--mem_size $(MEM_SIZE) --mem_base $(MEM_BASE) \
+	--device_size $(DEV_SIZE) --device_base $(DEV_BASE) \
+	--log $(LOG_FILE) 	
 
 sim_full_speed: VERILATOR_CFLAGS+=-DNDEBUG -fstrict-aliasing \
 -frename-registers -fomit-frame-pointer \
