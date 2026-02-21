@@ -44,10 +44,10 @@ int simulate(int argc, char *argv[]) {
 
   Verilated::traceEverOn(config.use_waveform);
 
-  dut = std::make_unique<Dut>(contextp.get());
-  Ref ref(*dut);
-  ref.reset(*dut);
-  dut->reset();
+  // dut = std::make_unique<Dut>(contextp.get());
+  // Ref ref(*dut);
+  // ref.reset(*dut);
+  // dut->reset();
   bool difftest_state = false;
   auto start_time = std::chrono::steady_clock::now();
   // while (!contextp->gotFinish()) {
@@ -71,24 +71,24 @@ int simulate(int argc, char *argv[]) {
   // }
   auto end_time = std::chrono::steady_clock::now();
 
-  int result;
-  if (contextp->gotFinish()) {
-    if (dut->getGPR(10) == 0) {
-      spdlog::info("HIT GOOD TRAP");
-      result = 0;
-    } else {
-      spdlog::warn("HIT BAD TRAP with a0 = {:010x}", dut->getGPR(10));
-      result = -1;
-    }
-  } else if (difftest_state) {
-    spdlog::warn("DIFFTEST FAILED");
-    result = -2;
-  } else {
-    spdlog::warn("FAILED TO HALT");
-    result = -3;
-  }
-  dut->print_all_gpr();
+  // int result;
+  // if (contextp->gotFinish()) {
+  //   if (dut->getGPR(10) == 0) {
+  //     spdlog::info("HIT GOOD TRAP");
+  //     result = 0;
+  //   } else {
+  //     spdlog::warn("HIT BAD TRAP with a0 = {:010x}", dut->getGPR(10));
+  //     result = -1;
+  //   }
+  // } else if (difftest_state) {
+  //   spdlog::warn("DIFFTEST FAILED");
+  //   result = -2;
+  // } else {
+  //   spdlog::warn("FAILED TO HALT");
+  //   result = -3;
+  // }
+  // dut->print_all_gpr();
 
-  dut = nullptr;
+  // dut = nullptr;
   return result;
 }
