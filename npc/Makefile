@@ -50,8 +50,8 @@ $(SV_FILELIST): $(CHISELSRC)
 
 
 
-PROG ?= test_progs/yield-os.bin
-ELF  ?= test_progs/yield-os.elf
+PROG ?= test_progs/alu-test.bin
+ELF  ?= test_progs/alu-test.elf
 MEM_SIZE ?= 0x8000000
 MEM_BASE ?= 0x80000000
 DEV_SIZE ?= 0x10000000
@@ -66,7 +66,7 @@ sim: npc
 	$(BIN) --image $(PROG) \
 	--mem_size $(MEM_SIZE) --mem_base $(MEM_BASE) \
 	--device_size $(DEV_SIZE) --device_base $(DEV_BASE) \
-	--log $(LOG_FILE) --waveform wave.vcd
+	--log $(LOG_FILE)
 
 sim_full_speed: VERILATOR_CFLAGS+=-DNDEBUG -fstrict-aliasing \
 -frename-registers -fomit-frame-pointer \
