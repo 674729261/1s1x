@@ -102,11 +102,17 @@ class __sim_bus() extends Module {
 
   block(AXIAssertLayer) {
     when(ar_fire) {
-      assert(fetch_port.ar.size === "b010".U, "Only arsize = b010 is supported")
+      assert(
+        fetch_port.ar.len === 0.U || fetch_port.ar.size === "b010".U,
+        "Only arsize = b010 is supported when burst"
+      )
       assert(fetch_port.ar.burst === "b01".U, "Only arburst = b01 is supported")
     }
     when(aw_fire) {
-      assert(fetch_port.aw.size === "b010".U, "Only awsize = b010 is supported")
+      assert(
+        fetch_port.aw.len === 0.U || fetch_port.aw.size === "b010".U,
+        "Only awsize = b010 is supported when burst"
+      )
       assert(fetch_port.aw.burst === "b01".U, "Only awburst = b01 is supported")
 
     }
