@@ -43,7 +43,7 @@ int simulate(int argc, char *argv[]) {
 
   Verilated::traceEverOn(config.use_waveform);
 
-  dut = std::make_unique<Dut>(nullptr);
+  dut = std::make_unique<Dut>(&contextp);
   Ref ref(*dut);
   ref.reset(*dut);
   dut->reset();

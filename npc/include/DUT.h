@@ -135,7 +135,10 @@ struct Dut {
     println("PC = {:#010x}", getPC());
   }
 
-  ~Dut() { m_trace->close(); }
+  ~Dut() {
+    if (config.use_waveform)
+      m_trace->close();
+  }
 
   vluint64_t sim_time;
   std::unique_ptr<Vnpc_top> top;
