@@ -44,7 +44,9 @@ extern "C" void mem_write(uint32_t waddr, uint32_t wmask, uint32_t wdata) {
 
   } else {
     log_and_throw<std::logic_error>(
-        "Mem index {:#010x} out of range [{:#010x},{:#010x}]", waddr,
-        config.base_memory, config.base_memory + config.mem_size - 1);
+        "Mem index {:#010x} out of range [{:#010x},{:#010x}] "
+        "[{:#010x},{:#010x}]",
+        waddr, config.base_memory, config.base_memory + config.mem_size - 1,
+        config.base_device, config.base_device + config.device_size - 1);
   }
 }

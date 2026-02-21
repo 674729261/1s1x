@@ -11,9 +11,7 @@ void register_argparse(argparse::ArgumentParser &program) {
       .required();
   program.add_argument("-w", "--waveform").help("Waveform file name").nargs(1);
   program.add_argument("-l", "--log").help("Path to log file");
-  program.add_argument("-d", "--difftest")
-      .help("Use NEMUemu as differential test")
-      .flag();
+  program.add_argument("-d", "--difftest").help("Use differential test").flag();
   program.add_argument("--mem_size")
       .help("Capacity of memory in bytes")
       .scan<'x', size_t>();
