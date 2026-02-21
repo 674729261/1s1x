@@ -9,6 +9,8 @@
 #include <vector>
 inline std::vector<uint32_t> mem;
 
+constexpr uint32_t SERIAL_OFFSET = 0x00003f8;
+
 inline size_t init_mem(std::string_view image_path) {
   using std::ifstream;
   using std::ios;
