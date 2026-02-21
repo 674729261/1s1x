@@ -82,7 +82,7 @@ sim_ftracer: npc
 	$(BIN) --elf $(ELF) --image $(PROG) --mem_size $(MEM_SIZE) --log $(LOG_FILE) $(NPC_FLAGS) --difftest
 
 valgrind: FAST_FLAGS = -O0 -g
-# valgrind: VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -O0 -g
+valgrind: VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -O0 -g -flto=auto
 valgrind: MDIR = $(NPC_HOME)/build/valgrind/
 valgrind: npc
 	valgrind --leak-check=full --show-leak-kinds=all \
@@ -93,7 +93,7 @@ valgrind: npc
 
 
 gdb: FAST_FLAGS = -O0 -g
-gdb: VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -O0 -g
+gdb: VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -O0 -g -flto=auto
 gdb: MDIR = $(NPC_HOME)/build/gdb/
 gdb: npc
 	gdb --args $(BIN) --image $(PROG) \
