@@ -90,6 +90,6 @@ int simulate(int argc, char *argv[]) {
   spdlog::info("Reference cache hit count : {}", ref.cache_hit);
   spdlog::info("Reference instruction count : {}", ref.instrCount());
 
-  // dut = nullptr;
+  dut = nullptr;
   return result;
 }
