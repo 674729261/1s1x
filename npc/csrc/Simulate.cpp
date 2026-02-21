@@ -12,7 +12,7 @@
 #include <verilated.h>
 #include <verilated_vcd_c.h>
 std::unique_ptr<Dut> dut;
-std::unique_ptr<VerilatedContext> contextp;
+VerilatedContext contextp;
 static bool retire;
 
 extern "C" void notify_retire(int32_t pc, int32_t inst) { retire = true; }
@@ -39,18 +39,17 @@ int simulate(int argc, char *argv[]) {
   // init_mrom(config.image_path);
   init_mem(config.image_path);
   Verilated::commandArgs(argc, argv);
-  contextp = std::make_unique<VerilatedContext>();
-  contextp->commandArgs(argc, argv);
+  contextp.commandArgs(argc, argv);
 
   Verilated::traceEverOn(config.use_waveform);
 
-  dut = std::make_unique<Dut>(contextp.get());
+  dut = std::make_unique<Dut>(&contextp);
   Ref ref(*dut);
   ref.reset(*dut);
   dut->reset();
   bool difftest_state = false;
   auto start_time = std::chrono::steady_clock::now();
-  while (!contextp->gotFinish()) {
+  while (!contextp.gotFinish()) {
     retire = false;
     if (dut->top->rootp->npc_top__DOT__reset) {
       ref.reset(*dut);
@@ -72,7 +71,7 @@ int simulate(int argc, char *argv[]) {
   auto end_time = std::chrono::steady_clock::now();
 
   int result;
-  if (contextp->gotFinish()) {
+  if (contextp.gotFinish()) {
     if (dut->getGPR(10) == 0) {
       spdlog::info("HIT GOOD TRAP");
       result = 0;
