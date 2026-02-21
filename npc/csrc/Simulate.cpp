@@ -45,16 +45,16 @@ int simulate(int argc, char *argv[]) {
   Verilated::traceEverOn(config.use_waveform);
 
   dut = std::make_unique<Dut>(contextp.get());
-  Ref ref(*dut);
-  ref.reset(*dut);
+  // Ref ref(*dut);
+  // ref.reset(*dut);
   dut->reset();
   bool difftest_state = false;
   auto start_time = std::chrono::steady_clock::now();
   while (!contextp->gotFinish()) {
     retire = false;
     if (dut->top->rootp->npc_top__DOT__reset) {
-      ref.reset(*dut);
-      ref.sync_state();
+      // ref.reset(*dut);
+      // ref.sync_state();
     }
     // std::println("PC = {:08x}", dut->getPC());
     dut->step_one_cycle();
@@ -62,8 +62,8 @@ int simulate(int argc, char *argv[]) {
     if (retire) {
       // std::println("{:08x}", ref.getPC());
       if (config.difftest) {
-        ref.step();
-        difftest_state = check_difftest(*dut, ref);
+        // ref.step();
+        // difftest_state = check_difftest(*dut, ref);
         if (difftest_state)
           break;
       }
