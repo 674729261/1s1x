@@ -12,6 +12,7 @@
 #include <verilated.h>
 #include <verilated_vcd_c.h>
 std::unique_ptr<Dut> dut;
+std::unique_ptr<VerilatedContext> contextp;
 static bool retire;
 
 extern "C" void notify_retire(int32_t pc, int32_t inst) { retire = true; }
@@ -38,57 +39,58 @@ int simulate(int argc, char *argv[]) {
   // init_mrom(config.image_path);
   init_mem(config.image_path);
   Verilated::commandArgs(argc, argv);
-  std::unique_ptr<VerilatedContext> contextp =
-      std::make_unique<VerilatedContext>();
+  contextp = std::make_unique<VerilatedContext>();
   contextp->commandArgs(argc, argv);
 
   Verilated::traceEverOn(config.use_waveform);
 
   dut = std::make_unique<Dut>(contextp.get());
-  // Ref ref(*dut);
-  // ref.reset(*dut);
-  // dut->reset();
+  Ref ref(*dut);
+  ref.reset(*dut);
+  dut->reset();
   bool difftest_state = false;
   auto start_time = std::chrono::steady_clock::now();
-  // while (!contextp->gotFinish()) {
-  //   retire = false;
-  //   if (dut->top->rootp->npc_top__DOT__reset) {
-  //     ref.reset(*dut);
-  //     ref.sync_state();
-  //   }
-  //   // std::println("PC = {:08x}", dut->getPC());
-  //   dut->step_one_cycle();
+  while (!contextp->gotFinish()) {
+    retire = false;
+    if (dut->top->rootp->npc_top__DOT__reset) {
+      ref.reset(*dut);
+      ref.sync_state();
+    }
+    // std::println("PC = {:08x}", dut->getPC());
+    dut->step_one_cycle();
 
-  //   if (retire) {
-  //     // std::println("{:08x}", ref.getPC());
-  //     if (config.difftest) {
-  //       ref.step();
-  //       difftest_state = check_difftest(*dut, ref);
-  //       if (difftest_state)
-  //         break;
-  //     }
-  //   }
-  // }
+    if (retire) {
+      // std::println("{:08x}", ref.getPC());
+      if (config.difftest) {
+        ref.step();
+        difftest_state = check_difftest(*dut, ref);
+        if (difftest_state)
+          break;
+      }
+    }
+  }
   auto end_time = std::chrono::steady_clock::now();
 
-  // int result;
-  // if (contextp->gotFinish()) {
-  //   if (dut->getGPR(10) == 0) {
-  //     spdlog::info("HIT GOOD TRAP");
-  //     result = 0;
-  //   } else {
-  //     spdlog::warn("HIT BAD TRAP with a0 = {:010x}", dut->getGPR(10));
-  //     result = -1;
-  //   }
-  // } else if (difftest_state) {
-  //   spdlog::warn("DIFFTEST FAILED");
-  //   result = -2;
-  // } else {
-  //   spdlog::warn("FAILED TO HALT");
-  //   result = -3;
-  // }
-  // dut->print_all_gpr();
+  int result;
+  if (contextp->gotFinish()) {
+    if (dut->getGPR(10) == 0) {
+      spdlog::info("HIT GOOD TRAP");
+      result = 0;
+    } else {
+      spdlog::warn("HIT BAD TRAP with a0 = {:010x}", dut->getGPR(10));
+      result = -1;
+    }
+  } else if (difftest_state) {
+    spdlog::warn("DIFFTEST FAILED");
+    result = -2;
+  } else {
+    spdlog::warn("FAILED TO HALT");
+    result = -3;
+  }
+  dut->print_all_gpr();
+  spdlog::info("Reference cache hit count : {}", ref.cache_hit);
+  spdlog::info("Reference instruction count : {}", ref.instrCount());
 
   // dut = nullptr;
-  return 0;
+  return result;
 }
