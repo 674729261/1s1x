@@ -1,5 +1,6 @@
 #include "Setup.h"
 #include "my_utils.h"
+#include "spdlog/spdlog.h"
 #include <Mem.h>
 #include <cstdint>
 #include <stdexcept>
@@ -9,6 +10,7 @@ extern "C" uint32_t mem_read(uint32_t raddr) {
       raddr < config.base_memory + config.mem_size) {
     // in memory space
     size_t index = (raddr - config.base_memory) >> 2;
+    spdlog::info("addr : {:08x}, data : {:08x}", raddr, mem[index]);
     return mem[index];
   } else if (raddr >= config.base_device &&
              raddr < config.base_device + config.device_size) {
