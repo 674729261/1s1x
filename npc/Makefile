@@ -52,7 +52,7 @@ $(SV_FILELIST): $(CHISELSRC)
 
 PROG ?= test_progs/add.bin
 ELF  ?= test_progs/add.elf
-MEM_SIZE ?= 134217728
+MEM_SIZE ?= 0x8000000
 MEM_BASE ?= 0x80000000
 TIME_STAMP := $(shell date +"%Y_%m_%d_%H_%M_%S")
 LOG_FILE ?= "log/$(TIME_STAMP).log"

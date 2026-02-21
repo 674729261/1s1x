@@ -16,10 +16,10 @@ void register_argparse(argparse::ArgumentParser &program) {
       .flag();
   program.add_argument("-m", "--mem_size")
       .help("Capacity of memory in words")
-      .scan<'u', size_t>();
+      .scan<'x', size_t>();
   program.add_argument("--mem_base")
       .help("Address base of memory")
-      .scan<'u', uint32_t>()
+      .scan<'x', uint32_t>()
       .required();
   program.add_argument("-b", "--batch").help("Use batch mode").flag();
 }
