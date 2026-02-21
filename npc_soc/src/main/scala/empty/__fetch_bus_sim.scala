@@ -71,7 +71,9 @@ class __sim_bus() extends Module {
   fetch_port.r.last := (burst_read_cnt === 0.U) && (has_ar)
   fetch_port.r.id := rid_r
   fetch_port.r.data := io.rdata
+  fetch_port.r.resp := "b00".U
   fetch_port.ar.ready := !has_ar
+  fetch_port.r.valid := has_ar
 
   io.raddr := raddr_r
 
