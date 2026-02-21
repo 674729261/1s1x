@@ -16,7 +16,7 @@ SVSRC = $(patsubst %,generated_svsrc/%,$(SVSRC_FILES))
 
 VERILATOR = verilator
 
-VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -Ofast -fsanitize=address \
+VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -Ofast \
 -march=native -mtune=native \
 -funroll-loops -flto=auto -ffast-math -fno-math-errno -funsafe-math-optimizations 
 VERILATOR_LDFLAGS = -flto=auto -fipa-pta 
@@ -93,7 +93,7 @@ valgrind: npc
 
 
 gdb: FAST_FLAGS = -O0 -g
-gdb: VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -O0 -g -flto=auto
+gdb: VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -O0 -g -flto=auto -fsanitize=address 
 gdb: MDIR = $(NPC_HOME)/build/gdb/
 gdb: npc
 	gdb --args $(BIN) --image $(PROG) \
