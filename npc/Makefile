@@ -53,6 +53,7 @@ $(SV_FILELIST): $(CHISELSRC)
 PROG ?= test_progs/add.bin
 ELF  ?= test_progs/add.elf
 MEM_SIZE ?= 134217728
+MEM_BASE ?= 0x80000000
 TIME_STAMP := $(shell date +"%Y_%m_%d_%H_%M_%S")
 LOG_FILE ?= "log/$(TIME_STAMP).log"
 
@@ -60,7 +61,7 @@ LOG_FILE ?= "log/$(TIME_STAMP).log"
 
 sim: npc
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
-	$(BIN) --image $(PROG) --mem_size $(MEM_SIZE) --log $(LOG_FILE) 	
+	$(BIN) --image $(PROG) --mem_size $(MEM_SIZE) --mem_base $(MEM_BASE) --log $(LOG_FILE) 	
 
 sim_full_speed: VERILATOR_CFLAGS+=-DNDEBUG -fstrict-aliasing \
 -frename-registers -fomit-frame-pointer \
