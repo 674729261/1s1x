@@ -89,6 +89,6 @@ int simulate(int argc, char *argv[]) {
   }
   dut->print_all_gpr();
 
-  // dut = nullptr;
+  dut = nullptr;
   return result;
 }

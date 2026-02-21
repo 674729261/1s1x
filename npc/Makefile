@@ -88,16 +88,20 @@ valgrind: VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -O0 -g
 valgrind: MDIR = $(NPC_HOME)/build/valgrind/
 valgrind: npc
 	valgrind --leak-check=full --show-leak-kinds=all \
-	 $(BIN) --image $(PROG) --mem_size 134217728 --log $(LOG_FILE) --itracer 8 --inst_ringbuffer 16 --difftest --elf $(ELF)  --batch 
-
+	 $(BIN) --image $(PROG) \
+	--mem_size $(MEM_SIZE) --mem_base $(MEM_BASE) \
+	--device_size $(DEV_SIZE) --device_base $(DEV_BASE) \
+	--log $(LOG_FILE)
 
 
 gdb: FAST_FLAGS = -O0 -g
 gdb: VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -O0 -g
 gdb: MDIR = $(NPC_HOME)/build/gdb/
 gdb: npc
-	gdb --args $(BIN) --image $(PROG) --mem_size 134217728 --log $(LOG_FILE) --itracer 8 --difftest --inst_ringbuffer 16 --enable_audio --enable_vga --enable_keyboard 
-
+	gdb --args $(BIN) --image $(PROG) \
+	--mem_size $(MEM_SIZE) --mem_base $(MEM_BASE) \
+	--device_size $(DEV_SIZE) --device_base $(DEV_BASE) \
+	--log $(LOG_FILE)
 
 
 clean:
