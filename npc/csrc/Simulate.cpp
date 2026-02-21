@@ -87,8 +87,6 @@ int simulate(int argc, char *argv[]) {
     result = -3;
   }
   dut->print_all_gpr();
-  spdlog::info("Reference cache hit count : {}", ref.cache_hit);
-  spdlog::info("Reference instruction count : {}", ref.instrCount());
 
   dut = nullptr;
   return result;
