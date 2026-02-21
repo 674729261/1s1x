@@ -74,7 +74,6 @@ class __sim_bus() extends Module {
   fetch_port.ar.ready := !has_ar
 
   io.raddr := raddr_r
-  fetch_port.ar.valid := has_ar
 
   val wid_r = RegEnable(fetch_port.aw.id, aw_fire)
   val waddr_r = Reg(UInt(32.W))
