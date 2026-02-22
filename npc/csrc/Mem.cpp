@@ -106,6 +106,7 @@ extern "C" void mem_write(uint32_t waddr, uint32_t wmask, uint32_t wdata) {
           "Address {:#010x} (screen_size_info) is readonly", waddr);
     } else if (offset == VGA_CTL_OFFSET + 4 && config.enable_vga) {
       // in VGA sync
+      println("{:08x} {:08x} {:08x}", waddr, wmask, wdata);
       uint32_t tmp = Video.sync.load();
       if (!tmp) {
         write_mask(tmp, mask32, wdata);
