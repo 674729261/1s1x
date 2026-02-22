@@ -64,7 +64,7 @@ int simulate(int argc, char *argv[]) {
     if (contextp.gotFinish())
       sim_state = SimulationState::HALT;
     if (retire) {
-      std::println("PC = {:08x}", dut->getPC());
+      // std::println("PC = {:08x}", dut->getPC());
       // std::println("{:08x}", ref.getPC());
       if (config.difftest) {
         ref.step();
