@@ -21,8 +21,6 @@ extern "C" uint32_t mem_read(uint32_t raddr) {
   } else if (raddr >= config.base_device &&
              raddr < config.base_device + config.device_size) {
     // in MMIO
-    println("{:08x}", raddr);
-
     uint32_t offset = raddr - config.base_device;
     if (offset == SERIAL_OFFSET) {
       // in Serial

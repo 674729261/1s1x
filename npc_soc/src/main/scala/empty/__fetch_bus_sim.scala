@@ -90,7 +90,7 @@ class __sim_bus() extends Module {
   fetch_port.b.resp := "b00".U
   fetch_port.b.id := wid_r
 
-  io.valid := fire.ar_fire || (has_ar && !fire.r_burst_last && fire.r_fire) || io.wen
+  io.valid := fire.ar_fire || (has_ar && !fire.r_burst_last && fire.r_fire)
 
   block(AXIAssertLayer) {
     when(fire.ar_fire) {

@@ -19,7 +19,7 @@ module Mem_operator (
   always @(posedge clock) if (valid) rdata <= mem_read(raddr);
 
   always @(posedge clock) begin
-    if (valid && wen && !reset) mem_write(waddr, {28'h0, wmask}, wdata);
+    if (wen && !reset) mem_write(waddr, {28'h0, wmask}, wdata);
   end
 
 endmodule
