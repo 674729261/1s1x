@@ -40,6 +40,7 @@ int simulate(int argc, char *argv[]) {
   // init_mrom(config.image_path);
   init_mem(config.image_path);
   quit.store(false);
+  RTC_init();
   Verilated::commandArgs(argc, argv);
   contextp.commandArgs(argc, argv);
 
