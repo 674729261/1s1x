@@ -105,6 +105,7 @@ extern "C" void mem_write(uint32_t waddr, uint32_t wmask, uint32_t wdata) {
     } else if (offset == VGA_CTL_OFFSET + 4 && config.enable_vga) {
       // in VGA sync
       uint32_t tmp = Video.sync.load();
+      println("WRITING SYNC");
       if (!tmp) {
         write_mask(tmp, mask32, wdata);
         if (tmp) {
@@ -118,7 +119,7 @@ extern "C" void mem_write(uint32_t waddr, uint32_t wmask, uint32_t wdata) {
     } else if (offset >= VGA_BF_OFFSET && offset < VGA_BF_OFFSET + VGA_BF_LEN &&
                config.enable_vga) {
       // in VGA buffer
-      println("WRITING BF");
+
       size_t index = (offset - VGA_BF_OFFSET) / 4;
       write_mask(Video.back_ptr[index], mask32, wdata);
     } else if (offset >= AUDIO_CTL_OFFSET &&
