@@ -1,9 +1,9 @@
+#include "npc.h"
 #include "riscv/riscv.h"
 #include <am.h>
 #include <klib.h>
 #include <stdint.h>
-#define RTC_ADDR (DEVICE_BASE + 0x0000048)
-#define DEVICE_BASE 0xa0000000
+
 void __am_timer_init() {
   outl(RTC_ADDR, 0);
   outl(RTC_ADDR + 4, 0);
