@@ -1,4 +1,5 @@
 
+#include "Device/Device.h"
 #include "spdlog/spdlog.h"
 #include <Args.h>
 #include <Mem.h>
@@ -13,14 +14,14 @@
 #include <verilated_vcd_c.h>
 using std::string;
 
-
 int main(int argc, char *argv[]) {
   config = process_args(argc, argv);
   int return_value = -1;
   try {
     return_value = simulate(argc, argv);
-  } catch (std::exception e) {
+  } catch (const std::exception &e) {
     std::println(std::cerr, "Error : {}", e.what());
+    quit.store(true);
   }
   spdlog::shutdown();
   return return_value;
