@@ -50,8 +50,8 @@ $(SV_FILELIST): $(CHISELSRC)
 
 
 
-PROG ?= test_progs/yield-os.bin
-ELF  ?= test_progs/yield-os.elf
+PROG ?= test_progs/typing.bin
+ELF  ?= test_progs/typing.elf
 MEM_SIZE ?= 0x8000000
 MEM_BASE ?= 0x80000000
 DEV_SIZE ?= 0x10000000
