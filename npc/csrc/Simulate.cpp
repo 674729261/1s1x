@@ -45,8 +45,9 @@ int simulate(int argc, char *argv[]) {
   contextp.commandArgs(argc, argv);
 
   Verilated::traceEverOn(config.use_waveform);
-  if (config.enable_vga)
+  if (config.enable_vga) {
     init_vga();
+  }
   dut = std::make_unique<Dut>(&contextp);
   Ref ref(*dut);
   ref.reset(*dut);
