@@ -100,7 +100,7 @@ extern "C" void mem_write(uint32_t waddr, uint32_t wmask, uint32_t wdata) {
         write_mask(upper, mask32, wdata);
       uint64_t new_value = (static_cast<uint64_t>(upper) << 32) | lower;
       RTC.last_time = std::chrono::steady_clock::now();
-      RTC.RTC_reg_bias += new_value - value;
+      RTC.RTC_reg_bias = new_value;
     } else if (offset == VGA_CTL_OFFSET && config.enable_vga) {
       // in in VGA info
       log_and_throw<std::logic_error>(
