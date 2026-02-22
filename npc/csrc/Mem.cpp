@@ -1,6 +1,6 @@
+#include "Device/Device.h"
 #include "Setup.h"
 #include "my_utils.h"
-#include "spdlog/spdlog.h"
 #include <Mem.h>
 #include <cstdint>
 #include <stdexcept>
@@ -27,13 +27,12 @@ extern "C" uint32_t mem_read(uint32_t raddr) {
 }
 
 extern "C" void mem_write(uint32_t waddr, uint32_t wmask, uint32_t wdata) {
+  uint32_t mask32 = lookup_mask32[wmask];
   if (waddr >= config.base_memory &&
       waddr < config.base_memory + config.mem_size) {
     // in memory space
     size_t index = (waddr - config.base_memory) >> 2;
-    uint32_t mask32 = lookup_mask32[wmask];
-    mem[index] &= ~mask32;
-    mem[index] |= wdata & mask32;
+    write_mask(mem[index], mask32, wdata);
   } else if (waddr >= config.base_device &&
              waddr < config.base_device + config.device_size) {
     // in MMIO

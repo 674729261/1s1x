@@ -28,6 +28,9 @@ void register_argparse(argparse::ArgumentParser &program) {
       .scan<'x', uint32_t>()
       .required();
 
+  program.add_argument("-v", "--enable_vga").help("Enable VGA").flag();
+  program.add_argument("-a", "--enable_audio").help("Enable audio").flag();
+
   program.add_argument("-b", "--batch").help("Use batch mode").flag();
 }
 
@@ -55,6 +58,8 @@ Config setup(argparse::ArgumentParser &program) {
 
   Config ret = {};
   ret.use_waveform = program.is_used("--waveform");
+  ret.enable_audio = program.is_used("--enable_audio");
+  ret.enable_vga = program.is_used("--enable_vga");
   if (ret.use_waveform) {
     ret.waveform_file = program.get("--waveform");
     spdlog::info("Waveform path  : {}", ret.waveform_file);

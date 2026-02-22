@@ -1,5 +1,7 @@
 
 #include "DUT.h"
+#include "Device/Device.h"
+#include "Setup.h"
 #include "spdlog/spdlog.h"
 #include <Args.h>
 #include <Mem.h>
@@ -38,11 +40,13 @@ bool check_difftest(Dut &dut, Ref &ref) {
 int simulate(int argc, char *argv[]) {
   // init_mrom(config.image_path);
   init_mem(config.image_path);
+  quit.store(false);
   Verilated::commandArgs(argc, argv);
   contextp.commandArgs(argc, argv);
 
   Verilated::traceEverOn(config.use_waveform);
-
+  if (config.enable_vga)
+    init_vga();
   dut = std::make_unique<Dut>(&contextp);
   Ref ref(*dut);
   ref.reset(*dut);
@@ -87,6 +91,7 @@ int simulate(int argc, char *argv[]) {
     result = -3;
   }
   dut->print_all_gpr();
+  quit.store(true);
 
   dut = nullptr;
   return result;

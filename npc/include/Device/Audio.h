@@ -1,4 +1,5 @@
 #pragma once
+#include <array>
 #include <cstdint>
 #include <memory>
 struct AudioBase_t {
@@ -12,6 +13,9 @@ struct AudioBase_t {
   } reg_ctl;
 
   static constexpr int n_regs = 6;
-
-  std::unique_ptr<uint8_t[]> sbuf;
+  static constexpr size_t SoundBufferSize = 0x10000;
+  using SBF = std::array<uint8_t, SoundBufferSize>;
+  std::unique_ptr<SBF> sbuf;
 };
+
+inline AudioBase_t Audio;

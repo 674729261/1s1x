@@ -53,9 +53,6 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
 
   val cache_rdata =
     content.read(input_cache_index)
-  // val ar_fire = fetch_port.ar.valid && fetch_port.ar.ready
-  // val r_fire = fetch_port.r.valid && fetch_port.r.ready
-  // val r_fire_last = r_fire && fetch_port.r.last
 
   val fire = GenerateFireSignal(fetch_port)
 

@@ -27,12 +27,6 @@ class LSU() extends Module {
 
   val cpu_out_fire = out.valid && out.ready
   val cpu_in_fire = in.valid && in.ready
-
-  // val aw_fire = fetch_port.aw.ready && fetch_port.aw.valid
-  // val w_fire = fetch_port.w.ready && fetch_port.w.valid
-  // val ar_fire = fetch_port.ar.ready && fetch_port.ar.valid
-  // val r_fire = fetch_port.r.ready && fetch_port.r.valid
-  // val b_fire = fetch_port.b.ready && fetch_port.b.valid
   val fire = GenerateFireSignal(fetch_port)
   val has_signal = RegInit(false.B)
   val should_signal_in_latch = in.valid && !has_signal

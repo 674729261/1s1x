@@ -14,15 +14,6 @@ class __sim_bus() extends Module {
     val wen = Output(Bool())
     val rdata = Input(UInt(32.W))
   })
-  // val ar_fire = fetch_port.ar.ready && fetch_port.ar.valid
-  // val r_fire = fetch_port.r.ready && fetch_port.r.valid
-  // val r_fire_last =
-  //   fetch_port.r.ready && fetch_port.r.valid && fetch_port.r.last
-  // val aw_fire = fetch_port.aw.ready && fetch_port.aw.valid
-  // val w_fire = fetch_port.w.ready && fetch_port.w.valid
-  // val w_fire_last =
-  //   fetch_port.w.ready && fetch_port.w.valid && fetch_port.w.last
-  // val b_fire = fetch_port.b.ready && fetch_port.b.valid
   val fire = GenerateFireSignal(fetch_port)
 
   val has_ar = RegInit(false.B)
@@ -57,7 +48,7 @@ class __sim_bus() extends Module {
   raddr_r := MuxCase(
     raddr_r,
     Seq(
-      fire.ar_fire -> (fetch_port.ar.addr),
+      fire.ar_fire -> (fetch_port.ar.addr + 4.U),
       fire.r_fire -> (raddr_r + 4.U)
     )
   )
@@ -76,7 +67,7 @@ class __sim_bus() extends Module {
   fetch_port.ar.ready := !has_ar
   fetch_port.r.valid := has_ar
 
-  io.raddr := raddr_r
+  io.raddr := Mux(fire.ar_fire, fetch_port.ar.addr, raddr_r)
 
   val wid_r = RegEnable(fetch_port.aw.id, fire.aw_fire)
   val waddr_r = Reg(UInt(32.W))
@@ -99,7 +90,7 @@ class __sim_bus() extends Module {
   fetch_port.b.resp := "b00".U
   fetch_port.b.id := wid_r
 
-  io.valid := has_ar || io.wen
+  io.valid := fire.ar_fire || (has_ar && (burst_read_cnt =/= 0.U)) || io.wen
 
   block(AXIAssertLayer) {
     when(fire.ar_fire) {
