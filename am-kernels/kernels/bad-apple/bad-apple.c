@@ -44,7 +44,7 @@ int main() {
   bool has_keyboard = io_read(AM_INPUT_CONFIG).present;
 
   uint64_t now = io_read(AM_TIMER_UPTIME).us;
-  return 0;
+
   uint64_t wait_time = now + 500000;
   sleep_until(wait_time);
   if (has_keyboard)
