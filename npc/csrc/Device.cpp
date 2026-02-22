@@ -71,6 +71,7 @@ void device_thread_work(std::promise<void> &device_inited_promise) {
 
     if (cur_tick - last_tick_kbd >= 16.667ms) {
       last_tick_kbd = cur_tick;
+      keyboard_update();
     }
   }
   if (texture)
