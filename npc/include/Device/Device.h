@@ -1,12 +1,14 @@
 #pragma once
 
 #include "Device/Audio.h"
+#include "Device/Keyboard.h"
 #include "Device/RTC.h"
 #include "lockfree/spsc/ring_buf.hpp"
 #include "spdlog/spdlog.h"
 #include <Device/VGA.h>
 #include <SDL2/SDL.h>
 #include <atomic>
+#include <chrono>
 #include <cstdint>
 #include <functional>
 #include <future>
@@ -15,7 +17,7 @@
 #include <thread>
 constexpr uint32_t SERIAL_OFFSET = 0x00003f8;
 constexpr uint32_t RTC_OFFSET = 0x0000048;
-constexpr std::size_t RTC_LEN = sizeof(RTC.RTC_reg);
+constexpr std::size_t RTC_LEN = sizeof(uint32_t) * 2;
 constexpr uint32_t AUDIO_CTL_OFFSET = 0x0000200;
 constexpr std::size_t AUDIO_CTL_LEN = sizeof(Audio.reg_ctl);
 constexpr uint32_t AUDIO_BF_OFFSET = 0x1200000;
@@ -24,6 +26,9 @@ constexpr uint32_t VGA_CTL_OFFSET = 0x0000100;
 constexpr std::size_t VGA_CTL_LEN = 8;
 constexpr uint32_t VGA_BF_OFFSET = 0x1000000;
 constexpr std::size_t VGA_BF_LEN = VideoBase_t::VMemSize;
+constexpr uint32_t KBD_OFFSET = 0x0000060;
+
+inline void RTC_init() { RTC.last_time = std::chrono::steady_clock::now(); }
 
 #define MAP(c, f) c(f)
 #define NEMU_KEYS(f)                                                           \
@@ -56,17 +61,15 @@ inline std::unique_ptr<std::jthread> device_thread;
 inline std::atomic_bool quit;
 void device_thread_work(std::promise<void> &device_inited_promise);
 
-using KBD_BUF = lockfree::spsc::Queue<uint32_t, 128>;
-inline std::unique_ptr<KBD_BUF> kbd_buf;
-
 inline void init_vga_kbd() {
   Video.vmem1 = std::make_unique<VideoBase_t::VMEM>();
   Video.vmem2 = std::make_unique<VideoBase_t::VMEM>();
-
+  Video.front_ptr.store(Video.vmem1->data());
+  Video.back_ptr = Video.vmem2->data();
   spdlog::info("Allocated 2 video buffers of {} bytes",
                sizeof(VideoBase_t::VMEM));
   init_keymap();
-  kbd_buf = std::make_unique<KBD_BUF>();
+  Keyboard.kbd_buf = std::make_unique<KeyboardBase_t::KBD_BUF>();
   std::promise<void> device_inited_promise;
   std::future<void> device_inited_future = device_inited_promise.get_future();
   device_thread = std::make_unique<std::jthread>(

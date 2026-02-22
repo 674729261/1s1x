@@ -88,12 +88,13 @@ int simulate(int argc, char *argv[]) {
     spdlog::warn("DIFFTEST FAILED");
     result = -2;
   } else {
-    spdlog::warn("DIDNOT HALT");
+    spdlog::warn("DID NOT HALT");
     result = -3;
   }
   dut->print_all_gpr();
   quit.store(true);
 
   dut = nullptr;
+  SDL_CloseAudio();
   return result;
 }

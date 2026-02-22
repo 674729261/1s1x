@@ -14,7 +14,8 @@ struct AudioBase_t {
 
   static constexpr int n_regs = 6;
   static constexpr size_t SoundBufferSize = 0x10000;
-  using SBF = std::array<uint8_t, SoundBufferSize>;
+  static AudioBase_t *curAudioBase;
+  using SBF = std::array<uint32_t, SoundBufferSize / sizeof(uint32_t)>;
   std::unique_ptr<SBF> sbuf;
 };
 
