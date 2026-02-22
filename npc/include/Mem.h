@@ -7,9 +7,20 @@
 #include <stdexcept>
 #include <string_view>
 #include <vector>
-inline std::vector<uint32_t> mem;
 
-constexpr uint32_t SERIAL_OFFSET = 0x00003f8;
+inline void write_mask(uint32_t &dst, uint32_t mask32, uint32_t wdata) {
+  dst = (dst & ~mask32) | (wdata & mask32);
+}
+
+inline void write_mask(std::atomic<uint32_t> &dst, uint32_t mask32,
+                       uint32_t wdata) {
+  uint32_t t = dst.load(), new_value;
+  do {
+    new_value = (t & ~mask32) | (wdata & mask32);
+  } while (!dst.compare_exchange_weak(t, new_value));
+}
+
+inline std::vector<uint32_t> mem;
 
 inline size_t init_mem(std::string_view image_path) {
   using std::ifstream;

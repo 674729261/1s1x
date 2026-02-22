@@ -18,6 +18,9 @@ struct Config {
   bool batch_mode;
   bool difftest;
   bool use_waveform;
+
+  bool enable_vga;
+  bool enable_audio;
   std::string waveform_file;
 };
 

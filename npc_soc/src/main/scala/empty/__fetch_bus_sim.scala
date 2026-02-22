@@ -14,15 +14,7 @@ class __sim_bus() extends Module {
     val wen = Output(Bool())
     val rdata = Input(UInt(32.W))
   })
-  val ar_fire = fetch_port.ar.ready && fetch_port.ar.valid
-  val r_fire = fetch_port.r.ready && fetch_port.r.valid
-  val r_fire_last =
-    fetch_port.r.ready && fetch_port.r.valid && fetch_port.r.last
-  val aw_fire = fetch_port.aw.ready && fetch_port.aw.valid
-  val w_fire = fetch_port.w.ready && fetch_port.w.valid
-  val w_fire_last =
-    fetch_port.w.ready && fetch_port.w.valid && fetch_port.w.last
-  val b_fire = fetch_port.b.ready && fetch_port.b.valid
+  val fire = GenerateFireSignal(fetch_port)
 
   val has_ar = RegInit(false.B)
   val has_aw = RegInit(false.B)
@@ -31,40 +23,40 @@ class __sim_bus() extends Module {
   has_ar := MuxCase(
     has_ar,
     Seq(
-      ar_fire -> true.B,
-      r_fire_last -> false.B
+      fire.ar_fire -> true.B,
+      fire.r_burst_last -> false.B
     )
   )
   has_aw := MuxCase(
     has_aw,
     Seq(
-      aw_fire -> true.B,
-      b_fire -> false.B
+      fire.aw_fire -> true.B,
+      fire.b_fire -> false.B
     )
   )
   has_w := MuxCase(
     has_w,
     Seq(
-      w_fire_last -> true.B,
-      b_fire -> false.B
+      fire.w_burst_last -> true.B,
+      fire.b_fire -> false.B
     )
   )
 
   val burst_read_cnt = Reg(UInt(32.W))
-  val rid_r = RegEnable(fetch_port.ar.id, ar_fire)
+  val rid_r = RegEnable(fetch_port.ar.id, fire.ar_fire)
   val raddr_r = Reg(UInt(32.W))
   raddr_r := MuxCase(
     raddr_r,
     Seq(
-      ar_fire -> (fetch_port.ar.addr),
-      r_fire -> (raddr_r + 4.U)
+      fire.ar_fire -> (fetch_port.ar.addr + 4.U),
+      fire.r_fire -> (raddr_r + 4.U)
     )
   )
   burst_read_cnt := MuxCase(
     burst_read_cnt,
     Seq(
-      ar_fire -> (fetch_port.ar.len),
-      r_fire -> (burst_read_cnt - 1.U)
+      fire.ar_fire -> (fetch_port.ar.len),
+      fire.r_fire -> (burst_read_cnt - 1.U)
     )
   )
 
@@ -75,21 +67,21 @@ class __sim_bus() extends Module {
   fetch_port.ar.ready := !has_ar
   fetch_port.r.valid := has_ar
 
-  io.raddr := raddr_r
+  io.raddr := Mux(fire.ar_fire, fetch_port.ar.addr, raddr_r)
 
-  val wid_r = RegEnable(fetch_port.aw.id, aw_fire)
+  val wid_r = RegEnable(fetch_port.aw.id, fire.aw_fire)
   val waddr_r = Reg(UInt(32.W))
   waddr_r := MuxCase(
     waddr_r,
     Seq(
-      aw_fire -> (fetch_port.aw.addr),
-      w_fire -> (waddr_r + 4.U)
+      fire.aw_fire -> (fetch_port.aw.addr),
+      fire.w_fire -> (waddr_r + 4.U)
     )
   )
 
   fetch_port.aw.ready := !has_aw
   fetch_port.w.ready := has_aw
-  io.wen := w_fire
+  io.wen := fire.w_fire
   io.wdata := fetch_port.w.data
   io.wmask := fetch_port.w.strb
   io.waddr := waddr_r
@@ -98,17 +90,17 @@ class __sim_bus() extends Module {
   fetch_port.b.resp := "b00".U
   fetch_port.b.id := wid_r
 
-  io.valid := has_ar || io.wen
+  io.valid := fire.ar_fire || (has_ar && !fire.r_burst_last && fire.r_fire)
 
   block(AXIAssertLayer) {
-    when(ar_fire) {
+    when(fire.ar_fire) {
       assert(
         fetch_port.ar.len === 0.U || fetch_port.ar.size === "b010".U,
         "Only arsize = b010 is supported when burst"
       )
       assert(fetch_port.ar.burst === "b01".U, "Only arburst = b01 is supported")
     }
-    when(aw_fire) {
+    when(fire.aw_fire) {
       assert(
         fetch_port.aw.len === 0.U || fetch_port.aw.size === "b010".U,
         "Only awsize = b010 is supported when burst"

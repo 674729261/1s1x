@@ -1,18 +1,19 @@
 
 #include "DUT.h"
+#include "Device/Device.h"
+#include "Setup.h"
 #include "spdlog/spdlog.h"
 #include <Args.h>
 #include <Mem.h>
 #include <Ref.h>
+#include <Simulate.h>
 #include <Vnpc_top.h>
 #include <Vnpc_top___024root.h>
 #include <chrono>
-#include <memory>
 #include <print>
 #include <verilated.h>
 #include <verilated_vcd_c.h>
-std::unique_ptr<Dut> dut;
-VerilatedContext contextp;
+
 static bool retire;
 
 extern "C" void notify_retire(int32_t pc, int32_t inst) { retire = true; }
@@ -38,18 +39,22 @@ bool check_difftest(Dut &dut, Ref &ref) {
 int simulate(int argc, char *argv[]) {
   // init_mrom(config.image_path);
   init_mem(config.image_path);
+  quit.store(false);
+  RTC_init();
   Verilated::commandArgs(argc, argv);
   contextp.commandArgs(argc, argv);
-
+  RTC_init();
   Verilated::traceEverOn(config.use_waveform);
-
+  if (config.enable_vga) {
+    init_vga_kbd();
+  }
   dut = std::make_unique<Dut>(&contextp);
   Ref ref(*dut);
   ref.reset(*dut);
   dut->reset();
   bool difftest_state = false;
   auto start_time = std::chrono::steady_clock::now();
-  while (!contextp.gotFinish()) {
+  while (sim_state == SimulationState::RUNNING) {
     retire = false;
     if (dut->top->rootp->npc_top__DOT__reset) {
       ref.reset(*dut);
@@ -57,8 +62,10 @@ int simulate(int argc, char *argv[]) {
     }
     // std::println("PC = {:08x}", dut->getPC());
     dut->step_one_cycle();
-
+    if (contextp.gotFinish())
+      sim_state = SimulationState::HALT;
     if (retire) {
+      // std::println("PC = {:08x}", dut->getPC());
       // std::println("{:08x}", ref.getPC());
       if (config.difftest) {
         ref.step();
@@ -71,7 +78,7 @@ int simulate(int argc, char *argv[]) {
   auto end_time = std::chrono::steady_clock::now();
 
   int result;
-  if (contextp.gotFinish()) {
+  if (sim_state == SimulationState::HALT) {
     if (dut->getGPR(10) == 0) {
       spdlog::info("HIT GOOD TRAP");
       result = 0;
@@ -79,15 +86,17 @@ int simulate(int argc, char *argv[]) {
       spdlog::warn("HIT BAD TRAP with a0 = {:010x}", dut->getGPR(10));
       result = -1;
     }
-  } else if (difftest_state) {
+  } else if (sim_state == SimulationState::DIFFTEST_FAILED) {
     spdlog::warn("DIFFTEST FAILED");
     result = -2;
   } else {
-    spdlog::warn("FAILED TO HALT");
+    spdlog::warn("DID NOT HALT");
     result = -3;
   }
   dut->print_all_gpr();
+  quit.store(true);
 
   dut = nullptr;
+  SDL_CloseAudio();
   return result;
 }

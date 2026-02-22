@@ -28,12 +28,6 @@ image: image-dep
 	@$(OBJCOPY) -S --set-section-flags .bss=alloc,contents -O binary $(IMAGE).elf $(IMAGE).bin
 
 run: insert-arg
-	$(MAKE) -C $(NPC_HOME) sim_full_speed PROG=$(IMAGE).bin NPC_FLAGS="--batch"
-
-run_difftest: insert-arg
 	$(MAKE) -C $(NPC_HOME) sim PROG=$(IMAGE).bin NPC_FLAGS="--batch"
-
-run_swap: insert-arg
-	$(MAKE) -C $(NPC_HOME) sim_swap PROG=$(IMAGE).bin NPC_FLAGS="--batch"
 
 .PHONY: insert-arg
