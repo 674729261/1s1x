@@ -56,7 +56,8 @@ extern "C" uint32_t mem_read(uint32_t raddr) {
       // in audio buffer
       size_t SoundBufferOffset = (offset - AUDIO_BF_OFFSET) / sizeof(uint32_t);
       return reinterpret_cast<uint32_t *>(Audio.sbuf.get())[SoundBufferOffset];
-    } else if (raddr == KBD_OFFSET && config.enable_vga) {
+    } else if (offset == KBD_OFFSET && config.enable_vga) {
+      // in keyboard
       uint32_t key;
       if (Keyboard.kbd_buf->Pop(key))
         return key;
@@ -142,7 +143,8 @@ extern "C" void mem_write(uint32_t waddr, uint32_t wmask, uint32_t wdata) {
           reinterpret_cast<uint32_t *>(Audio.sbuf.get())[SoundBufferOffset],
           mask32, wdata);
       SDL_UnlockAudio();
-    } else if (waddr == KBD_OFFSET && config.enable_vga) {
+    } else if (offset == KBD_OFFSET && config.enable_vga) {
+      // in keyboard
       log_and_throw<std::logic_error>("Address {:#010x} (keyboard) is readonly",
                                       waddr);
     } else {
