@@ -29,7 +29,7 @@ extern "C" uint32_t mem_read(uint32_t raddr) {
       // in RTC
       size_t index = (offset - RTC_OFFSET) / sizeof(uint32_t);
       uint64_t value = update_RTC();
-      println("{}", value);
+      println("{} {}\r", value, RTC.RTC_reg_bias);
       if (index == 0)
         return value & 0xFFFFFFFF;
       else
