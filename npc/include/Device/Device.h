@@ -28,7 +28,10 @@ constexpr uint32_t VGA_BF_OFFSET = 0x1000000;
 constexpr std::size_t VGA_BF_LEN = VideoBase_t::VMemSize;
 constexpr uint32_t KBD_OFFSET = 0x0000060;
 
-inline void RTC_init() { RTC.last_time = std::chrono::steady_clock::now(); }
+inline void RTC_init() {
+  RTC.RTC_reg_bias = 0;
+  RTC.last_time = std::chrono::steady_clock::now();
+}
 
 #define MAP(c, f) c(f)
 #define NEMU_KEYS(f)                                                           \
