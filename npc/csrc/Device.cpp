@@ -24,7 +24,7 @@ static void audio_init() {}
 
 static void keyboard_update() {
   SDL_Event event;
-  if (SDL_PollEvent(&event))
+  if (!SDL_PollEvent(&event))
     return;
   if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
     {
