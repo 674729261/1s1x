@@ -24,22 +24,20 @@ static void audio_init() {}
 
 static void keyboard_update() {
   SDL_Event event;
-  if (!SDL_PollEvent(&event))
-    return;
-  if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
-    {
-      uint8_t k = event.key.keysym.scancode;
-      bool is_keydown = (event.key.type == SDL_KEYDOWN);
-      uint32_t wrapped = wrap_key_event(k, is_keydown);
+  while (SDL_PollEvent(&event)) {
+    if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
+      {
+        uint8_t k = event.key.keysym.scancode;
+        bool is_keydown = (event.key.type == SDL_KEYDOWN);
+        uint32_t wrapped = wrap_key_event(k, is_keydown);
 
-      if (!kbd_buf->Push(wrapped))
-        spdlog::warn("Key event {:#08x} ignored because the buffer is full",
-                     wrapped);
+        if (!kbd_buf->Push(wrapped))
+          spdlog::warn("Key event {:#08x} ignored because the buffer is full",
+                       wrapped);
+      }
+    } else if (event.type == SDL_QUIT) {
+      sim_state.store(SimulationState::QUIT);
     }
-  } else if (event.type == SDL_QUIT) {
-    sim_state.store(SimulationState::QUIT);
-  } else {
-    spdlog::warn("Unknown SDL event type : {}", event.type);
   }
 }
 
