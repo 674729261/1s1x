@@ -5,6 +5,7 @@
 #include <Mem.h>
 #include <Monitor.h>
 #include <Ref.h>
+#include <SDL2/SDL_audio.h>
 #include <Vnpc_top.h>
 #include <Vnpc_top___024root.h>
 #include <exception>
