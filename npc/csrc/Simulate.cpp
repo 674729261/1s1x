@@ -43,7 +43,6 @@ int simulate(int argc, char *argv[]) {
   RTC_init();
   Verilated::commandArgs(argc, argv);
   contextp.commandArgs(argc, argv);
-  RTC_init();
   Verilated::traceEverOn(config.use_waveform);
   if (config.enable_vga) {
     init_vga_kbd();
