@@ -61,7 +61,6 @@ void device_thread_work(std::promise<void> &device_inited_promise) {
   auto last_tick_vga = std::chrono::steady_clock::now();
   auto last_tick_kbd = std::chrono::steady_clock::now();
   while (!quit.load()) {
-    std::println("!!");
     auto cur_tick = std::chrono::steady_clock::now();
     if (Video.sync.load() && cur_tick - last_tick_vga >= 16.667ms) {
       last_tick_vga = cur_tick;
@@ -80,4 +79,5 @@ void device_thread_work(std::promise<void> &device_inited_promise) {
     SDL_DestroyRenderer(renderer);
   if (window)
     SDL_DestroyWindow(window);
+  std::println("!!");
 }
