@@ -23,6 +23,7 @@ struct AudioBase_t {
 inline AudioBase_t Audio;
 inline void audio_init() {
   Audio.reg_ctl.reg_sbuf_size = AudioBase_t::SoundBufferSize;
+  Audio.sbuf = std::make_unique<AudioBase_t::SBF>();
 }
 
 static void fill_audio_callback(void *udata, Uint8 *stream, int len) {
