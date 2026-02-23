@@ -25,6 +25,6 @@ int main(int argc, char *argv[]) {
     quit.store(true);
   }
   spdlog::shutdown();
-  println("!!");
+
   return return_value;
 }
