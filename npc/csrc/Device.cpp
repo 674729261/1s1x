@@ -1,11 +1,10 @@
-#include "Device/Audio.h"
 #include "Device/Keyboard.h"
 #include "Device/VGA.h"
 #include "spdlog/spdlog.h"
 #include <Device/Device.h>
 #include <SDL2/SDL_events.h>
 #include <Simulate.h>
-#include <ostream>
+#include <stop_token>
 
 static SDL_Renderer *renderer = NULL;
 static SDL_Texture *texture = NULL;

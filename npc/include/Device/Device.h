@@ -5,13 +5,13 @@
 #include "spdlog/spdlog.h"
 #include <Device/VGA.h>
 #include <SDL2/SDL.h>
-#include <atomic>
 #include <chrono>
 #include <cstdint>
 #include <functional>
 #include <future>
 #include <lockfree/lockfree.hpp>
 #include <memory>
+#include <stop_token>
 #include <thread>
 constexpr uint32_t SERIAL_OFFSET = 0x00003f8;
 constexpr uint32_t RTC_OFFSET = 0x0000048;
