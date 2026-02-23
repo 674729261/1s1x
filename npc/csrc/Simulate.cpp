@@ -99,7 +99,6 @@ int simulate(int argc, char *argv[]) {
   if (device_thread)
     device_thread->request_stop();
 
-  dut = nullptr;
   SDL_CloseAudio();
   return result;
 }
