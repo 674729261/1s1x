@@ -78,7 +78,5 @@ inline void audio_init_event() {
     log_and_throw<std::runtime_error>("Can't open audio - %s\n",
                                       SDL_GetError());
   }
-  std::println("{} {} {}", Audio.reg_ctl.reg_freq, Audio.reg_ctl.reg_samples,
-               Audio.reg_ctl.reg_channels);
   SDL_PauseAudio(0);
 }
