@@ -99,7 +99,7 @@ gdb: npc
 	gdb --args $(BIN) --image $(PROG) \
 	--mem_size $(MEM_SIZE) --mem_base $(MEM_BASE) \
 	--device_size $(DEV_SIZE) --device_base $(DEV_BASE) \
-	--log $(LOG_FILE)
+	--log $(LOG_FILE) --difftest
 
 
 clean:
