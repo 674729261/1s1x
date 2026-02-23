@@ -1,6 +1,7 @@
 
 #include "DUT.h"
 #include "Device/Device.h"
+#include "Device/Keyboard.h"
 #include "Setup.h"
 #include "spdlog/spdlog.h"
 #include <Args.h>
@@ -41,11 +42,14 @@ int simulate(int argc, char *argv[]) {
   init_mem(config.image_path);
   quit.store(false);
   RTC_init();
+  audio_init();
   Verilated::commandArgs(argc, argv);
   contextp.commandArgs(argc, argv);
   Verilated::traceEverOn(config.use_waveform);
   if (config.enable_vga) {
-    init_vga_kbd();
+    vga_init();
+    keyboard_init();
+    init_vga_kbd_thread();
   }
   dut = std::make_unique<Dut>(&contextp);
   Ref ref(*dut);

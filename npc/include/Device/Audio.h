@@ -18,5 +18,7 @@ struct AudioBase_t {
   using SBF = std::array<uint32_t, SoundBufferSize / sizeof(uint32_t)>;
   std::unique_ptr<SBF> sbuf;
 };
-
 inline AudioBase_t Audio;
+inline void audio_init() {
+  Audio.reg_ctl.reg_sbuf_size = AudioBase_t::SoundBufferSize;
+}

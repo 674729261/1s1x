@@ -48,8 +48,7 @@ static void VGA_init() {
   SDL_RenderPresent(renderer);
 }
 
-static void keyboard_init() {}
-static void audio_init() {
+static void audio_init_event() {
   if (SDL_InitSubSystem(SDL_INIT_AUDIO)) {
     log_and_throw<std::runtime_error>("Could not initialize SDL - {}\n",
                                       SDL_GetError());
