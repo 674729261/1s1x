@@ -1,6 +1,7 @@
 #pragma once
 
 #include "DUT.h"
+#include "Mem.h"
 #include <InstPattern/InstPattern.h>
 #include <VirtualBus.h>
 #include <cstdint>
@@ -26,6 +27,7 @@ struct Ref {
     }
     cache_hit = 0;
     cpu.pc = 0x30000000;
+    vbus.ram = mem;
   };
   void step();
   unsigned long long instrCount() { return inst_count; }

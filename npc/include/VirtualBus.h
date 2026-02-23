@@ -8,7 +8,7 @@
 #include <vector>
 
 struct VirtualBus {
-  VirtualBus() : ram(config.mem_size / sizeof(uint32_t)) {}
+  VirtualBus() : ram((config.mem_size + 3) / 4) {}
 
   struct ReadResult {
     uint32_t data;
