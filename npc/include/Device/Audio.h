@@ -77,6 +77,6 @@ inline void audio_init_event() {
     log_and_throw<std::runtime_error>("Can't open audio - %s\n",
                                       SDL_GetError());
   }
-
+  std::println("!!");
   SDL_PauseAudio(0);
 }

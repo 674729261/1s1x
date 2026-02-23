@@ -88,3 +88,15 @@ constexpr T bits(T raw) {
     return (raw & high_mask) >> Low;
   }
 }
+
+inline void write_mask(uint32_t &dst, uint32_t mask32, uint32_t wdata) {
+  dst = (dst & ~mask32) | (wdata & mask32);
+}
+
+inline void write_mask(std::atomic<uint32_t> &dst, uint32_t mask32,
+                       uint32_t wdata) {
+  uint32_t t = dst.load(), new_value;
+  do {
+    new_value = (t & ~mask32) | (wdata & mask32);
+  } while (!dst.compare_exchange_weak(t, new_value));
+}
