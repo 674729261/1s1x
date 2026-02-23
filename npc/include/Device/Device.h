@@ -73,6 +73,7 @@ inline void init_vga_kbd_thread() {
   std::future<void> device_inited_future = device_inited_promise.get_future();
   device_thread = std::make_unique<std::jthread>(
       device_thread_work, std::ref(device_inited_promise));
+  device_thread->detach();
   device_inited_future.get();
   spdlog::info("VGA thread initialization finished");
 }

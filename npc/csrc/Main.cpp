@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
     std::println(std::cerr, "Error : {}", e.what());
     if (device_thread) {
       device_thread->request_stop();
-      device_thread->join();
+      // device_thread->join();
     }
   }
   spdlog::shutdown();
