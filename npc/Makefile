@@ -16,7 +16,7 @@ SVSRC = $(patsubst %,generated_svsrc/%,$(SVSRC_FILES))
 
 VERILATOR = verilator
 
-VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -Ofast \
+VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -Dstrtk_no_tr1_or_boost -Ofast \
 -march=native -mtune=native \
 -funroll-loops -flto=auto -ffast-math -fno-math-errno -funsafe-math-optimizations 
 VERILATOR_LDFLAGS = -flto=auto -fipa-pta 

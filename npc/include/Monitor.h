@@ -1,3 +1,6 @@
 #pragma once
+#include <string>
+enum class CmdResult { OKAY, INVALID_ARG, ERROR, QUIT };
 
-int simulate(int argc, char *argv[]);
+CmdResult cmd_c(std::string arg);
+CmdResult cmd_si(std::string arg);
