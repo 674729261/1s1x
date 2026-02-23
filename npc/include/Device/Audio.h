@@ -16,7 +16,6 @@ struct AudioBase_t {
 
   static constexpr int n_regs = 6;
   static constexpr size_t SoundBufferSize = 0x10000;
-  static AudioBase_t *curAudioBase;
   using SBF = std::array<uint32_t, SoundBufferSize / sizeof(uint32_t)>;
   std::unique_ptr<SBF> sbuf;
 };
@@ -31,7 +30,7 @@ static void fill_audio_callback(void *udata, Uint8 *stream, int len) {
   if (len == 0) {
     return;
   }
-  uint32_t cnt = Audio.curAudioBase->reg_ctl.reg_count;
+  uint32_t cnt = Audio.reg_ctl.reg_count;
   if (len > cnt)
     len = cnt;
   if (last_pos + len <= AudioBase_t::SoundBufferSize) {
@@ -48,7 +47,7 @@ static void fill_audio_callback(void *udata, Uint8 *stream, int len) {
     last_pos = len - AudioBase_t::SoundBufferSize + last_pos;
   }
 
-  Audio.curAudioBase->reg_ctl.reg_count -= len;
+  Audio.reg_ctl.reg_count -= len;
 }
 inline void audio_init_event() {
   if (SDL_InitSubSystem(SDL_INIT_AUDIO)) {
@@ -78,6 +77,6 @@ inline void audio_init_event() {
     log_and_throw<std::runtime_error>("Can't open audio - %s\n",
                                       SDL_GetError());
   }
-  Audio.curAudioBase = &Audio;
+
   SDL_PauseAudio(0);
 }
