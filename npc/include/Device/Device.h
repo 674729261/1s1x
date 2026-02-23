@@ -59,8 +59,8 @@ inline uint32_t wrap_key_event(uint8_t scancode, bool is_keydown) {
 }
 
 inline std::unique_ptr<std::jthread> device_thread;
-inline std::atomic_bool quit;
-void device_thread_work(std::promise<void> &device_inited_promise);
+void device_thread_work(std::stop_token stop_token,
+                        std::promise<void> &device_inited_promise);
 
 inline void init_audio() {
   Audio.sbuf = std::make_unique<AudioBase_t::SBF>();

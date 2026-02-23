@@ -40,7 +40,6 @@ bool check_difftest(Dut &dut, Ref &ref) {
 int simulate(int argc, char *argv[]) {
   // init_mrom(config.image_path);
   init_mem(config.image_path);
-  quit.store(false);
   RTC_init();
   audio_init();
   Verilated::commandArgs(argc, argv);
@@ -97,7 +96,8 @@ int simulate(int argc, char *argv[]) {
     result = -3;
   }
   dut->print_all_gpr();
-  quit.store(true);
+  if (device_thread)
+    device_thread->request_stop();
 
   dut = nullptr;
   SDL_CloseAudio();

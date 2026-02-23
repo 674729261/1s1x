@@ -22,7 +22,8 @@ int main(int argc, char *argv[]) {
     return_value = simulate(argc, argv);
   } catch (const std::exception &e) {
     std::println(std::cerr, "Error : {}", e.what());
-    quit.store(true);
+    if (device_thread)
+      device_thread->request_stop();
   }
   spdlog::shutdown();
 
