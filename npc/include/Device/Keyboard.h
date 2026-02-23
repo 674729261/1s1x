@@ -1,6 +1,7 @@
 #pragma once
 #include "Device/Device.h"
 #include "lockfree/spsc/queue.hpp"
+#include <Device/Device.h>
 #include <cstdint>
 #include <memory>
 struct KeyboardBase_t {
