@@ -12,7 +12,6 @@
 #include <Vnpc_top.h>
 #include <Vnpc_top___024root.h>
 #include <chrono>
-#include <iostream>
 #include <memory>
 #include <print>
 #include <replxx.hxx>
