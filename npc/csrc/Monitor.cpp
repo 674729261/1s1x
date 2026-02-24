@@ -22,8 +22,8 @@ CmdResult cmd_c(std::string_view arg) {
 }
 CmdResult cmd_si(std::string_view arg) {
   if (match<RE_NO_ARG>(arg)) {
-    // no argument
-    todo("run");
+    run(1);
+    return CmdResult::OKAY;
   } else if (auto [whole, num_str] = match<RE_ONE_NUMBER>(arg); whole) {
     auto value = to_number<unsigned long long>(num_str);
     if (value.has_value()) {
