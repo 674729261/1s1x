@@ -4,6 +4,7 @@
 #include "Device/Keyboard.h"
 #include "Monitor.h"
 #include "Setup.h"
+#include "ctre/ctre.hpp"
 #include "spdlog/spdlog.h"
 #include <Args.h>
 #include <Mem.h>
@@ -99,8 +100,8 @@ void monitor_loop() {
     const char *input = rx.input("(NPCemu) ");
     if (input == nullptr)
       break;
-    std::string line(input);
-    std::string_view line_sv(line);
+    auto m = ctre::match<R"(\s*(.+))">(input);
+    std::string_view line_sv(m.get<1>());
     bool command_found = false;
     for (const auto &item : cmd_list) {
       if (line_sv.starts_with(item.command)) {
