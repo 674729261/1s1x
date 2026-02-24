@@ -12,6 +12,7 @@
 #include <Simulate.h>
 #include <Vnpc_top.h>
 #include <Vnpc_top___024root.h>
+#include <cctype>
 #include <chrono>
 #include <memory>
 #include <print>
@@ -100,10 +101,14 @@ void monitor_loop() {
     const char *input = rx.input("(NPCemu) ");
     if (input == nullptr)
       break;
-    auto [m, content] = ctre::match<R"(\s*(.*))">(input);
-    if (content == "")
+    int begin_pos = 0;
+    std::string_view line_sv(input);
+    while (begin_pos < line_sv.length() && std::isspace(input[begin_pos]))
+      ++begin_pos;
+    if (begin_pos == line_sv.length())
       continue;
-    std::string_view line_sv(content);
+    line_sv = line_sv.substr(begin_pos);
+
     bool command_found = false;
     for (const auto &item : cmd_list) {
       if (line_sv.starts_with(item.command)) {
