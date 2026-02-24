@@ -1,5 +1,6 @@
 #include "Device/Keyboard.h"
 #include "Device/VGA.h"
+#include "Monitor.h"
 #include "spdlog/spdlog.h"
 #include <Device/Device.h>
 #include <SDL2/SDL_events.h>
@@ -36,7 +37,7 @@ static void keyboard_update() {
                        wrapped);
       }
     } else if (event.type == SDL_QUIT) {
-      sim_state.store(SimulationState::QUIT);
+      quit.store(true);
     }
   }
 }

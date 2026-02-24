@@ -1,6 +1,9 @@
 #pragma once
+#include <atomic>
 #include <string_view>
-enum class CmdResult { OKAY, INVALID_ARG, ERROR, QUIT };
+enum class CmdResult { OKAY, INVALID_ARG, ERROR };
+
+inline std::atomic_bool quit;
 
 CmdResult cmd_c(std::string_view arg);
 CmdResult cmd_si(std::string_view arg);

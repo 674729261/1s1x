@@ -55,7 +55,8 @@ CmdResult cmd_x(std::string_view arg) {
 
 CmdResult cmd_q(std::string_view arg) {
   if (match<RE_NO_ARG>(arg)) {
-    return CmdResult::QUIT;
+    quit.store(true);
+    return CmdResult::OKAY;
   } else {
     return CmdResult::INVALID_ARG;
   }
