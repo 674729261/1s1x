@@ -61,3 +61,14 @@ CmdResult cmd_q(std::string_view arg) {
     return CmdResult::INVALID_ARG;
   }
 }
+
+CmdResult cmd_li(std::string_view arg) {
+  if (match<R"(\s*r\s*)">(arg)) {
+    dut->print_all_gpr();
+    return CmdResult::OKAY;
+  } else if (match<R"(\s*w\s*)">(arg)) {
+    todo("li w");
+  } else {
+    return CmdResult::INVALID_ARG;
+  }
+}

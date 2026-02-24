@@ -1,4 +1,5 @@
 #pragma once
+#include "DUT.h"
 #include "my_utils.h"
 #include <Expression/ExpressionToken.h>
 #include <SDL2/SDL_stdinc.h>
@@ -12,6 +13,7 @@
 namespace Expr {
 struct Token {
   int type;
+  Catagory cata;
   uint32_t data;
 };
 struct Expression {
@@ -55,15 +57,35 @@ Expression::create_expression(std::string_view expr_str) {
     if (tt.id == TK_NULL)
       continue;
 
-    Token cur_token = {which, 0};
+    Token cur_token = {which, token_types[which].cata, 0};
     if (tt.id == TK_NUM) {
       auto parse_num = to_number<uint32_t>(result);
       if (!parse_num.has_value())
         return std::nullopt;
       cur_token.data = parse_num.value();
+    } else if (tt.id == TK_REG) {
+      if (result == "$0")
+        cur_token.data = 0;
+      else if (result == "$pc") {
+        cur_token.data = 32;
+      } else {
+        std::string_view reg_name = result.substr(1);
+        for (int i = 1; i < 32; i++) {
+          if (reg_name == gpr_names[i]) {
+            cur_token.data = i;
+            break;
+          }
+        }
+        println("Invalid gpr name : {}", result);
+        return std::nullopt;
+      }
     }
 
-    prev_is_operator = (tt.cata == Catagory::OPERAND);
+    if ((tt.id == '-' || tt.id == '+' || tt.id == '*') && prev_is_operator) {
+      cur_token.cata = Catagory::OPERATOR_1;
+    }
+
+    prev_is_operator = (tt.cata != Catagory::OPERAND);
     ret.display += result;
   }
 

@@ -11,7 +11,7 @@ inline std::unique_ptr<Ref> ref;
 inline VerilatedContext contextp;
 
 enum class SimulationState { RUNNING, HALT, DIFFTEST_FAILED };
-inline std::atomic<SimulationState> sim_state;
+inline SimulationState sim_state;
 
 int simulate(int argc, char *argv[]);
 
