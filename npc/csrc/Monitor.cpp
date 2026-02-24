@@ -72,3 +72,26 @@ CmdResult cmd_li(std::string_view arg) {
     return CmdResult::INVALID_ARG;
   }
 }
+
+CmdResult cmd_help(std::string_view arg) {
+  if (match<RE_NO_ARG>(arg)) {
+    for (int i = 0; i < NR_CMD; i++) {
+      std::println("{}\t{}", cmd_list[i].command, cmd_list[i].help);
+    }
+  } else {
+    auto [whole, cmd] = match<R"(\s*([a-z])\s*)">(arg);
+    for (int i = 0; i < NR_CMD; i++) {
+      if (cmd.to_view() == cmd_list[i].command) {
+        {
+          std::println("{}\t{}", cmd_list[i].command, cmd_list[i].help);
+          return CmdResult::OKAY;
+        }
+      }
+    }
+    println("No such command. All command list:");
+    for (int i = 0; i < NR_CMD; i++) {
+      std::println("{}\t{}", cmd_list[i].command, cmd_list[i].help);
+    }
+  }
+  return CmdResult::OKAY;
+}
