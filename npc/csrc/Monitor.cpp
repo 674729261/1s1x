@@ -10,7 +10,7 @@ static constexpr auto RE_ONE_NUMBER = fixed_string{
     R"(\s*(0x[a-fA-F1-9][a-fA-F0-9]*|0[1-7][0-7]*|[1-9][0-9]*|0)\s*)"};
 static constexpr auto RE_TWO_NUMBER = fixed_string{
     R"(\s*(0x[a-fA-F1-9][a-fA-F0-9]*|0[1-7][0-7]*|[1-9][0-9]*|0)\s*(0x[a-fA-F1-9][a-fA-F0-9]*|0[1-7][0-7]*|[1-9][0-9]*|0)\s*)"};
-static constexpr auto RE_ONE_EXPR = fixed_string{R"(h.*)"};
+static constexpr auto RE_ONE_EXPR = fixed_string{R"(\s*.*\s*)"};
 
 CmdResult cmd_c(std::string_view arg) {
   if (match<RE_NO_ARG>(arg)) {
@@ -47,6 +47,15 @@ CmdResult cmd_x(std::string_view arg) {
     } else {
       return CmdResult::INVALID_ARG;
     }
+    return CmdResult::OKAY;
+  } else {
+    return CmdResult::INVALID_ARG;
+  }
+}
+
+CmdResult cmd_q(std::string_view arg) {
+  if (match<RE_NO_ARG>(arg)) {
+    sim_state = SimulationState::QUIT;
     return CmdResult::OKAY;
   } else {
     return CmdResult::INVALID_ARG;

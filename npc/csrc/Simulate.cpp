@@ -26,6 +26,16 @@ static bool retire;
 
 extern "C" void notify_retire(int32_t pc, int32_t inst) { retire = true; }
 
+int show_trap_info() {
+  if (dut->getGPR(10) == 0) {
+    spdlog::info("HIT GOOD TRAP");
+    return 0;
+  } else {
+    spdlog::warn("HIT BAD TRAP with a0 = {:010x}", dut->getGPR(10));
+    return -1;
+  }
+}
+
 bool check_difftest() {
   bool ret = false;
   for (int i = 0; i < 16; i++) {
@@ -44,13 +54,24 @@ bool check_difftest() {
   return ret;
 }
 void run(unsigned long long steps) {
+  if (sim_state == SimulationState::HALT) {
+    spdlog::info("Program has hit trap @ PC = {:#010x}, a0 = {:#010x}",
+                 dut->getPC(), dut->getGPR(10));
+    return;
+  }
+  if (sim_state == SimulationState::DIFFTEST_FAILED) {
+    check_difftest();
+    return;
+  }
   bool difftest_state = false;
   auto start_time = std::chrono::steady_clock::now();
   while (sim_state == SimulationState::RUNNING && steps != 0) {
     retire = false;
     dut->step_one_cycle();
-    if (contextp.gotFinish())
+    if (contextp.gotFinish()) {
       sim_state = SimulationState::HALT;
+      show_trap_info();
+    }
     if (retire) {
       steps--;
       simulation_instructions++;
@@ -69,7 +90,7 @@ void run(unsigned long long steps) {
 }
 void monitor_loop() {
   replxx::Replxx rx;
-  while (true) {
+  while (sim_state != SimulationState::QUIT) {
     const char *input = rx.input("(NPCemu) ");
     if (input == nullptr)
       break;
@@ -114,13 +135,7 @@ int simulate(int argc, char *argv[]) {
   monitor_loop();
   int result;
   if (sim_state == SimulationState::HALT) {
-    if (dut->getGPR(10) == 0) {
-      spdlog::info("HIT GOOD TRAP");
-      result = 0;
-    } else {
-      spdlog::warn("HIT BAD TRAP with a0 = {:010x}", dut->getGPR(10));
-      result = -1;
-    }
+    result = show_trap_info();
   } else if (sim_state == SimulationState::DIFFTEST_FAILED) {
     spdlog::warn("DIFFTEST FAILED");
     result = -2;
