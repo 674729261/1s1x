@@ -100,8 +100,10 @@ void monitor_loop() {
     const char *input = rx.input("(NPCemu) ");
     if (input == nullptr)
       break;
-    auto m = ctre::match<R"(\s*(.+))">(input);
-    std::string_view line_sv(m.get<1>());
+    auto [m, content] = ctre::match<R"(\s*(.*))">(input);
+    if (content == "")
+      continue;
+    std::string_view line_sv(content);
     bool command_found = false;
     for (const auto &item : cmd_list) {
       if (line_sv.starts_with(item.command)) {
