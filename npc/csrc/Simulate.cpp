@@ -2,6 +2,7 @@
 #include "DUT.h"
 #include "Device/Device.h"
 #include "Device/Keyboard.h"
+#include "Monitor.h"
 #include "Setup.h"
 #include "spdlog/spdlog.h"
 #include <Args.h>
@@ -11,12 +12,14 @@
 #include <Vnpc_top.h>
 #include <Vnpc_top___024root.h>
 #include <chrono>
+#include <iostream>
 #include <memory>
 #include <print>
+#include <replxx.hxx>
 #include <verilated.h>
 #include <verilated_vcd_c.h>
 
-double simulation_time;
+long long simulation_time;
 long long simulation_clocks;
 long long simulation_instructions;
 
@@ -41,23 +44,17 @@ bool check_difftest() {
 
   return ret;
 }
-
-void monitor_loop() {
+void run(unsigned long long steps) {
   bool difftest_state = false;
   auto start_time = std::chrono::steady_clock::now();
-  while (sim_state == SimulationState::RUNNING) {
+  while (sim_state == SimulationState::RUNNING && steps != 0) {
     retire = false;
-    if (config.difftest && dut->top->rootp->npc_top__DOT__reset) {
-      ref->reset(*dut);
-      ref->sync_state();
-    }
-    // std::println("PC = {:08x}", dut->getPC());
     dut->step_one_cycle();
     if (contextp.gotFinish())
       sim_state = SimulationState::HALT;
     if (retire) {
-      // std::println("PC = {:08x}", dut->getPC());
-      // std::println("{:08x}", ref.getPC());
+      steps--;
+      simulation_instructions++;
       if (config.difftest) {
         ref->step();
         difftest_state = check_difftest();
@@ -67,6 +64,35 @@ void monitor_loop() {
     }
   }
   auto end_time = std::chrono::steady_clock::now();
+  simulation_time += std::chrono::duration_cast<std::chrono::microseconds>(
+                         start_time - end_time)
+                         .count();
+}
+void monitor_loop() {
+  replxx::Replxx rx;
+  while (true) {
+    const char *input = rx.input("(NPCemu) ");
+    if (input == nullptr)
+      break;
+    std::string line(input);
+    std::string_view line_sv(line);
+    bool command_found = false;
+    for (const auto &item : cmd_list) {
+      if (line_sv.starts_with(item.command)) {
+        std::string_view arg_sv = line_sv.substr(item.command.length());
+        CmdResult ret = item.call(std::string(arg_sv));
+        if (ret == CmdResult::INVALID_ARG) {
+          std::println("Invalid argument.");
+          std::println("{}", item.help);
+        }
+        command_found = true;
+        break;
+      }
+    }
+    if (!command_found) {
+      std::println("Unknown command");
+    }
+  }
 }
 
 int simulate(int argc, char *argv[]) {

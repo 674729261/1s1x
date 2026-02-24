@@ -14,3 +14,5 @@ enum class SimulationState { RUNNING, QUIT, HALT, DIFFTEST_FAILED };
 inline std::atomic<SimulationState> sim_state;
 
 int simulate(int argc, char *argv[]);
+
+void run(unsigned long long steps);

@@ -26,7 +26,7 @@ extern long long max_lsu_fetch_delay;
 extern long long cycles_not_on_flash;
 extern long long insts_not_on_flash;
 
-extern double simulation_time;
+extern long long simulation_time;
 extern long long simulation_clocks;
 extern long long simulation_instructions;
 
