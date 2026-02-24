@@ -14,9 +14,11 @@
 #include <Vnpc_top___024root.h>
 #include <cctype>
 #include <chrono>
+#include <filesystem>
 #include <memory>
 #include <print>
 #include <replxx.hxx>
+#include <string>
 #include <verilated.h>
 #include <verilated_vcd_c.h>
 
@@ -96,6 +98,13 @@ void monitor_loop() {
     return;
   }
   replxx::Replxx rx;
+
+  std::filesystem::path temp_dir = std::filesystem::temp_directory_path();
+  std::filesystem::path history_file = temp_dir / "replxx_history_npc.his";
+  if (std::filesystem::exists(history_file)) {
+    rx.history_load(history_file);
+  }
+
   quit.store(false);
   while (!quit.load()) {
     const char *input = rx.input("(NPCemu) ");
@@ -119,6 +128,7 @@ void monitor_loop() {
           std::println("{}", item.help);
         }
         command_found = true;
+        rx.history_add(std::string(line_sv));
         break;
       }
     }
@@ -126,6 +136,7 @@ void monitor_loop() {
       std::println("Unknown command");
     }
   }
+  rx.history_save(history_file);
 }
 
 int simulate(int argc, char *argv[]) {
