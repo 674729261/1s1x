@@ -55,8 +55,7 @@ CmdResult cmd_x(std::string_view arg) {
 
 CmdResult cmd_q(std::string_view arg) {
   if (match<RE_NO_ARG>(arg)) {
-    sim_state = SimulationState::QUIT;
-    return CmdResult::OKAY;
+    return CmdResult::QUIT;
   } else {
     return CmdResult::INVALID_ARG;
   }

@@ -90,7 +90,8 @@ void run(unsigned long long steps) {
 }
 void monitor_loop() {
   replxx::Replxx rx;
-  while (sim_state != SimulationState::QUIT) {
+  CmdResult cmd_result;
+  while (cmd_result != CmdResult::QUIT) {
     const char *input = rx.input("(NPCemu) ");
     if (input == nullptr)
       break;

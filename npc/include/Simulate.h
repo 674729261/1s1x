@@ -10,7 +10,7 @@ inline std::unique_ptr<Dut> dut;
 inline std::unique_ptr<Ref> ref;
 inline VerilatedContext contextp;
 
-enum class SimulationState { RUNNING, QUIT, HALT, DIFFTEST_FAILED };
+enum class SimulationState { RUNNING, HALT, DIFFTEST_FAILED };
 inline std::atomic<SimulationState> sim_state;
 
 int simulate(int argc, char *argv[]);
