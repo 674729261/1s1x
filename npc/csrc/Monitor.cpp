@@ -79,7 +79,7 @@ CmdResult cmd_help(std::string_view arg) {
       std::println("{}\t{}", cmd_list[i].command, cmd_list[i].help);
     }
   } else {
-    auto [whole, cmd] = match<R"(\s*([a-z])\s*)">(arg);
+    auto [whole, cmd] = match<R"(\s*([a-z]+)\s*)">(arg);
     for (int i = 0; i < NR_CMD; i++) {
       if (cmd.to_view() == cmd_list[i].command) {
         {
