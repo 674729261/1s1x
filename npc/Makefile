@@ -75,7 +75,10 @@ sim_full_speed: VERILATOR_LDFLAGS+=-fuse-linker-plugin
 sim_full_speed: MDIR = $(NPC_HOME)/build/full_speed/
 sim_full_speed: npc
 	$(call git_commit, "sim RTL full speed") # DO NOT REMOVE THIS LINE!!!
-	$(BIN) --image $(PROG) --mem_size $(MEM_SIZE) --log $(LOG_FILE) $(NPC_FLAGS) --enable_audio --enable_vga --enable_keyboard
+	$(BIN) $(PROG) \
+	--mem_size $(MEM_SIZE) --mem_base $(MEM_BASE) \
+	--device_size $(DEV_SIZE) --device_base $(DEV_BASE) \
+	--log $(LOG_FILE) --difftest --enable_vga --enable_audio $(NPC_FLAGS) --batch
 
 sim_ftracer: npc
 	$(call git_commit, "sim RTL ftracer") # DO NOT REMOVE THIS LINE!!!

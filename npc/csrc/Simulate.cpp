@@ -89,6 +89,10 @@ void run(unsigned long long steps) {
                          .count();
 }
 void monitor_loop() {
+  if (config.batch_mode) {
+    run(-1);
+    return;
+  }
   replxx::Replxx rx;
   quit.store(false);
   while (!quit.load()) {
