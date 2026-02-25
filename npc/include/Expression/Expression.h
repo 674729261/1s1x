@@ -147,6 +147,11 @@ Expression::create_expression(std::string_view expr_str) {
               std::format("Invalid token '{}' at pos {}", result, cur_pos)};
     }
     prev_is_operator = (tt.cata != Catagory::OPERAND);
+    if (tt.id == '(')
+      prev_is_operator = true;
+    else if (tt.id == ')')
+      prev_is_operator = false;
+
     ret.display += result;
     token_seq.push_back(cur_token);
     cur_pos += result.length();
