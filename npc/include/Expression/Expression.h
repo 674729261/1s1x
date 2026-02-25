@@ -176,6 +176,7 @@ inline Result<uint32_t> Expression::eval() {
   std::stack<uint32_t> stk_calc;
   for (const Token &tk : nodes) {
     const auto &tt = token_types[tk.type];
+    spdlog::info("id {}", tt.id);
     switch (tk.cata) {
     case Catagory::OPERAND:
       switch (tt.id) {
