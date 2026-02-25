@@ -97,7 +97,7 @@ Expression::create_expression(std::string_view expr_str) {
       const auto &tt = token_types[which];
       result = tt.tokenizor(cur_substr);
       if (result.length() > 0) {
-        spdlog::info("which = {}", which);
+        spdlog::info("which = {}, {}", which, result);
         break;
       }
     }
