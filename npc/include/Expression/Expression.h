@@ -59,8 +59,8 @@ build_expr_tree(const std::vector<Token> &vtk) {
         break;
       case Catagory::OPERATOR_2: {
         while (!stk_node.empty() &&
-               stk_node.top().cata != Catagory::OPERATOR_1 &&
-               token_types[stk_node.top().type].priority >= tt_cur.priority) {
+               (stk_node.top().cata == Catagory::OPERATOR_1 ||
+                token_types[stk_node.top().type].priority >= tt_cur.priority)) {
           ret.push_back(stk_node.top());
           stk_node.pop();
         }
