@@ -18,12 +18,11 @@
 namespace Expr {
 
 struct Expression {
-
   std::vector<Token> nodes;
   std::string display;
   static Result<Expression> create_expression(std::string_view expr_str);
   std::optional<uint32_t> last_value;
-  Result<uint32_t> eval();
+  Result<uint32_t> eval() const;
 
 private:
   Expression() = default;
@@ -165,7 +164,7 @@ Expression::create_expression(std::string_view expr_str) {
   ret.last_value = val.value;
   return {ret};
 }
-inline Result<uint32_t> Expression::eval() {
+inline Result<uint32_t> Expression::eval() const {
   std::stack<uint32_t> stk_calc;
   for (const Token &tk : nodes) {
     const auto &tt = token_types[tk.type];

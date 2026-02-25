@@ -2,6 +2,7 @@
 #include "DUT.h"
 #include "Device/Device.h"
 #include "Device/Keyboard.h"
+#include "Expression/Watcher.h"
 #include "Monitor.h"
 #include "PerformanceCounter.h"
 #include "Setup.h"
@@ -15,6 +16,7 @@
 #include <cctype>
 #include <chrono>
 #include <filesystem>
+#include <format>
 #include <memory>
 #include <print>
 #include <replxx.hxx>
@@ -52,6 +54,25 @@ int show_trap_info() {
     spdlog::warn("HIT BAD TRAP with a0 = {:010x}", dut->getGPR(10));
     return -1;
   }
+}
+
+bool check_watchers() {
+  bool ret = false;
+  for (Expr::Expression &w : watchers) {
+    auto result = w.eval();
+    if (!result.value.has_value() || result.value.value() != w.last_value) {
+      ret = true;
+      std::string old = (w.last_value.has_value()
+                             ? std::format("{:#010x}", w.last_value.value())
+                             : "Error");
+      std::string now = (result.value.has_value()
+                             ? std::format("{:#010x}", result.value.value())
+                             : "Error");
+      spdlog::info("Watcher {} changed from {} to {}", w.display, old, now);
+    }
+    w.last_value = result.value;
+  }
+  return ret;
 }
 
 bool check_difftest() {
@@ -97,6 +118,8 @@ void run(unsigned long long steps) {
     if (retire) {
       steps--;
       simulation_instructions_steped++;
+      if (check_watchers())
+        break;
       if (config.difftest) {
         ref->step();
         difftest_state = check_difftest();
