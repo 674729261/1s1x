@@ -118,14 +118,16 @@ void run(unsigned long long steps) {
     if (retire) {
       steps--;
       simulation_instructions_steped++;
-      if (check_watchers())
-        break;
+      bool watcher_state = check_watchers();
+
       if (config.difftest) {
         ref->step();
         difftest_state = check_difftest();
         if (difftest_state)
           break;
       }
+      if (watcher_state)
+        break;
     }
   }
   auto end_time = std::chrono::steady_clock::now();
