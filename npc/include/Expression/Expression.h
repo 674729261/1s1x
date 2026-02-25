@@ -1,5 +1,7 @@
 #pragma once
 #include "DUT.h"
+#include "Mem.h"
+#include "Setup.h"
 #include "Simulate.h"
 #include "my_utils.h"
 #include "spdlog/spdlog.h"
@@ -223,7 +225,27 @@ inline Result<uint32_t> Expression::eval() {
       break;
     }
     case Catagory::OPERATOR_1:
-      todo("unary operator");
+      if (stk_calc.empty())
+        return {std::nullopt, "Invalid expression : insufficient operands"};
+      uint32_t lhs = stk_calc.top();
+      stk_calc.pop();
+      switch (tt.id) {
+      case '+':
+        stk_calc.push(lhs);
+        break;
+      case '-':
+        stk_calc.push(-lhs);
+        break;
+      case '*':
+        if (lhs >= config.base_memory &&
+            lhs < config.base_memory + config.mem_size) {
+          stk_calc.push(mem[(lhs - config.base_memory) >> 2]);
+        } else {
+          return {std::nullopt,
+                  "Evaluation error : memory address {:#010x} is out of range"};
+        }
+        break;
+      }
       break;
     }
   }
