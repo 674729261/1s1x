@@ -113,7 +113,7 @@ Expression::create_expression(std::string_view expr_str) {
     if (tt.id == TK_NUM) {
       auto parse_num = to_number<uint32_t>(result);
       if (!parse_num.has_value())
-        return {std::nullopt, std::format("Invalid number: {}", result)};
+        return {std::nullopt, std::format("Invalid number : {}", result)};
       cur_token.data = parse_num.value();
     } else if (tt.id == TK_REG) {
       if (result == "$0")
