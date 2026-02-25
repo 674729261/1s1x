@@ -123,20 +123,20 @@ extern "C" void mem_write(uint32_t waddr, uint32_t wmask, uint32_t wdata) {
       size_t index = (offset - VGA_BF_OFFSET) / 4;
       write_mask(Video.back_ptr[index], mask32, wdata);
     } else if (offset >= AUDIO_CTL_OFFSET &&
-               offset <
-                   AUDIO_CTL_OFFSET + AudioBase_t::n_regs * sizeof(uint32_t)) {
+               offset < AUDIO_CTL_OFFSET + AUDIO_CTL_LEN) {
       // in audio ctl
       size_t AudioReg_id = (offset - AUDIO_CTL_OFFSET) / sizeof(uint32_t);
       std::span<uint32_t, AudioBase_t::n_regs> ctlreg_arrview(
           &Audio.reg_ctl.reg_freq, AudioBase_t::n_regs);
       write_mask(ctlreg_arrview[AudioReg_id], mask32, wdata);
       if (Audio.reg_ctl.reg_init) {
-        init_audio();
+        audio_init_event();
         Audio.reg_ctl.reg_init = 0;
       }
     } else if (offset >= AUDIO_BF_OFFSET &&
                offset < AUDIO_BF_OFFSET + AUDIO_BF_LEN) {
       // in audio buffer
+
       size_t SoundBufferOffset = (offset - AUDIO_BF_OFFSET) / sizeof(uint32_t);
       SDL_LockAudio();
       write_mask(

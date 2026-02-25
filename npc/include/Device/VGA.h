@@ -1,4 +1,5 @@
 #pragma once
+#include "spdlog/spdlog.h"
 #include <array>
 #include <atomic>
 #include <cstdint>
@@ -20,3 +21,12 @@ struct VideoBase_t {
 };
 
 inline VideoBase_t Video;
+
+inline void vga_init() {
+  Video.vmem1 = std::make_unique<VideoBase_t::VMEM>();
+  Video.vmem2 = std::make_unique<VideoBase_t::VMEM>();
+  Video.front_ptr.store(Video.vmem1->data());
+  Video.back_ptr = Video.vmem2->data();
+  spdlog::info("Allocated 2 video buffers of {} bytes",
+               sizeof(VideoBase_t::VMEM));
+}

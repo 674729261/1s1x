@@ -17,7 +17,10 @@ using std::println, std::print;
 
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
-
+template <typename T> struct Result {
+  std::optional<T> value;
+  std::string error;
+};
 constexpr std::array<uint32_t, 16> lookup_mask32 = {
     0x00000000, 0x000000FF, 0x0000FF00, 0x0000FFFF, 0x00FF0000, 0x00FF00FF,
     0x00FFFF00, 0x00FFFFFF, 0xFF000000, 0xFF0000FF, 0xFF00FF00, 0xFF00FFFF,
@@ -87,4 +90,16 @@ constexpr T bits(T raw) {
     uint64_t high_mask = (1ull << (High + 1)) - 1;
     return (raw & high_mask) >> Low;
   }
+}
+
+inline void write_mask(uint32_t &dst, uint32_t mask32, uint32_t wdata) {
+  dst = (dst & ~mask32) | (wdata & mask32);
+}
+
+inline void write_mask(std::atomic<uint32_t> &dst, uint32_t mask32,
+                       uint32_t wdata) {
+  uint32_t t = dst.load(), new_value;
+  do {
+    new_value = (t & ~mask32) | (wdata & mask32);
+  } while (!dst.compare_exchange_weak(t, new_value));
 }

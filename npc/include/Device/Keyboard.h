@@ -1,5 +1,7 @@
 #pragma once
+#include "Device/Device.h"
 #include "lockfree/spsc/queue.hpp"
+#include <Device/Device.h>
 #include <cstdint>
 #include <memory>
 struct KeyboardBase_t {
@@ -8,3 +10,8 @@ struct KeyboardBase_t {
 };
 
 inline KeyboardBase_t Keyboard;
+
+inline void keyboard_init() {
+  init_keymap();
+  Keyboard.kbd_buf = std::make_unique<KeyboardBase_t::KBD_BUF>();
+}

@@ -1,6 +1,8 @@
 #pragma once
 
 #include "DUT.h"
+#include "Mem.h"
+#include "Setup.h"
 #include <InstPattern/InstPattern.h>
 #include <VirtualBus.h>
 #include <cstdint>
@@ -25,7 +27,8 @@ struct Ref {
       cpu.gpr[i] = dut.getGPR(i);
     }
     cache_hit = 0;
-    cpu.pc = 0x30000000;
+    cpu.pc = config.base_memory;
+    vbus.ram = mem;
   };
   void step();
   unsigned long long instrCount() { return inst_count; }

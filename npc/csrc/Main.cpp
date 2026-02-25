@@ -1,10 +1,12 @@
 
 #include "Device/Device.h"
+#include "Simulate.h"
 #include "spdlog/spdlog.h"
 #include <Args.h>
 #include <Mem.h>
 #include <Monitor.h>
 #include <Ref.h>
+#include <SDL2/SDL_audio.h>
 #include <Vnpc_top.h>
 #include <Vnpc_top___024root.h>
 #include <exception>
@@ -21,8 +23,12 @@ int main(int argc, char *argv[]) {
     return_value = simulate(argc, argv);
   } catch (const std::exception &e) {
     std::println(std::cerr, "Error : {}", e.what());
-    quit.store(true);
+    if (device_thread) {
+      device_thread->request_stop();
+    }
   }
   spdlog::shutdown();
+  dut = nullptr;
+  contextp = nullptr;
   return return_value;
 }

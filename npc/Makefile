@@ -16,7 +16,7 @@ SVSRC = $(patsubst %,generated_svsrc/%,$(SVSRC_FILES))
 
 VERILATOR = verilator
 
-VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -Ofast \
+VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -Dstrtk_no_tr1_or_boost -Ofast \
 -march=native -mtune=native \
 -funroll-loops -flto=auto -ffast-math -fno-math-errno -funsafe-math-optimizations 
 VERILATOR_LDFLAGS = -flto=auto -fipa-pta 
@@ -50,8 +50,8 @@ $(SV_FILELIST): $(CHISELSRC)
 
 
 
-PROG ?= test_progs/string.bin
-ELF  ?= test_progs/string.elf
+PROG ?= test_progs/add.bin
+ELF  ?= test_progs/add.elf
 MEM_SIZE ?= 0x8000000
 MEM_BASE ?= 0x80000000
 DEV_SIZE ?= 0x10000000
@@ -66,7 +66,7 @@ sim: npc
 	$(BIN) --image $(PROG) \
 	--mem_size $(MEM_SIZE) --mem_base $(MEM_BASE) \
 	--device_size $(DEV_SIZE) --device_base $(DEV_BASE) \
-	--log $(LOG_FILE) --enable_vga --enable_audio $(NPC_FLAGS) 
+	--log $(LOG_FILE) --difftest --enable_vga --enable_audio $(NPC_FLAGS) 
 
 sim_full_speed: VERILATOR_CFLAGS+=-DNDEBUG -fstrict-aliasing \
 -frename-registers -fomit-frame-pointer \
@@ -75,7 +75,10 @@ sim_full_speed: VERILATOR_LDFLAGS+=-fuse-linker-plugin
 sim_full_speed: MDIR = $(NPC_HOME)/build/full_speed/
 sim_full_speed: npc
 	$(call git_commit, "sim RTL full speed") # DO NOT REMOVE THIS LINE!!!
-	$(BIN) --image $(PROG) --mem_size $(MEM_SIZE) --log $(LOG_FILE) $(NPC_FLAGS) --enable_audio --enable_vga --enable_keyboard
+	$(BIN) --image $(PROG) \
+	--mem_size $(MEM_SIZE) --mem_base $(MEM_BASE) \
+	--device_size $(DEV_SIZE) --device_base $(DEV_BASE) \
+	--log $(LOG_FILE) --difftest --enable_vga --enable_audio $(NPC_FLAGS) --batch
 
 sim_ftracer: npc
 	$(call git_commit, "sim RTL ftracer") # DO NOT REMOVE THIS LINE!!!
@@ -85,7 +88,7 @@ valgrind: FAST_FLAGS = -O0 -g
 valgrind: VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -O0 -g -flto=auto
 valgrind: MDIR = $(NPC_HOME)/build/valgrind/
 valgrind: npc
-	valgrind  \
+	valgrind --leak-check=full --show-leak-kinds=all \
 	$(BIN) --image $(PROG) \
 	--mem_size $(MEM_SIZE) --mem_base $(MEM_BASE) \
 	--device_size $(DEV_SIZE) --device_base $(DEV_BASE) \
@@ -99,7 +102,7 @@ gdb: npc
 	gdb --args $(BIN) --image $(PROG) \
 	--mem_size $(MEM_SIZE) --mem_base $(MEM_BASE) \
 	--device_size $(DEV_SIZE) --device_base $(DEV_BASE) \
-	--log $(LOG_FILE)
+	--log $(LOG_FILE) --difftest
 
 
 clean:

@@ -1,19 +1,17 @@
 #pragma once
 
 #include "Device/Audio.h"
-#include "Device/Keyboard.h"
 #include "Device/RTC.h"
-#include "lockfree/spsc/ring_buf.hpp"
 #include "spdlog/spdlog.h"
 #include <Device/VGA.h>
 #include <SDL2/SDL.h>
-#include <atomic>
 #include <chrono>
 #include <cstdint>
 #include <functional>
 #include <future>
 #include <lockfree/lockfree.hpp>
 #include <memory>
+#include <stop_token>
 #include <thread>
 constexpr uint32_t SERIAL_OFFSET = 0x00003f8;
 constexpr uint32_t RTC_OFFSET = 0x0000048;
@@ -61,18 +59,16 @@ inline uint32_t wrap_key_event(uint8_t scancode, bool is_keydown) {
 }
 
 inline std::unique_ptr<std::jthread> device_thread;
-inline std::atomic_bool quit;
-void device_thread_work(std::promise<void> &device_inited_promise);
+void device_thread_work(std::stop_token stop_token,
+                        std::promise<void> &device_inited_promise);
 
-inline void init_vga_kbd() {
-  Video.vmem1 = std::make_unique<VideoBase_t::VMEM>();
-  Video.vmem2 = std::make_unique<VideoBase_t::VMEM>();
-  Video.front_ptr.store(Video.vmem1->data());
-  Video.back_ptr = Video.vmem2->data();
-  spdlog::info("Allocated 2 video buffers of {} bytes",
-               sizeof(VideoBase_t::VMEM));
-  init_keymap();
-  Keyboard.kbd_buf = std::make_unique<KeyboardBase_t::KBD_BUF>();
+inline void init_audio() {
+  Audio.sbuf = std::make_unique<AudioBase_t::SBF>();
+  spdlog::info("Allocated sound buffer of {} bytes", sizeof(AudioBase_t::SBF));
+}
+inline std::unique_ptr<std::jthread> keyboard_thread;
+
+inline void init_vga_kbd_thread() {
   std::promise<void> device_inited_promise;
   std::future<void> device_inited_future = device_inited_promise.get_future();
   device_thread = std::make_unique<std::jthread>(
@@ -80,9 +76,3 @@ inline void init_vga_kbd() {
   device_inited_future.get();
   spdlog::info("VGA thread initialization finished");
 }
-
-inline void init_audio() {
-  Audio.sbuf = std::make_unique<AudioBase_t::SBF>();
-  spdlog::info("Allocated sound buffer of {} bytes", sizeof(AudioBase_t::SBF));
-}
-inline std::unique_ptr<std::jthread> keyboard_thread;
