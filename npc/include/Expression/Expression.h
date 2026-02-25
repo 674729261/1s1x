@@ -53,16 +53,14 @@ build_expr_tree(const std::vector<Token> &vtk) {
         stk_node.pop();
       }
     } else {
-      switch (token_types[tk.type].cata) {
+      switch (tk.cata) {
       case Catagory::OPERAND:
-        spdlog::info("push {}", (int)token_types[tk.type].cata);
         ret.push_back(tk);
         break;
       case Catagory::OPERATOR_2: {
         while (!stk_node.empty() &&
-               token_types[stk_node.top().type].cata != Catagory::OPERATOR_1 &&
+               stk_node.top().cata != Catagory::OPERATOR_1 &&
                token_types[stk_node.top().type].priority >= tt_cur.priority) {
-          spdlog::info("push {}", (int)token_types[stk_node.top().type].cata);
           ret.push_back(stk_node.top());
           stk_node.pop();
         }
@@ -78,7 +76,6 @@ build_expr_tree(const std::vector<Token> &vtk) {
   while (!stk_node.empty()) {
     if (token_types[stk_node.top().type].id == '(')
       return {std::nullopt, "Invalid expression : unclosed bracket"};
-    spdlog::info("push {}", (int)token_types[stk_node.top().type].cata);
     ret.push_back(stk_node.top());
     stk_node.pop();
   }
@@ -151,7 +148,7 @@ Expression::create_expression(std::string_view expr_str) {
       return {std::nullopt,
               std::format("Invalid token '{}' at pos {}", result, cur_pos)};
     }
-    prev_is_operator = (tt.cata != Catagory::OPERAND);
+    prev_is_operator = (cur_token.cata != Catagory::OPERAND);
     if (tt.id == '(')
       prev_is_operator = true;
     else if (tt.id == ')')
@@ -178,122 +175,122 @@ Expression::create_expression(std::string_view expr_str) {
 inline Result<uint32_t> Expression::eval() {
   std::stack<uint32_t> stk_calc;
   for (const Token &tk : nodes)
-    spdlog::info("id {} cat {}", token_types[tk.type].id, (int)tk.cata);
-  for (const Token &tk : nodes) {
-    const auto &tt = token_types[tk.type];
+    for (const Token &tk : nodes) {
+      const auto &tt = token_types[tk.type];
 
-    switch (tk.cata) {
-    case Catagory::OPERAND:
-      switch (tt.id) {
-      case TK_NUM:
-        stk_calc.push(tk.data);
+      switch (tk.cata) {
+      case Catagory::OPERAND:
+        switch (tt.id) {
+        case TK_NUM:
+          stk_calc.push(tk.data);
+          break;
+        case TK_REG:
+          if (tk.data == 32)
+            stk_calc.push(dut->getPC());
+          else
+            stk_calc.push(dut->getGPR(tk.data));
+          break;
+        default:
+          return {std::nullopt, "Unknown unary operator"};
+        }
         break;
-      case TK_REG:
-        if (tk.data == 32)
-          stk_calc.push(dut->getPC());
-        else
-          stk_calc.push(dut->getGPR(tk.data));
-        break;
-      default:
-        return {std::nullopt, "Unknown unary operator"};
-      }
-      break;
-    case Catagory::OPERATOR_2: {
-      if (stk_calc.size() < 2)
-        return {std::nullopt, "Invalid expression : insufficient operands"};
-      uint32_t rhs = stk_calc.top();
-      stk_calc.pop();
-      uint32_t lhs = stk_calc.top();
-      stk_calc.pop();
-      switch (tt.id) {
-      case '+':
-        stk_calc.push(lhs + rhs);
-        break;
-      case '-':
-        stk_calc.push(lhs - rhs);
-        break;
-      case '*':
-        stk_calc.push(lhs * rhs);
-        break;
-      case '/':
-        if (rhs == 0)
-          return {std::nullopt, "Evaluation error : division by zero"};
-        stk_calc.push(lhs / rhs);
-        break;
-      case '%':
-        if (rhs == 0)
-          return {std::nullopt, "Evaluation error : division by zero"};
-        stk_calc.push(lhs % rhs);
-        break;
-      case '&':
-        stk_calc.push(lhs & rhs);
-        break;
-      case '|':
-        stk_calc.push(lhs | rhs);
-        break;
-      case '^':
-        stk_calc.push(lhs ^ rhs);
-        break;
-      case TK_BOOL_AND:
-        stk_calc.push(lhs != 0 && rhs != 0);
-        break;
-      case TK_BOOL_OR:
-        stk_calc.push(lhs != 0 || rhs != 0);
-        break;
-      case '>':
-        stk_calc.push(lhs > rhs);
-        break;
-      case '<':
-        stk_calc.push(lhs < rhs);
-        break;
-      case TK_GE:
-        stk_calc.push(lhs >= rhs);
-        break;
-      case TK_LE:
-        stk_calc.push(lhs <= rhs);
-        break;
-      case TK_EQ:
-        stk_calc.push(lhs == rhs);
-        break;
-      case TK_NEQ:
-        stk_calc.push(lhs != rhs);
-        break;
-      default:
-        return {std::nullopt, "Unknown operator"};
-      }
-      break;
-    }
-    case Catagory::OPERATOR_1:
-      if (stk_calc.empty())
-        return {std::nullopt, "Invalid expression : insufficient operands"};
-      uint32_t lhs = stk_calc.top();
-      stk_calc.pop();
-      switch (tt.id) {
-      case '+':
-        stk_calc.push(lhs);
-        break;
-      case '-':
-        stk_calc.push(-lhs);
-        break;
-      case '~':
-        stk_calc.push(~lhs);
-        break;
-      case '!':
-        stk_calc.push(lhs == 0);
-        break;
-      case '*':
-        if (lhs >= config.base_memory &&
-            lhs < config.base_memory + config.mem_size) {
-          stk_calc.push(mem[(lhs - config.base_memory) >> 2]);
-        } else {
-          return {std::nullopt,
-                  "Evaluation error : memory address {:#010x} is out of range"};
+      case Catagory::OPERATOR_2: {
+        if (stk_calc.size() < 2)
+          return {std::nullopt, "Invalid expression : insufficient operands"};
+        uint32_t rhs = stk_calc.top();
+        stk_calc.pop();
+        uint32_t lhs = stk_calc.top();
+        stk_calc.pop();
+        switch (tt.id) {
+        case '+':
+          stk_calc.push(lhs + rhs);
+          break;
+        case '-':
+          stk_calc.push(lhs - rhs);
+          break;
+        case '*':
+          stk_calc.push(lhs * rhs);
+          break;
+        case '/':
+          if (rhs == 0)
+            return {std::nullopt, "Evaluation error : division by zero"};
+          stk_calc.push(lhs / rhs);
+          break;
+        case '%':
+          if (rhs == 0)
+            return {std::nullopt, "Evaluation error : division by zero"};
+          stk_calc.push(lhs % rhs);
+          break;
+        case '&':
+          stk_calc.push(lhs & rhs);
+          break;
+        case '|':
+          stk_calc.push(lhs | rhs);
+          break;
+        case '^':
+          stk_calc.push(lhs ^ rhs);
+          break;
+        case TK_BOOL_AND:
+          stk_calc.push(lhs != 0 && rhs != 0);
+          break;
+        case TK_BOOL_OR:
+          stk_calc.push(lhs != 0 || rhs != 0);
+          break;
+        case '>':
+          stk_calc.push(lhs > rhs);
+          break;
+        case '<':
+          stk_calc.push(lhs < rhs);
+          break;
+        case TK_GE:
+          stk_calc.push(lhs >= rhs);
+          break;
+        case TK_LE:
+          stk_calc.push(lhs <= rhs);
+          break;
+        case TK_EQ:
+          stk_calc.push(lhs == rhs);
+          break;
+        case TK_NEQ:
+          stk_calc.push(lhs != rhs);
+          break;
+        default:
+          return {std::nullopt, "Unknown operator"};
         }
         break;
       }
-      break;
+      case Catagory::OPERATOR_1:
+        if (stk_calc.empty())
+          return {std::nullopt, "Invalid expression : insufficient operands"};
+        uint32_t lhs = stk_calc.top();
+        stk_calc.pop();
+        switch (tt.id) {
+        case '+':
+          stk_calc.push(lhs);
+          break;
+        case '-':
+          stk_calc.push(-lhs);
+          break;
+        case '~':
+          stk_calc.push(~lhs);
+          break;
+        case '!':
+          stk_calc.push(lhs == 0);
+          break;
+        case '*':
+          if (lhs >= config.base_memory &&
+              lhs < config.base_memory + config.mem_size) {
+            stk_calc.push(mem[(lhs - config.base_memory) >> 2]);
+          } else {
+            return {
+                std::nullopt,
+                "Evaluation error : memory address {:#010x} is out of range"};
+          }
+          break;
+        }
+        break;
+      }
     }
-  }
   if (stk_calc.size() > 1)
     return {std::nullopt, "Invalid expression : insufficient operators"};
   if (stk_calc.empty())
