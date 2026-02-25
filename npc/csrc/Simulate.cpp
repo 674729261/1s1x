@@ -28,6 +28,8 @@ long long simulation_instructions;
 
 void show_efficiency(long long clocks, long long instrs,
                      long long microseconds) {
+  spdlog::info("Simulated clocks : {}", instrs);
+  spdlog::info("Simulated instructions : {}", instrs);
   if (microseconds == 0)
     return;
   spdlog::info("Clocks per second : {:.3f}",
@@ -191,7 +193,6 @@ int simulate(int argc, char *argv[]) {
   if (device_thread)
     device_thread->request_stop();
   show_efficiency(simulation_clocks, simulation_instructions, simulation_time);
-  display_performance();
   SDL_CloseAudio();
   return result;
 }
