@@ -86,14 +86,18 @@ CmdResult cmd_l(std::string_view arg) {
     dut->print_all_gpr();
     return CmdResult::OKAY;
   } else if (match<R"(\s*w\s*)">(arg)) {
-    println("ID\tHex     \tDec       \tExpression");
-    for (int i = 0; i < watchers.size(); i++) {
-      if (watchers[i].last_value.has_value())
-        println("{0}\t{1:08x}\t{1:10}\t{2}", i, watchers[i].last_value.value(),
-                watchers[i].display);
-      else
-        println("{0}\t{1:08x}\t     Error\t{2}", i,
-                watchers[i].last_value.value(), watchers[i].display);
+    if (watchers.empty()) {
+      println("No watchers");
+    } else {
+      println("ID\tHex     \tDec       \tExpression");
+      for (int i = 0; i < watchers.size(); i++) {
+        if (watchers[i].last_value.has_value())
+          println("{0}\t{1:08x}\t{1:10}\t{2}", i,
+                  watchers[i].last_value.value(), watchers[i].display);
+        else
+          println("{0}\t{1:08x}\t     Error\t{2}", i,
+                  watchers[i].last_value.value(), watchers[i].display);
+      }
     }
   } else {
     return CmdResult::INVALID_ARG;
