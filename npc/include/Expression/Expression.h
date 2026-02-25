@@ -55,12 +55,14 @@ build_expr_tree(const std::vector<Token> &vtk) {
     } else {
       switch (token_types[tk.type].cata) {
       case Catagory::OPERAND:
+        spdlog::info("push {}", (int)token_types[tk.type].cata);
         ret.push_back(tk);
         break;
       case Catagory::OPERATOR_2: {
         while (!stk_node.empty() &&
                token_types[stk_node.top().type].cata != Catagory::OPERATOR_1 &&
                token_types[stk_node.top().type].priority >= tt_cur.priority) {
+          spdlog::info("push {}", (int)token_types[stk_node.top().type].cata);
           ret.push_back(stk_node.top());
           stk_node.pop();
         }
@@ -76,6 +78,7 @@ build_expr_tree(const std::vector<Token> &vtk) {
   while (!stk_node.empty()) {
     if (token_types[stk_node.top().type].id == '(')
       return {std::nullopt, "Invalid expression : unclosed bracket"};
+    spdlog::info("push {}", (int)token_types[stk_node.top().type].cata);
     ret.push_back(stk_node.top());
     stk_node.pop();
   }
