@@ -141,7 +141,7 @@ Expression::create_expression(std::string_view expr_str) {
       cur_token.cata = Catagory::OPERATOR_1;
     }
     if ((prev_is_operator && tt.cata == Catagory::OPERATOR_2) ||
-        (!prev_is_operator && tt.cata != Catagory::OPERAND)) {
+        (!prev_is_operator && tt.cata == Catagory::OPERAND)) {
       return {std::nullopt,
               std::format("Invalid token '{}' at pos {}", result, cur_pos)};
     }
