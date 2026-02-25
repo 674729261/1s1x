@@ -10,11 +10,12 @@ CmdResult cmd_si(std::string_view arg);
 CmdResult cmd_x(std::string_view arg);
 CmdResult cmd_q(std::string_view arg);
 CmdResult cmd_li(std::string_view arg);
+CmdResult cmd_p(std::string_view arg);
 CmdResult cmd_help(std::string_view arg);
 
 using Cmd_Func = CmdResult (*)(std::string_view);
 
-const struct {
+constexpr struct {
   Cmd_Func call;
   std::string_view command;
   std::string_view help;
@@ -24,6 +25,7 @@ const struct {
     {cmd_si, "x", "Scan memory. Usage : x (# of words) (base address)"},
     {cmd_q, "q", "Quit"},
     {cmd_li, "li", "List infomation. Usage : li (r|w)"},
+    {cmd_p, "p", "Print expression. Usage : p (expression)"},
     {cmd_help, "help", "Show help. Usage : help [command]"}};
 
 constexpr size_t NR_CMD = sizeof(cmd_list) / sizeof(cmd_list[0]);

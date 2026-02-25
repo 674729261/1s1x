@@ -23,7 +23,11 @@ enum TokenID : uint8_t {
   TK_REG
 };
 enum class Catagory { OPERATOR_2, OPERATOR_1, OPERAND };
-
+struct Token {
+  int type;
+  Catagory cata;
+  uint32_t data;
+};
 const struct {
   TokenizorType tokenizor;
   int id;

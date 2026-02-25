@@ -1,3 +1,4 @@
+#include "Expression/Expression.h"
 #include "Simulate.h"
 #include "my_utils.h"
 #include <Monitor.h>
@@ -10,7 +11,7 @@ static constexpr auto RE_ONE_NUMBER = fixed_string{
     R"(\s*(0x[a-fA-F1-9][a-fA-F0-9]*|0[1-7][0-7]*|[1-9][0-9]*|0)\s*)"};
 static constexpr auto RE_TWO_NUMBER = fixed_string{
     R"(\s*(0x[a-fA-F1-9][a-fA-F0-9]*|0[1-7][0-7]*|[1-9][0-9]*|0)\s*(0x[a-fA-F1-9][a-fA-F0-9]*|0[1-7][0-7]*|[1-9][0-9]*|0)\s*)"};
-static constexpr auto RE_ONE_EXPR = fixed_string{R"(\s*.*\s*)"};
+static constexpr auto RE_ONE_EXPR = fixed_string{R"(\s*(.*)\s*)"};
 
 CmdResult cmd_c(std::string_view arg) {
   if (match<RE_NO_ARG>(arg)) {
@@ -71,6 +72,17 @@ CmdResult cmd_li(std::string_view arg) {
   } else {
     return CmdResult::INVALID_ARG;
   }
+}
+CmdResult cmd_p(std::string_view arg) {
+  if (auto [whole, expr_str] = match<RE_ONE_EXPR>(arg); whole) {
+    auto result = Expr::Expression::create_expression(expr_str);
+    if (!result.value.has_value())
+      println("{}", result.error);
+    println("{0}\t{0:#010x}", result.value->last_value);
+  } else {
+    return CmdResult::INVALID_ARG;
+  }
+  return CmdResult::OKAY;
 }
 
 CmdResult cmd_help(std::string_view arg) {
