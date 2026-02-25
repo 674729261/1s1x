@@ -111,7 +111,7 @@ void run(unsigned long long steps) {
   while (sim_state == SimulationState::RUNNING && steps != 0) {
     retire = false;
     dut->step_one_cycle();
-    if (contextp.gotFinish()) {
+    if (contextp->gotFinish()) {
       sim_state = SimulationState::HALT;
       show_trap_info();
     }
@@ -195,14 +195,15 @@ int simulate(int argc, char *argv[]) {
   RTC_init();
   audio_init();
   Verilated::commandArgs(argc, argv);
-  contextp.commandArgs(argc, argv);
+  contextp = std::make_unique<VerilatedContext>();
+  contextp->commandArgs(argc, argv);
   Verilated::traceEverOn(config.use_waveform);
   if (config.enable_vga) {
     vga_init();
     keyboard_init();
     init_vga_kbd_thread();
   }
-  dut = std::make_unique<Dut>(&contextp);
+  dut = std::make_unique<Dut>(contextp.get());
   ref = std::make_unique<Ref>(*dut);
   ref->reset(*dut);
   dut->reset();
