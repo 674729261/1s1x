@@ -4,7 +4,6 @@
 #include "Setup.h"
 #include "Simulate.h"
 #include "my_utils.h"
-#include "spdlog/spdlog.h"
 #include <Expression/ExpressionToken.h>
 #include <SDL2/SDL_stdinc.h>
 #include <cctype>
@@ -98,13 +97,10 @@ Expression::create_expression(std::string_view expr_str) {
     int which = 0;
     std::string_view result;
     for (; which < NR_TOKEN_TYPES; which++) {
-      spdlog::info("ss = {}, which = {}, pos = {}", cur_substr, which, cur_pos);
       const auto &tt = token_types[which];
       result = tt.tokenizor(cur_substr);
 
       if (result.length() > 0) {
-        spdlog::info("ss = {}, which = {}, pos = {}, str = {}", cur_substr,
-                     which, cur_pos, result);
         break;
       }
     }
@@ -159,7 +155,6 @@ Expression::create_expression(std::string_view expr_str) {
     token_seq.push_back(cur_token);
     cur_pos += result.length();
   }
-  spdlog::info("{}", token_seq.size());
   auto suf = build_expr_tree(token_seq);
   if (!suf.value) {
     return {std::nullopt, suf.error};
