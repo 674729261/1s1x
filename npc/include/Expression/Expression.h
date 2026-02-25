@@ -5,6 +5,7 @@
 #include "spdlog/spdlog.h"
 #include <Expression/ExpressionToken.h>
 #include <SDL2/SDL_stdinc.h>
+#include <cctype>
 #include <cmath>
 #include <cstdint>
 #include <optional>
@@ -85,6 +86,10 @@ Expression::create_expression(std::string_view expr_str) {
   Expression ret;
   std::vector<Token> token_seq;
   while (cur_pos < expr_str.length()) {
+    while (std::isspace(expr_str[cur_pos])) {
+      cur_pos++;
+      continue;
+    }
     std::string_view cur_substr = expr_str.substr(cur_pos);
     int which = 0;
     std::string_view result;
@@ -101,10 +106,6 @@ Expression::create_expression(std::string_view expr_str) {
               std::format("Unknown token at pos {} : {}", cur_pos, cur_substr)};
     }
     const auto &tt = token_types[which];
-    if (tt.id == TK_NULL) {
-      cur_pos += result.length();
-      continue;
-    }
 
     Token cur_token = {which, token_types[which].cata, 0};
     if (tt.id == TK_NUM) {

@@ -12,7 +12,6 @@ TokenizorType make_token_re(auto re) {
 }
 
 enum TokenID : uint8_t {
-  TK_NULL = 0,
   TK_NUM = 128,
   TK_EQ,
   TK_NEQ,
@@ -34,7 +33,6 @@ const struct {
   int priority = -1;
   Catagory cata = Catagory::OPERATOR_2;
 } token_types[] = {
-    {make_token_re(R"(^\s+)"_ctre), TK_NULL},
     {make_token_re(
          R"(^0x[a-fA-F1-9][a-fA-F0-9]*|0[1-7][0-7]*|[1-9][0-9]*|0)"_ctre),
      TK_NUM, -1, Catagory::OPERAND},
