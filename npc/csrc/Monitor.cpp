@@ -53,10 +53,10 @@ CmdResult cmd_x(std::string_view arg) {
         return CmdResult::INVALID_ARG;
       if (base_addr >= config.base_memory &&
           n_of_w.value() + base_addr < config.base_memory + config.mem_size) {
-        println("Address \t Data");
+        println("Address \tHex\tDec");
         for (int i = 0; i < n_of_w; i++) {
           uint32_t addr = (base_addr + i * sizeof(uint32_t)) & ~0x3;
-          println("{:08x}\t{:08x}", addr,
+          println("{0:08x}\t{1:08x}\t{1}", addr,
                   mem[(addr - config.base_memory) >> 2]);
         }
       } else {
