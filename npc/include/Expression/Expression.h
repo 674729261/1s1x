@@ -144,7 +144,7 @@ Expression::create_expression(std::string_view expr_str) {
     token_seq.push_back(cur_token);
     cur_pos += result.length();
   }
-  spdlog::debug("{}", token_seq.size());
+  spdlog::info("{}", token_seq.size());
   auto suf = build_expr_tree(token_seq);
   if (!suf.value) {
     return {std::nullopt, suf.error};
