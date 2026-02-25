@@ -28,7 +28,7 @@ long long simulation_instructions;
 
 void show_efficiency(long long clocks, long long instrs,
                      long long microseconds) {
-  spdlog::info("Simulated clocks : {}", instrs);
+  spdlog::info("Simulated clocks : {}", clocks);
   spdlog::info("Simulated instructions : {}", instrs);
   if (microseconds == 0)
     return;
