@@ -1,16 +1,18 @@
 #include "Expression/Expression.h"
+#include "Setup.h"
 #include "Simulate.h"
 #include "my_utils.h"
 #include <Monitor.h>
+#include <cstdint>
 #include <ctre/ctre.hpp>
 #include <print>
 using ctll::fixed_string;
 using ctre::match;
 static constexpr auto RE_NO_ARG = fixed_string{R"(\s*)"};
-static constexpr auto RE_ONE_NUMBER = fixed_string{
-    R"(\s*(0x[a-fA-F1-9][a-fA-F0-9]*|0[1-7][0-7]*|[1-9][0-9]*|0)\s*)"};
-static constexpr auto RE_TWO_NUMBER = fixed_string{
-    R"(\s*(0x[a-fA-F1-9][a-fA-F0-9]*|0[1-7][0-7]*|[1-9][0-9]*|0)\s*(0x[a-fA-F1-9][a-fA-F0-9]*|0[1-7][0-7]*|[1-9][0-9]*|0)\s*)"};
+static constexpr auto RE_ONE_NUMBER =
+    fixed_string{R"(\s*(0x[a-fA-F0-9]+|0[0-7]+|[1-9][0-9]*|0)\s*)"};
+static constexpr auto RE_SCAN =
+    fixed_string{R"(\s*(0x[a-fA-F0-9]+|0[0-7]+|[1-9][0-9]*|0)\s*(.*)\s*)"};
 static constexpr auto RE_ONE_EXPR = fixed_string{R"(\s*(.*)\s*)"};
 
 CmdResult cmd_c(std::string_view arg) {
@@ -40,18 +42,33 @@ CmdResult cmd_si(std::string_view arg) {
 }
 
 CmdResult cmd_x(std::string_view arg) {
-  if (auto [whole, num_str_1, num_str_2] = match<RE_TWO_NUMBER>(arg); whole) {
-    auto n_of_w = to_number<unsigned long long>(num_str_1);
-    auto base_addr = to_number<unsigned long long>(num_str_2);
-    if (n_of_w.has_value() && base_addr.has_value()) {
-      todo("x");
-    } else {
-      return CmdResult::INVALID_ARG;
+  if (auto [whole, num_str, expr_str] = match<RE_SCAN>(arg); whole) {
+    auto n_of_w = to_number<unsigned long long>(num_str);
+    auto result = Expr::Expression::create_expression(expr_str);
+    if (!result.value.has_value())
+      println("{}", result.error);
+    else {
+      uint32_t base_addr = result.value->last_value.value();
+      if (!n_of_w.has_value())
+        return CmdResult::INVALID_ARG;
+      if (base_addr >= config.base_memory &&
+          n_of_w.value() + base_addr < config.base_memory + config.mem_size) {
+        println("Address \t Data");
+        for (int i = 0; i < n_of_w; i++) {
+          uint32_t addr = base_addr + i * sizeof(uint32_t);
+          println("{:08x}\t{:08x}", addr,
+                  mem[(addr - config.base_memory) >> 2]);
+        }
+      } else {
+        println("Invalid scan range [{:#010x},{:#010x})", base_addr,
+                n_of_w.value() + base_addr * sizeof(uint32_t));
+        return CmdResult::INVALID_ARG;
+      }
     }
-    return CmdResult::OKAY;
   } else {
     return CmdResult::INVALID_ARG;
   }
+  return CmdResult::OKAY;
 }
 
 CmdResult cmd_q(std::string_view arg) {
