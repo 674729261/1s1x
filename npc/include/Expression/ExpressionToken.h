@@ -7,8 +7,13 @@ namespace Expr {
 using namespace ctre::literals;
 using TokenizorType = std::function<std::string_view(std::string_view)>;
 TokenizorType make_token_re(auto re) {
-  return
-      [re](std::string_view str) -> std::string_view { return re.search(str); };
+  return [re](std::string_view str) -> std::string_view {
+    auto m = re.search(str);
+    if (m)
+      return m.to_view();
+    else
+      return "";
+  };
 }
 
 enum TokenID : uint8_t {
