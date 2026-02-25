@@ -98,8 +98,10 @@ Expression::create_expression(std::string_view expr_str) {
               std::format("Unknown token at pos {} : {}", cur_pos, cur_substr)};
     }
     const auto &tt = token_types[which];
-    if (tt.id == TK_NULL)
+    if (tt.id == TK_NULL) {
+      cur_pos += result.length();
       continue;
+    }
 
     Token cur_token = {which, token_types[which].cata, 0};
     if (tt.id == TK_NUM) {
