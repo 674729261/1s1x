@@ -79,6 +79,9 @@ build_expr_tree(const std::vector<Token> &vtk) {
     ret.push_back(stk_node.top());
     stk_node.pop();
   }
+  for (auto &t : ret) {
+    spdlog::info("cat {}", t.cata);
+  }
   return {ret, ""};
 }
 
