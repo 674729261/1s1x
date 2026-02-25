@@ -61,7 +61,7 @@ const struct {
     {make_token_re(R"(^&)"_ctre), '&', 7},
     {make_token_re(R"(^\|)"_ctre), '|', 5},
     {make_token_re(R"(^\^)"_ctre), '^', 6},
-    {make_token_re(R"(^\()"_ctre), '(', -1, Catagory::OPERATOR_1},
-    {make_token_re(R"(^\))"_ctre), ')', -1, Catagory::OPERAND}};
+    {make_token_re(R"(^\()"_ctre), '(', -1, Catagory::OPERAND},
+    {make_token_re(R"(^\))"_ctre), ')', -1, Catagory::OPERATOR_1}};
 constexpr size_t NR_TOKEN_TYPES = sizeof(token_types) / sizeof(token_types[0]);
 } // namespace Expr
