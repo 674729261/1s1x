@@ -70,7 +70,7 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
     init_pc,
     wbu.out.ok_to_step
   )
-  val gpr = Module(new GPR(CNT = 16, BITWIDTH = 32))
+  val gpr = Module(new GPR(CNT = 32, BITWIDTH = 32))
   val csrBank = Module(new CSR)
 
   val arbiter = Module(new Arbiter_2Master)
