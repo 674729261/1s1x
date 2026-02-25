@@ -57,9 +57,7 @@ inline void clear_performance_count() {
     item.count = 0;
 }
 
-inline void display_performance(auto start_time, auto end_time) {
-  auto elapsed_ms =
-      std::chrono::floor<std::chrono::milliseconds>(end_time - start_time);
+inline void display_performance() {
 
   spdlog::info("Total simulated instructions : {}", inst_count);
   spdlog::info("Total ifu events : {}", ifu_event);
@@ -98,8 +96,4 @@ inline void display_performance(auto start_time, auto end_time) {
                static_cast<double>(clock_count) / inst_count);
   spdlog::info("Clocks per instruction outside flash : {:.3f}",
                static_cast<double>(cycles_not_on_flash) / insts_not_on_flash);
-  spdlog::info("Total simulation time : {:%Hh %Mm %Ss}", elapsed_ms);
-  spdlog::info("Simulation speed : {:.2f} clocks/s , {:.2f} insts/s",
-               1000 * static_cast<double>(clock_count) / elapsed_ms.count(),
-               1000 * static_cast<double>(inst_count) / elapsed_ms.count());
 }

@@ -3,8 +3,8 @@
 #include "Device/Device.h"
 #include "Device/Keyboard.h"
 #include "Monitor.h"
+#include "PerformanceCounter.h"
 #include "Setup.h"
-#include "ctre/ctre.hpp"
 #include "spdlog/spdlog.h"
 #include <Args.h>
 #include <Mem.h>
@@ -191,6 +191,7 @@ int simulate(int argc, char *argv[]) {
   if (device_thread)
     device_thread->request_stop();
   show_efficiency(simulation_clocks, simulation_instructions, simulation_time);
+  display_performance();
   SDL_CloseAudio();
   return result;
 }
