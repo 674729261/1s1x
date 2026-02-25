@@ -2,6 +2,7 @@
 #include "DUT.h"
 #include "Simulate.h"
 #include "my_utils.h"
+#include "spdlog/spdlog.h"
 #include <Expression/ExpressionToken.h>
 #include <SDL2/SDL_stdinc.h>
 #include <cmath>
@@ -143,6 +144,7 @@ Expression::create_expression(std::string_view expr_str) {
     token_seq.push_back(cur_token);
     cur_pos += result.length();
   }
+  spdlog::debug("{}", token_seq.size());
   auto suf = build_expr_tree(token_seq);
   if (!suf.value) {
     return {std::nullopt, suf.error};
