@@ -91,8 +91,10 @@ Expression::create_expression(std::string_view expr_str) {
     for (; which < NR_TOKEN_TYPES; which++) {
       const auto &tt = token_types[which];
       result = tt.tokenizor(cur_substr);
-      if (result.length() > 0)
+      if (result.length() > 0) {
+        spdlog::info("which = {}", which);
         break;
+      }
     }
     if (which == NR_TOKEN_TYPES) {
       return {std::nullopt,
