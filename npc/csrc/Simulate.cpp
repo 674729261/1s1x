@@ -26,6 +26,16 @@ long long simulation_time;
 long long simulation_clocks;
 long long simulation_instructions;
 
+void show_efficiency(long long clocks, long long instrs,
+                     long long microseconds) {
+  if (microseconds == 0)
+    return;
+  spdlog::info("Clocks per second : {}",
+               static_cast<double>(clocks) / microseconds * 1e6);
+  spdlog::info("Instructions per second : {}",
+               static_cast<double>(instrs) / microseconds * 1e6);
+}
+
 static bool retire;
 
 extern "C" void notify_retire(int32_t pc, int32_t inst) { retire = true; }
@@ -67,6 +77,9 @@ void run(unsigned long long steps) {
     check_difftest();
     return;
   }
+  long long simulation_instructions_steped = 0;
+  long long simulation_clocks_steped = 0;
+  long long simulation_time_steped = 0;
   bool difftest_state = false;
   auto start_time = std::chrono::steady_clock::now();
   while (sim_state == SimulationState::RUNNING && steps != 0) {
@@ -76,9 +89,10 @@ void run(unsigned long long steps) {
       sim_state = SimulationState::HALT;
       show_trap_info();
     }
+    simulation_clocks_steped++;
     if (retire) {
       steps--;
-      simulation_instructions++;
+      simulation_instructions_steped++;
       if (config.difftest) {
         ref->step();
         difftest_state = check_difftest();
@@ -88,9 +102,15 @@ void run(unsigned long long steps) {
     }
   }
   auto end_time = std::chrono::steady_clock::now();
-  simulation_time += std::chrono::duration_cast<std::chrono::microseconds>(
-                         start_time - end_time)
-                         .count();
+  simulation_time_steped =
+      std::chrono::duration_cast<std::chrono::microseconds>(start_time -
+                                                            end_time)
+          .count();
+  show_efficiency(simulation_clocks_steped, simulation_instructions_steped,
+                  simulation_time_steped);
+  simulation_instructions += simulation_instructions_steped;
+  simulation_clocks += simulation_clocks_steped;
+  simulation_time += simulation_time_steped;
 }
 void monitor_loop() {
   if (config.batch_mode) {
@@ -170,7 +190,7 @@ int simulate(int argc, char *argv[]) {
   dut->print_all_gpr();
   if (device_thread)
     device_thread->request_stop();
-
+  show_efficiency(simulation_clocks, simulation_instructions, simulation_time);
   SDL_CloseAudio();
   return result;
 }
