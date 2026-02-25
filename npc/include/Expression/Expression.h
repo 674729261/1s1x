@@ -219,6 +219,39 @@ inline Result<uint32_t> Expression::eval() {
           return {std::nullopt, "Evaluation error : division by zero"};
         stk_calc.push(lhs % rhs);
         break;
+      case '&':
+        stk_calc.push(lhs & rhs);
+        break;
+      case '|':
+        stk_calc.push(lhs | rhs);
+        break;
+      case '^':
+        stk_calc.push(lhs ^ rhs);
+        break;
+      case TK_BOOL_AND:
+        stk_calc.push(lhs != 0 && rhs != 0);
+        break;
+      case TK_BOOL_OR:
+        stk_calc.push(lhs != 0 || rhs != 0);
+        break;
+      case '>':
+        stk_calc.push(lhs > rhs);
+        break;
+      case '<':
+        stk_calc.push(lhs < rhs);
+        break;
+      case TK_GE:
+        stk_calc.push(lhs >= rhs);
+        break;
+      case TK_LE:
+        stk_calc.push(lhs <= rhs);
+        break;
+      case TK_EQ:
+        stk_calc.push(lhs == rhs);
+        break;
+      case TK_NEQ:
+        stk_calc.push(lhs != rhs);
+        break;
       default:
         return {std::nullopt, "Unknown operator"};
       }
@@ -235,6 +268,12 @@ inline Result<uint32_t> Expression::eval() {
         break;
       case '-':
         stk_calc.push(-lhs);
+        break;
+      case '~':
+        stk_calc.push(~lhs);
+        break;
+      case '!':
+        stk_calc.push(lhs == 0);
         break;
       case '*':
         if (lhs >= config.base_memory &&
