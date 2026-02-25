@@ -68,7 +68,8 @@ bool check_watchers() {
       std::string now = (result.value.has_value()
                              ? std::format("{:#010x}", result.value.value())
                              : "Error");
-      spdlog::info("Watcher {} changed from {} to {}", w.display, old, now);
+      spdlog::info("Watcher {} changed from {} to {} at PC={:#010x}", w.display,
+                   old, now, dut->getPC());
     }
     w.last_value = result.value;
   }
