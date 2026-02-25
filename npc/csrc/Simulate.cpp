@@ -221,6 +221,7 @@ int simulate(int argc, char *argv[]) {
   if (device_thread)
     device_thread->request_stop();
   show_efficiency(simulation_clocks, simulation_instructions, simulation_time);
-  SDL_CloseAudio();
+  if (config.enable_audio)
+    SDL_CloseAudio();
   return result;
 }
