@@ -78,7 +78,8 @@ CmdResult cmd_p(std::string_view arg) {
     auto result = Expr::Expression::create_expression(expr_str);
     if (!result.value.has_value())
       println("{}", result.error);
-    println("{0}\t{0:#010x}", result.value->last_value);
+    else
+      println("{0}\t{0:#010x}", result.value->last_value);
   } else {
     return CmdResult::INVALID_ARG;
   }
