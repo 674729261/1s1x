@@ -46,7 +46,7 @@ void register_logger(argparse::ArgumentParser &program) {
     file_sink->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [thread %t] [%^%l%$] %v");
     spdlog::logger logger("multi_logger", {console_sink, file_sink});
     spdlog::set_default_logger(std::make_shared<spdlog::logger>(logger));
-    spdlog::info("Logging to file : {}", log_path);
+    spdlog::info("Log to file : {}", log_path);
   }
 
   spdlog::flush_every(std::chrono::seconds(5));
