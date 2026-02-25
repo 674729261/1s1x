@@ -103,8 +103,8 @@ void run(unsigned long long steps) {
   }
   auto end_time = std::chrono::steady_clock::now();
   simulation_time_steped =
-      std::chrono::duration_cast<std::chrono::microseconds>(start_time -
-                                                            end_time)
+      std::chrono::duration_cast<std::chrono::microseconds>(end_time -
+                                                            start_time)
           .count();
   show_efficiency(simulation_clocks_steped, simulation_instructions_steped,
                   simulation_time_steped);
