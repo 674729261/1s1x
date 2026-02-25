@@ -92,7 +92,7 @@ CmdResult cmd_l(std::string_view arg) {
       println("ID\tHex     \tDec       \tExpression");
       for (int i = 0; i < watchers.size(); i++) {
         if (watchers[i].last_value.has_value())
-          println("{0}\t{1:08x}\t{1:10}\t{2}", i,
+          println("{0}\t{1:08x}\t{1:<10}\t{2}", i,
                   watchers[i].last_value.value(), watchers[i].display);
         else
           println("{0}\t{1:08x}\t     Error\t{2}", i,
