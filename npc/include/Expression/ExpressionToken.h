@@ -38,7 +38,7 @@ const struct {
   int priority = -1;
   Catagory cata = Catagory::OPERATOR_2;
 } token_types[] = {
-    {make_token_re(R"(^(?:0x[a-fA-F0-9]*|0[0-7]+|[1-9][0-9]*|0))"_ctre), TK_NUM,
+    {make_token_re(R"(^(?:0x[a-fA-F0-9]+|0[0-7]+|[1-9][0-9]*|0))"_ctre), TK_NUM,
      -1, Catagory::OPERAND},
     {make_token_re(R"(^\$[a-z]{0,2}[0-9]?)"_ctre), TK_REG, -1,
      Catagory::OPERAND},
