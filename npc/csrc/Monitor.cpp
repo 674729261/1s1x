@@ -55,13 +55,13 @@ CmdResult cmd_x(std::string_view arg) {
           n_of_w.value() + base_addr < config.base_memory + config.mem_size) {
         println("Address \t Data");
         for (int i = 0; i < n_of_w; i++) {
-          uint32_t addr = base_addr + i * sizeof(uint32_t);
+          uint32_t addr = (base_addr + i * sizeof(uint32_t)) & ~0x3;
           println("{:08x}\t{:08x}", addr,
                   mem[(addr - config.base_memory) >> 2]);
         }
       } else {
-        println("Invalid scan range [{:#010x},{:#010x})", base_addr,
-                n_of_w.value() + base_addr * sizeof(uint32_t));
+        println("Invalid scan range [{:#010x},{:#010x})", base_addr & ~0x3,
+                (n_of_w.value() + base_addr * sizeof(uint32_t)) & ~0x3);
         return CmdResult::INVALID_ARG;
       }
     }
