@@ -79,7 +79,7 @@ CmdResult cmd_p(std::string_view arg) {
     if (!result.value.has_value())
       println("{}", result.error);
     else
-      println("{0}\t{0:#010x}", result.value->last_value);
+      println("{0}\t{0:#010x}", result.value->last_value.value());
   } else {
     return CmdResult::INVALID_ARG;
   }
