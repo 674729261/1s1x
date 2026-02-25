@@ -174,7 +174,7 @@ inline Result<uint32_t> Expression::eval() {
   std::stack<uint32_t> stk_calc;
   for (const Token &tk : nodes) {
     const auto &tt = token_types[tk.type];
-    switch (tt.cata) {
+    switch (tk.cata) {
     case Catagory::OPERAND:
       switch (tt.id) {
       case TK_NUM:
