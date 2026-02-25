@@ -1,6 +1,5 @@
 #pragma once
 #include "DUT.h"
-#include <chrono>
 #include <spdlog/spdlog.h>
 
 struct InstTypeItem {

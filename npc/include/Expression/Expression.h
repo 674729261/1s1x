@@ -19,8 +19,6 @@ namespace Expr {
 
 struct Expression {
 
-  Expression(const Expression &) = default;
-  Expression(Expression &&) noexcept = default;
   std::vector<Token> nodes;
   std::string display;
   static Result<Expression> create_expression(std::string_view expr_str);
