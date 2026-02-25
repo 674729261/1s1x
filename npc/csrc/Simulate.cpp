@@ -30,9 +30,9 @@ void show_efficiency(long long clocks, long long instrs,
                      long long microseconds) {
   if (microseconds == 0)
     return;
-  spdlog::info("Clocks per second : {}",
+  spdlog::info("Clocks per second : {:.3f}",
                static_cast<double>(clocks) / microseconds * 1e6);
-  spdlog::info("Instructions per second : {}",
+  spdlog::info("Instructions per second : {:.3f}",
                static_cast<double>(instrs) / microseconds * 1e6);
 }
 
