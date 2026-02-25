@@ -29,5 +29,6 @@ int main(int argc, char *argv[]) {
   }
   spdlog::shutdown();
   dut = nullptr;
+  contextp = nullptr;
   return return_value;
 }
