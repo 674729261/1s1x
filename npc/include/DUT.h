@@ -126,8 +126,8 @@ struct Dut {
 
   void print_all_gpr() {
     for (int i = 0; i < 4; i++) {
-      for (int j = 0; j < 4; j++) {
-        int gpr_id = i * 4 + j;
+      for (int j = 0; j < 8; j++) {
+        int gpr_id = i * 8 + j;
         print("{:3}= {:08x} ", gpr_names[gpr_id], getGPR(gpr_id));
       }
       std::println();
