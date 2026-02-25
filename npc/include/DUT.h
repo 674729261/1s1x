@@ -87,38 +87,38 @@ struct Dut {
       return top->gprname(13);
     case 15:
       return top->gprname(14);
-    case 16:
-      return top->gprname(15);
-    case 17:
-      return top->gprname(16);
-    case 18:
-      return top->gprname(17);
-    case 19:
-      return top->gprname(18);
-    case 20:
-      return top->gprname(19);
-    case 21:
-      return top->gprname(20);
-    case 22:
-      return top->gprname(21);
-    case 23:
-      return top->gprname(22);
-    case 24:
-      return top->gprname(23);
-    case 25:
-      return top->gprname(24);
-    case 26:
-      return top->gprname(25);
-    case 27:
-      return top->gprname(26);
-    case 28:
-      return top->gprname(27);
-    case 29:
-      return top->gprname(28);
-    case 30:
-      return top->gprname(29);
-    case 31:
-      return top->gprname(30);
+      // case 16:
+      //   return top->gprname(15);
+      // case 17:
+      //   return top->gprname(16);
+      // case 18:
+      //   return top->gprname(17);
+      // case 19:
+      //   return top->gprname(18);
+      // case 20:
+      //   return top->gprname(19);
+      // case 21:
+      //   return top->gprname(20);
+      // case 22:
+      //   return top->gprname(21);
+      // case 23:
+      //   return top->gprname(22);
+      // case 24:
+      //   return top->gprname(23);
+      // case 25:
+      //   return top->gprname(24);
+      // case 26:
+      //   return top->gprname(25);
+      // case 27:
+      //   return top->gprname(26);
+      // case 28:
+      //   return top->gprname(27);
+      // case 29:
+      //   return top->gprname(28);
+      // case 30:
+      //   return top->gprname(29);
+      // case 31:
+      //   return top->gprname(30);
     }
     log_and_throw<std::logic_error>("Invalid register index : {} @PC={:08x}",
                                     idx, getPC());
@@ -126,8 +126,8 @@ struct Dut {
 
   void print_all_gpr() {
     for (int i = 0; i < 4; i++) {
-      for (int j = 0; j < 8; j++) {
-        int gpr_id = i * 8 + j;
+      for (int j = 0; j < 4; j++) {
+        int gpr_id = i * 4 + j;
         print("{:3}= {:08x} ", gpr_names[gpr_id], getGPR(gpr_id));
       }
       std::println();
