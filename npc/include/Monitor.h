@@ -22,7 +22,7 @@ constexpr struct {
 } cmd_list[] = {
     {cmd_c, "c", "Start running. Usage : c"},
     {cmd_si, "si", "Step specific instructions. Usage : si [# of steps]"},
-    {cmd_si, "x", "Scan memory. Usage : x (# of words) (base address)"},
+    {cmd_x, "x", "Scan memory. Usage : x (# of words) (base address)"},
     {cmd_q, "q", "Quit"},
     {cmd_li, "li", "List infomation. Usage : li (r|w)"},
     {cmd_p, "p", "Print expression. Usage : p (expression)"},
