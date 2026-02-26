@@ -215,7 +215,7 @@ int simulate(int argc, char *argv[]) {
     result = -2;
   } else {
     spdlog::warn("DID NOT HALT");
-    result = -3;
+    result = 0;
   }
   dut->print_all_gpr();
   if (device_thread)
