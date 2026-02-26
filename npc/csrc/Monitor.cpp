@@ -95,7 +95,7 @@ CmdResult cmd_l(std::string_view arg) {
           println("{0}\t{1:08x}\t{1:<10}\t{2}", i,
                   watchers[i].last_value.value(), watchers[i].display);
         else
-          println("{0}\t       \t     Error\t{1}", i, watchers[i].display);
+          println("{0}\t        \tError     \t{1}", i, watchers[i].display);
       }
     }
   } else {
