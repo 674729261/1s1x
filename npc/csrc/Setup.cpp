@@ -37,7 +37,8 @@ void register_argparse(argparse::ArgumentParser &program) {
   program.add_argument("--ftracer").help("Enable function tracer").flag();
   program.add_argument("--itracer")
       .help("Enable instruction tracer and set number of instructions to trace")
-      .scan<'x', size_t>();
+      .default_value(0uz)
+      .scan<'u', size_t>();
 
   program.add_argument("-b", "--batch").help("Use batch mode").flag();
 }
