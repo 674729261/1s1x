@@ -37,7 +37,7 @@ void register_argparse(argparse::ArgumentParser &program) {
   program.add_argument("--ftracer").help("Enable function tracer").flag();
   program.add_argument("--itracer")
       .help("Enable instruction tracer and set number of instructions to trace")
-      .default_value(0uz)
+      .default_value<size_t>(0)
       .scan<'u', size_t>();
 
   program.add_argument("-b", "--batch").help("Use batch mode").flag();
@@ -77,6 +77,13 @@ Config setup(argparse::ArgumentParser &program) {
   ret.device_size = program.get<size_t>("--device_size");
   ret.base_device = program.get<uint32_t>("--device_base");
   ret.mtracer = program.is_used("--mtracer");
+  if (ret.mtracer)
+    spdlog::info("Using mtracer");
+  if (ret.ftracer)
+    spdlog::info("Using ftracer");
+  if (ret.itracer > 0)
+    spdlog::info("Using itracer of length {}", ret.itracer);
+
   ret.ftracer = program.is_used("--ftracer");
   ret.itracer = program.get<size_t>("--itracer");
   ret.image_path = program.get("--image");
