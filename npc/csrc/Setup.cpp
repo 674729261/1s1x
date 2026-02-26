@@ -28,8 +28,18 @@ void register_argparse(argparse::ArgumentParser &program) {
       .scan<'x', uint32_t>()
       .required();
 
-  program.add_argument("-v", "--enable_vga").help("Enable VGA").flag();
+  program.add_argument("-v", "--enable_vga")
+      .help("Enable VGA and keyboard")
+      .flag();
   program.add_argument("-a", "--enable_audio").help("Enable audio").flag();
+
+  program.add_argument("--mtracer").help("Enable memory tracer").flag();
+  program.add_argument("--ftracer").help("Enable function tracer").flag();
+  program.add_argument("--itracer")
+      .help("Enable instruction tracer and set number of instructions to trace")
+      .scan<'x', size_t>()
+      .default_value(0)
+      .nargs(1);
 
   program.add_argument("-b", "--batch").help("Use batch mode").flag();
 }
@@ -67,6 +77,9 @@ Config setup(argparse::ArgumentParser &program) {
   ret.base_memory = program.get<uint32_t>("--mem_base");
   ret.device_size = program.get<size_t>("--device_size");
   ret.base_device = program.get<uint32_t>("--device_base");
+  ret.mtracer = program.is_used("--mtracer");
+  ret.ftracer = program.is_used("--ftracer");
+  ret.itracer = program.get<size_t>("--itracer");
   ret.image_path = program.get("--image");
   ret.batch_mode = program.get<bool>("--batch");
   spdlog::info("Image path  : {}", ret.image_path);

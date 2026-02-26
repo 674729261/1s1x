@@ -21,6 +21,11 @@ struct Config {
 
   bool enable_vga;
   bool enable_audio;
+
+  bool mtracer;
+  bool ftracer;
+  size_t itracer;
+
   std::string waveform_file;
 };
 
