@@ -38,8 +38,8 @@ const struct {
   int priority = -1;
   Catagory cata = Catagory::OPERATOR_2;
 } token_types[] = {
-    {make_lexer<R"(^(?:0x[a-fA-F0-9]*|0[0-7]+|[1-9][0-9]*|0))">(), TK_NUM, -1,
-     Catagory::OPERAND},
+    {make_lexer<R"(^(?:0[xX][a-fA-F0-9]*|0[0-7]+|[1-9][0-9]*|0))">(), TK_NUM,
+     -1, Catagory::OPERAND},
     {make_lexer<R"(^\$[a-z]{0,2}[0-9]?)">(), TK_REG, -1, Catagory::OPERAND},
     {make_lexer<R"(^\+)">(), '+', 40},
     {make_lexer<R"(^-)">(), '-', 40},

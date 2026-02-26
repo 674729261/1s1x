@@ -11,9 +11,9 @@ using ctll::fixed_string;
 using ctre::match;
 static constexpr auto RE_NO_ARG = fixed_string{R"(\s*)"};
 static constexpr auto RE_ONE_NUMBER =
-    fixed_string{R"(\s*(0x[a-fA-F0-9]+|0[0-7]+|[1-9][0-9]*|0)\s*)"};
+    fixed_string{R"(\s*(0[xX][a-fA-F0-9]+|0[0-7]+|[1-9][0-9]*|0)\s*)"};
 static constexpr auto RE_SCAN =
-    fixed_string{R"(\s*(0x[a-fA-F0-9]+|0[0-7]+|[1-9][0-9]*|0)\s*(.*)\s*)"};
+    fixed_string{R"(\s*(0[xX][a-fA-F0-9]+|0[0-7]+|[1-9][0-9]*|0)\s*(.*)\s*)"};
 static constexpr auto RE_ONE_EXPR = fixed_string{R"(\s*(.*)\s*)"};
 
 CmdResult cmd_c(std::string_view arg) {
