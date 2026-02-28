@@ -2,6 +2,7 @@
 #include "DUT.h"
 #include "Device/Device.h"
 #include "Device/Keyboard.h"
+#include "ELFParser.h"
 #include "Expression/Watcher.h"
 #include "Monitor.h"
 #include "PerformanceCounter.h"
@@ -93,6 +94,7 @@ bool check_difftest() {
 
   return ret;
 }
+
 void run(unsigned long long steps) {
   if (sim_state == SimulationState::HALT) {
     spdlog::info("Program has hit trap @ PC = {:#010x}, a0 = {:#010x}",
@@ -191,6 +193,8 @@ void monitor_loop() {
 int simulate(int argc, char *argv[]) {
   // init_mrom(config.image_path);
   init_mem(config.image_path);
+  if (config.ftracer)
+    init_sym_table(config.elf_path);
   RTC_init();
   audio_init();
   Verilated::commandArgs(argc, argv);
