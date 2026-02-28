@@ -11,7 +11,6 @@ inline void sync_ftracer() {
 }
 
 inline void update_ftracer(uint32_t inst, uint32_t pc) {
-  spdlog::info("{:08x} {:08x}", pc, inst);
   uint32_t opcode = inst & 0x7f;
   uint32_t rd = (inst >> 7) & 0x1f;
   uint32_t dnxt_pc = -1;
