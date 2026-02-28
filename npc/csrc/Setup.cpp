@@ -34,7 +34,9 @@ void register_argparse(argparse::ArgumentParser &program) {
   program.add_argument("-a", "--enable_audio").help("Enable audio").flag();
 
   program.add_argument("--mtracer").help("Enable memory tracer").flag();
-  program.add_argument("--ftracer").help("Enable function tracer").flag();
+  program.add_argument("--ftracer")
+      .help("Enable function tracer and set elf file path")
+      .nargs(1);
   program.add_argument("--itracer")
       .help("Enable instruction tracer and set number of instructions to trace")
       .default_value<size_t>(0)
@@ -85,6 +87,8 @@ Config setup(argparse::ArgumentParser &program) {
     spdlog::info("Using itracer of length {}", ret.itracer);
 
   ret.ftracer = program.is_used("--ftracer");
+  if (ret.ftracer)
+    ret.elf_path = program.get("--ftracer");
   ret.itracer = program.get<size_t>("--itracer");
   ret.image_path = program.get("--image");
   ret.batch_mode = program.get<bool>("--batch");
