@@ -7,6 +7,7 @@
 #include "Monitor.h"
 #include "PerformanceCounter.h"
 #include "Setup.h"
+#include "Tracer.h"
 #include "spdlog/spdlog.h"
 #include <Args.h>
 #include <Mem.h>
@@ -16,6 +17,7 @@
 #include <Vnpc_top___024root.h>
 #include <cctype>
 #include <chrono>
+#include <cstdint>
 #include <filesystem>
 #include <format>
 #include <memory>
@@ -43,9 +45,15 @@ void show_efficiency(long long clocks, long long instrs,
                static_cast<double>(instrs) / microseconds * 1e6);
 }
 
-static bool retire;
+static bool retire = true;
+static uint32_t retired_inst;
+static uint32_t retired_pc;
 
-extern "C" void notify_retire(int32_t pc, int32_t inst) { retire = true; }
+extern "C" void notify_retire(int32_t pc, int32_t inst) {
+  retire = true;
+  retired_inst = inst;
+  retired_pc = pc;
+}
 
 int show_trap_info() {
   if (dut->getGPR(10) == 0) {
@@ -105,6 +113,7 @@ bool on_inst_retire(unsigned long long cur_step) {
       should_break = true;
     }
   }
+  update_ftracer(retired_inst, retired_pc);
   if (watcher_state)
     should_break = true;
   return should_break;
@@ -126,6 +135,9 @@ void run(unsigned long long steps) {
   auto start_time = std::chrono::steady_clock::now();
   unsigned long long cur_step = 0;
   while (sim_state == SimulationState::RUNNING && steps != cur_step) {
+    if (retire && config.ftracer) {
+      sync_ftracer();
+    }
     retire = false;
     dut->step_one_cycle();
     if (contextp->gotFinish()) {
