@@ -95,6 +95,21 @@ bool check_difftest() {
   return ret;
 }
 
+bool on_inst_retire(unsigned long long cur_step) {
+  bool watcher_state = check_watchers();
+  bool should_break = false;
+  if (config.difftest) {
+    ref->step();
+    if (check_difftest()) {
+      sim_state = SimulationState::DIFFTEST_FAILED;
+      should_break = true;
+    }
+  }
+  if (watcher_state)
+    should_break = true;
+  return should_break;
+}
+
 void run(unsigned long long steps) {
   if (sim_state == SimulationState::HALT) {
     spdlog::info("Program has hit trap @ PC = {:#010x}, a0 = {:#010x}",
@@ -108,9 +123,9 @@ void run(unsigned long long steps) {
   long long simulation_instructions_steped = 0;
   long long simulation_clocks_steped = 0;
   long long simulation_time_steped = 0;
-  bool difftest_state = false;
   auto start_time = std::chrono::steady_clock::now();
-  while (sim_state == SimulationState::RUNNING && steps != 0) {
+  unsigned long long cur_step = 0;
+  while (sim_state == SimulationState::RUNNING && steps != cur_step) {
     retire = false;
     dut->step_one_cycle();
     if (contextp->gotFinish()) {
@@ -119,16 +134,9 @@ void run(unsigned long long steps) {
     }
     simulation_clocks_steped++;
     if (retire) {
-      steps--;
+      cur_step++;
       simulation_instructions_steped++;
-      bool watcher_state = check_watchers();
-      if (config.difftest) {
-        ref->step();
-        difftest_state = check_difftest();
-        if (difftest_state)
-          break;
-      }
-      if (watcher_state)
+      if (on_inst_retire(cur_step))
         break;
     }
   }
