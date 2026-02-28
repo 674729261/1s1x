@@ -42,7 +42,7 @@ inline void update_ftracer(uint32_t inst, uint32_t pc) {
   } else if (inst == 0x00008067) {
     ProgSymTab::Call top = sym_table->pop_call_stack();
     for (int i = 0; i < sym_table->stack_cnt(); i++)
-      indent += "  ";
+      indent.push_back(' ');
     info = std::format("{}ret  {}@{:#010x}", indent,
                        sym_table->find_symbol_name(top.symbol), pc);
   } else
