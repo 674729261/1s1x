@@ -16,7 +16,7 @@ SVSRC = $(patsubst %,generated_svsrc/%,$(SVSRC_FILES))
 
 VERILATOR = verilator
 
-VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -Dstrtk_no_tr1_or_boost -Ofast \
+VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -Ofast \
 -march=native -mtune=native \
 -funroll-loops -flto=auto -ffast-math -fno-math-errno -funsafe-math-optimizations 
 VERILATOR_LDFLAGS = -flto=auto -fipa-pta 
@@ -50,8 +50,8 @@ $(SV_FILELIST): $(CHISELSRC)
 
 
 
-PROG ?= test_progs/add.bin
-ELF  ?= test_progs/add.elf
+PROG ?= test_progs/recursion.bin
+ELF  ?= test_progs/recursion.elf
 MEM_SIZE ?= 0x8000000
 MEM_BASE ?= 0x80000000
 DEV_SIZE ?= 0x10000000
@@ -66,7 +66,7 @@ sim: npc
 	$(BIN) --image $(PROG) \
 	--mem_size $(MEM_SIZE) --mem_base $(MEM_BASE) \
 	--device_size $(DEV_SIZE) --device_base $(DEV_BASE) \
-	--log $(LOG_FILE) --difftest --enable_vga --enable_audio $(NPC_FLAGS) 
+	--log $(LOG_FILE) --difftest --enable_vga --enable_audio $(NPC_FLAGS) --itracer 8
 
 sim_full_speed: VERILATOR_CFLAGS+=-DNDEBUG -fstrict-aliasing \
 -frename-registers -fomit-frame-pointer \

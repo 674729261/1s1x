@@ -1,11 +1,15 @@
 
+#include "Capstone.h"
 #include "DUT.h"
 #include "Device/Device.h"
 #include "Device/Keyboard.h"
+#include "ELFParser.h"
 #include "Expression/Watcher.h"
 #include "Monitor.h"
 #include "PerformanceCounter.h"
+#include "RingBuffer.hpp"
 #include "Setup.h"
+#include "Tracer.h"
 #include "spdlog/spdlog.h"
 #include <Args.h>
 #include <Mem.h>
@@ -15,6 +19,7 @@
 #include <Vnpc_top___024root.h>
 #include <cctype>
 #include <chrono>
+#include <cstdint>
 #include <filesystem>
 #include <format>
 #include <memory>
@@ -42,9 +47,15 @@ void show_efficiency(long long clocks, long long instrs,
                static_cast<double>(instrs) / microseconds * 1e6);
 }
 
-static bool retire;
+static bool retire = true;
+static uint32_t retired_inst;
+static uint32_t retired_pc;
 
-extern "C" void notify_retire(int32_t pc, int32_t inst) { retire = true; }
+extern "C" void notify_retire(int32_t pc, int32_t inst) {
+  retire = true;
+  retired_inst = inst;
+  retired_pc = pc;
+}
 
 int show_trap_info() {
   if (dut->getGPR(10) == 0) {
@@ -93,6 +104,31 @@ bool check_difftest() {
 
   return ret;
 }
+
+bool on_inst_retire(unsigned long long cur_step) {
+  if (config.itracer > 0) {
+    if (cur_step < config.itracer)
+      Capstone::capstone.disassemble(
+          retired_pc, reinterpret_cast<uint8_t *>(&retired_inst), 4);
+
+    instRingBuffer->insert(retired_pc, retired_inst);
+  }
+  bool watcher_state = check_watchers();
+  bool should_break = false;
+  if (config.difftest) {
+    ref->step();
+    if (check_difftest()) {
+      sim_state = SimulationState::DIFFTEST_FAILED;
+      should_break = true;
+    }
+  }
+  if (config.ftracer)
+    update_ftracer(retired_inst, retired_pc);
+  if (watcher_state)
+    should_break = true;
+  return should_break;
+}
+
 void run(unsigned long long steps) {
   if (sim_state == SimulationState::HALT) {
     spdlog::info("Program has hit trap @ PC = {:#010x}, a0 = {:#010x}",
@@ -106,9 +142,12 @@ void run(unsigned long long steps) {
   long long simulation_instructions_steped = 0;
   long long simulation_clocks_steped = 0;
   long long simulation_time_steped = 0;
-  bool difftest_state = false;
   auto start_time = std::chrono::steady_clock::now();
-  while (sim_state == SimulationState::RUNNING && steps != 0) {
+  unsigned long long cur_step = 0;
+  while (sim_state == SimulationState::RUNNING && steps != cur_step) {
+    if (retire && config.ftracer) {
+      sync_ftracer();
+    }
     retire = false;
     dut->step_one_cycle();
     if (contextp->gotFinish()) {
@@ -117,17 +156,9 @@ void run(unsigned long long steps) {
     }
     simulation_clocks_steped++;
     if (retire) {
-      steps--;
+      cur_step++;
       simulation_instructions_steped++;
-      bool watcher_state = check_watchers();
-
-      if (config.difftest) {
-        ref->step();
-        difftest_state = check_difftest();
-        if (difftest_state)
-          break;
-      }
-      if (watcher_state)
+      if (on_inst_retire(cur_step))
         break;
     }
   }
@@ -168,9 +199,13 @@ void monitor_loop() {
       continue;
     line_sv = line_sv.substr(begin_pos);
 
+    int cmd_end_pos = 0;
+    while (cmd_end_pos < line_sv.length() && !isspace(line_sv[cmd_end_pos]))
+      cmd_end_pos++;
+    std::string_view cmd_sv(line_sv.begin(), line_sv.begin() + cmd_end_pos);
     bool command_found = false;
     for (const auto &item : cmd_list) {
-      if (line_sv.starts_with(item.command)) {
+      if (cmd_sv == item.command) {
         std::string_view arg_sv = line_sv.substr(item.command.length());
         CmdResult ret = item.call(std::string(arg_sv));
         if (ret == CmdResult::INVALID_ARG) {
@@ -192,6 +227,12 @@ void monitor_loop() {
 int simulate(int argc, char *argv[]) {
   // init_mrom(config.image_path);
   init_mem(config.image_path);
+  if (config.ftracer)
+    init_sym_table(config.elf_path);
+  if (config.itracer > 0) {
+    Capstone::capstone.load_libcapstone();
+    instRingBuffer = std::make_unique<InstRingBuffer>(config.itracer);
+  }
   RTC_init();
   audio_init();
   Verilated::commandArgs(argc, argv);
@@ -216,13 +257,17 @@ int simulate(int argc, char *argv[]) {
     result = -2;
   } else {
     spdlog::warn("DID NOT HALT");
-    result = -3;
+    result = 0;
   }
-  dut->print_all_gpr();
+
   if (device_thread)
     device_thread->request_stop();
   show_efficiency(simulation_clocks, simulation_instructions, simulation_time);
   if (config.enable_audio)
     SDL_CloseAudio();
+  dut->print_all_gpr();
+  if (config.itracer > 0)
+    instRingBuffer->display();
+
   return result;
 }

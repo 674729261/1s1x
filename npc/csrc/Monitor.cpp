@@ -11,9 +11,9 @@ using ctll::fixed_string;
 using ctre::match;
 static constexpr auto RE_NO_ARG = fixed_string{R"(\s*)"};
 static constexpr auto RE_ONE_NUMBER =
-    fixed_string{R"(\s*(0x[a-fA-F0-9]+|0[0-7]+|[1-9][0-9]*|0)\s*)"};
+    fixed_string{R"(\s*(0[xX][a-fA-F0-9]+|0[0-7]+|[1-9][0-9]*|0)\s*)"};
 static constexpr auto RE_SCAN =
-    fixed_string{R"(\s*(0x[a-fA-F0-9]+|0[0-7]+|[1-9][0-9]*|0)\s*(.*)\s*)"};
+    fixed_string{R"(\s*(0[xX][a-fA-F0-9]+|0[0-7]+|[1-9][0-9]*|0)\s*(.*)\s*)"};
 static constexpr auto RE_ONE_EXPR = fixed_string{R"(\s*(.*)\s*)"};
 
 CmdResult cmd_c(std::string_view arg) {
@@ -90,13 +90,12 @@ CmdResult cmd_l(std::string_view arg) {
       println("No watchers");
     } else {
       println("ID\tHex     \tDec       \tExpression");
-      for (int i = 0; i < watchers.size(); i++) {
+      for (size_t i = 0; i < watchers.size(); i++) {
         if (watchers[i].last_value.has_value())
           println("{0}\t{1:08x}\t{1:<10}\t{2}", i,
                   watchers[i].last_value.value(), watchers[i].display);
         else
-          println("{0}\t{1:08x}\t     Error\t{2}", i,
-                  watchers[i].last_value.value(), watchers[i].display);
+          println("{0}\t        \tError     \t{1}", i, watchers[i].display);
       }
     }
   } else {

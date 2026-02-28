@@ -28,8 +28,19 @@ void register_argparse(argparse::ArgumentParser &program) {
       .scan<'x', uint32_t>()
       .required();
 
-  program.add_argument("-v", "--enable_vga").help("Enable VGA").flag();
+  program.add_argument("-v", "--enable_vga")
+      .help("Enable VGA and keyboard")
+      .flag();
   program.add_argument("-a", "--enable_audio").help("Enable audio").flag();
+
+  program.add_argument("--mtracer").help("Enable memory tracer").flag();
+  program.add_argument("--ftracer")
+      .help("Enable function tracer and set elf file path")
+      .nargs(1);
+  program.add_argument("--itracer")
+      .help("Enable instruction tracer and set number of instructions to trace")
+      .default_value<size_t>(0)
+      .scan<'u', size_t>();
 
   program.add_argument("-b", "--batch").help("Use batch mode").flag();
 }
@@ -67,6 +78,18 @@ Config setup(argparse::ArgumentParser &program) {
   ret.base_memory = program.get<uint32_t>("--mem_base");
   ret.device_size = program.get<size_t>("--device_size");
   ret.base_device = program.get<uint32_t>("--device_base");
+  ret.mtracer = program.is_used("--mtracer");
+  if (ret.mtracer)
+    spdlog::info("Using mtracer");
+  if (ret.ftracer)
+    spdlog::info("Using ftracer");
+  if (ret.itracer > 0)
+    spdlog::info("Using itracer of length {}", ret.itracer);
+
+  ret.ftracer = program.is_used("--ftracer");
+  if (ret.ftracer)
+    ret.elf_path = program.get("--ftracer");
+  ret.itracer = program.get<size_t>("--itracer");
   ret.image_path = program.get("--image");
   ret.batch_mode = program.get<bool>("--batch");
   spdlog::info("Image path  : {}", ret.image_path);

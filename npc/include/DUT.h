@@ -5,6 +5,7 @@
 #include "my_utils.h"
 #include "verilated.h"
 #include "verilated_vcd_c.h"
+#include <ELFParser.h>
 #include <Setup.h>
 #include <print>
 

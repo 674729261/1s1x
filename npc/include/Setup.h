@@ -18,10 +18,15 @@ struct Config {
   bool batch_mode;
   bool difftest;
   bool use_waveform;
+  std::string waveform_file;
 
   bool enable_vga;
   bool enable_audio;
-  std::string waveform_file;
+
+  bool mtracer;
+  bool ftracer;
+  std::string elf_path;
+  size_t itracer;
 };
 
 inline Config config;

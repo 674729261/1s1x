@@ -4,6 +4,7 @@
 #include "Device/VGA.h"
 #include "Setup.h"
 #include "my_utils.h"
+#include "spdlog/spdlog.h"
 #include <Mem.h>
 #include <chrono>
 #include <cstddef>
@@ -12,6 +13,8 @@
 #include <stdexcept>
 
 extern "C" uint32_t mem_read(uint32_t raddr) {
+  if (config.mtracer)
+    spdlog::info("Reading from address : {:#010x}", raddr);
   if (raddr >= config.base_memory &&
       raddr < config.base_memory + config.mem_size) {
     // in memory space
@@ -75,6 +78,10 @@ extern "C" uint32_t mem_read(uint32_t raddr) {
 
 extern "C" void mem_write(uint32_t waddr, uint32_t wmask, uint32_t wdata) {
   uint32_t mask32 = lookup_mask32[wmask];
+  if (config.mtracer)
+    spdlog::info(
+        "Writing to address {:#010x}, mask = {:#010x}, wdata = {:#010x}", waddr,
+        mask32, wdata);
   if (waddr >= config.base_memory &&
       waddr < config.base_memory + config.mem_size) {
     // in memory space
