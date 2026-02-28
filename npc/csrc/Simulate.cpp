@@ -113,7 +113,8 @@ bool on_inst_retire(unsigned long long cur_step) {
       should_break = true;
     }
   }
-  update_ftracer(retired_inst, retired_pc);
+  if (config.ftracer)
+    update_ftracer(retired_inst, retired_pc);
   if (watcher_state)
     should_break = true;
   return should_break;
