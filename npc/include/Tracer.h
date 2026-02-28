@@ -45,6 +45,7 @@ inline void update_ftracer(uint32_t inst, uint32_t pc) {
       indent += "  ";
     info = std::format("{}ret  {}@{:#010x}", indent,
                        sym_table->find_symbol_name(top.symbol), pc);
-  }
+  } else
+    return;
   spdlog::info(info);
 }
