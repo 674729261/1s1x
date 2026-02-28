@@ -190,9 +190,13 @@ void monitor_loop() {
       continue;
     line_sv = line_sv.substr(begin_pos);
 
+    int cmd_end_pos = 0;
+    while (cmd_end_pos < line_sv.length() && !isspace(line_sv[cmd_end_pos]))
+      cmd_end_pos++;
+    std::string_view cmd_sv(line_sv.begin(), line_sv.begin() + cmd_end_pos);
     bool command_found = false;
     for (const auto &item : cmd_list) {
-      if (line_sv.starts_with(item.command)) {
+      if (cmd_sv == item.command) {
         std::string_view arg_sv = line_sv.substr(item.command.length());
         CmdResult ret = item.call(std::string(arg_sv));
         if (ret == CmdResult::INVALID_ARG) {
