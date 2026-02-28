@@ -57,6 +57,8 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
     // val mem = new AXI_Lite
     val axi_bus = new AXI
     val ok_to_step = Output(Bool())
+    val retire_pc = Output(UInt(32.W))
+    val retire_inst = Output(UInt(32.W))
   })
 
   val ifu = Module(new IFU)
@@ -78,7 +80,8 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
   io.axi_bus <> arbiter.OUT_AXI
 
   io.pc := pc
-
+  io.retire_pc := wbu.out.retire_pc
+  io.retire_inst := wbu.out.retire_inst
   ifu.in.pc := pc
   ifu.fetch_port <> arbiter.IFU_AXI
 

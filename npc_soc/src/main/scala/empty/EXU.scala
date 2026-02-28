@@ -17,6 +17,7 @@ class WriteInfo extends Bundle {
 
 class MessageEXU2LSU extends Bundle {
   val pc = (UInt(32.W))
+  val inst = (UInt(32.W))
   val controls = (new ControlSignals)
   val itype = (new InstType)
 
@@ -42,6 +43,7 @@ class EXU() extends Module {
   )
 
   out.bits.pc := signals_in_r.pc
+  out.bits.inst := signals_in_r.inst
   out.bits.controls := signals_in_r.controls
   out.bits.itype := signals_in_r.itype
 

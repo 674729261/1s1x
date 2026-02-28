@@ -5,6 +5,7 @@ import chisel3.layer.block
 
 class MessageLSU2WBU extends Bundle {
   val pc = (UInt(32.W))
+  val inst = (UInt(32.W))
   val controls = (new ControlSignals)
   val itype = (new InstType)
   val write_info = (new WriteInfo)
@@ -106,6 +107,7 @@ class LSU() extends Module {
   val rdata_latched = RegEnable(ramLoader.io.out, fire.r_fire)
 
   out.bits.pc := signal_in_r.pc
+  out.bits.inst := signal_in_r.inst
   out.bits.controls := signal_in_r.controls
   out.bits.itype := signal_in_r.itype
   out.bits.write_info := signal_in_r.write_info

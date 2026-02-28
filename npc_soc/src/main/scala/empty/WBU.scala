@@ -21,6 +21,8 @@ class WBU() extends Module {
     val gpr_wen = Output(Bool())
 
     val ok_to_step = Output(Bool())
+    val retire_pc = Output(UInt(32.W))
+    val retire_inst = Output(UInt(32.W))
 
     val inst_type = Output(new InstType)
 
@@ -43,5 +45,7 @@ class WBU() extends Module {
 
   in.ready := in.valid
   out.ok_to_step := in.valid
+  out.retire_pc := in.bits.pc
+  out.retire_inst := in.bits.inst
   out.inst_type := in.bits.itype
 }

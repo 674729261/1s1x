@@ -49,9 +49,9 @@ class npc_top(init_pc: Long, performance_counter: Boolean) extends Module {
     val inst_retire = Module(new Inst_Retire)
     inst_retire.clock := clock
     inst_retire.reset := reset
-    inst_retire.pc := cpu.io.pc
+    inst_retire.pc := cpu.io.retire_pc
     inst_retire.retire := cpu.io.ok_to_step
-    inst_retire.inst := 0.U(32.W)
+    inst_retire.inst := cpu.io.retire_inst
 
     axi_checker.clock := clock
     axi_checker.reset := reset

@@ -206,6 +206,7 @@ class Operands extends Bundle {
 
 class MessageIDU2EXU extends Bundle {
   val pc = (UInt(32.W))
+  val inst = (UInt(32.W))
 
   val fields = (new InstFields)
   val itype = (new InstType)
@@ -264,6 +265,7 @@ class IDU() extends Module {
   out.bits.sources.src2 := fetch_port_in.gpr_rdata2
   out.bits.sources.mtvec := fetch_port_in.csr_mtvec
   out.bits.sources.mepc := fetch_port_in.csr_mepc
+  out.bits.inst := in.bits.inst
 
   out.valid := in.valid
   in.ready := out.ready
