@@ -31,21 +31,21 @@ inline void update_ftracer(uint32_t inst, uint32_t pc) {
     imm |= -(imm & 0x800);
     dnxt_pc = (imm + ftracer_gpr_last[rs1]) & ~0x1;
   }
-  std::string info = "";
+  std::string indent = "", info = "";
   if ((opcode == 0x67 || opcode == 0x6f) && rd == 1) {
+    for (int i = 0; i < sym_table->stack_cnt(); i++)
+      indent += "  ";
     int to_symbol = sym_table->find_symbol_by_addr(dnxt_pc);
-    info = std::format("call {}@{:#010x}",
+    info = std::format("{}call {}@{:#010x}", indent,
                        sym_table->find_symbol_name(to_symbol), pc);
     sym_table->push_call_stack(to_symbol, pc);
   } else if (inst == 0x00008067) {
     ProgSymTab::Call top = sym_table->pop_call_stack();
-
-    info = std::format("ret  {}@{:#010x}",
+    for (int i = 0; i < sym_table->stack_cnt(); i++)
+      indent += "  ";
+    info = std::format("{}ret  {}@{:#010x}", indent,
                        sym_table->find_symbol_name(top.symbol), pc);
   } else
     return;
-  std::string indent = "";
-  for (int i = 0; i < sym_table->stack_cnt(); i++)
-    indent += "  ";
   spdlog::info("{}{}", indent, info);
 }
