@@ -34,7 +34,7 @@ inline void update_ftracer(uint32_t inst, uint32_t pc) {
   std::string indent = "", info = "";
   if ((opcode == 0x67 || opcode == 0x6f) && rd == 1) {
     for (int i = 0; i < sym_table->stack_cnt(); i++)
-      indent += "  ";
+      indent.push_back(' ');
     int to_symbol = sym_table->find_symbol_by_addr(dnxt_pc);
     info = std::format("{}call {}@{:#010x}", indent,
                        sym_table->find_symbol_name(to_symbol), pc);
