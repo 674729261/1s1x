@@ -107,7 +107,7 @@ bool check_difftest() {
 
 bool on_inst_retire(unsigned long long cur_step) {
   if (config.itracer > 0) {
-    if (cur_step < 8)
+    if (cur_step < config.itracer)
       Capstone::capstone.disassemble(
           retired_pc, reinterpret_cast<uint8_t *>(&retired_inst), 4);
 
