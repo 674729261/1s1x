@@ -1,4 +1,5 @@
 
+#include "Capstone.h"
 #include "DUT.h"
 #include "Device/Device.h"
 #include "Device/Keyboard.h"
@@ -104,6 +105,9 @@ bool check_difftest() {
 }
 
 bool on_inst_retire(unsigned long long cur_step) {
+  if (config.itracer > 0 && cur_step < 8)
+    Capstone::capstone.disassemble(
+        retired_pc, reinterpret_cast<uint8_t *>(&retired_inst), 4);
   bool watcher_state = check_watchers();
   bool should_break = false;
   if (config.difftest) {
@@ -220,6 +224,8 @@ int simulate(int argc, char *argv[]) {
   init_mem(config.image_path);
   if (config.ftracer)
     init_sym_table(config.elf_path);
+  if (config.itracer > 0)
+    Capstone::capstone.load_libcapstone();
   RTC_init();
   audio_init();
   Verilated::commandArgs(argc, argv);
