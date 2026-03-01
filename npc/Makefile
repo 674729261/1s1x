@@ -88,7 +88,7 @@ valgrind: FAST_FLAGS = -O0 -g
 valgrind: VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -O0 -g -flto=auto
 valgrind: MDIR = $(NPC_HOME)/build/valgrind/
 valgrind: npc
-	valgrind --leak-check=full --show-leak-kinds=all \
+	valgrind  \
 	$(BIN) --image $(PROG) \
 	--mem_size $(MEM_SIZE) --mem_base $(MEM_BASE) \
 	--device_size $(DEV_SIZE) --device_base $(DEV_BASE) \
