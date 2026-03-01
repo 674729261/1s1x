@@ -5,7 +5,7 @@
 extern std::unique_ptr<Dut> dut;
 
 extern "C" void notify_ifu_r_event() {}
-extern "C" void notify_icache_hit_event() { icache_hit_event++; }
+extern "C" void notify_icache_hit_event() {}
 extern "C" void notify_lsu_r_event() {}
 extern "C" void notify_ifu_ar_event() {}
 extern "C" void notify_lsu_ar_event() {}
