@@ -235,9 +235,9 @@ int simulate(int argc, char *argv[]) {
   }
   RTC_init();
   audio_init();
-  Verilated::commandArgs(argc, argv);
+  // Verilated::commandArgs(argc, argv);
   contextp = std::make_unique<VerilatedContext>();
-  contextp->commandArgs(argc, argv);
+  // contextp->commandArgs(argc, argv);
   Verilated::traceEverOn(config.use_waveform);
   if (config.enable_vga) {
     vga_init();
