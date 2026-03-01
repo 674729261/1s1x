@@ -60,9 +60,7 @@ class EXU() extends Module {
     signals_in_r.sources.src2,
     signals_in_r.fields.imm
   )
-  alu.io.funct3 := signals_in_r.fields.funct3
-  alu.io.is_sub_sra := signals_in_r.controls.is_alu_sub_sra
-  alu.io.is_force_add := signals_in_r.controls.is_alu_force_add
+  alu.io.controls := in.bits.controls.alu_controls
 
   out.bits.write_info.alu_out := alu.io.out
 
