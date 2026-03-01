@@ -101,8 +101,9 @@ struct VirtualBus {
       if (internal_addr == 0) {
         if (uart_lcr & (1 << 7))
           masked_write(uart_div_lsb);
-        else
+        else {
           std::cout.put(wdata & 0xff);
+        }
       } else if (internal_addr == 1) {
         if (uart_lcr & (1 << 7)) {
           masked_write(uart_div_msb);

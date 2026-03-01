@@ -34,6 +34,8 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
     val valid = Input(Bool())
     val rdata = Output(UInt(32.W))
     val ready = Output(Bool())
+    val clear = Input(Bool())
+    val clear_ok = Output(Bool())
   })
   val fetch_port = IO(new AXI)
   set_AXIfull_zero(fetch_port)
@@ -55,6 +57,7 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
     content.read(input_cache_index)
 
   val fire = GenerateFireSignal(fetch_port)
+  val clear_fire = io.clear && io.clear_ok
 
   val out_ar = RegInit(Bool(), false.B)
   val has_r = RegInit(Bool(), false.B)
@@ -111,6 +114,17 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
     content.write(input_cache_index, cache_wdata)
     valid_flags(input_cache_index) := true.B
   }
+  for (i <- 0 until line_count) {
+    valid_flags(i) := Mux(
+      clear_fire,
+      false.B,
+      Mux(
+        !in_cache && ifu_fire && should_cache && (input_cache_index === i.U),
+        true.B,
+        valid_flags(i)
+      )
+    )
+  }
 
   fetch_port.ar.addr := Mux(
     should_cache,
@@ -122,6 +136,8 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
   fetch_port.ar.id := "b0000".U(4.W)
   fetch_port.w.last := true.B
   fetch_port.ar.len := Mux(should_cache, (words - 1).U(8.W), 0.U(8.W))
+
+  io.clear_ok := io.clear && !out_ar
 
   block(PerformanceCounterLayer) {
     val performancecounter_icache = Module(new PerformanceCounter_ICache)

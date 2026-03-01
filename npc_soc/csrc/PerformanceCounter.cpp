@@ -24,7 +24,7 @@ long long cycles_not_on_flash;
 long long insts_not_on_flash;
 extern std::unique_ptr<Dut> dut;
 
-std::array<InstTypeItem, 13> inst_type_event = {
+std::array<InstTypeItem, 14> inst_type_event = {
     {{0, "Arithmetic immediate"},
      {0, "Arithmetic register"},
      {0, "Store"},
@@ -37,7 +37,8 @@ std::array<InstTypeItem, 13> inst_type_event = {
      {0, "Environment break"},
      {0, "Environment call"},
      {0, "Machine mode returen"},
-     {0, "Control state register operation"}}};
+     {0, "Control state register operation"},
+     {0, "Fence"}}};
 
 enum {
   TYPE_arithmetic_imm,
@@ -52,7 +53,8 @@ enum {
   TYPE_ebreak,
   TYPE_ecall,
   TYPE_mret,
-  TYPE_csrop
+  TYPE_csrop,
+  TYPE_fence
 };
 extern "C" void notify_ifu_r_event() {
   ifu_event++;
@@ -108,6 +110,9 @@ extern "C" void notify_inst_type_is_mret() {
 }
 extern "C" void notify_inst_type_is_csrop() {
   inst_type_event[TYPE_csrop].count++;
+}
+extern "C" void notify_inst_type_is_fence() {
+  inst_type_event[TYPE_fence].count++;
 }
 
 extern "C" void notify_new_cycle_not_on_flash() { cycles_not_on_flash++; }

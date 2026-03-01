@@ -11,6 +11,8 @@ class MessageIFU2IDU extends Bundle {
 class IFU() extends Module {
   val in = IO(new Bundle {
     val pc = Input(UInt(32.W))
+    val clear_icache_valid = Input(Bool())
+    val clear_icache_ok = Output(Bool())
   })
 
   val fetch_port = IO(new AXI)
@@ -20,6 +22,8 @@ class IFU() extends Module {
   fetch_port <> icache.fetch_port
   icache.io.valid := !has_inst
   icache.io.addr := in.pc
+  icache.io.clear := in.clear_icache_valid
+  in.clear_icache_ok := icache.io.clear_ok
 
   val out = IO(DecoupledIO(new MessageIFU2IDU))
   val cpu_out_fire = out.valid && out.ready

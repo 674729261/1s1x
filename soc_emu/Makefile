@@ -12,7 +12,7 @@ SPDLOG_FLAGS = -DSPDLOG_USE_STD_FORMAT
 
 EMU_CXXFLAGS = -I$(INC) $(SPDLOG_FLAGS) $(CXXSTD) $(OPTIMFLAGS)
 
-CC = g++
+CXX = g++
 
 MDIR = $(SOC_EMU_HOME)/build
 
@@ -22,14 +22,21 @@ $(MDIR):
 OBJDIR := $(MDIR)/obj
 OBJS := $(patsubst $(SOC_EMU_HOME)/src/%.cpp,$(OBJDIR)/%.o,$(CSRCS))
 
+DEPS := $(OBJS:.o=.d)
+
+DEPFLAGS = -MMD -MP
+
 build: $(MDIR)/soc_emu
 
 $(MDIR)/soc_emu: $(OBJS)
-	$(CC) $(EMU_CXXFLAGS) -o $@ $^
+	@echo "LINK $(notdir $@)"
+	@$(CXX) $(EMU_CXXFLAGS) -o $@ $^
+
+-include $(DEPS)
 
 $(OBJDIR)/%.o: $(SOC_EMU_HOME)/src/%.cpp | $(OBJDIR)
-	@echo "CC $(shell basename $<)"
-	@$(CC) $(EMU_CXXFLAGS) -c $< -o $@
+	@echo "CXX $(shell basename $<)"
+	@$(CXX) $(EMU_CXXFLAGS) $(DEPFLAGS) -c $< -o $@
 
 $(OBJDIR):
 	mkdir -p $@

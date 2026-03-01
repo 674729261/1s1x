@@ -27,6 +27,7 @@ class InstType extends Bundle {
   val is_ecall = (Bool())
   val is_mret = (Bool())
   val is_csrop = (Bool())
+  val is_fence = (Bool())
 }
 
 class ImmType extends Bundle {
@@ -81,6 +82,7 @@ object decodeInstType {
     ret.is_ebreak := ret.is_csrop && is_funct3_zero && !inst(21) && inst(20)
     ret.is_ecall := ret.is_csrop && is_funct3_zero && !inst(21) && !inst(20)
     ret.is_mret := ret.is_csrop && is_funct3_zero && inst(21)
+    ret.is_fence := (inst(6, 0) === "b0001111".U(7.W))
     return ret
   }
 }

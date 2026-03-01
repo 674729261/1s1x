@@ -26,7 +26,7 @@ extern long long max_lsu_fetch_delay;
 extern long long cycles_not_on_flash;
 extern long long insts_not_on_flash;
 
-extern std::array<InstTypeItem, 13> inst_type_event;
+extern std::array<InstTypeItem, 14> inst_type_event;
 
 extern std::unique_ptr<Dut> dut;
 

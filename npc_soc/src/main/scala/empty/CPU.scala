@@ -84,6 +84,8 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
   io.retire_inst := wbu.out.retire_inst
   ifu.in.pc := pc
   ifu.fetch_port <> arbiter.IFU_AXI
+  ifu.in.clear_icache_valid := wbu.out.clear_icache_valid
+  wbu.out.clear_icache_ok := ifu.in.clear_icache_ok
 
   StageConnect(idu.in, ifu.out)
   StageConnect(exu.in, idu.out)
