@@ -254,6 +254,8 @@ class Operands extends Bundle {
   val csr = UInt(32.W)
   val mtvec = UInt(32.W)
   val mepc = UInt(32.W)
+  val alu_a = (UInt(32.W))
+  val alu_b = (UInt(32.W))
 }
 
 class MessageIDU2EXU extends Bundle {
@@ -315,6 +317,16 @@ class IDU() extends Module {
   out.bits.sources.csr := fetch_port_in.csr_rdata
   out.bits.sources.src1 := fetch_port_in.gpr_rdata1
   out.bits.sources.src2 := fetch_port_in.gpr_rdata2
+  out.bits.sources.alu_a := Mux(
+    control_signals.is_alu_a_pc,
+    out.bits.pc,
+    out.bits.sources.src1
+  )
+  out.bits.sources.alu_b := Mux(
+    control_signals.is_alu_b_reg,
+    out.bits.sources.src2,
+    fields.imm
+  )
   out.bits.sources.mtvec := fetch_port_in.csr_mtvec
   out.bits.sources.mepc := fetch_port_in.csr_mepc
   out.bits.inst := in.bits.inst
