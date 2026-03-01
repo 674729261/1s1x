@@ -18,6 +18,7 @@ import "DPI-C" function void notify_inst_type_is_ebreak();
 import "DPI-C" function void notify_inst_type_is_ecall();
 import "DPI-C" function void notify_inst_type_is_mret();
 import "DPI-C" function void notify_inst_type_is_csrop();
+import "DPI-C" function void notify_inst_type_is_fence();
 import "DPI-C" function void notify_new_cycle_not_on_flash();
 import "DPI-C" function void notify_new_inst_not_on_flash();
 
@@ -52,7 +53,8 @@ module PerformanceCounter (
     input inst_type_is_ebreak,
     input inst_type_is_ecall,
     input inst_type_is_mret,
-    input inst_type_is_csrop
+    input inst_type_is_csrop,
+    input inst_type_is_fence
 );
 
   reg exu_clear, idu_clear;
@@ -92,6 +94,7 @@ module PerformanceCounter (
         if (inst_type_is_ebreak) notify_inst_type_is_ebreak();
         if (inst_type_is_ecall) notify_inst_type_is_ecall();
         if (inst_type_is_mret) notify_inst_type_is_mret();
+        if (inst_type_is_fence) notify_inst_type_is_fence();
         if (inst_type_is_csrop && !inst_type_is_mret && !inst_type_is_ecall && !inst_type_is_ebreak)
           notify_inst_type_is_csrop();
       end

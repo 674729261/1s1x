@@ -100,14 +100,7 @@ inline void Ref::step() {
     cache_hit++;
   uint32_t ifnst_fetch = vbus.readMemory(cpu.pc, 4);
   const uint32_t inst = ifnst_fetch;
-  // std::println("PC = {:08x}, inst = {:08x}", cpu.pc, inst);
   Decoded d = decode(inst);
-  // ref_trace_file
-  //     << std::format(
-  //            "{:08x} {:08x} | {:08x} {:08x} {:08x} | {:08x} {:08x} {:08x}\n",
-  //            cpu.pc, inst, cpu.gpr[10], cpu.gpr[11], cpu.gpr[12],
-  //            cpu.gpr[13], cpu.gpr[14], cpu.gpr[15])
-  //     << std::flush;
 
   uint32_t dnpc = cpu.pc + 4;
   BEGIN_PATTERN
@@ -271,6 +264,7 @@ inline void Ref::step() {
            uint32_t csr = inst >> 20;
            uint32_t &which = csr_id(csr); cpu.gpr[d.dst_id] = which;
            which = which | cpu.gpr[d.src1_id]);
+  try_this("??????? ????? ????? 001 ????? 00011 11", fence.i, cache.clear());
   try_this("??????? ????? ????? ??? ????? ????? ??", invalid,
            log_and_throw<std::logic_error>(
                "Encountered invalid instruction {:#010x} @PC={:#010x}", inst,

@@ -82,7 +82,7 @@ sim_full_speed: npc
 
 sim_ftracer: npc
 	$(call git_commit, "sim RTL ftracer") # DO NOT REMOVE THIS LINE!!!
-	$(BIN) --elf $(ELF) --image $(PROG) --mem_size $(MEM_SIZE) --log $(LOG_FILE) $(NPC_FLAGS) --difftest
+	$(BIN) --ftracer $(ELF) --itracer 8 --image $(PROG) --mem_size $(MEM_SIZE) --log $(LOG_FILE) $(NPC_FLAGS) --difftest
 
 valgrind: FAST_FLAGS = -O0 -g
 valgrind: VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -O0 -g -flto=auto
@@ -92,7 +92,7 @@ valgrind: npc
 	$(BIN) --image $(PROG) \
 	--mem_size $(MEM_SIZE) --mem_base $(MEM_BASE) \
 	--device_size $(DEV_SIZE) --device_base $(DEV_BASE) \
-	--log $(LOG_FILE)
+	--log $(LOG_FILE) --ftracer $(ELF) --itracer 8
 
 
 gdb: FAST_FLAGS = -O0 -g

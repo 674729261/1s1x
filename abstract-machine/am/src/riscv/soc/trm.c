@@ -160,6 +160,7 @@ __attribute__((section(".ssbl"))) void secbootloader() {
   __ssbl_memset(&__bss_start, 0, &__bss_end - &__bss_start);
 
   __ssbl_extra();
+  asm volatile("fence.i");
   // #ifdef __RTTHREAD__
   //   extern char rt_load_begin, rt_load_end, rt_begin;
   //   src = &rt_load_begin;
