@@ -12,7 +12,7 @@ inline std::unique_ptr<Ref> ref;
 inline std::unique_ptr<VerilatedContext> contextp;
 
 enum class SimulationState { RUNNING, HALT, DIFFTEST_FAILED };
-extern SimulationState sim_state;
+inline SimulationState sim_state;
 
 int simulate(int argc, char *argv[]);
 

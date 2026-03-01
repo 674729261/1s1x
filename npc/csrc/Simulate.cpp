@@ -29,10 +29,6 @@
 #include <verilated.h>
 #include <verilated_vcd_c.h>
 
-long long simulation_time;
-long long simulation_clocks;
-long long simulation_instructions;
-
 void show_efficiency(long long clocks, long long instrs,
                      long long microseconds) {
   spdlog::info("Simulated clocks : {}", clocks);
@@ -169,9 +165,10 @@ void run(unsigned long long steps) {
           .count();
   show_efficiency(simulation_clocks_steped, simulation_instructions_steped,
                   simulation_time_steped);
-  simulation_instructions += simulation_instructions_steped;
-  simulation_clocks += simulation_clocks_steped;
-  simulation_time += simulation_time_steped;
+  performance_statistics.simulation_instructions +=
+      simulation_instructions_steped;
+  performance_statistics.simulation_clocks += simulation_clocks_steped;
+  performance_statistics.simulation_time += simulation_time_steped;
 }
 void monitor_loop() {
   if (config.batch_mode) {
@@ -262,7 +259,9 @@ int simulate(int argc, char *argv[]) {
 
   if (device_thread)
     device_thread->request_stop();
-  show_efficiency(simulation_clocks, simulation_instructions, simulation_time);
+  show_efficiency(performance_statistics.simulation_clocks,
+                  performance_statistics.simulation_instructions,
+                  performance_statistics.simulation_time);
   if (config.enable_audio)
     SDL_CloseAudio();
   dut->print_all_gpr();
