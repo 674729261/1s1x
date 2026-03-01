@@ -91,7 +91,7 @@ std::string Capstone::disassemble(uint64_t pc, uint8_t *code, int nbyte,
                     *reinterpret_cast<uint32_t *>(code), insn->mnemonic,
                     insn->op_str);
   if (display)
-    spdlog::info("{}", str);
+    std::println("{}", str);
   cs_free_dl(insn, count);
   return str;
 }

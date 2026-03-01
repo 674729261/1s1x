@@ -6,6 +6,7 @@
 #include <replxx.h>
 #include <verilated.h>
 #include <verilated_vcd_c.h>
+
 extern std::unique_ptr<Dut> dut;
 extern std::unique_ptr<Ref> ref;
 extern std::unique_ptr<VerilatedContext> contextp;

@@ -33,12 +33,6 @@ long long simulation_time;
 long long simulation_clocks;
 long long simulation_instructions;
 
-// Define globals declared in include/Simulate.h
-std::unique_ptr<Dut> dut;
-std::unique_ptr<Ref> ref;
-std::unique_ptr<VerilatedContext> contextp;
-SimulationState sim_state = SimulationState::RUNNING;
-
 void show_efficiency(long long clocks, long long instrs,
                      long long microseconds) {
   spdlog::info("Simulated clocks : {}", clocks);
