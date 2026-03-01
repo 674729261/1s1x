@@ -111,7 +111,7 @@ perf: npc
 	@cat $(shell find $(STA_DIR)/result -name "synth_stat.txt") | grep "Chip area" | grep -oP "\d+(\.\d+)?\s*$$"
 	@cat /tmp/perf.log | grep -oP "Total/Average/Min/Max.*$$"
 	@echo "------------Instruction Type Statistics------------"
-	@cat /tmp/perf.log | grep "Instruction Type Statistics" -A 14 | grep -oP "[a-zA-Z ]*\|\s*\d+\s*$$"
+	@cat /tmp/perf.log | grep "Instruction Type Statistics" -A 13 | grep -oP "[a-zA-Z ]*\|\s*\d+\s*$$"
 	@cat /tmp/perf.log | grep -oP "Total ifu events : \d+"
 	@cat /tmp/perf.log | grep -oP "Total lsu read events : \d+"
 	@cat /tmp/perf.log | grep -oP "Total icache hit events : \d+"
