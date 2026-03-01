@@ -50,19 +50,10 @@ class EXU() extends Module {
   val alu = Module(new ALU(32))
   val branch = Module(new Branch(32))
 
-  alu.io.A := Mux(
-    signals_in_r.controls.is_alu_a_pc,
-    signals_in_r.pc,
-    signals_in_r.sources.src1
-  )
-  alu.io.B := Mux(
-    signals_in_r.controls.is_alu_b_reg,
-    signals_in_r.sources.src2,
-    signals_in_r.fields.imm
-  )
-  alu.io.funct3 := signals_in_r.fields.funct3
-  alu.io.is_sub_sra := signals_in_r.controls.is_alu_sub_sra
-  alu.io.is_force_add := signals_in_r.controls.is_alu_force_add
+  alu.io.A := signals_in_r.sources.alu_a
+  alu.io.B := signals_in_r.sources.alu_b
+
+  alu.io.controls := in.bits.controls.alu_controls
 
   out.bits.write_info.alu_out := alu.io.out
 
