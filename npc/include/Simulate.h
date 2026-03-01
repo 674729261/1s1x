@@ -14,6 +14,6 @@ inline std::unique_ptr<VerilatedContext> contextp;
 enum class SimulationState { RUNNING, HALT, DIFFTEST_FAILED };
 inline SimulationState sim_state;
 
-int simulate(int argc, char *argv[]);
+int simulate();
 
 void run(unsigned long long steps);

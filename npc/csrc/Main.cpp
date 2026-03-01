@@ -20,7 +20,7 @@ int main(int argc, char *argv[]) {
   config = process_args(argc, argv);
   int return_value = -1;
   try {
-    return_value = simulate(argc, argv);
+    return_value = simulate();
   } catch (const std::exception &e) {
     std::println(std::cerr, "Error : {}", e.what());
     if (device_thread) {

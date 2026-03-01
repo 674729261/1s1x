@@ -92,7 +92,7 @@ valgrind: npc
 	$(BIN) --image $(PROG) \
 	--mem_size $(MEM_SIZE) --mem_base $(MEM_BASE) \
 	--device_size $(DEV_SIZE) --device_base $(DEV_BASE) \
-	--log $(LOG_FILE)
+	--log $(LOG_FILE) --ftracer --itracer 8
 
 
 gdb: FAST_FLAGS = -O0 -g

@@ -221,7 +221,7 @@ void monitor_loop() {
   rx.history_save(history_file);
 }
 
-int simulate(int argc, char *argv[]) {
+int simulate() {
   // init_mrom(config.image_path);
   init_mem(config.image_path);
   if (config.ftracer)
