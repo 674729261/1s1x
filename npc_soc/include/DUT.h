@@ -44,8 +44,8 @@ struct Dut {
     //   m_trace->dump(2 * sim_time);
     top->clock = 1;
     top->eval();
-    if (getPC() >= 0xf000000 && getPC() < 0x30000000)
-      m_trace->dump(sim_time);
+    // if (getPC() >= 0xf000000 && getPC() < 0x30000000)
+    //   m_trace->dump(2 * sim_time + 1);
     sim_time++;
     // println("PC : {:08x}, a5 = {:08x}", getPC(), getGPR(15));
   }
