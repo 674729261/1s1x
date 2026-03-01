@@ -25,6 +25,7 @@ extern "C" void notify_inst_type_is_ebreak() {}
 extern "C" void notify_inst_type_is_ecall() {}
 extern "C" void notify_inst_type_is_mret() {}
 extern "C" void notify_inst_type_is_csrop() {}
+extern "C" void notify_inst_type_is_fence() {}
 
 extern "C" void notify_new_cycle_not_on_flash() {}
 extern "C" void notify_new_inst_not_on_flash() {}

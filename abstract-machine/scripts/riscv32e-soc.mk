@@ -3,7 +3,7 @@ include $(AM_HOME)/scripts/platform/soc.mk
 CFLAGS  += -DISA_H=\"riscv/riscv.h\" -D_SOC_
 
 
-COMMON_CFLAGS += -march=rv32e_zicsr -mabi=ilp32e  # overwrite
+COMMON_CFLAGS += -march=rv32e_zicsr_zifencei -mabi=ilp32e  # overwrite
 LDFLAGS       += -melf32lriscv                    # overwrite
 
 AM_SRCS += riscv/soc/libgcc/div.S \
