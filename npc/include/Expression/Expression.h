@@ -22,7 +22,7 @@ struct Expression {
   std::vector<Token> nodes;
   std::string display;
   static Result<Expression> create_expression(std::string_view expr_str);
-  std::optional<uint32_t> last_value;
+  Result<uint32_t> last_value;
   Result<uint32_t> eval() const;
 
 private:
@@ -162,7 +162,7 @@ Expression::create_expression(std::string_view expr_str) {
   if (!val) {
     return std::unexpected(val.error());
   }
-  ret.last_value = val.value();
+  ret.last_value = val;
   return ret;
 }
 inline Result<uint32_t> Expression::eval() const {
