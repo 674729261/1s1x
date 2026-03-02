@@ -12,15 +12,26 @@ static SDL_Texture *texture = NULL;
 static SDL_Window *window = NULL;
 
 static void VGA_init() {
+  spdlog::info("xx");
+
   SDL_Init(SDL_INIT_VIDEO);
+  spdlog::info(".");
+
   SDL_CreateWindowAndRenderer(VideoBase_t::ScreenWidth * 2,
                               VideoBase_t::ScreenHeight * 2, 0, &window,
                               &renderer);
+  spdlog::info("..");
+
   SDL_SetWindowTitle(window, "RISCV32E-NPC");
+  spdlog::info("...");
+
   texture = SDL_CreateTexture(
       renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC,
       VideoBase_t::ScreenWidth, VideoBase_t::ScreenHeight);
+  spdlog::info("....");
+
   SDL_RenderPresent(renderer);
+  spdlog::info(".....");
 }
 
 static void keyboard_update() {
