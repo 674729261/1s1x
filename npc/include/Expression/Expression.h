@@ -9,7 +9,6 @@
 #include <cctype>
 #include <cmath>
 #include <cstdint>
-#include <expected>
 #include <optional>
 #include <print>
 #include <stack>
@@ -22,7 +21,7 @@ struct Expression {
   std::vector<Token> nodes;
   std::string display;
   static Result<Expression> create_expression(std::string_view expr_str);
-  Result<uint32_t> last_value;
+  std::optional<uint32_t> last_value;
   Result<uint32_t> eval() const;
 
 private:
@@ -44,7 +43,7 @@ build_expr_tree(const std::vector<Token> &vtk) {
         stk_node.pop();
       }
       if (stk_node.empty()) {
-        return std::unexpected("Invalid expression : unpaired bracket");
+        return {std::nullopt, "Invalid expression : unpaired bracket"};
       } else {
         // paired bracket
         stk_node.pop();
@@ -72,12 +71,12 @@ build_expr_tree(const std::vector<Token> &vtk) {
   }
   while (!stk_node.empty()) {
     if (token_types[stk_node.top().type].id == '(')
-      return std::unexpected("Invalid expression : unclosed bracket");
+      return {std::nullopt, "Invalid expression : unclosed bracket"};
     ret.push_back(stk_node.top());
     stk_node.pop();
   }
 
-  return ret;
+  return {ret, ""};
 }
 
 inline Result<Expression>
@@ -102,8 +101,8 @@ Expression::create_expression(std::string_view expr_str) {
         break;
     }
     if (which == NR_TOKEN_TYPES) {
-      return std::unexpected(
-          std::format("Unknown token at pos {} : {}", cur_pos, cur_substr));
+      return {std::nullopt,
+              std::format("Unknown token at pos {} : {}", cur_pos, cur_substr)};
     }
     const auto &tt = token_types[which];
 
@@ -111,7 +110,7 @@ Expression::create_expression(std::string_view expr_str) {
     if (tt.id == TK_NUM) {
       auto parse_num = to_number<uint32_t>(result);
       if (!parse_num.has_value())
-        return std::unexpected(std::format("Invalid number : {}", result));
+        return {std::nullopt, std::format("Invalid number : {}", result)};
       cur_token.data = parse_num.value();
     } else if (tt.id == TK_REG) {
       if (result == "$0")
@@ -129,7 +128,7 @@ Expression::create_expression(std::string_view expr_str) {
           }
         }
         if (!found) {
-          return std::unexpected(std::format("Invalid gpr name : {}", result));
+          return {std::nullopt, std::format("Invalid gpr name : {}", result)};
         }
       }
     }
@@ -139,8 +138,8 @@ Expression::create_expression(std::string_view expr_str) {
     }
     if ((prev_is_operator && cur_token.cata == Catagory::OPERATOR_2) ||
         (!prev_is_operator && cur_token.cata == Catagory::OPERAND)) {
-      return std::unexpected(
-          std::format("Invalid token '{}' at pos {}", result, cur_pos));
+      return {std::nullopt,
+              std::format("Invalid token '{}' at pos {}", result, cur_pos)};
     }
     prev_is_operator = (cur_token.cata != Catagory::OPERAND);
     if (tt.id == '(')
@@ -153,17 +152,17 @@ Expression::create_expression(std::string_view expr_str) {
     cur_pos += result.length();
   }
   auto suf = build_expr_tree(token_seq);
-  if (!suf) {
-    return std::unexpected(suf.error());
+  if (!suf.value) {
+    return {std::nullopt, suf.error};
   }
 
-  ret.nodes = std::move(suf.value());
+  ret.nodes = std::move(suf.value.value());
   auto val = ret.eval();
-  if (!val) {
-    return std::unexpected(val.error());
+  if (!val.value) {
+    return {std::nullopt, val.error};
   }
-  ret.last_value = val;
-  return ret;
+  ret.last_value = val.value;
+  return {ret};
 }
 inline Result<uint32_t> Expression::eval() const {
   std::stack<uint32_t> stk_calc;
@@ -182,12 +181,12 @@ inline Result<uint32_t> Expression::eval() const {
           stk_calc.push(dut->getGPR(tk.data));
         break;
       default:
-        return std::unexpected("Unknown unary operator");
+        return {std::nullopt, "Unknown unary operator"};
       }
       break;
     case Catagory::OPERATOR_2: {
       if (stk_calc.size() < 2)
-        return std::unexpected("Invalid expression : insufficient operands");
+        return {std::nullopt, "Invalid expression : insufficient operands"};
       uint32_t rhs = stk_calc.top();
       stk_calc.pop();
       uint32_t lhs = stk_calc.top();
@@ -204,12 +203,12 @@ inline Result<uint32_t> Expression::eval() const {
         break;
       case '/':
         if (rhs == 0)
-          return std::unexpected("Evaluation error : division by zero");
+          return {std::nullopt, "Evaluation error : division by zero"};
         stk_calc.push(lhs / rhs);
         break;
       case '%':
         if (rhs == 0)
-          return std::unexpected("Evaluation error : division by zero");
+          return {std::nullopt, "Evaluation error : division by zero"};
         stk_calc.push(lhs % rhs);
         break;
       case '&':
@@ -246,13 +245,13 @@ inline Result<uint32_t> Expression::eval() const {
         stk_calc.push(lhs != rhs);
         break;
       default:
-        return std::unexpected("Unknown operator");
+        return {std::nullopt, "Unknown operator"};
       }
       break;
     }
     case Catagory::OPERATOR_1:
       if (stk_calc.empty())
-        return std::unexpected("Invalid expression : insufficient operands");
+        return {std::nullopt, "Invalid expression : insufficient operands"};
       uint32_t lhs = stk_calc.top();
       stk_calc.pop();
       switch (tt.id) {
@@ -273,8 +272,8 @@ inline Result<uint32_t> Expression::eval() const {
             lhs < config.base_memory + config.mem_size) {
           stk_calc.push(mem[(lhs - config.base_memory) >> 2]);
         } else {
-          return std::unexpected(
-              "Evaluation error : memory address {:#010x} is out of range");
+          return {std::nullopt,
+                  "Evaluation error : memory address {:#010x} is out of range"};
         }
         break;
       }
@@ -282,10 +281,10 @@ inline Result<uint32_t> Expression::eval() const {
     }
   }
   if (stk_calc.size() > 1)
-    return std::unexpected("Invalid expression : insufficient operators");
+    return {std::nullopt, "Invalid expression : insufficient operators"};
   if (stk_calc.empty())
-    return std::unexpected("Invalid expression : empty expression");
-  return stk_calc.top();
+    return {std::nullopt, "Invalid expression : empty expression"};
+  return {stk_calc.top(), ""};
 }
 
 } // namespace Expr
