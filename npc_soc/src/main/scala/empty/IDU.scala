@@ -290,6 +290,20 @@ class IDU() extends Module {
 
   out.bits.pc := in.bits.pc
 
+  val cpu_in_fire = in.valid && in.ready
+  val cpu_out_fire = out.valid && out.ready
+  val has_inst = RegInit(false.B)
+  val should_in_latch = in.valid && !has_inst
+  has_inst := MuxCase(
+    has_inst,
+    Seq(
+      should_in_latch -> true.B,
+      cpu_out_fire -> false.B
+    )
+  )
+
+  val inst_r = RegEnable(in.bits, should_in_latch)
+
   val imm_type = Wire(new ImmType)
   val fields = Wire(new InstFields)
   val inst_type = Wire(new InstType)
@@ -298,11 +312,11 @@ class IDU() extends Module {
   out.bits.itype := inst_type
   out.bits.controls := control_signals
 
-  imm_type := decodeImmType(in.bits.inst, inst_type)
-  fields := decodeInstFields(in.bits.inst, imm_type)
-  inst_type := decodeInstType(in.bits.inst, fields)
+  imm_type := decodeImmType(inst_r.inst, inst_type)
+  fields := decodeInstFields(inst_r.inst, imm_type)
+  inst_type := decodeInstType(inst_r.inst, fields)
   control_signals := decodeInstControlSignal(
-    in.bits.inst,
+    inst_r.inst,
     inst_type,
     fields,
     imm_type
@@ -317,9 +331,9 @@ class IDU() extends Module {
   out.bits.sources.src2 := fetch_port_in.gpr_rdata2
   out.bits.sources.mtvec := fetch_port_in.csr_mtvec
   out.bits.sources.mepc := fetch_port_in.csr_mepc
-  out.bits.inst := in.bits.inst
+  out.bits.inst := inst_r.inst
 
-  out.valid := in.valid
+  out.valid := has_inst
   in.ready := out.ready
 
 }
