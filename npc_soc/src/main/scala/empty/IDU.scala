@@ -340,10 +340,15 @@ class IDU() extends Module {
     fetch_port_in.gpr_rdata1
   )
 
-  out.bits.sources.alu_b := Mux(
+  val alu_b_raw = Mux(
     is_alu_b_reg,
     fetch_port_in.gpr_rdata2,
     fields.imm
+  )
+  out.bits.sources.alu_b := Mux(
+    control_signals.alu_controls.is_alu_b_inv,
+    ~alu_b_raw,
+    alu_b_raw
   )
 
   out.valid := has_inst
