@@ -23,7 +23,6 @@
 #include <filesystem>
 #include <format>
 #include <memory>
-#include <optional>
 #include <print>
 #include <replxx.hxx>
 #include <string>
