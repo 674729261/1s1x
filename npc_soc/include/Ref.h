@@ -10,7 +10,8 @@
 #include <my_utils.h>
 #include <stdexcept>
 // std::ofstream ref_trace_file;
-struct Ref {
+class Ref {
+public:
   Ref(Config config, Dut &dut, int nr_words_per_line_2pow, int nr_lines_2pow)
       : cache_hit(0), cache(nr_words_per_line_2pow, nr_lines_2pow),
         inst_count(0), dut(dut), csr({.mstatus = 0x1800,
@@ -18,7 +19,7 @@ struct Ref {
                                       .marchid = 0x17eb198}) {
     // ref_trace_file.open("ref_trace.log");
   }
-
+  uint32_t getGPR(int id) { return cpu.gpr[id]; }
   uint32_t getPC() { return cpu.pc; };
 
   void reset(Dut &dut) {
@@ -65,8 +66,6 @@ struct Ref {
     log_and_throw<std::logic_error>("Visited invalid csr : {:x}", id);
   }
 
-  unsigned long long inst_count;
-
   struct {
     uint32_t mepc;
     uint32_t mstatus;
@@ -80,8 +79,12 @@ struct Ref {
     std::array<uint32_t, 16> gpr;
     uint32_t pc;
   };
+  unsigned long long getCacheHit() { return cache_hit; }
 
-  long long cache_hit;
+private:
+  unsigned long long inst_count;
+
+  unsigned long long cache_hit;
   bool is_halt;
 
   Dut &dut;

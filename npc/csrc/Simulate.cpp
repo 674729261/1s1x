@@ -86,15 +86,15 @@ bool check_watchers() {
 bool check_difftest() {
   bool ret = false;
   for (int i = 0; i < 16; i++) {
-    if (dut->getGPR(i) != ref->cpu.gpr[i]) {
+    if (dut->getGPR(i) != ref->getGPR(i)) {
       spdlog::error("gpr {} differs from ref : should be {:08x}, got {:08x}",
-                    gpr_names[i], ref->cpu.gpr[i], dut->getGPR(i));
+                    gpr_names[i], ref->getGPR(i), dut->getGPR(i));
       ret = true;
     }
   }
-  if (dut->getPC() != ref->cpu.pc) {
+  if (dut->getPC() != ref->getPC()) {
     spdlog::error("PC differs from ref : should be {:08x}, got {:08x}",
-                  ref->cpu.pc, dut->getPC());
+                  ref->getPC(), dut->getPC());
     ret = true;
   }
 

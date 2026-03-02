@@ -8,8 +8,10 @@
 #include <format>
 #include <my_utils.h>
 #include <stdexcept>
+#include <sys/types.h>
 // std::ofstream ref_trace_file;
-struct Ref {
+class Ref {
+public:
   Ref()
       : csr({.mstatus = 0x1800,
              .mvendorid = 0x79737978,
@@ -21,7 +23,9 @@ struct Ref {
     inst_count = 0;
     vbus.init_flash(config.image_path);
   }
-
+  bool isHalt() { return is_halt; }
+  unsigned long long getCacheHit() { return cache_hit; }
+  uint32_t getGPR(int id) { return cpu.gpr[id]; }
   uint32_t getPC() { return cpu.pc; };
 
   void reset() {
@@ -60,8 +64,6 @@ struct Ref {
     log_and_throw<std::logic_error>("Visited invalid csr : {:x}", id);
   }
 
-  unsigned long long inst_count;
-
   struct {
     uint32_t mepc;
     uint32_t mstatus;
@@ -76,7 +78,10 @@ struct Ref {
     uint32_t pc;
   };
 
-  long long cache_hit;
+private:
+  unsigned long long inst_count;
+
+  unsigned long long cache_hit;
   bool is_halt;
 
   CPU_State cpu;
