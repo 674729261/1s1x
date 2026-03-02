@@ -221,7 +221,6 @@ void monitor_loop() {
 }
 
 int simulate() {
-  // init_mrom(config.image_path);
   init_mem(config.image_path);
   if (config.ftracer)
     init_sym_table(config.elf_path);

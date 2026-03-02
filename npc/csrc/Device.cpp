@@ -54,7 +54,9 @@ static void vga_update() {
 void device_thread_work(std::stop_token stop_token,
                         std::promise<void> &device_inited_promise) {
   VGA_init();
+  spdlog::info("!!");
   keyboard_init();
+  spdlog::info("??");
 
   device_inited_promise.set_value();
 
