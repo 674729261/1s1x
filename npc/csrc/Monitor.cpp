@@ -45,11 +45,13 @@ CmdResult cmd_s(std::string_view arg) {
 CmdResult cmd_x(std::string_view arg) {
   if (auto [whole, num_str, expr_str] = match<RE_SCAN>(arg); whole) {
     auto n_of_w = to_number<unsigned long long>(num_str);
-    auto result = Expr::Expression::create_expression(expr_str);
-    if (!result.value.has_value())
-      println("{}", result.error);
+    Result<Expr::Expression> result =
+        Expr::Expression::create_expression(expr_str);
+
+    if (!result)
+      println("{}", result.error());
     else {
-      uint32_t base_addr = result.value->last_value.value();
+      uint32_t base_addr = result->last_value.value();
       if (!n_of_w.has_value())
         return CmdResult::INVALID_ARG;
       if (base_addr >= config.base_memory &&
@@ -105,11 +107,12 @@ CmdResult cmd_l(std::string_view arg) {
 }
 CmdResult cmd_p(std::string_view arg) {
   if (auto [whole, expr_str] = match<RE_ONE_EXPR>(arg); whole) {
-    auto result = Expr::Expression::create_expression(expr_str);
-    if (!result.value.has_value())
-      println("{}", result.error);
+    Result<Expr::Expression> result =
+        Expr::Expression::create_expression(expr_str);
+    if (!result)
+      println("{}", result.error());
     else
-      println("{0}\t{0:#010x}", result.value->last_value.value());
+      println("{0}\t{0:#010x}", result->last_value.value());
   } else {
     return CmdResult::INVALID_ARG;
   }
@@ -142,14 +145,13 @@ CmdResult cmd_help(std::string_view arg) {
 CmdResult cmd_w(std::string_view arg) {
   if (auto [whole, expr_str] = match<RE_ONE_EXPR>(arg); whole) {
     auto result = Expr::Expression::create_expression(expr_str);
-    if (!result.value.has_value()) {
-      println("{}", result.error);
+    if (!result) {
+      println("{}", result.error());
       println("Didnot create watcher due to expression error");
     } else {
-      println("Created a watcher : {}", result.value->display);
-      println("Current value : {0}\t{0:#010x}",
-              result.value->last_value.value());
-      watchers.push_back(std::move(result.value.value()));
+      println("Created a watcher : {}", result->display);
+      println("Current value : {0}\t{0:#010x}", result->last_value.value());
+      watchers.push_back(std::move(result.value()));
     }
   } else {
     return CmdResult::INVALID_ARG;
