@@ -55,8 +55,6 @@ class ALUControl extends Bundle {
 
 class ControlSignals extends Bundle {
   val is_csr_visit = (Bool())
-  val is_alu_a_pc = (Bool())
-  val is_alu_b_reg = (Bool())
 
   val alu_controls = new ALUControl()
 
@@ -185,8 +183,6 @@ object decodeInstControlSignal {
       imm_type: ImmType
   ): ControlSignals = {
     val ret = Wire(new ControlSignals)
-    ret.is_alu_a_pc := imm_type.is_B || imm_type.is_J || it.is_auipc
-    ret.is_alu_b_reg := imm_type.is_R
     val is_funct3_zero = (fields.funct3 === "b000".U(3.W))
     val is_alu_sub_sra =
       fields.funct7(5) && !(it.is_arithmetic_imm && is_funct3_zero)
@@ -254,6 +250,8 @@ class Operands extends Bundle {
   val csr = UInt(32.W)
   val mtvec = UInt(32.W)
   val mepc = UInt(32.W)
+  val alu_a = UInt(32.W)
+  val alu_b = UInt(32.W)
 }
 
 class MessageIDU2EXU extends Bundle {
@@ -288,21 +286,33 @@ class IDU() extends Module {
     val csr_mepc = Input(UInt(32.W))
   })
 
-  out.bits.pc := in.bits.pc
+  val has_inst = RegInit(false.B)
+  val should_in_latch = in.valid && !has_inst
+  has_inst := MuxCase(
+    has_inst,
+    Seq(
+      should_in_latch -> true.B,
+      out.fire -> false.B
+    )
+  )
+
+  val inst_r = RegEnable(in.bits, should_in_latch)
 
   val imm_type = Wire(new ImmType)
   val fields = Wire(new InstFields)
   val inst_type = Wire(new InstType)
   val control_signals = Wire(new ControlSignals)
+
+  out.bits.pc := inst_r.pc
   out.bits.fields := fields
   out.bits.itype := inst_type
   out.bits.controls := control_signals
 
-  imm_type := decodeImmType(in.bits.inst, inst_type)
-  fields := decodeInstFields(in.bits.inst, imm_type)
-  inst_type := decodeInstType(in.bits.inst, fields)
+  imm_type := decodeImmType(inst_r.inst, inst_type)
+  fields := decodeInstFields(inst_r.inst, imm_type)
+  inst_type := decodeInstType(inst_r.inst, fields)
   control_signals := decodeInstControlSignal(
-    in.bits.inst,
+    inst_r.inst,
     inst_type,
     fields,
     imm_type
@@ -317,9 +327,29 @@ class IDU() extends Module {
   out.bits.sources.src2 := fetch_port_in.gpr_rdata2
   out.bits.sources.mtvec := fetch_port_in.csr_mtvec
   out.bits.sources.mepc := fetch_port_in.csr_mepc
-  out.bits.inst := in.bits.inst
+  out.bits.inst := inst_r.inst
 
-  out.valid := in.valid
+  val is_alu_a_pc = imm_type.is_B || imm_type.is_J || inst_type.is_auipc
+  val is_alu_b_reg = imm_type.is_R
+
+  out.bits.sources.alu_a := Mux(
+    is_alu_a_pc,
+    inst_r.pc,
+    fetch_port_in.gpr_rdata1
+  )
+
+  val alu_b_raw = Mux(
+    is_alu_b_reg,
+    fetch_port_in.gpr_rdata2,
+    fields.imm
+  )
+  out.bits.sources.alu_b := Mux(
+    control_signals.alu_controls.is_alu_b_inv,
+    ~alu_b_raw,
+    alu_b_raw
+  )
+
+  out.valid := has_inst
   in.ready := out.ready
 
 }

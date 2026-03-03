@@ -18,13 +18,18 @@ public:
              .marchid = 0x17eb198}) {}
 
   void init(Config config) {
-    cache.init(config.nr_cacheline_words_2pow, config.nr_cachelines_2pow);
-    cache_hit = 0;
+    icache.init(config.nr_icacheline_words_2pow, config.nr_icachelines_2pow);
+    icache_hit = 0;
+    dcache.init(config.nr_dcacheline_words_2pow, config.nr_dcachelines_2pow);
+    dcache_hit = 0;
     inst_count = 0;
+    data_fetch_count = 0;
     vbus.init_flash(config.image_path);
   }
   bool isHalt() { return is_halt; }
-  unsigned long long getCacheHit() { return cache_hit; }
+  unsigned long long getICacheHit() { return icache_hit; }
+  unsigned long long getDCacheHit() { return dcache_hit; }
+  unsigned long long getDataFetchCount() { return data_fetch_count; }
   uint32_t getGPR(int id) { return cpu.gpr[id]; }
   uint32_t getPC() { return cpu.pc; };
 
@@ -33,8 +38,10 @@ public:
     for (int i = 0; i < 32; i++) {
       cpu.gpr[i] = 0;
     }
-    cache.reset();
-    cache_hit = 0;
+    icache.reset();
+    icache_hit = 0;
+    dcache.reset();
+    dcache_hit = 0;
     cpu.pc = 0x30000000;
   };
   void step();
@@ -81,12 +88,14 @@ public:
 private:
   unsigned long long inst_count;
 
-  unsigned long long cache_hit;
+  unsigned long long icache_hit;
+  unsigned long long dcache_hit;
+  unsigned long long data_fetch_count;
   bool is_halt;
 
   CPU_State cpu;
   VirtualBus vbus;
-  Cache cache;
+  Cache icache, dcache;
 };
 
 #define BEGIN_PATTERN do {
@@ -101,13 +110,15 @@ private:
   }
 
 inline void Ref::step() {
-  if (cache.fetch(cpu.pc))
-    cache_hit++;
+  if (icache.fetch(cpu.pc))
+    icache_hit++;
   uint32_t ifnst_fetch = vbus.readMemory(cpu.pc, 4);
   const uint32_t inst = ifnst_fetch;
   Decoded d = decode(inst);
 
   uint32_t dnpc = cpu.pc + 4;
+  bool data_access = false;
+  uint32_t address;
   BEGIN_PATTERN
   try_this("??????? ????? ????? ??? ????? 00101 11", auipc,
            cpu.gpr[d.dst_id] = cpu.pc + d.imm_U);
@@ -198,23 +209,25 @@ inline void Ref::step() {
   try_this("??????? ????? ????? 000 ????? 00000 11", lb,
            uint32_t addr = cpu.gpr[d.src1_id] + d.imm_I;
            int shift = (addr & 0x3) * 8;
-           uint32_t result = vbus.readMemory(addr, 1);
+           uint32_t result = vbus.readMemory(addr, 1); data_access = true;
+           address = addr;
            cpu.gpr[d.dst_id] = sign_ext<8>((result >> shift) & 0xFF));
   try_this("??????? ????? ????? 100 ????? 00000 11", lbu,
            uint32_t addr = cpu.gpr[d.src1_id] + d.imm_I;
            int shift = (addr & 0x3) * 8;
-           uint32_t result = vbus.readMemory(addr, 1);
-           cpu.gpr[d.dst_id] = (result >> shift) & 0xFF);
+           uint32_t result = vbus.readMemory(addr, 1); data_access = true;
+           address = addr; cpu.gpr[d.dst_id] = (result >> shift) & 0xFF);
   try_this("??????? ????? ????? 001 ????? 00000 11", lh,
            uint32_t addr = cpu.gpr[d.src1_id] + d.imm_I;
            int shift = (addr & 0x3) * 8;
-           uint32_t result = vbus.readMemory(addr, 2);
+           uint32_t result = vbus.readMemory(addr, 2); data_access = true;
+           address = addr;
            cpu.gpr[d.dst_id] = sign_ext<16>((result >> shift) & 0xFFFF));
   try_this("??????? ????? ????? 101 ????? 00000 11", lhu,
            uint32_t addr = cpu.gpr[d.src1_id] + d.imm_I;
            int shift = (addr & 0x3) * 8;
-           uint32_t result = vbus.readMemory(addr, 2);
-           cpu.gpr[d.dst_id] = (result >> shift) & 0xFFFF);
+           uint32_t result = vbus.readMemory(addr, 2); data_access = true;
+           address = addr; cpu.gpr[d.dst_id] = (result >> shift) & 0xFFFF);
   try_this("??????? ????? ????? 010 ????? 00000 11", lw,
            uint32_t result = vbus.readMemory(cpu.gpr[d.src1_id] + d.imm_I, 4);
            cpu.gpr[d.dst_id] = result);
@@ -246,15 +259,18 @@ inline void Ref::step() {
 
   try_this("??????? ????? ????? 000 ????? 01000 11", sb,
            uint32_t addr = cpu.gpr[d.src1_id] + d.imm_S;
-           uint32_t shift = addr & 0x3; vbus.writeMemory(
-               addr & ~0x3, cpu.gpr[d.src2_id] << (shift * 8), 1 << shift));
+           uint32_t shift = addr & 0x3; data_access = true; address = addr;
+           vbus.writeMemory(addr & ~0x3, cpu.gpr[d.src2_id] << (shift * 8),
+                            1 << shift));
   try_this("??????? ????? ????? 001 ????? 01000 11", sh,
            uint32_t addr = cpu.gpr[d.src1_id] + d.imm_S;
-           uint32_t shift = addr & 0x3; vbus.writeMemory(
-               addr & ~0x3, cpu.gpr[d.src2_id] << (shift * 8), 0x3 << shift));
+           uint32_t shift = addr & 0x3; data_access = true; address = addr;
+           vbus.writeMemory(addr & ~0x3, cpu.gpr[d.src2_id] << (shift * 8),
+                            0x3 << shift));
   try_this("??????? ????? ????? 010 ????? 01000 11", sw,
-           vbus.writeMemory((cpu.gpr[d.src1_id] + d.imm_S) & ~0x3,
-                            cpu.gpr[d.src2_id], 0xF));
+           uint32_t addr = (cpu.gpr[d.src1_id] + d.imm_S) & ~0x3;
+           data_access = true; address = addr;
+           vbus.writeMemory(addr, cpu.gpr[d.src2_id], 0xF));
 
   try_this("0000000 00001 00000 000 00000 11100 11", ebreak,
            is_halt = true); // R(10) is $a0
@@ -269,13 +285,18 @@ inline void Ref::step() {
            uint32_t csr = inst >> 20;
            uint32_t &which = csr_id(csr); cpu.gpr[d.dst_id] = which;
            which = which | cpu.gpr[d.src1_id]);
-  try_this("??????? ????? ????? 001 ????? 00011 11", fence.i, cache.clear());
+  try_this("??????? ????? ????? 001 ????? 00011 11", fence.i, icache.clear());
   try_this("??????? ????? ????? ??? ????? ????? ??", invalid,
            log_and_throw<std::logic_error>(
                "Encountered invalid instruction {:#010x} @PC={:#010x}", inst,
                cpu.pc));
   END_PATTERN
   inst_count++;
+  if (data_access) {
+    data_fetch_count++;
+    if (dcache.fetch(address))
+      dcache_hit++;
+  }
 
   cpu.pc = dnpc;
   cpu.gpr[0] = 0;
