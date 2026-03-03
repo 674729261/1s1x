@@ -88,6 +88,7 @@ class EXU() extends Module {
     in.bits.sources.src1
   )
   out.bits.write_info.csr_addr := in.bits.fields.csr
+
   val should_flush = (snpc =/= out_pc.dnpc)
   val should_branch = in.bits.itype.is_branch && branch.io.jump
 
@@ -111,22 +112,22 @@ class EXU() extends Module {
   out.valid := has_signal
 
   val ifu_dnpc_fire = out_pc.ready && out_pc.valid
-  val pending_dnpc = RegInit(Bool(), false.B)
+  val has_ifu_dnpc = RegInit(Bool(), false.B)
 
-  pending_dnpc := MuxCase(
-    pending_dnpc,
+  has_ifu_dnpc := MuxCase(
+    has_ifu_dnpc,
     Seq(
-      ifu_dnpc_fire -> false.B,
-      (in.fire && should_flush) -> true.B
+      ifu_dnpc_fire -> true.B,
+      in.fire -> false.B
     )
   )
 
   val idu_flush_fire = out_pc.idu_flush_ready && out_pc.idu_flush_valid
-  val pending_idu_flush = RegInit(Bool(), false.B)
-  pending_idu_flush := MuxCase(
-    pending_idu_flush,
-    Seq(idu_flush_fire -> false.B, (in.fire && should_flush) -> true.B)
+  val has_idu_flush = RegInit(Bool(), false.B)
+  has_idu_flush := MuxCase(
+    has_idu_flush,
+    Seq(idu_flush_fire -> true.B, in.fire -> false.B)
   )
 
-  in.ready := (out.fire || !has_signal) && !pending_dnpc && !pending_idu_flush
+  in.ready := (out.fire || !has_signal) && ((has_idu_flush && has_ifu_dnpc) || !should_flush)
 }
