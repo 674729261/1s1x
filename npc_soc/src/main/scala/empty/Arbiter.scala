@@ -111,9 +111,9 @@ class Arbiter_2Master() extends Module {
   aw_w_owner := MuxLookup(aw_w_owner, sIDLE)(
     Seq(
       sIDLE -> Mux(
-        LSU_AXI.ar.valid,
+        LSU_AXI.aw.valid,
         sLSU,
-        Mux(IFU_AXI.ar.valid, sIFU, sIDLE)
+        Mux(IFU_AXI.aw.valid, sIFU, sIDLE)
       ),
       sIFU -> Mux(IFU_fire.w_burst_last, sIDLE, sIFU),
       sLSU -> Mux(LSU_fire.w_burst_last, sIDLE, sLSU)
