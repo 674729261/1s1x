@@ -26,8 +26,6 @@ class LSU() extends Module {
   val should_mem_access_r = Wire(Bool())
   val should_mem_access_w = Wire(Bool())
 
-  val cpu_out_fire = out.valid && out.ready
-  val cpu_in_fire = in.valid && in.ready
   val fire = GenerateFireSignal(fetch_port)
   val has_signal = RegInit(false.B)
   val should_signal_in_latch = in.valid && !has_signal
@@ -38,7 +36,7 @@ class LSU() extends Module {
     has_signal,
     Seq(
       should_signal_in_latch -> true.B,
-      cpu_out_fire -> false.B
+      out.fire -> false.B
     )
   )
 
@@ -47,7 +45,7 @@ class LSU() extends Module {
     out_ar,
     Seq(
       fire.ar_fire -> true.B,
-      cpu_out_fire -> false.B
+      out.fire -> false.B
     )
   )
   val has_r = RegInit(false.B)
@@ -55,7 +53,7 @@ class LSU() extends Module {
     has_r,
     Seq(
       fire.r_fire -> true.B,
-      cpu_out_fire -> false.B
+      out.fire -> false.B
     )
   )
   val out_aw = RegInit(false.B)
@@ -64,14 +62,14 @@ class LSU() extends Module {
     out_aw,
     Seq(
       fire.aw_fire -> true.B,
-      cpu_out_fire -> false.B
+      out.fire -> false.B
     )
   )
   out_w := MuxCase(
     out_w,
     Seq(
       fire.w_fire -> true.B,
-      cpu_out_fire -> false.B
+      out.fire -> false.B
     )
   )
   val has_b = RegInit(false.B)
@@ -79,7 +77,7 @@ class LSU() extends Module {
     has_b,
     Seq(
       fire.b_fire -> true.B,
-      cpu_out_fire -> false.B
+      out.fire -> false.B
     )
   )
   should_mem_access_r := has_signal && signal_in_r.controls.is_ram_valid && !signal_in_r.controls.is_ram_wen

@@ -26,13 +26,13 @@ class IFU() extends Module {
   in.clear_icache_ok := icache.io.clear_ok
 
   val out = IO(DecoupledIO(new MessageIFU2IDU))
-  val cpu_out_fire = out.valid && out.ready
+
   val cache_fire = icache.io.valid && icache.io.ready
   has_inst := MuxCase(
     has_inst,
     Seq(
       cache_fire -> true.B,
-      cpu_out_fire -> false.B
+      out.fire -> false.B
     )
   )
 

@@ -287,15 +287,16 @@ class IDU() extends Module {
   })
 
   val has_inst = RegInit(false.B)
+  val should_in_latch = in.valid && !has_inst
   has_inst := MuxCase(
     has_inst,
     Seq(
-      in.fire -> true.B,
+      should_in_latch -> true.B,
       out.fire -> false.B
     )
   )
 
-  val inst_r = RegEnable(in.bits, in.fire)
+  val inst_r = RegEnable(in.bits, should_in_latch)
 
   val imm_type = Wire(new ImmType)
   val fields = Wire(new InstFields)

@@ -31,14 +31,13 @@ class EXU() extends Module {
 
   val is_signal_in_latched = RegInit(Bool(), false.B)
 
-  val cpu_out_fire = out.ready && out.valid
   val should_signal_in_latch = in.valid && !is_signal_in_latched
   val signals_in_r = RegEnable(in.bits, should_signal_in_latch)
   is_signal_in_latched := MuxCase(
     is_signal_in_latched,
     Seq(
       should_signal_in_latch -> true.B,
-      cpu_out_fire -> false.B
+      out.fire -> false.B
     )
   )
 
