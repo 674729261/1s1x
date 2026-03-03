@@ -88,7 +88,7 @@ class EXU() extends Module {
     in.bits.sources.src1
   )
   out.bits.write_info.csr_addr := in.bits.fields.csr
-  val should_flush = (snpc === out_pc.dnpc)
+  val should_flush = (snpc =/= out_pc.dnpc)
   val should_branch = in.bits.itype.is_branch && branch.io.jump
 
   out_pc.dnpc := MuxCase(
