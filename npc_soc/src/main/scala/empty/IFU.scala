@@ -48,7 +48,7 @@ class IFU(init_pc: UInt) extends Module {
     fetch_pc,
     Seq(
       exu_dnpc_fire -> in.exu_dnpc,
-      (out.fire && !exu_dnpc_fire) -> (fetch_pc + 4.U(32.W))
+      (cache_fire && !exu_dnpc_fire) -> (fetch_pc + 4.U(32.W))
     )
   )
 
