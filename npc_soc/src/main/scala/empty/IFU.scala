@@ -33,19 +33,16 @@ class IFU(init_pc: UInt) extends Module {
   val out = IO(DecoupledIO(new MessageIFU2IDU))
 
   val cache_fire = icache.io.valid && icache.io.ready
-  // when cache hits we can forward rdata this cycle (bypass);
-  // otherwise we store rdata/pc into regs for later delivery
-  val inst_reg = RegEnable(icache.io.rdata, cache_fire)
-  val inst_pc_reg = RegEnable(fetch_pc, cache_fire)
-
-  // set has_inst only when cache produced data but it was NOT consumed this cycle
   has_inst := MuxCase(
     has_inst,
     Seq(
-      (cache_fire && !out.fire) -> true.B,
+      cache_fire -> true.B,
       out.fire -> false.B
     )
   )
+
+  val inst_reg =
+    RegEnable(icache.io.rdata, cache_fire)
   val exu_dnpc_fire = in.exu_dnpc_valid && in.exu_dnpc_ready
   fetch_pc := MuxCase(
     fetch_pc,
@@ -57,12 +54,9 @@ class IFU(init_pc: UInt) extends Module {
 
   in.exu_dnpc_ready := has_inst
 
-  // valid when we have buffered inst or when cache is returning this cycle
-  out.valid := has_inst || cache_fire
+  out.valid := has_inst
 
-  // bypass path: if cache_fire this cycle take icache.rdata/fetch_pc directly,
-  // otherwise use the buffered registers
-  out.bits.inst := Mux(cache_fire, icache.io.rdata, inst_reg)
-  out.bits.pc := Mux(cache_fire, fetch_pc, inst_pc_reg)
+  out.bits.inst := inst_reg
+  out.bits.pc := fetch_pc
 
 }
