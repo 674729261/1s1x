@@ -55,7 +55,7 @@ class IFU(init_pc: UInt) extends Module {
 
   out.valid := has_inst
 
-  out.bits.inst := inst_reg
+  out.bits.inst := Mux(has_inst, inst_reg, icache.io.rdata)
   out.bits.pc := fetch_pc
 
 }
