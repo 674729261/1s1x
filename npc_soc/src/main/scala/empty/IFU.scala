@@ -37,7 +37,7 @@ class IFU(init_pc: UInt) extends Module {
     has_inst,
     Seq(
       cache_fire -> true.B,
-      out.fire -> false.B
+      (out.fire && !cache_fire) -> false.B
     )
   )
 
