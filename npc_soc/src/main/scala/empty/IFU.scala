@@ -57,7 +57,7 @@ class IFU(init_pc: UInt) extends Module {
 
   in.exu_dnpc_ready := has_inst
 
-  out.valid := has_inst
+  out.valid := has_inst && !exu_dnpc_fire
 
   out.bits.inst := inst_reg
   out.bits.pc := fetch_pc
