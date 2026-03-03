@@ -349,6 +349,6 @@ class IDU() extends Module {
   )
 
   out.valid := has_inst
-  in.ready := out.ready
+  in.ready := !has_inst
 
 }
