@@ -36,8 +36,8 @@ class IFU(init_pc: UInt) extends Module {
   has_inst := MuxCase(
     has_inst,
     Seq(
-      cache_fire -> true.B,
-      out.fire -> false.B
+      out.fire -> false.B,
+      cache_fire -> true.B
     )
   )
 
@@ -54,9 +54,9 @@ class IFU(init_pc: UInt) extends Module {
 
   in.exu_dnpc_ready := has_inst
 
-  out.valid := has_inst
+  out.valid := has_inst || cache_fire
 
-  out.bits.inst := inst_reg
+  out.bits.inst := Mux(cache_fire, icache.io.rdata, inst_reg)
   out.bits.pc := fetch_pc
 
 }
