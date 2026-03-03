@@ -300,7 +300,7 @@ class IDU() extends Module {
     val csr_mtvec = Input(UInt(32.W))
     val csr_mepc = Input(UInt(32.W))
   })
-  flush.ready := in.fire
+  flush.ready := true.B
   val has_inst = RegInit(false.B)
   has_inst := MuxCase(
     has_inst,
