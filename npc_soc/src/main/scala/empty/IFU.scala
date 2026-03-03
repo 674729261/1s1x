@@ -31,18 +31,18 @@ class IFU(init_pc: UInt) extends Module {
   icache.io.clear := in.clear_icache_valid
   in.clear_icache_ok := icache.io.clear_ok
 
+  val exu_dnpc_fire = in.exu_dnpc_valid && in.exu_dnpc_ready
   val cache_fire = icache.io.valid && icache.io.ready
   has_inst := MuxCase(
     has_inst,
     Seq(
       (cache_fire && !out.fire) -> true.B,
-      (out.fire && !cache_fire) -> false.B
+      (exu_dnpc_fire || (out.fire && !cache_fire)) -> false.B
     )
   )
 
   val inst_reg =
     RegEnable(icache.io.rdata, cache_fire)
-  val exu_dnpc_fire = in.exu_dnpc_valid && in.exu_dnpc_ready
   fetch_pc := MuxCase(
     fetch_pc,
     Seq(
