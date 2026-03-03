@@ -306,7 +306,7 @@ class IDU() extends Module {
     has_inst,
     Seq(
       (in.fire && !flush.valid) -> true.B,
-      out.fire -> false.B
+      (out.fire || flush.valid) -> false.B
     )
   )
 
@@ -366,7 +366,7 @@ class IDU() extends Module {
   conf.rs1_valid := has_inst && (imm_type.is_R || imm_type.is_I || imm_type.is_S || imm_type.is_B)
   conf.rs2_valid := has_inst && (imm_type.is_R || imm_type.is_S || imm_type.is_B)
   out.bits.rd_valid := (imm_type.is_R || imm_type.is_I || imm_type.is_U || imm_type.is_J)
-  out.valid := has_inst && !conf.stall
+  out.valid := has_inst && !conf.stall && !flush.valid
   in.ready := (out.fire || !has_inst) && !conf.stall
 
 }
