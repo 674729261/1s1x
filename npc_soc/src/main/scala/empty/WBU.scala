@@ -44,7 +44,7 @@ class WBU() extends Module {
   out.csr_interruption := in.bits.itype.is_ecall && in.valid
   out.csr_wdata := in.bits.write_info.csr_wdata
 
-  out.dnpc := Mux(in.valid, in.bits.write_info.dnpc, in.bits.pc)
+  out.dnpc := in.bits.write_info.dnpc
 
   out.gpr_waddr := in.bits.write_info.gpr_waddr
   out.gpr_wdata := in.bits.write_info.gpr_wdata
