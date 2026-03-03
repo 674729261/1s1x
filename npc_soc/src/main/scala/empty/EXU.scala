@@ -102,9 +102,6 @@ class EXU() extends Module {
       in.bits.itype.is_mret -> in.bits.sources.mepc
     )
   )
-  out.bits.write_info.dnpc := out_pc.dnpc
-  out_pc.valid := (out.valid && should_flush)
-  out_pc.idu_flush_valid := (out.valid && should_flush)
 
   conf.rd_id := in.bits.fields.rd
   conf.rd_valid := has_signal && in.bits.rd_valid
@@ -128,6 +125,9 @@ class EXU() extends Module {
     has_idu_flush,
     Seq(idu_flush_fire -> true.B, in.fire -> false.B)
   )
+  out.bits.write_info.dnpc := out_pc.dnpc
+  out_pc.valid := (should_flush && !has_ifu_dnpc)
+  out_pc.idu_flush_valid := (should_flush && !has_idu_flush)
 
   in.ready := (out.fire || !has_signal) && ((has_idu_flush && has_ifu_dnpc) || !should_flush)
 }
