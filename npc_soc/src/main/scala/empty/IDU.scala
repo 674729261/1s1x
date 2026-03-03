@@ -305,7 +305,7 @@ class IDU() extends Module {
   has_inst := MuxCase(
     has_inst,
     Seq(
-      (in.fire && !flush.valid) -> true.B,
+      (in.fire && !out.fire) -> true.B,
       (out.fire || flush.valid) -> false.B
     )
   )
