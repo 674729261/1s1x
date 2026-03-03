@@ -116,8 +116,8 @@ class EXU() extends Module {
   pending_dnpc := MuxCase(
     pending_dnpc,
     Seq(
-      (in.fire && should_flush) -> true.B,
-      ifu_dnpc_fire -> false.B
+      ifu_dnpc_fire -> false.B,
+      (in.fire && should_flush) -> true.B
     )
   )
 
@@ -125,10 +125,7 @@ class EXU() extends Module {
   val pending_idu_flush = RegInit(Bool(), false.B)
   pending_idu_flush := MuxCase(
     pending_idu_flush,
-    Seq(
-      (in.fire && should_flush) -> true.B,
-      idu_flush_fire -> false.B
-    )
+    Seq(idu_flush_fire -> false.B, (in.fire && should_flush) -> true.B)
   )
 
   in.ready := (out.fire || !has_signal) && !pending_dnpc && !pending_idu_flush
