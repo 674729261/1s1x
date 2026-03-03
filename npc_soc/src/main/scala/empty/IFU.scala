@@ -23,20 +23,19 @@ class IFU(init_pc: UInt) extends Module {
   val has_inst = RegInit(Bool(), false.B)
 
   val fetch_pc = RegInit(UInt(32.W), init_pc)
+  val out = IO(DecoupledIO(new MessageIFU2IDU))
 
   fetch_port <> icache.fetch_port
-  icache.io.valid := !has_inst
+  icache.io.valid := (out.fire || !has_inst)
   icache.io.addr := fetch_pc
   icache.io.clear := in.clear_icache_valid
   in.clear_icache_ok := icache.io.clear_ok
-
-  val out = IO(DecoupledIO(new MessageIFU2IDU))
 
   val cache_fire = icache.io.valid && icache.io.ready
   has_inst := MuxCase(
     has_inst,
     Seq(
-      cache_fire -> true.B,
+      (cache_fire && !out.fire) -> true.B,
       (out.fire && !cache_fire) -> false.B
     )
   )
