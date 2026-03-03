@@ -27,7 +27,7 @@ class IFU(init_pc: UInt) extends Module {
 
   fetch_port <> icache.fetch_port
   icache.io.valid := (out.fire || !has_inst)
-  icache.io.addr := fetch_pc
+  icache.io.addr := Mux(has_inst, fetch_pc + 4.U(32.W), fetch_pc)
   icache.io.clear := in.clear_icache_valid
   in.clear_icache_ok := icache.io.clear_ok
 
