@@ -52,7 +52,7 @@ class WBU() extends Module {
   conf.rd_id := in.bits.write_info.gpr_waddr
   conf.rd_valid := has_signal && in.bits.rd_valid
   in.ready := in.valid && (fence_fire || !in.bits.itype.is_fence)
-  out.ok_to_step := in.valid
+  out.ok_to_step := has_signal
   out.retire_pc := in.bits.pc
   out.retire_inst := in.bits.inst
   out.inst_type := in.bits.itype
