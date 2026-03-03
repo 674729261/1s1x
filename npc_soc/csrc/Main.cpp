@@ -77,7 +77,7 @@ int simulate(int argc, char *argv[], Config config) {
     dut->step_one_cycle();
 
     if (retire) {
-      std::println("{:08x}", ref.getPC());
+      // std::println("{:08x}", ref.getPC());
       inst_count++;
       if (config.difftest) {
         ref.step();
