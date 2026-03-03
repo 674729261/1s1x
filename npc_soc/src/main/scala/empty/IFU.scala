@@ -40,8 +40,8 @@ class IFU(init_pc: UInt) extends Module {
   has_inst := MuxCase(
     has_inst,
     Seq(
-      (cache_fire && !out.fire) -> true.B,
-      (exu_dnpc_fire || (out.fire && !cache_fire)) -> false.B
+      (exu_dnpc_fire || (out.fire && !cache_fire)) -> false.B,
+      (cache_fire && !out.fire) -> true.B
     )
   )
 
