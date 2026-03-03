@@ -10,8 +10,7 @@ object StageConnect {
     val arch = "multi"
     if (arch == "single") { right.bits := left.bits }
     else if (arch == "multi") { right <> left }
-    else if (arch == "pipeline") { right <> RegEnable(left, left.fire) }
-    else if (arch == "ooo") { right <> Queue(left, 16) }
+    else if (arch == "pipeline") { RegEnable(left.bits, left.fire) }
   }
 }
 

@@ -286,19 +286,16 @@ class IDU() extends Module {
     val csr_mepc = Input(UInt(32.W))
   })
 
-  val cpu_in_fire = in.valid && in.ready
-  val cpu_out_fire = out.valid && out.ready
   val has_inst = RegInit(false.B)
-  val should_in_latch = in.valid && !has_inst
   has_inst := MuxCase(
     has_inst,
     Seq(
-      should_in_latch -> true.B,
-      cpu_out_fire -> false.B
+      in.fire -> true.B,
+      out.fire -> false.B
     )
   )
 
-  val inst_r = RegEnable(in.bits, should_in_latch)
+  val inst_r = RegEnable(in.bits, in.fire)
 
   val imm_type = Wire(new ImmType)
   val fields = Wire(new InstFields)
@@ -352,6 +349,6 @@ class IDU() extends Module {
   )
 
   out.valid := has_inst
-  in.ready := out.ready
+  in.ready := out.ready && !has_inst
 
 }
