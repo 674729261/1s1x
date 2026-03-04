@@ -54,7 +54,7 @@ int simulate(int argc, char *argv[], Config config) {
   Verilated::traceEverOn(true);
 
   dut = std::make_unique<Dut>(config, contextp.get());
-  Ref ref(config, *dut, 1, 3);
+  Ref ref(config, *dut, 2, 2);
   if (config.nvboard) {
     dut->nvboard_bind();
     nvboard_init();
