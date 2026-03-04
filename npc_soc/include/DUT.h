@@ -45,11 +45,11 @@ public:
   void step_one_cycle() {
     top->clock = 0;
     top->eval();
-    if (getPC() >= 0xa0000000)
+    if (getPC() >= 0xa0002000)
       m_trace->dump(2 * sim_time);
     top->clock = 1;
     top->eval();
-    if (getPC() >= 0xa0000000)
+    if (getPC() >= 0xa0002000)
       m_trace->dump(2 * sim_time + 1);
     sim_time++;
     // println("PC : {:08x}, a5 = {:08x}", getPC(), getGPR(15));
