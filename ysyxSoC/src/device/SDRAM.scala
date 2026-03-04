@@ -155,7 +155,7 @@ class sdramChisel extends RawModule {
     val current_readitem = read_fifo.read(read_fifo_pointer_r(2, 0))
 
     for (i <- 0 until 4) {
-      when(state === sIDLE && cmd_active && (io.ba === i.U)) {
+      when(cmd_active && (io.ba === i.U)) {
         activated_row_bank(i) := io.a(12, 0)
         state_bank(i) := sBANK_ACTIVATE
       }
