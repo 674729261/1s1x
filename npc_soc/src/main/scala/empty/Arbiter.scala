@@ -49,14 +49,14 @@ class Arbiter_2Master() extends Module {
   val bind_to_IFU_ar = ar_owner === sIFU
   val bind_to_LSU_ar = ar_owner === sLSU
 
-  val bind_to_IFU_r = r_owner === sIFU
-  val bind_to_LSU_r = r_owner === sLSU
+  val bind_to_IFU_r = OUT_AXI.r.id(3) === 0.U // r_owner === sIFU
+  val bind_to_LSU_r = OUT_AXI.r.id(3) === 1.U // r_owner === sLSU
 
   val bind_to_IFU_aw_w = aw_w_owner === sIFU
   val bind_to_LSU_aw_w = aw_w_owner === sLSU
 
-  val bind_to_IFU_b = b_owner === sIFU
-  val bind_to_LSU_b = b_owner === sLSU
+  val bind_to_IFU_b = OUT_AXI.b.id(3) === 0.U // b_owner === sIFU
+  val bind_to_LSU_b = OUT_AXI.b.id(3) === 1.U // b_owner === sLSU
 
   when(bind_to_IFU_ar) {
     IFU_AXI.ar <> OUT_AXI.ar
