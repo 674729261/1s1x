@@ -65,10 +65,10 @@ struct VirtualBus {
   }
 
   void writeMemory(uint32_t addr, uint32_t wdata, uint32_t wmask) {
-    if (addr == 0xa4000004) {
-      spdlog::info("Addr = {:08x}, pc = {:08x}, wdata = {:08x}, {}ps", addr,
-                   dut->getPC(), wdata, dut->getSimTime() * 2);
-    }
+    // if (addr == 0xa4000004) {
+    //   spdlog::info("Addr = {:08x}, pc = {:08x}, wdata = {:08x}, {}ps", addr,
+    //                dut->getPC(), wdata, dut->getSimTime() * 2);
+    // }
     constexpr std::array<uint32_t, 16> lookup_mask32 = {
         0x00000000, 0x000000FF, 0x0000FF00, 0x0000FFFF, 0x00FF0000, 0x00FF00FF,
         0x00FFFF00, 0x00FFFFFF, 0xFF000000, 0xFF0000FF, 0xFF00FF00, 0xFF00FFFF,
