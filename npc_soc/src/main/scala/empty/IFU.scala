@@ -26,11 +26,13 @@ class IFU(init_pc: UInt) extends Module {
   val out = IO(DecoupledIO(new MessageIFU2IDU))
   val exu_dnpc_fire = in.exu_dnpc_valid && in.exu_dnpc_ready
 
+  val pc_next_predicted = fetch_pc + 4.U(32.W)
+
   fetch_port <> icache.fetch_port
   icache.io.valid := (out.fire || !has_inst)
   icache.io.addr := Mux(
     has_inst && !exu_dnpc_fire,
-    fetch_pc + 4.U(32.W),
+    pc_next_predicted,
     fetch_pc
   )
   icache.io.clear := in.clear_icache_valid
@@ -51,7 +53,7 @@ class IFU(init_pc: UInt) extends Module {
     fetch_pc,
     Seq(
       exu_dnpc_fire -> in.exu_dnpc,
-      (out.fire && !exu_dnpc_fire) -> (fetch_pc + 4.U(32.W))
+      (out.fire && !exu_dnpc_fire) -> pc_next_predicted
     )
   )
 
