@@ -177,11 +177,17 @@ class sdramChisel extends RawModule {
         activated_row_bank(current_readitem.ba),
         current_readitem.a
       )
+    // val pointer_w =
+    //   Cat(
+    //     Mux(state === sIDLE, io.ba, current_readitem.ba),
+    //     activated_row_bank(Mux(state === sIDLE, io.ba, current_readitem.ba)),
+    //     Mux(state === sIDLE, io.a(8, 0), current_readitem.a)
+    //   )
     val pointer_w =
       Cat(
-        Mux(state === sIDLE, io.ba, current_readitem.ba),
-        activated_row_bank(Mux(state === sIDLE, io.ba, current_readitem.ba)),
-        Mux(state === sIDLE, io.a(8, 0), current_readitem.a)
+        io.ba,
+        activated_row_bank(io.ba),
+        io.a(8, 0)
       )
     sen := state === sBURST_READ
     sout := mem.read(pointer_r).asUInt
