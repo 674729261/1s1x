@@ -11,38 +11,44 @@ class MessageIFU2IDU extends Bundle {
 class IFU(init_pc: UInt) extends Module {
   val in = IO(new Bundle {
     val exu_dnpc = Input(UInt(32.W))
-    val exu_dnpc_valid = Input(Bool())
-    val exu_dnpc_ready = Output(Bool())
-    val clear_icache_valid = Input(Bool())
-    val clear_icache_ok = Output(Bool())
+    val flush_valid = Input(Bool())
   })
 
   val fetch_port = IO(new AXI)
 
   val icache = Module(new ICache(5, 1))
-  val has_inst = RegInit(Bool(), false.B)
+  val has_inst_r = RegInit(Bool(), false.B)
 
   val fetch_pc = RegInit(UInt(32.W), init_pc)
   val out = IO(DecoupledIO(new MessageIFU2IDU))
-  val exu_dnpc_fire = in.exu_dnpc_valid && in.exu_dnpc_ready
+  val cache_fire = icache.io.valid && icache.io.ready
 
   val pc_next_predicted = fetch_pc + 4.U(32.W)
+  val pending_flush_r = RegInit(Bool(), false.B)
+  pending_flush_r := MuxCase(
+    pending_flush_r,
+    Seq(
+      in.flush_valid -> true.B,
+      cache_fire -> false.B
+    )
+  )
+  val pending_flush = pending_flush_r || in.flush_valid
+
+  val has_inst = has_inst_r && !pending_flush
 
   fetch_port <> icache.fetch_port
   icache.io.valid := (out.fire || !has_inst)
   icache.io.addr := Mux(
-    has_inst && !exu_dnpc_fire,
+    has_inst,
     pc_next_predicted,
     fetch_pc
   )
-  icache.io.clear := in.clear_icache_valid
-  in.clear_icache_ok := icache.io.clear_ok
+  icache.io.clear := false.B
 
-  val cache_fire = icache.io.valid && icache.io.ready
-  has_inst := MuxCase(
-    has_inst,
+  has_inst_r := MuxCase(
+    has_inst_r,
     Seq(
-      (exu_dnpc_fire || (out.fire && !cache_fire)) -> false.B,
+      (pending_flush || (out.fire && !cache_fire)) -> false.B,
       (cache_fire && !out.fire) -> true.B
     )
   )
@@ -52,14 +58,11 @@ class IFU(init_pc: UInt) extends Module {
   fetch_pc := MuxCase(
     fetch_pc,
     Seq(
-      exu_dnpc_fire -> in.exu_dnpc,
-      (out.fire && !exu_dnpc_fire) -> pc_next_predicted
+      (out.fire) -> pc_next_predicted
     )
   )
 
-  in.exu_dnpc_ready := has_inst
-
-  out.valid := has_inst && !exu_dnpc_fire
+  out.valid := has_inst
 
   out.bits.inst := inst_reg
   out.bits.pc := fetch_pc
