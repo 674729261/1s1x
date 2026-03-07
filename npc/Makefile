@@ -50,8 +50,8 @@ $(SV_FILELIST): $(CHISELSRC)
 
 
 
-PROG ?= test_progs/add.bin
-ELF  ?= test_progs/add.elf
+PROG ?= test_progs/recursion.bin
+ELF  ?= test_progs/recursion.elf
 MEM_SIZE ?= 0x8000000
 MEM_BASE ?= 0x80000000
 DEV_SIZE ?= 0x10000000
