@@ -115,15 +115,13 @@ class EXU() extends Module {
   out.bits.itype := in.bits.itype
   out.bits.rd_valid := in.bits.rd_valid
   out.valid := has_signal
+  val is_first_cycle = RegInit(Bool(), false.B)
 
-  val has_ifu_dnpc = RegInit(Bool(), false.B)
-  val inst_flush_finished_r = RegInit(Bool(), false.B)
-
-  inst_flush_finished_r := in.fire
+  is_first_cycle := in.fire
 
   out.bits.write_info.dnpc := out_pc.dnpc
-  out_pc.ifu_flush_valid := (should_flush && !inst_flush_finished_r)
-  out_pc.idu_flush_valid := (should_flush && !inst_flush_finished_r)
+  out_pc.ifu_flush_valid := (should_flush && is_first_cycle)
+  out_pc.idu_flush_valid := (should_flush && is_first_cycle)
 
-  in.ready := (out.fire || !has_signal) && ((inst_flush_finished_r && has_ifu_dnpc) || !should_flush)
+  in.ready := (out.fire || !has_signal)
 }
