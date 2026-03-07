@@ -118,6 +118,9 @@ class EXU() extends Module {
 
   val has_ifu_dnpc = RegInit(Bool(), false.B)
   val inst_flush_finished_r = RegInit(Bool(), false.B)
+
+  inst_flush_finished_r := in.fire
+
   out.bits.write_info.dnpc := out_pc.dnpc
   out_pc.ifu_flush_valid := (should_flush && !inst_flush_finished_r)
   out_pc.idu_flush_valid := (should_flush && !inst_flush_finished_r)
