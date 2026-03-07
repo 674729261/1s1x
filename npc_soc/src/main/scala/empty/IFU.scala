@@ -58,7 +58,8 @@ class IFU(init_pc: UInt) extends Module {
   fetch_pc := MuxCase(
     fetch_pc,
     Seq(
-      (out.fire) -> pc_next_predicted
+      (out.fire) -> pc_next_predicted,
+      (in.flush_valid) -> in.exu_dnpc
     )
   )
 
