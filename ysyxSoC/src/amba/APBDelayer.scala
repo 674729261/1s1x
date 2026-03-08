@@ -35,7 +35,7 @@ class APBDelayerChisel(ratio: Double = 5.51138, scale_2pow: Long = 6)
   val out_fire = io.out.psel && io.out.penable && io.out.pready
   state := MuxLookup(state, sDELAY)(
     Seq(
-      sIDLE -> Mux(trigger, sWAIT, sIDLE),
+      sIDLE -> Mux(trigger, Mux(out_fire, sDELAY, sWAIT), sIDLE),
       sWAIT -> Mux(out_fire, sDELAY, sWAIT),
       sDELAY -> Mux(counter < countdown_amount.U, sRESP, sDELAY),
       sRESP -> sIDLE
