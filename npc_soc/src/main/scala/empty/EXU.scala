@@ -44,9 +44,6 @@ class ConflictInfoRD extends Bundle {
   val interruption = Output(Bool())
   val rd_id = Output(UInt(5.W))
   val csr_id = Output(UInt(12.W))
-
-  val ok_to_forward_rd = Output(Bool())
-  val rd_data = Output(UInt(32.W))
 }
 
 class EXU() extends Module {
@@ -123,8 +120,6 @@ class EXU() extends Module {
   conf.csr_dest_valid := has_signal && in.bits.controls.is_csr_visit
   conf.csr_id := in.bits.controls.csrd
   conf.interruption := in.bits.itype.is_ecall
-  conf.ok_to_forward_rd := !in.bits.controls.is_gpr_wdata_from_ram
-  conf.rd_data := out.bits.write_info.gpr_wdata
 
   out.bits.itype := in.bits.itype
   out.bits.rd_valid := in.bits.rd_valid
