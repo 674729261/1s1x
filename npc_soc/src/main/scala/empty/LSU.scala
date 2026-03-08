@@ -151,6 +151,8 @@ class LSU() extends Module {
   conf.csr_dest_valid := has_signal && in.bits.itype.is_csrop
   conf.csr_id := in.bits.controls.csrd
   conf.interruption := in.bits.controls.interruption
+  conf.ok_to_forward_rd := has_r
+  conf.rd_data := rdata_latched
 
   out.bits.rd_valid := in.bits.rd_valid
   out.bits.controls.is_ebreak := in.bits.controls.is_ebreak

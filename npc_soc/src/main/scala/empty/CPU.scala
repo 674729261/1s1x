@@ -100,7 +100,10 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
   StageConnect(exu.out, lsu.in)
   StageConnect(lsu.out, wbu.in)
 
-  def check_conflict(rs_info: ConflictInfoRS, rd_info: ConflictInfoRD): Bool = {
+  def check_conflict(
+      rs_info: ConflictInfoRS,
+      rd_info: ConflictInfoRD
+  ): (Bool, Bool, Bool, Bool, Bool, UInt) = {
     val conf1 =
       rs_info.rs1_valid && rd_info.rd_valid && (rs_info.rs1_id === rd_info.rd_id) && (rd_info.rd_id =/= 0
         .U(5.W))
@@ -112,14 +115,99 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
     val conf_interruption =
       rs_info.csr_src_valid && rd_info.interruption && (rs_info.csr_src_id === 0x342
         .U(12.W) || rs_info.csr_src_id === 0x341.U(12.W))
-    return conf1 || conf2 || conf_csr || conf_interruption
+
+    val forward1 = conf1 && (rd_info.ok_to_forward_rd)
+    val forward2 = conf2 && (rd_info.ok_to_forward_rd)
+
+    return (
+      conf1,
+      forward1,
+      conf2,
+      forward2,
+      conf_csr || conf_interruption,
+      rd_info.rd_data
+    )
   }
 
-  val is_RAW = check_conflict(idu.conf, exu.conf) || check_conflict(
-    idu.conf,
-    wbu.conf
-  ) || check_conflict(idu.conf, lsu.conf)
-  idu.conf.stall := is_RAW
+  val (
+    conf1_exu,
+    fwd1_exu,
+    conf2_exu,
+    fwd2_exu,
+    conf_csr_exu,
+    data_exu
+  ) =
+    check_conflict(idu.conf, exu.conf)
+  val (
+    conf1_lsu,
+    fwd1_lsu,
+    conf2_lsu,
+    fwd2_lsu,
+    conf_csr_lsu,
+    data_lsu
+  ) =
+    check_conflict(idu.conf, exu.conf)
+  val (
+    conf1_wbu,
+    fwd1_wbu,
+    conf2_wbu,
+    fwd2_wbu,
+    conf_csr_wbu,
+    data_wbu
+  ) =
+    check_conflict(idu.conf, exu.conf)
+
+  val stall_src1 = MuxCase(
+    false.B,
+    Seq(
+      conf1_exu -> !fwd1_exu,
+      conf1_lsu -> !fwd1_lsu,
+      conf1_wbu -> !fwd1_wbu
+    )
+  )
+  val stall_src2 = MuxCase(
+    false.B,
+    Seq(
+      conf2_exu -> !fwd2_exu,
+      conf2_lsu -> !fwd2_lsu,
+      conf2_wbu -> !fwd2_wbu
+    )
+  )
+  val stall_csr = conf_csr_exu || conf_csr_lsu || conf_csr_wbu
+  idu.conf.stall := stall_src1 || stall_src2 || stall_csr
+
+  idu.conf.do_forward_src1 := MuxCase(
+    false.B,
+    Seq(
+      conf1_exu -> fwd1_exu,
+      conf1_lsu -> fwd1_lsu,
+      conf1_wbu -> fwd1_wbu
+    )
+  )
+  idu.conf.do_forward_src2 := MuxCase(
+    false.B,
+    Seq(
+      conf2_exu -> fwd2_exu,
+      conf2_lsu -> fwd2_lsu,
+      conf2_wbu -> fwd2_wbu
+    )
+  )
+  idu.conf.forward_data_src1 := MuxCase(
+    "hdeadbeef".U(32.W),
+    Seq(
+      conf1_exu -> data_exu,
+      conf1_lsu -> data_lsu,
+      conf1_wbu -> data_wbu
+    )
+  )
+  idu.conf.forward_data_src2 := MuxCase(
+    "hdeadbeef".U(32.W),
+    Seq(
+      conf2_exu -> data_exu,
+      conf2_lsu -> data_lsu,
+      conf2_wbu -> data_wbu
+    )
+  )
 
   io.ok_to_step := wbu.out.ok_to_step
   csrBank.io.ok_to_step := wbu.out.ok_to_step
