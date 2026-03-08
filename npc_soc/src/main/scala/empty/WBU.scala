@@ -20,6 +20,9 @@ class WBU() extends Module {
     val gpr_wdata = Output(UInt(32.W))
     val gpr_wen = Output(Bool())
 
+    val clear_icache_valid = Output(Bool())
+    val clear_icache_ok = Input(Bool())
+
     val ok_to_step = Output(Bool())
     val retire_pc = Output(UInt(32.W))
     val retire_inst = Output(UInt(32.W))
@@ -29,26 +32,26 @@ class WBU() extends Module {
   })
   val has_signal = RegInit(Bool(), false.B)
   has_signal := Mux(in.fire, true.B, false.B)
+  out.clear_icache_valid := in.bits.itype.is_fence && has_signal
+  val fence_fire = out.clear_icache_valid && out.clear_icache_ok
 
-  out.ebreak := in.bits.controls.is_ebreak && in.valid
+  out.ebreak := in.bits.itype.is_ebreak && in.valid
 
-  out.csr_waddr := in.bits.controls.rd_or_csrd
+  out.csr_waddr := in.bits.write_info.csr_addr
   out.csr_wen := in.bits.controls.is_csr_visit && has_signal
   out.csr_cur_pc := in.bits.pc
   out.csr_mcause := 11.U(32.W)
-  out.csr_interruption := in.bits.controls.is_ebreak && has_signal
+  out.csr_interruption := in.bits.itype.is_ecall && has_signal
   out.csr_wdata := in.bits.write_info.csr_wdata
 
   out.dnpc := in.bits.write_info.dnpc
 
-  out.gpr_waddr := in.bits.controls.rd_or_csrd(4, 0)
+  out.gpr_waddr := in.bits.write_info.gpr_waddr
   out.gpr_wdata := in.bits.write_info.gpr_wdata
   out.gpr_wen := in.bits.controls.is_gpr_wen && has_signal
-  conf.rd_id := in.bits.controls.rd_or_csrd(4, 0)
+  conf.rd_id := in.bits.write_info.gpr_waddr
   conf.rd_valid := has_signal && in.bits.rd_valid
-  conf.csr_dest_valid := has_signal && in.bits.itype.is_csrop
-  conf.csr_id := in.bits.controls.rd_or_csrd
-  in.ready := in.valid
+  in.ready := in.valid && (fence_fire || !in.bits.itype.is_fence)
   out.ok_to_step := has_signal
   out.retire_pc := in.bits.pc
   out.retire_inst := in.bits.inst
