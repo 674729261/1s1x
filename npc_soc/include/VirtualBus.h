@@ -65,7 +65,7 @@ struct VirtualBus {
   }
 
   void writeMemory(uint32_t addr, uint32_t wdata, uint32_t wmask) {
-    // if (addr == 0xa4000004) {
+    // if (addr == 0x0f001FD8) {
     //   spdlog::info("Addr = {:08x}, pc = {:08x}, wdata = {:08x}, {}ps", addr,
     //                dut->getPC(), wdata, dut->getSimTime() * 2);
     // }
