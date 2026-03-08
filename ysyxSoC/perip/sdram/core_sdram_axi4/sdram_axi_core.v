@@ -116,8 +116,7 @@ module sdram_axi_core (
     else if (state == ST_READ_WAIT) wait_count <= wait_count - 'd1;
   end
   always @(posedge clk_i) begin
-    if (state == ST_IDLE) read_count <= 'd0;
-    else if (state == ST_READ_ACTIVATE) read_count <= inport_len_i;
+    if (state == ST_IDLE) read_count <= inport_len_i;
     else if (state == ST_READ) read_count <= read_count - 'd1;
   end
 
