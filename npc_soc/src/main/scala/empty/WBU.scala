@@ -49,9 +49,9 @@ class WBU() extends Module {
   conf.csr_dest_valid := has_signal && in.bits.itype.is_csrop
   conf.csr_id := in.bits.controls.csrd
   conf.interruption := in.bits.controls.interruption
-  conf.rd_valid := false.B // All GPR RAW conflicts are forwarded in EXU and LSU
-  conf.ok_to_forward_rd := false.B // All GPR RAW conflicts are forwarded in EXU and LSU
-  conf.rd_data := "hdeadbeef".U(32.W)
+  conf.rd_valid := in.bits.rd_valid
+  conf.ok_to_forward_rd := true.B
+  conf.rd_data := in.bits.write_info.gpr_wdata
   in.ready := in.valid
   out.ok_to_step := has_signal
   out.retire_pc := in.bits.pc
