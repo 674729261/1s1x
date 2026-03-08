@@ -146,7 +146,7 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
     conf_csr_lsu,
     data_lsu
   ) =
-    check_conflict(idu.conf, exu.conf)
+    check_conflict(idu.conf, lsu.conf)
   val (
     conf1_wbu,
     fwd1_wbu,
@@ -155,7 +155,7 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
     conf_csr_wbu,
     data_wbu
   ) =
-    check_conflict(idu.conf, exu.conf)
+    check_conflict(idu.conf, wbu.conf)
 
   val stall_src1 = MuxCase(
     false.B,
