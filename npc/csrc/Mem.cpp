@@ -71,7 +71,7 @@ extern "C" uint32_t mem_read(uint32_t raddr) {
                                       raddr);
     }
   } else {
-    log_and_throw<std::logic_error>("Reading from illegal address : {:#010x}",
+    log_and_throw<std::logic_error>("Reading from illegal address : : {:#010x}",
                                     raddr);
   }
 }

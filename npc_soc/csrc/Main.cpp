@@ -54,7 +54,7 @@ int simulate(int argc, char *argv[], Config config) {
   Verilated::traceEverOn(true);
 
   dut = std::make_unique<Dut>(config, contextp.get());
-  Ref ref(config, *dut, 3, 1);
+  Ref ref(config, *dut, 2, 2);
   if (config.nvboard) {
     dut->nvboard_bind();
     nvboard_init();
@@ -77,7 +77,7 @@ int simulate(int argc, char *argv[], Config config) {
     dut->step_one_cycle();
 
     if (retire) {
-      // std::println("{:08x}", dut->getPC());
+      // std::println("{:08x}", ref.getPC());
       inst_count++;
       if (config.difftest) {
         ref.step();

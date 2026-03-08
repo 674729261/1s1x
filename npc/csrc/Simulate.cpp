@@ -262,6 +262,9 @@ int simulate() {
                   performance_statistics.simulation_time);
   if (config.enable_audio)
     SDL_CloseAudio();
+  dut->print_all_gpr();
+  if (config.itracer > 0)
+    instRingBuffer->display();
 
   return result;
 }

@@ -7,14 +7,10 @@ object PerformanceCounterLayer extends Layer(LayerConfig.Inline)
 
 object StageConnect {
   def apply[T <: Data](left: DecoupledIO[T], right: DecoupledIO[T]) = {
-    val arch = "pipeline"
+    val arch = "multi"
     if (arch == "single") { right.bits := left.bits }
     else if (arch == "multi") { right <> left }
-    else if (arch == "pipeline") {
-      left.ready := right.ready
-      right.bits := RegEnable(left.bits, left.fire)
-      right.valid := left.valid
-    }
+    else if (arch == "pipeline") { RegEnable(left.bits, left.fire) }
   }
 }
 
@@ -64,7 +60,7 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
     val retire_inst = Output(UInt(32.W))
   })
 
-  val ifu = Module(new IFU(init_pc = init_pc))
+  val ifu = Module(new IFU)
   val idu = Module(new IDU)
   val exu = Module(new EXU)
   val lsu = Module(new LSU)
@@ -85,37 +81,18 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
   io.pc := pc
   io.retire_pc := wbu.out.retire_pc
   io.retire_inst := wbu.out.retire_inst
-  ifu.in.exu_dnpc := exu.out_pc.dnpc
-  ifu.in.flush_valid := exu.out_pc.ifu_flush_valid
-  idu.flush.valid := exu.out_pc.idu_flush_valid
-
+  ifu.in.pc := pc
   ifu.fetch_port <> arbiter.IFU_AXI
+  ifu.in.clear_icache_valid := wbu.out.clear_icache_valid
+  wbu.out.clear_icache_ok := ifu.in.clear_icache_ok
 
-  StageConnect(ifu.out, idu.in)
-  StageConnect(idu.out, exu.in)
-  StageConnect(exu.out, lsu.in)
-  StageConnect(lsu.out, wbu.in)
+  StageConnect(idu.in, ifu.out)
+  StageConnect(exu.in, idu.out)
+  StageConnect(lsu.in, exu.out)
+  StageConnect(wbu.in, lsu.out)
 
-  def check_conflict(rs_info: ConflictInfoRS, rd_info: ConflictInfoRD): Bool = {
-    val conf1 =
-      rs_info.rs1_valid && rd_info.rd_valid && (rs_info.rs1_id === rd_info.rd_id) && (rd_info.rd_id =/= 0
-        .U(5.W))
-    val conf2 =
-      rs_info.rs2_valid && rd_info.rd_valid && (rs_info.rs2_id === rd_info.rd_id) && (rd_info.rd_id =/= 0
-        .U(5.W))
-    val conf_csr =
-      rs_info.csr_src_valid && rd_info.csr_dest_valid && (rs_info.csr_src_id === rd_info.csr_id)
-    val conf_interruption =
-      rs_info.csr_src_valid && rd_info.interruption && (rs_info.csr_src_id === 0x342
-        .U(12.W) || rs_info.csr_src_id === 0x341.U(12.W))
-    return conf1 || conf2 || conf_csr || conf_interruption
-  }
-
-  val is_RAW = check_conflict(idu.conf, exu.conf) || check_conflict(
-    idu.conf,
-    wbu.conf
-  ) || check_conflict(idu.conf, lsu.conf)
-  idu.conf.stall := is_RAW
+  // val ok_to_step_reg = RegInit(false.B)
+  // ok_to_step_reg := wbu.out.ok_to_step
 
   io.ok_to_step := wbu.out.ok_to_step
   csrBank.io.ok_to_step := wbu.out.ok_to_step
