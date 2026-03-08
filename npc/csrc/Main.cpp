@@ -1,5 +1,6 @@
 
 #include "Device/Device.h"
+#include "RingBuffer.hpp"
 #include "Simulate.h"
 #include "spdlog/spdlog.h"
 #include <Args.h>
@@ -27,6 +28,10 @@ int main(int argc, char *argv[]) {
       device_thread->request_stop();
     }
   }
+  if (dut)
+    dut->print_all_gpr();
+  if (config.itracer > 0)
+    instRingBuffer->display();
   spdlog::shutdown();
   dut = nullptr;
   contextp = nullptr;
