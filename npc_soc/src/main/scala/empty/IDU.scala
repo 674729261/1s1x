@@ -285,8 +285,10 @@ class MessageIDU2EXU extends Bundle {
 class ConflictInfoRS extends Bundle {
   val rs1_valid = Output(Bool())
   val rs2_valid = Output(Bool())
+  val csr_src_valid = Output(Bool())
   val rs1_id = Output(UInt(5.W))
   val rs2_id = Output(UInt(5.W))
+  val csr_src_id = Output(UInt(12.W))
   val stall = Input(Bool())
 }
 
@@ -379,8 +381,11 @@ class IDU() extends Module {
   out.bits.itype := inst_type
   conf.rs1_id := fields.rs1
   conf.rs2_id := fields.rs2
+  conf.csr_src_id := fields.csr
   conf.rs1_valid := has_inst && (imm_type.is_R || imm_type.is_I || imm_type.is_S || imm_type.is_B || inst_type.is_csrop)
   conf.rs2_valid := has_inst && (imm_type.is_R || imm_type.is_S || imm_type.is_B)
+  conf.csr_src_valid := has_inst && (inst_type.is_csrop)
+
   out.bits.rd_valid := (imm_type.is_R || imm_type.is_I || imm_type.is_U || imm_type.is_J || inst_type.is_csrop)
   out.valid := has_inst && !conf.stall
   in.ready := (out.fire || !has_inst) && !conf.stall

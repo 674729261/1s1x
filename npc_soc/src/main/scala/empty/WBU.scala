@@ -46,6 +46,8 @@ class WBU() extends Module {
   out.gpr_wen := in.bits.controls.is_gpr_wen && has_signal
   conf.rd_id := in.bits.controls.rd_or_csrd(4, 0)
   conf.rd_valid := has_signal && in.bits.rd_valid
+  conf.csr_dest_valid := has_signal && in.bits.itype.is_csrop
+  conf.csr_id := in.bits.controls.rd_or_csrd
   in.ready := in.valid
   out.ok_to_step := has_signal
   out.retire_pc := in.bits.pc

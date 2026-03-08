@@ -38,7 +38,9 @@ class MessageEXU2LSU extends Bundle {
 
 class ConflictInfoRD extends Bundle {
   val rd_valid = Output(Bool())
+  val csr_dest_valid = Output(Bool())
   val rd_id = Output(UInt(5.W))
+  val csr_id = Output(UInt(12.W))
 }
 
 class EXU() extends Module {
@@ -112,6 +114,9 @@ class EXU() extends Module {
 
   conf.rd_id := in.bits.controls.rd_or_csrd(4, 0)
   conf.rd_valid := has_signal && in.bits.rd_valid
+  conf.csr_dest_valid := has_signal && in.bits.itype.is_csrop
+  conf.csr_id := in.bits.controls.rd_or_csrd
+
   out.bits.itype := in.bits.itype
   out.bits.rd_valid := in.bits.rd_valid
   out.valid := has_signal

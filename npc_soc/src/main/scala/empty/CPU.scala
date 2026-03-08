@@ -103,7 +103,9 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
     val conf2 =
       rs_info.rs2_valid && rd_info.rd_valid && (rs_info.rs2_id === rd_info.rd_id) && (rd_info.rd_id =/= 0
         .U(5.W))
-    return conf1 || conf2
+    val conf_csr =
+      rs_info.csr_src_valid && rd_info.csr_dest_valid && (rs_info.csr_src_id === rd_info.csr_id)
+    return conf1 || conf2 || conf_csr
   }
 
   val is_RAW = check_conflict(idu.conf, exu.conf) || check_conflict(
