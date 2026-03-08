@@ -63,6 +63,9 @@ class LSU() extends Module {
       out.fire -> false.B
     )
   )
+
+  val rdata_valid = fire.r_fire || has_r
+
   val out_aw = RegInit(false.B)
   val out_w = RegInit(false.B)
   out_aw := MuxCase(
@@ -109,14 +112,15 @@ class LSU() extends Module {
   ramWriter.io.is_byte := in.bits.controls.is_ram_byte
   ramWriter.io.lower2bit := in.bits.write_info.alu_out(1, 0)
 
-  val rdata_latched = RegEnable(ramLoader.io.out, fire.r_fire)
+  val rdata_latched_r = RegEnable(ramLoader.io.out, fire.r_fire)
+  val rdata = Mux(fire.r_fire, ramLoader.io.out, rdata_latched_r)
 
   out.bits.pc := in.bits.pc
   out.bits.inst := in.bits.inst
   out.bits.controls := in.bits.controls
   out.bits.write_info := in.bits.write_info
   when(in.bits.controls.is_gpr_wdata_from_ram) {
-    out.bits.write_info.gpr_wdata := rdata_latched
+    out.bits.write_info.gpr_wdata := rdata
   }
 
   fetch_port.ar.addr := in.bits.write_info.alu_out
@@ -144,15 +148,15 @@ class LSU() extends Module {
   fetch_port.w.last := true.B
 
   val no_pending_memory_access =
-    (should_mem_access_r && has_r) || (should_mem_access_w && has_b) || (!should_mem_access_r && !should_mem_access_w)
+    (should_mem_access_r && rdata_valid) || (should_mem_access_w && has_b) || (!should_mem_access_r && !should_mem_access_w)
 
   conf.rd_id := in.bits.controls.rd
   conf.rd_valid := has_signal && in.bits.rd_valid
   conf.csr_dest_valid := has_signal && in.bits.itype.is_csrop
   conf.csr_id := in.bits.controls.csrd
   conf.interruption := in.bits.controls.interruption
-  conf.ok_to_forward_rd := has_r
-  conf.rd_data := rdata_latched
+  conf.ok_to_forward_rd := rdata_valid
+  conf.rd_data := rdata
 
   out.bits.rd_valid := in.bits.rd_valid
   out.bits.controls.is_ebreak := in.bits.controls.is_ebreak
