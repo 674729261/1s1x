@@ -50,6 +50,10 @@ class PerformanceCounter extends ExtModule {
   val idu_valid = IO(Input(Bool()))
   val wbu_valid = IO(Input(Bool()))
   val inst_type = IO(Input(new InstType))
+
+  val stalled = IO(Input(Bool()))
+  val flushed = IO(Input(Bool()))
+
 }
 
 class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
@@ -166,6 +170,9 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
     m_performance_counter.lsu_arvalid := lsu.fetch_port.ar.valid
     m_performance_counter.lsu_rready := lsu.fetch_port.r.ready
     m_performance_counter.lsu_rvalid := lsu.fetch_port.r.valid
+
+    m_performance_counter.stalled := idu.perf_cnt.stalled
+    m_performance_counter.flushed := idu.perf_cnt.flushed
 
   }
 }

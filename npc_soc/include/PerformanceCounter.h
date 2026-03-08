@@ -26,6 +26,9 @@ extern long long max_lsu_fetch_delay;
 extern long long cycles_not_on_flash;
 extern long long insts_not_on_flash;
 
+extern long long stalled_cycles;
+extern long long flushed_insts;
+
 extern std::array<InstTypeItem, 14> inst_type_event;
 
 extern std::unique_ptr<Dut> dut;
@@ -64,6 +67,9 @@ inline void display_performance(auto start_time, auto end_time) {
   spdlog::info("Total exu events : {}", exu_event);
   spdlog::info("Total idu events : {}", idu_event);
   spdlog::info("Total wbu events : {}", wbu_event);
+  spdlog::info("Total stalled cycles : {}", stalled_cycles);
+  spdlog::info("Total flushed instructions : {}", flushed_insts);
+
   if (ifu_event > 0)
     spdlog::info("Total/Average/Min/Max IFU delay : {}/{:.2f}/{}/{}",
                  sum_ifu_fetch_delay,
