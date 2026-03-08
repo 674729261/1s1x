@@ -1,7 +1,7 @@
 package empty
 import chisel3._
 import chisel3.util._
-import ujson.True
+import chisel3.layer._
 
 class InstFields extends Bundle {
   val rs1 = (UInt(5.W))
@@ -87,6 +87,7 @@ class ControlSignals extends Bundle {
 
   val is_ebreak = Bool()
   val interruption = Bool()
+
 }
 
 object decodeInstType {
@@ -298,7 +299,10 @@ class ConflictInfoRS extends Bundle {
 
 class IDU() extends Module {
   val in = IO(Flipped(DecoupledIO(new MessageIFU2IDU)))
-
+  val perf_cnt = IO(new Bundle {
+    val stalled = Output(Bool())
+    val flushed = Output(Bool())
+  })
   val out = IO(DecoupledIO(new MessageIDU2EXU))
   val conf = IO(new ConflictInfoRS)
   val flush = IO(new Bundle {
@@ -392,5 +396,8 @@ class IDU() extends Module {
   out.bits.rd_valid := (imm_type.is_R || imm_type.is_I || imm_type.is_U || imm_type.is_J || inst_type.is_csrop)
   out.valid := has_inst && !conf.stall
   in.ready := (out.fire || !has_inst) && !conf.stall
+
+  perf_cnt.stalled := has_inst && conf.stall
+  perf_cnt.flushed := has_inst_r && flush.valid
 
 }
