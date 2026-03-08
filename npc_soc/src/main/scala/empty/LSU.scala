@@ -6,8 +6,10 @@ import chisel3.layer.block
 class ControlSignalsLSU extends Bundle {
   val is_csr_visit = (Bool())
   val is_gpr_wen = (Bool())
-  val rd_or_csrd = UInt(12.W)
+  val rd = UInt(5.W)
+  val csrd = UInt(12.W)
   val is_ebreak = Bool()
+  val interruption = Bool()
 }
 class MessageLSU2WBU extends Bundle {
   val pc = (UInt(32.W))
@@ -144,12 +146,15 @@ class LSU() extends Module {
   val no_pending_memory_access =
     (should_mem_access_r && has_r) || (should_mem_access_w && has_b) || (!should_mem_access_r && !should_mem_access_w)
 
-  conf.rd_id := in.bits.controls.rd_or_csrd(4, 0)
+  conf.rd_id := in.bits.controls.rd
   conf.rd_valid := has_signal && in.bits.rd_valid
   conf.csr_dest_valid := has_signal && in.bits.itype.is_csrop
-  conf.csr_id := in.bits.controls.rd_or_csrd
+  conf.csr_id := in.bits.controls.csrd
+  conf.interruption := in.bits.controls.interruption
+
   out.bits.rd_valid := in.bits.rd_valid
   out.bits.controls.is_ebreak := in.bits.controls.is_ebreak
+  out.bits.controls.interruption := in.bits.controls.interruption
   out.bits.itype := in.bits.itype
   out.valid := has_signal && no_pending_memory_access
   in.ready := no_pending_memory_access

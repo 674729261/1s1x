@@ -24,8 +24,10 @@ class ControlSignalsEXU extends Bundle {
   val is_ram_valid = (Bool())
   val is_ram_wen = (Bool())
 
-  val rd_or_csrd = UInt(12.W)
+  val rd = UInt(5.W)
+  val csrd = UInt(12.W)
   val is_ebreak = (Bool())
+  val interruption = (Bool())
 }
 class MessageEXU2LSU extends Bundle {
   val pc = (UInt(32.W))
@@ -39,6 +41,7 @@ class MessageEXU2LSU extends Bundle {
 class ConflictInfoRD extends Bundle {
   val rd_valid = Output(Bool())
   val csr_dest_valid = Output(Bool())
+  val interruption = Output(Bool())
   val rd_id = Output(UInt(5.W))
   val csr_id = Output(UInt(12.W))
 }
@@ -111,11 +114,12 @@ class EXU() extends Module {
   )
 
   out.bits.controls.is_ebreak := in.bits.controls.is_ebreak
-
-  conf.rd_id := in.bits.controls.rd_or_csrd(4, 0)
+  out.bits.controls.interruption := in.bits.controls.interruption
+  conf.rd_id := in.bits.controls.rd
   conf.rd_valid := has_signal && in.bits.rd_valid
-  conf.csr_dest_valid := has_signal && in.bits.itype.is_csrop
-  conf.csr_id := in.bits.controls.rd_or_csrd
+  conf.csr_dest_valid := has_signal && in.bits.controls.is_csr_visit
+  conf.csr_id := in.bits.controls.csrd
+  conf.interruption := in.bits.itype.is_ecall
 
   out.bits.itype := in.bits.itype
   out.bits.rd_valid := in.bits.rd_valid

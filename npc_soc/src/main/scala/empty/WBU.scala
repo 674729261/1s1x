@@ -30,24 +30,26 @@ class WBU() extends Module {
   val has_signal = RegInit(Bool(), false.B)
   has_signal := Mux(in.fire, true.B, false.B)
 
-  out.ebreak := in.bits.controls.is_ebreak && in.valid
+  out.ebreak := in.bits.controls.is_ebreak && has_signal
 
-  out.csr_waddr := in.bits.controls.rd_or_csrd
+  out.csr_waddr := in.bits.controls.csrd
   out.csr_wen := in.bits.controls.is_csr_visit && has_signal
   out.csr_cur_pc := in.bits.pc
   out.csr_mcause := 11.U(32.W)
-  out.csr_interruption := in.bits.controls.is_ebreak && has_signal
+  out.csr_interruption := in.bits.controls.interruption && has_signal
   out.csr_wdata := in.bits.write_info.csr_wdata
 
   out.dnpc := in.bits.write_info.dnpc
 
-  out.gpr_waddr := in.bits.controls.rd_or_csrd(4, 0)
+  out.gpr_waddr := in.bits.controls.rd
   out.gpr_wdata := in.bits.write_info.gpr_wdata
   out.gpr_wen := in.bits.controls.is_gpr_wen && has_signal
-  conf.rd_id := in.bits.controls.rd_or_csrd(4, 0)
+  conf.rd_id := in.bits.controls.rd
   conf.rd_valid := has_signal && in.bits.rd_valid
   conf.csr_dest_valid := has_signal && in.bits.itype.is_csrop
-  conf.csr_id := in.bits.controls.rd_or_csrd
+  conf.csr_id := in.bits.controls.csrd
+  conf.interruption := in.bits.controls.interruption
+
   in.ready := in.valid
   out.ok_to_step := has_signal
   out.retire_pc := in.bits.pc

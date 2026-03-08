@@ -76,7 +76,8 @@ class ControlSignals extends Bundle {
 
   val is_csr_masked = (Bool())
 
-  val rd_or_csrd = UInt(12.W)
+  val rd = UInt(5.W)
+  val csrd = UInt(12.W)
 
   val bra_funct3 = UInt(3.W)
 
@@ -85,6 +86,7 @@ class ControlSignals extends Bundle {
   val is_dnpc_csr_jump = Bool()
 
   val is_ebreak = Bool()
+  val interruption = Bool()
 }
 
 object decodeInstType {
@@ -253,11 +255,13 @@ object decodeInstControlSignal {
 
     ret.bra_funct3 := fields.funct3
 
-    ret.rd_or_csrd := Mux(ret.is_gpr_wen, Cat(0.U(7.W), fields.rd), fields.csr)
+    ret.rd := fields.rd
+    ret.csrd := fields.csr
     ret.is_branch := it.is_branch
     ret.is_dnpc_jal_or_jalr := it.is_jal || it.is_jalr
     ret.is_dnpc_csr_jump := it.is_ecall || it.is_mret
     ret.is_ebreak := it.is_ebreak
+    ret.interruption := it.is_ebreak || it.is_ecall
     return ret
   }
 }
@@ -381,11 +385,10 @@ class IDU() extends Module {
   out.bits.itype := inst_type
   conf.rs1_id := fields.rs1
   conf.rs2_id := fields.rs2
-  conf.csr_src_id := fields.csr
+  conf.csr_src_id := control_signals.csrd
   conf.rs1_valid := has_inst && (imm_type.is_R || imm_type.is_I || imm_type.is_S || imm_type.is_B || inst_type.is_csrop)
   conf.rs2_valid := has_inst && (imm_type.is_R || imm_type.is_S || imm_type.is_B)
   conf.csr_src_valid := has_inst && (inst_type.is_csrop)
-
   out.bits.rd_valid := (imm_type.is_R || imm_type.is_I || imm_type.is_U || imm_type.is_J || inst_type.is_csrop)
   out.valid := has_inst && !conf.stall
   in.ready := (out.fire || !has_inst) && !conf.stall

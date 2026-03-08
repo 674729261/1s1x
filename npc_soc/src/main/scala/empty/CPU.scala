@@ -105,7 +105,10 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
         .U(5.W))
     val conf_csr =
       rs_info.csr_src_valid && rd_info.csr_dest_valid && (rs_info.csr_src_id === rd_info.csr_id)
-    return conf1 || conf2 || conf_csr
+    val conf_interruption =
+      rs_info.csr_src_valid && rd_info.interruption && (rs_info.csr_src_id === 0x342
+        .U(12.W) || rs_info.csr_src_id === 0x341.U(12.W))
+    return conf1 || conf2 || conf_csr || conf_interruption
   }
 
   val is_RAW = check_conflict(idu.conf, exu.conf) || check_conflict(
