@@ -46,8 +46,6 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
   val fetch_port = IO(new AXI)
   set_AXIfull_zero(fetch_port)
 
-  val input_index_inside_cacheline = io.addr(linesize_2pow - 1, 2)
-
   val bytes = (1 << linesize_2pow)
   val words = (1 << (linesize_2pow - 2))
   val line_count = (1 << linecount_2pow)
@@ -74,6 +72,8 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
   val input_tag = addr_r(31, linecount_2pow + linesize_2pow)
   val input_cache_index =
     addr_r(linecount_2pow + linesize_2pow - 1, linesize_2pow)
+  val input_index_inside_cacheline = addr_r(linesize_2pow - 1, 2)
+
   val cache_rdata =
     content.read(input_cache_index)
   val should_cache = ShouldCache(addr_r)
