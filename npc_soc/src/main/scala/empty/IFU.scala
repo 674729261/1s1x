@@ -56,7 +56,7 @@ class IFU(init_pc: UInt) extends Module {
     fetch_pc,
     Seq(
       (in.flush_valid) -> in.exu_dnpc,
-      (cache_rfire) -> pc_next_predicted
+      (cache_afire) -> pc_next_predicted
     )
   )
   timestamp_r := MuxCase(
