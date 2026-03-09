@@ -129,7 +129,7 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
       )
   }
 
-  io.aready := in_cache || !has_request_r
+  io.aready := (in_cache && ifu_rfire) || !has_request_r
   io.timestamp_res := timestamp_r
   io.rvalid := has_request_r && (in_cache || has_r)
   io.rdata := Mux(
