@@ -295,6 +295,11 @@ class ConflictInfoRS extends Bundle {
   val rs2_id = Output(UInt(5.W))
   val csr_src_id = Output(UInt(12.W))
   val stall = Input(Bool())
+  val do_forward_src1 = Input(Bool())
+  val do_forward_src2 = Input(Bool())
+  val forward_data_src1 = Input(UInt(32.W))
+  val forward_data_src2 = Input(UInt(32.W))
+
 }
 
 class IDU() extends Module {
@@ -356,9 +361,12 @@ class IDU() extends Module {
   fetch_port_out.csr_raddr := fields.csr
   fetch_port_out.gpr_raddr1 := fields.rs1
   fetch_port_out.gpr_raddr2 := fields.rs2
-
-  out.bits.sources.src1 := fetch_port_in.gpr_rdata1
-  out.bits.sources.src2 := fetch_port_in.gpr_rdata2
+  val gpr_rdata1 =
+    Mux(conf.do_forward_src1, conf.forward_data_src1, fetch_port_in.gpr_rdata1)
+  val gpr_rdata2 =
+    Mux(conf.do_forward_src2, conf.forward_data_src2, fetch_port_in.gpr_rdata2)
+  out.bits.sources.src1 := gpr_rdata1
+  out.bits.sources.src2 := gpr_rdata2
   out.bits.sources.imm := fields.imm
 
   out.bits.sources.csr := fetch_port_in.csr_rdata
@@ -368,7 +376,7 @@ class IDU() extends Module {
   val is_alu_b_reg = imm_type.is_R
 
   out.bits.sources.alu_a_or_mepc_or_mtvec := MuxCase(
-    fetch_port_in.gpr_rdata1,
+    gpr_rdata1,
     Seq(
       inst_type.is_ecall -> fetch_port_in.csr_mtvec,
       inst_type.is_mret -> fetch_port_in.csr_mepc,
@@ -378,7 +386,7 @@ class IDU() extends Module {
 
   val alu_b_raw = Mux(
     is_alu_b_reg,
-    fetch_port_in.gpr_rdata2,
+    gpr_rdata2,
     fields.imm
   )
   out.bits.sources.alu_b := Mux(
