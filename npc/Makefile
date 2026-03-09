@@ -50,8 +50,8 @@ $(SV_FILELIST): $(CHISELSRC)
 
 
 
-PROG ?= test_progs/matrix.bin
-ELF  ?= test_progs/matrix.elf
+PROG ?= test_progs/recursion.bin
+ELF  ?= test_progs/recursion.elf
 MEM_SIZE ?= 0x8000000
 MEM_BASE ?= 0x80000000
 DEV_SIZE ?= 0x10000000
@@ -66,7 +66,7 @@ sim: npc
 	$(BIN) --image $(PROG) \
 	--mem_size $(MEM_SIZE) --mem_base $(MEM_BASE) \
 	--device_size $(DEV_SIZE) --device_base $(DEV_BASE) \
-	--log $(LOG_FILE) --difftest --enable_vga --enable_audio $(NPC_FLAGS) --itracer 8
+	--log $(LOG_FILE) --difftest --enable_vga --enable_audio $(NPC_FLAGS) --itracer 8 --waveform wave.vcd
 
 sim_full_speed: VERILATOR_CFLAGS+=-DNDEBUG -fstrict-aliasing \
 -frename-registers -fomit-frame-pointer \
