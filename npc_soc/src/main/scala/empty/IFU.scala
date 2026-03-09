@@ -16,7 +16,7 @@ class IFU(init_pc: UInt) extends Module {
 
   val fetch_port = IO(new AXI)
 
-  val icache = Module(new ICache(5, 1))
+  val icache = Module(new ICache(5, 2))
   val has_inst_r = RegInit(Bool(), false.B)
 
   val fetch_pc = RegInit(UInt(32.W), init_pc)
