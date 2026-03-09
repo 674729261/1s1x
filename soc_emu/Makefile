@@ -45,10 +45,8 @@ TIME_STAMP := $(shell date +"%Y_%m_%d_%H_%M_%S")
 BIN ?= $(SOC_EMU_HOME)/images/microbench_train.bin
 LOG_DIR ?= $(SOC_EMU_HOME)/logs
 LOG_FILE ?= $(LOG_DIR)/$(TIME_STAMP).log
-ICACHE_N ?= 2
-ICACHE_M ?= 2
-DCACHE_N ?= 3
-DCACHE_M ?= 4
+CACHE_N ?= 2
+CACHE_M ?= 2
 
 
 $(LOG_DIR):
@@ -56,9 +54,7 @@ $(LOG_DIR):
 
 sim: build $(LOG_DIR)
 	$(MDIR)/soc_emu --image $(BIN) \
-	--nr_icacheline $(ICACHE_N) --nr_icachesize $(ICACHE_M) \
-	--nr_dcacheline $(DCACHE_N) --nr_dcachesize $(DCACHE_M) \
-	--log $(LOG_FILE)
+	--nr_cacheline $(CACHE_N) --nr_cachesize $(CACHE_M) --log $(LOG_FILE)
 
 clean:
 	rm -rf build

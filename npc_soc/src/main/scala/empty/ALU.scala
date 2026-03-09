@@ -40,9 +40,9 @@ class ALU(WIDTH: Int) extends RawModule {
 
   val adder = Module(new Adder(WIDTH))
   val log_width = log2Ceil(WIDTH)
-
+  // add
   adder.io.A := io.A
-  adder.io.B := io.B
+  adder.io.B := Mux(io.controls.is_alu_b_inv, ~io.B, io.B)
   adder.io.Cin := io.controls.is_alu_b_inv
   io.out := Mux1H(
     Seq(
@@ -60,4 +60,56 @@ class ALU(WIDTH: Int) extends RawModule {
       io.controls.is_alu_xor -> (io.A ^ io.B)
     )
   )
+
+  // var log_width = 0;
+  // var upper = 1;
+  // while (upper < WIDTH) {
+  //   upper *= 2
+  //   log_width += 1
+  // }
+
+  // when(~io.is_force_add) {
+  //   switch(io.funct3) {
+  //     is("b000".U(3.W)) { // add / sub
+  //       when(io.is_sub_sra) { // sub
+  //         adder.io.B := ~io.B
+  //         adder.io.Cin := true.B
+  //       }.otherwise {}
+  //     }
+  //     is("b010".U(3.W)) { // slt
+  //       adder.io.B := ~io.B
+  //       adder.io.Cin := true.B
+  //       io.out := Cat(
+  //         0.U((WIDTH - 1).W),
+  //         adder.io.out(WIDTH - 1) ^ adder.io.overflow
+  //       )
+  //     }
+  //     is("b011".U(3.W)) { // sltu
+  //       adder.io.B := ~io.B
+  //       adder.io.Cin := true.B
+  //       io.out := Cat(0.U((WIDTH - 1).W), ~adder.io.Cout)
+  //     }
+
+  //     is("b001".U(3.W)) { // sll
+  //       io.out := io.A << io.B(log_width - 1, 0)
+  //     }
+  //     is("b101".U(3.W)) { // srl / sra
+  //       when(io.is_sub_sra) { // sra
+  //         io.out := (io.A.asSInt >> io.B(log_width - 1, 0)).asUInt
+  //       }.otherwise { // srl
+  //         io.out := io.A >> io.B(log_width - 1, 0)
+  //       }
+  //     }
+
+  //     is("b111".U(3.W)) { // and
+  //       io.out := io.A & io.B
+  //     }
+  //     is("b110".U(3.W)) { // or
+  //       io.out := io.A | io.B
+  //     }
+  //     is("b100".U(3.W)) { // xor
+  //       io.out := io.A ^ io.B
+  //     }
+  //   }
+  // }
 }

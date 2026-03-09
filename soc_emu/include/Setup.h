@@ -13,10 +13,8 @@ struct Config {
   std::string image_path;
   bool batch_mode;
 
-  unsigned nr_icacheline_words_2pow;
-  unsigned nr_icachelines_2pow;
-  unsigned nr_dcacheline_words_2pow;
-  unsigned nr_dcachelines_2pow;
+  unsigned nr_cacheline_words_2pow;
+  unsigned nr_cachelines_2pow;
 };
 
 Config setup(argparse::ArgumentParser &program);

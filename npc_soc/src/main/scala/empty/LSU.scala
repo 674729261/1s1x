@@ -3,21 +3,12 @@ import chisel3._
 import chisel3.util._
 import chisel3.layer.block
 
-class ControlSignalsLSU extends Bundle {
-  val is_csr_visit = (Bool())
-  val is_gpr_wen = (Bool())
-  val rd = UInt(5.W)
-  val csrd = UInt(12.W)
-  val is_ebreak = Bool()
-  val interruption = Bool()
-}
 class MessageLSU2WBU extends Bundle {
   val pc = (UInt(32.W))
   val inst = (UInt(32.W))
-  val controls = (new ControlSignalsLSU)
-  val write_info = (new WriteInfo)
+  val controls = (new ControlSignals)
   val itype = (new InstType)
-  val rd_valid = (Bool())
+  val write_info = (new WriteInfo)
 }
 
 class LSU() extends Module {
@@ -25,7 +16,6 @@ class LSU() extends Module {
   val in = IO(Flipped(DecoupledIO(new MessageEXU2LSU)))
 
   val out = IO(DecoupledIO(new MessageLSU2WBU))
-  val conf = IO(new ConflictInfoRD)
 
   val fetch_port = IO(new AXI)
   set_AXIfull_zero(fetch_port)
@@ -36,14 +26,19 @@ class LSU() extends Module {
   val should_mem_access_r = Wire(Bool())
   val should_mem_access_w = Wire(Bool())
 
+  val cpu_out_fire = out.valid && out.ready
+  val cpu_in_fire = in.valid && in.ready
   val fire = GenerateFireSignal(fetch_port)
   val has_signal = RegInit(false.B)
+  val should_signal_in_latch = in.valid && !has_signal
+
+  val signal_in_r = RegEnable(in.bits, should_signal_in_latch)
 
   has_signal := MuxCase(
     has_signal,
     Seq(
-      in.fire -> true.B,
-      out.fire -> false.B
+      should_signal_in_latch -> true.B,
+      cpu_out_fire -> false.B
     )
   )
 
@@ -52,7 +47,7 @@ class LSU() extends Module {
     out_ar,
     Seq(
       fire.ar_fire -> true.B,
-      out.fire -> false.B
+      cpu_out_fire -> false.B
     )
   )
   val has_r = RegInit(false.B)
@@ -60,7 +55,7 @@ class LSU() extends Module {
     has_r,
     Seq(
       fire.r_fire -> true.B,
-      out.fire -> false.B
+      cpu_out_fire -> false.B
     )
   )
   val out_aw = RegInit(false.B)
@@ -69,14 +64,14 @@ class LSU() extends Module {
     out_aw,
     Seq(
       fire.aw_fire -> true.B,
-      out.fire -> false.B
+      cpu_out_fire -> false.B
     )
   )
   out_w := MuxCase(
     out_w,
     Seq(
       fire.w_fire -> true.B,
-      out.fire -> false.B
+      cpu_out_fire -> false.B
     )
   )
   val has_b = RegInit(false.B)
@@ -84,11 +79,11 @@ class LSU() extends Module {
     has_b,
     Seq(
       fire.b_fire -> true.B,
-      out.fire -> false.B
+      cpu_out_fire -> false.B
     )
   )
-  should_mem_access_r := has_signal && in.bits.controls.is_ram_valid && !in.bits.controls.is_ram_wen
-  should_mem_access_w := has_signal && in.bits.controls.is_ram_valid && in.bits.controls.is_ram_wen
+  should_mem_access_r := has_signal && signal_in_r.controls.is_ram_valid && !signal_in_r.controls.is_ram_wen
+  should_mem_access_w := has_signal && signal_in_r.controls.is_ram_valid && signal_in_r.controls.is_ram_wen
 
   fetch_port.ar.valid := has_signal && should_mem_access_r && !out_ar
   fetch_port.r.ready := out_ar && !has_r
@@ -97,69 +92,55 @@ class LSU() extends Module {
   fetch_port.b.ready := out_aw && out_w && !has_b
 
   ramLoader.io.word := fetch_port.r.data
-  ramLoader.io.is_byte := in.bits.controls.is_ram_byte
-  ramLoader.io.is_half := in.bits.controls.is_ram_half
-  ramLoader.io.is_word := in.bits.controls.is_ram_word
-  ramLoader.io.is_unsigned := in.bits.controls.is_load_unsigned
-  ramLoader.io.lower2bit := in.bits.write_info.alu_out(1, 0)
+  ramLoader.io.is_byte := signal_in_r.controls.is_ram_byte
+  ramLoader.io.is_half := signal_in_r.controls.is_ram_half
+  ramLoader.io.is_word := signal_in_r.controls.is_ram_word
+  ramLoader.io.is_unsigned := signal_in_r.controls.is_load_unsigned
+  ramLoader.io.lower2bit := signal_in_r.write_info.alu_out(1, 0)
 
-  ramWriter.io.word := in.bits.write_info.mem_word
-  ramWriter.io.is_word := in.bits.controls.is_ram_word
-  ramWriter.io.is_half := in.bits.controls.is_ram_half
-  ramWriter.io.is_byte := in.bits.controls.is_ram_byte
-  ramWriter.io.lower2bit := in.bits.write_info.alu_out(1, 0)
+  ramWriter.io.word := signal_in_r.write_info.mem_word
+  ramWriter.io.is_word := signal_in_r.controls.is_ram_word
+  ramWriter.io.is_half := signal_in_r.controls.is_ram_half
+  ramWriter.io.is_byte := signal_in_r.controls.is_ram_byte
+  ramWriter.io.lower2bit := signal_in_r.write_info.alu_out(1, 0)
 
   val rdata_latched = RegEnable(ramLoader.io.out, fire.r_fire)
 
-  out.bits.pc := in.bits.pc
-  out.bits.inst := in.bits.inst
-  out.bits.controls := in.bits.controls
-  out.bits.write_info := in.bits.write_info
-  when(in.bits.controls.is_gpr_wdata_from_ram) {
+  out.bits.pc := signal_in_r.pc
+  out.bits.inst := signal_in_r.inst
+  out.bits.controls := signal_in_r.controls
+  out.bits.itype := signal_in_r.itype
+  out.bits.write_info := signal_in_r.write_info
+  when(signal_in_r.controls.is_gpr_wdata_from_ram) {
     out.bits.write_info.gpr_wdata := rdata_latched
   }
 
-  fetch_port.ar.addr := in.bits.write_info.alu_out
+  fetch_port.ar.addr := signal_in_r.write_info.alu_out
   fetch_port.ar.size := Mux1H(
     Seq(
-      in.bits.controls.is_ram_byte -> "b000".U(3.W),
-      in.bits.controls.is_ram_half -> "b001".U(3.W),
-      in.bits.controls.is_ram_word -> "b010".U(3.W)
+      signal_in_r.controls.is_ram_byte -> "b000".U(3.W),
+      signal_in_r.controls.is_ram_half -> "b001".U(3.W),
+      signal_in_r.controls.is_ram_word -> "b010".U(3.W)
     )
   )
 
   fetch_port.ar.id := "b1000".U(4.W)
-  fetch_port.aw.addr := in.bits.write_info.alu_out
+  fetch_port.aw.addr := signal_in_r.write_info.alu_out
   fetch_port.aw.id := "b1000".U(4.W)
 
   fetch_port.w.data := ramWriter.io.out
   fetch_port.w.strb := ramWriter.io.mask
   fetch_port.aw.size := Mux1H(
     Seq(
-      in.bits.controls.is_ram_byte -> "b000".U(3.W),
-      in.bits.controls.is_ram_half -> "b001".U(3.W),
-      in.bits.controls.is_ram_word -> "b010".U(3.W)
+      signal_in_r.controls.is_ram_byte -> "b000".U(3.W),
+      signal_in_r.controls.is_ram_half -> "b001".U(3.W),
+      signal_in_r.controls.is_ram_word -> "b010".U(3.W)
     )
   )
   fetch_port.w.last := true.B
 
-  val no_pending_memory_access =
-    (should_mem_access_r && has_r) || (should_mem_access_w && has_b) || (!should_mem_access_r && !should_mem_access_w)
-
-  conf.rd_id := in.bits.controls.rd
-  conf.rd_valid := has_signal && in.bits.rd_valid
-  conf.csr_dest_valid := has_signal && in.bits.itype.is_csrop
-  conf.csr_id := in.bits.controls.csrd
-  conf.interruption := in.bits.controls.interruption
-  conf.ok_to_forward_rd := has_r || !in.bits.controls.is_gpr_wdata_from_ram
-  conf.rd_data := out.bits.write_info.gpr_wdata
-
-  out.bits.rd_valid := in.bits.rd_valid
-  out.bits.controls.is_ebreak := in.bits.controls.is_ebreak
-  out.bits.controls.interruption := in.bits.controls.interruption
-  out.bits.itype := in.bits.itype
-  out.valid := has_signal && no_pending_memory_access
-  in.ready := no_pending_memory_access
+  out.valid := has_signal && ((should_mem_access_r && has_r) || (should_mem_access_w && has_b) || (!should_mem_access_r && !should_mem_access_w))
+  in.ready := out.ready
   block(AXIAssertLayer) {
     check_signal_stable(
       fetch_port.ar.ready,

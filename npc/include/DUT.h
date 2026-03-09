@@ -17,8 +17,7 @@ static constexpr std::array<std::string, 32> gpr_names = {
 #define gprname(X)                                                             \
   rootp->npc_top__DOT__cpu__DOT__gpr__DOT__register_bank_regs_##X##_r
 
-class Dut {
-public:
+struct Dut {
   Dut(VerilatedContext *contextp) : sim_time{0} {
     top = std::make_unique<Vnpc_top>(contextp);
     if (config.use_waveform) {
@@ -53,7 +52,6 @@ public:
   }
 
   void step_one_inst() {}
-  vluint64_t getSimTime() { return sim_time; }
 
   uint32_t getPC() { return top->rootp->npc_top__DOT__cpu__DOT__pc; }
   uint32_t getGPR(int idx) {
@@ -143,7 +141,6 @@ public:
       m_trace->close();
   }
 
-private:
   vluint64_t sim_time;
   std::unique_ptr<Vnpc_top> top;
   std::unique_ptr<VerilatedVcdC> m_trace;

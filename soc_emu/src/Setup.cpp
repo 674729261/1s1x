@@ -9,17 +9,11 @@ void register_argparse(argparse::ArgumentParser &program) {
       .required();
   program.add_argument("-l", "--log").help("The program image file");
   program.add_argument("-b", "--batch").help("Use batch mode").flag();
-  program.add_argument("--nr_icacheline")
-      .help("Number of icache lines (2's pow)")
+  program.add_argument("--nr_cacheline")
+      .help("Number of cache lines (2's pow)")
       .scan<'u', unsigned>();
-  program.add_argument("--nr_icachesize")
-      .help("Number of words in each icache line (2's pow)")
-      .scan<'u', unsigned>();
-  program.add_argument("--nr_dcacheline")
-      .help("Number of dcache lines (2's pow)")
-      .scan<'u', unsigned>();
-  program.add_argument("--nr_dcachesize")
-      .help("Number of words in each dcache line (2's pow)")
+  program.add_argument("--nr_cachesize")
+      .help("Number of words in each cache line (2's pow)")
       .scan<'u', unsigned>();
 }
 
@@ -49,17 +43,13 @@ Config setup(argparse::ArgumentParser &program) {
 
   ret.image_path = program.get("--image");
   ret.batch_mode = program.get<bool>("--batch");
-  ret.nr_icachelines_2pow = program.get<unsigned>("--nr_icacheline");
-  ret.nr_icacheline_words_2pow = program.get<unsigned>("--nr_icachesize");
-  ret.nr_dcachelines_2pow = program.get<unsigned>("--nr_dcacheline");
-  ret.nr_dcacheline_words_2pow = program.get<unsigned>("--nr_dcachesize");
+  ret.nr_cachelines_2pow = program.get<unsigned>("--nr_cacheline");
+  ret.nr_cacheline_words_2pow = program.get<unsigned>("--nr_cachesize");
+
   spdlog::info("Image path  : {}", ret.image_path);
-  spdlog::info("Instruction cacheline count  : 2^{}", ret.nr_icachelines_2pow);
-  spdlog::info("Word count in each icacheline  : 2^{}",
-               ret.nr_icacheline_words_2pow);
-  spdlog::info("Data cacheline count  : 2^{}", ret.nr_dcachelines_2pow);
-  spdlog::info("Word count in each dcacheline  : 2^{}",
-               ret.nr_dcacheline_words_2pow);
+  spdlog::info("Cacheline count  : 2^{}", ret.nr_cachelines_2pow);
+  spdlog::info("Word count in eachcacheline  : 2^{}",
+               ret.nr_cacheline_words_2pow);
 
   return ret;
 }

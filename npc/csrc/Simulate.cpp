@@ -67,17 +67,18 @@ bool check_watchers() {
   bool ret = false;
   for (Expr::Expression &w : watchers) {
     auto result = w.eval();
-    if (!result || result.value() != w.last_value) {
+    if (!result.value.has_value() || result.value.value() != w.last_value) {
       ret = true;
-      std::string old =
-          (w.last_value ? std::format("{:#010x}", w.last_value.value())
-                        : "Error");
-      std::string now =
-          (result ? std::format("{:#010x}", result.value()) : "Error");
+      std::string old = (w.last_value.has_value()
+                             ? std::format("{:#010x}", w.last_value.value())
+                             : "Error");
+      std::string now = (result.value.has_value()
+                             ? std::format("{:#010x}", result.value.value())
+                             : "Error");
       spdlog::info("Watcher {} changed from {} to {} at PC={:#010x}", w.display,
                    old, now, dut->getPC());
     }
-    w.last_value = result;
+    w.last_value = result.value;
   }
   return ret;
 }
@@ -85,15 +86,15 @@ bool check_watchers() {
 bool check_difftest() {
   bool ret = false;
   for (int i = 0; i < 16; i++) {
-    if (dut->getGPR(i) != ref->getGPR(i)) {
+    if (dut->getGPR(i) != ref->cpu.gpr[i]) {
       spdlog::error("gpr {} differs from ref : should be {:08x}, got {:08x}",
-                    gpr_names[i], ref->getGPR(i), dut->getGPR(i));
+                    gpr_names[i], ref->cpu.gpr[i], dut->getGPR(i));
       ret = true;
     }
   }
-  if (dut->getPC() != ref->getPC()) {
+  if (dut->getPC() != ref->cpu.pc) {
     spdlog::error("PC differs from ref : should be {:08x}, got {:08x}",
-                  ref->getPC(), dut->getPC());
+                  ref->cpu.pc, dut->getPC());
     ret = true;
   }
 
@@ -221,6 +222,7 @@ void monitor_loop() {
 }
 
 int simulate() {
+  // init_mrom(config.image_path);
   init_mem(config.image_path);
   if (config.ftracer)
     init_sym_table(config.elf_path);
@@ -262,6 +264,9 @@ int simulate() {
                   performance_statistics.simulation_time);
   if (config.enable_audio)
     SDL_CloseAudio();
+  dut->print_all_gpr();
+  if (config.itracer > 0)
+    instRingBuffer->display();
 
   return result;
 }

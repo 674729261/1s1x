@@ -71,7 +71,7 @@ extern "C" uint32_t mem_read(uint32_t raddr) {
                                       raddr);
     }
   } else {
-    log_and_throw<std::logic_error>("Reading from illegal address : {:#010x}",
+    log_and_throw<std::logic_error>("Reading from illegal address : : {:#010x}",
                                     raddr);
   }
 }
@@ -143,6 +143,7 @@ extern "C" void mem_write(uint32_t waddr, uint32_t wmask, uint32_t wdata) {
     } else if (offset >= AUDIO_BF_OFFSET &&
                offset < AUDIO_BF_OFFSET + AUDIO_BF_LEN) {
       // in audio buffer
+
       size_t SoundBufferOffset = (offset - AUDIO_BF_OFFSET) / sizeof(uint32_t);
       SDL_LockAudio();
       write_mask(

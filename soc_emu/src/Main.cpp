@@ -18,12 +18,12 @@ int simulate(Config config) {
   ref.reset();
 
   auto start_time = std::chrono::steady_clock::now();
-  while (!ref.isHalt()) {
+  while (!ref.is_halt) {
     ref.step();
   }
   auto end_time = std::chrono::steady_clock::now();
 
-  if (ref.getGPR(10) == 0) {
+  if (ref.cpu.gpr[10] == 0) {
     spdlog::info("HIT GOOD TRAP");
   } else {
     spdlog::warn("HIT BAD TRAP");
@@ -34,14 +34,9 @@ int simulate(Config config) {
       std::chrono::floor<std::chrono::milliseconds>(end_time - start_time);
   spdlog::info("Total simulation time : {:%Hh %Mm %Ss}", elapsed_ms);
   spdlog::info("Total instruction count : {}", ref.instrCount());
-  spdlog::info("Total icache hit count : {}", ref.getICacheHit());
-  spdlog::info("ICache hit rate : {:.3f}",
-               static_cast<double>(ref.getICacheHit()) / ref.instrCount());
-  spdlog::info("Total data fetch count : {}", ref.getDataFetchCount());
-  spdlog::info("Total dcache hit count : {}", ref.getDCacheHit());
-  spdlog::info("DCache hit rate : {:.3f}",
-               static_cast<double>(ref.getDCacheHit()) /
-                   ref.getDataFetchCount());
+  spdlog::info("Total cache hit count : {}", ref.cache_hit);
+  spdlog::info("Cache hit rate : {:.3f}",
+               static_cast<double>(ref.cache_hit) / ref.instrCount());
   spdlog::info("Simulation speed : {:.2f} insts/s",
                1000 * static_cast<double>(ref.instrCount()) /
                    elapsed_ms.count());
