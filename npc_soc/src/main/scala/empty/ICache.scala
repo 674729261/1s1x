@@ -38,6 +38,7 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
     val avalid = Input(Bool())
     val aready = Output(Bool())
     val rdata = Output(UInt(32.W))
+    val rpc = Output(UInt(32.W))
     val timestamp_res = Output(UInt(3.W))
     val rvalid = Output(Bool())
     val rready = Input(Bool())
@@ -79,6 +80,7 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
   val in_cache = should_cache && valid_flags(
     input_cache_index
   ) && (cache_rdata.tag === input_tag)
+  io.rpc := addr_r
 
   val out_ar = RegInit(false.B)
   val has_r = RegInit(false.B)

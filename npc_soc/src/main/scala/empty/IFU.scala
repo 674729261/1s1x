@@ -54,6 +54,8 @@ class IFU(init_pc: UInt) extends Module {
 
   val inst_reg =
     RegEnable(icache.io.rdata, cache_rfire)
+  val inst_rpc =
+    RegEnable(icache.io.rpc, cache_rfire)
   fetch_pc := MuxCase(
     fetch_pc,
     Seq(
@@ -69,6 +71,6 @@ class IFU(init_pc: UInt) extends Module {
   out.valid := has_inst
 
   out.bits.inst := inst_reg
-  out.bits.pc := fetch_pc
+  out.bits.pc := inst_rpc
 
 }
