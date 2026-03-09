@@ -19,7 +19,8 @@ class IFU(init_pc: UInt) extends Module {
   val icache = Module(new ICache(5, 2))
   val has_inst_r = RegInit(Bool(), false.B)
 
-  val fetch_pc = RegInit(UInt(32.W), init_pc)
+  val fetch_pc_r = RegInit(UInt(32.W), init_pc)
+  val fetch_pc = Mux(in.flush_valid, in.exu_dnpc, fetch_pc_r)
   val out = IO(DecoupledIO(new MessageIFU2IDU))
   val cache_afire = icache.io.avalid && icache.io.aready
   val cache_rfire = icache.io.rvalid && icache.io.rready
@@ -27,7 +28,7 @@ class IFU(init_pc: UInt) extends Module {
   val timestamp_r = RegInit(UInt(3.W), 0.U(3.W))
   val timestamp = Mux(in.flush_valid, timestamp_r + 1.U(3.W), timestamp_r)
 
-  val pc_next_predicted = fetch_pc + 4.U(32.W)
+  val pc_next_predicted = fetch_pc_r + 4.U(32.W)
 
   val has_inst = has_inst_r && !in.flush_valid
 
@@ -52,13 +53,14 @@ class IFU(init_pc: UInt) extends Module {
     RegEnable(icache.io.rdata, cache_rfire)
   val inst_rpc =
     RegEnable(icache.io.rpc, cache_rfire)
-  fetch_pc := MuxCase(
-    fetch_pc,
+  fetch_pc_r := MuxCase(
+    fetch_pc_r,
     Seq(
       (in.flush_valid) -> in.exu_dnpc,
       (cache_afire) -> pc_next_predicted
     )
   )
+
   timestamp_r := MuxCase(
     timestamp_r,
     Seq(in.flush_valid -> (timestamp_r + 1.U(3.W)))
