@@ -32,11 +32,7 @@ class IFU(init_pc: UInt) extends Module {
   val has_inst = has_inst_r && !in.flush_valid
 
   fetch_port <> icache.fetch_port
-  icache.io.addr := Mux(
-    has_inst,
-    pc_next_predicted,
-    fetch_pc
-  )
+  icache.io.addr := fetch_pc
   icache.io.timestamp_req := timestamp
   icache.io.avalid := true.B
   icache.io.rready := out.fire || !has_inst
@@ -59,8 +55,8 @@ class IFU(init_pc: UInt) extends Module {
   fetch_pc := MuxCase(
     fetch_pc,
     Seq(
-      (cache_rfire) -> pc_next_predicted,
-      (in.flush_valid) -> in.exu_dnpc
+      (in.flush_valid) -> in.exu_dnpc,
+      (cache_rfire) -> pc_next_predicted
     )
   )
   timestamp_r := MuxCase(
