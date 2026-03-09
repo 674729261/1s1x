@@ -3,12 +3,20 @@ import chisel3._
 import chisel3.util._
 import chisel3.layer.block
 
+class ControlSignalsLSU extends Bundle {
+  val is_csr_visit = (Bool())
+  val is_gpr_wen = (Bool())
+  val rd = UInt(5.W)
+  val csrd = UInt(12.W)
+  val is_ebreak = Bool()
+  val interruption = Bool()
+}
 class MessageLSU2WBU extends Bundle {
   val pc = (UInt(32.W))
   val inst = (UInt(32.W))
-  val controls = (new ControlSignals)
-  val itype = (new InstType)
+  val controls = (new ControlSignalsLSU)
   val write_info = (new WriteInfo)
+  val itype = (new InstType)
   val rd_valid = (Bool())
 }
 
@@ -106,7 +114,6 @@ class LSU() extends Module {
   out.bits.pc := in.bits.pc
   out.bits.inst := in.bits.inst
   out.bits.controls := in.bits.controls
-  out.bits.itype := in.bits.itype
   out.bits.write_info := in.bits.write_info
   when(in.bits.controls.is_gpr_wdata_from_ram) {
     out.bits.write_info.gpr_wdata := rdata_latched
@@ -139,9 +146,16 @@ class LSU() extends Module {
   val no_pending_memory_access =
     (should_mem_access_r && has_r) || (should_mem_access_w && has_b) || (!should_mem_access_r && !should_mem_access_w)
 
-  conf.rd_id := in.bits.write_info.gpr_waddr
+  conf.rd_id := in.bits.controls.rd
   conf.rd_valid := has_signal && in.bits.rd_valid
+  conf.csr_dest_valid := has_signal && in.bits.itype.is_csrop
+  conf.csr_id := in.bits.controls.csrd
+  conf.interruption := in.bits.controls.interruption
+
   out.bits.rd_valid := in.bits.rd_valid
+  out.bits.controls.is_ebreak := in.bits.controls.is_ebreak
+  out.bits.controls.interruption := in.bits.controls.interruption
+  out.bits.itype := in.bits.itype
   out.valid := has_signal && no_pending_memory_access
   in.ready := no_pending_memory_access
   block(AXIAssertLayer) {

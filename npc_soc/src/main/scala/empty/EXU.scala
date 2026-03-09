@@ -3,28 +3,47 @@ import chisel3._
 import chisel3.util._
 
 class WriteInfo extends Bundle {
-  val gpr_waddr = (UInt(5.W))
-  val gpr_wdata = (UInt(32.W))
   val mem_word = (UInt(32.W))
-  val csr_addr = (UInt(12.W))
   val csr_wdata = (UInt(32.W))
+  val gpr_wdata = (UInt(32.W))
   val dnpc = (UInt(32.W))
   val alu_out = (UInt(32.W))
-
 }
 
+class ControlSignalsEXU extends Bundle {
+  val is_csr_visit = (Bool())
+
+  val is_gpr_wen = (Bool())
+  val is_gpr_wdata_from_ram = (Bool())
+
+  val is_ram_word = (Bool())
+  val is_ram_half = (Bool())
+  val is_ram_byte = (Bool())
+  val is_load_unsigned = (Bool())
+
+  val is_ram_valid = (Bool())
+  val is_ram_wen = (Bool())
+
+  val rd = UInt(5.W)
+  val csrd = UInt(12.W)
+  val is_ebreak = (Bool())
+  val interruption = (Bool())
+}
 class MessageEXU2LSU extends Bundle {
   val pc = (UInt(32.W))
   val inst = (UInt(32.W))
-  val controls = (new ControlSignals)
-  val itype = (new InstType)
+  val controls = (new ControlSignalsEXU)
   val write_info = (new WriteInfo)
   val rd_valid = (Bool())
+  val itype = new InstType
 }
 
 class ConflictInfoRD extends Bundle {
   val rd_valid = Output(Bool())
+  val csr_dest_valid = Output(Bool())
+  val interruption = Output(Bool())
   val rd_id = Output(UInt(5.W))
+  val csr_id = Output(UInt(12.W))
 }
 
 class EXU() extends Module {
@@ -34,11 +53,9 @@ class EXU() extends Module {
   val conf = IO(new ConflictInfoRD)
   val out_pc = IO(new Bundle {
     val dnpc = Output(UInt(32.W))
-    val valid = Output(Bool())
-    val ready = Input(Bool())
+    val ifu_flush_valid = Output(Bool())
 
     val idu_flush_valid = Output(Bool())
-    val idu_flush_ready = Input(Bool())
   })
 
   val has_signal = RegInit(Bool(), false.B)
@@ -52,12 +69,10 @@ class EXU() extends Module {
   out.bits.pc := in.bits.pc
   out.bits.inst := in.bits.inst
   out.bits.controls := in.bits.controls
-  out.bits.itype := in.bits.itype
-
   val alu = Module(new ALU(32))
   val branch = Module(new Branch(32))
 
-  alu.io.A := in.bits.sources.alu_a
+  alu.io.A := in.bits.sources.alu_a_or_mepc_or_mtvec
   alu.io.B := in.bits.sources.alu_b
   alu.io.controls := in.bits.controls.alu_controls
 
@@ -65,9 +80,7 @@ class EXU() extends Module {
 
   branch.io.A := in.bits.sources.src1
   branch.io.B := in.bits.sources.src2
-  branch.io.funct3 := in.bits.fields.funct3
-
-  out.bits.write_info.gpr_waddr := in.bits.fields.rd
+  branch.io.funct3 := in.bits.controls.bra_funct3
 
   val snpc = in.bits.pc + 4.U(32.W)
 
@@ -75,7 +88,7 @@ class EXU() extends Module {
     Seq(
       // in.bits.controls.is_gpr_wdata_from_ram -> fetch_port_in.bits.mem_rdata,
       in.bits.controls.is_gpr_wdata_from_snpc -> snpc,
-      in.bits.controls.is_gpr_wdata_from_imm -> in.bits.fields.imm,
+      in.bits.controls.is_gpr_wdata_from_imm -> in.bits.sources.imm,
       in.bits.controls.is_gpr_wdata_from_alu -> alu.io.out,
       in.bits.controls.is_gpr_wdata_from_csr -> in.bits.sources.csr
     )
@@ -87,47 +100,37 @@ class EXU() extends Module {
     in.bits.sources.src1 | in.bits.sources.csr,
     in.bits.sources.src1
   )
-  out.bits.write_info.csr_addr := in.bits.fields.csr
 
   val should_flush = (snpc =/= out_pc.dnpc)
-  val should_branch = in.bits.itype.is_branch && branch.io.jump
+  val should_branch = in.bits.controls.is_branch && branch.io.jump
 
   out_pc.dnpc := MuxCase(
     snpc,
     Seq(
       should_branch -> alu.io.out,
-      in.bits.itype.is_jal -> alu.io.out,
-      in.bits.itype.is_jalr -> alu.io.out,
-      in.bits.itype.is_ecall -> in.bits.sources.mtvec,
-      in.bits.itype.is_mret -> in.bits.sources.mepc
+      in.bits.controls.is_dnpc_jal_or_jalr -> alu.io.out,
+      in.bits.controls.is_dnpc_csr_jump -> in.bits.sources.alu_a_or_mepc_or_mtvec
     )
   )
 
-  conf.rd_id := in.bits.fields.rd
+  out.bits.controls.is_ebreak := in.bits.controls.is_ebreak
+  out.bits.controls.interruption := in.bits.controls.interruption
+  conf.rd_id := in.bits.controls.rd
   conf.rd_valid := has_signal && in.bits.rd_valid
+  conf.csr_dest_valid := has_signal && in.bits.controls.is_csr_visit
+  conf.csr_id := in.bits.controls.csrd
+  conf.interruption := in.bits.itype.is_ecall
+
+  out.bits.itype := in.bits.itype
   out.bits.rd_valid := in.bits.rd_valid
   out.valid := has_signal
+  val is_first_cycle = RegInit(Bool(), false.B)
 
-  val ifu_dnpc_fire = out_pc.ready && out_pc.valid
-  val has_ifu_dnpc = RegInit(Bool(), false.B)
+  is_first_cycle := in.fire
 
-  has_ifu_dnpc := MuxCase(
-    has_ifu_dnpc,
-    Seq(
-      ifu_dnpc_fire -> true.B,
-      in.fire -> false.B
-    )
-  )
-
-  val idu_flush_fire = out_pc.idu_flush_ready && out_pc.idu_flush_valid
-  val has_idu_flush = RegInit(Bool(), false.B)
-  has_idu_flush := MuxCase(
-    has_idu_flush,
-    Seq(idu_flush_fire -> true.B, in.fire -> false.B)
-  )
   out.bits.write_info.dnpc := out_pc.dnpc
-  out_pc.valid := (should_flush && !has_ifu_dnpc)
-  out_pc.idu_flush_valid := (should_flush && !has_idu_flush)
+  out_pc.ifu_flush_valid := (should_flush && is_first_cycle)
+  out_pc.idu_flush_valid := (should_flush && is_first_cycle)
 
-  in.ready := (out.fire || !has_signal) && ((has_idu_flush && has_ifu_dnpc) || !should_flush)
+  in.ready := (out.fire || !has_signal)
 }
