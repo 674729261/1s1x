@@ -61,7 +61,14 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
 
   val addr_r = RegEnable(io.addr, ifu_afire)
   val timestamp_r = RegEnable(io.timestamp_req, ifu_afire)
-  val has_request_r = RegNext(ifu_afire, false.B)
+  val has_request_r = RegInit(Bool(), false.B)
+  has_request_r := MuxCase(
+    has_request_r,
+    Seq(
+      (ifu_afire && !ifu_rfire) -> true.B,
+      (!ifu_afire && ifu_rfire) -> false.B
+    )
+  )
 
   val input_tag = addr_r(31, linecount_2pow + linesize_2pow)
   val input_cache_index =
