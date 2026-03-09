@@ -69,7 +69,7 @@ $(SV_FILELIST): $(CHISELSRC)
 
 
 
-PROG ?= /home/shitful/1s1x/ysyx-workbench/am-kernels/tests/cpu-tests/build/fib-riscv32e-soc.bin
+PROG ?= /home/shitful/1s1x/ysyx-workbench/am-kernels/benchmarks/microbench/build/microbench-riscv32e-soc.bin
 TIME_STAMP := $(shell date +"%Y_%m_%d_%H_%M_%S")
 LOG_FILE ?= "log/$(TIME_STAMP).log"
 
