@@ -95,7 +95,7 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
     Cat(addr_r(31, linesize_2pow), 0.U(linesize_2pow.W)),
     addr_r
   )
-  fetch_port.ar.valid := has_request_r && !out_ar && !in_cache && !should_cache
+  fetch_port.ar.valid := has_request_r && !out_ar && (!in_cache || !should_cache)
   fetch_port.r.ready := out_ar && !has_r
 
   val axi_rdata_latched_next = Wire(Vec(words, UInt(32.W)))
