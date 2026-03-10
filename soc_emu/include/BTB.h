@@ -35,13 +35,12 @@ struct BTB {
     if (find_pos != btb_vector.end()) {
       if (find_pos->sat_cnt >= 2)
         predicted_target = find_pos->target;
-      if (target < pc)
-        find_pos->target = target;
+
     } else {
       if (target < pc)
-        btb_vector[btb_wptr] = {pc, target, 3};
+        btb_vector[btb_wptr] = {pc, target, 2};
       else
-        btb_vector[btb_wptr] = {pc, target, 0};
+        btb_vector[btb_wptr] = {pc, target, 1};
       find_pos = btb_vector.begin() + btb_wptr;
       btb_wptr = (btb_wptr + 1) % btb_vector.size();
     }

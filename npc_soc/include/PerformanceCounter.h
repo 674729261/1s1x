@@ -63,6 +63,7 @@ inline void display_performance(auto start_time, auto end_time) {
   spdlog::info("Total simulated instructions : {}", inst_count);
   spdlog::info("Total ifu events : {}", ifu_event);
   spdlog::info("Total icache hit events : {}", icache_hit_event);
+
   spdlog::info("Total lsu read events : {}", lsu_read_event);
   spdlog::info("Total exu events : {}", exu_event);
   spdlog::info("Total idu events : {}", idu_event);
@@ -90,6 +91,8 @@ inline void display_performance(auto start_time, auto end_time) {
   spdlog::info("---------------------------------------------------");
   spdlog::info("{:35} |      {}", "Total", sum_recorded_inst);
   spdlog::info("---------------------------------------------------");
+  spdlog::info("Total icache hit rate : {:.3f}",
+               static_cast<double>(icache_hit_event) / sum_recorded_inst);
 
   spdlog::info("Total simulated clock periods : {}", clock_count);
   spdlog::info("Total simulated clock periods outsize flash: {}",

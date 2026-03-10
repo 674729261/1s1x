@@ -150,8 +150,8 @@ class EXU() extends Module {
   btb.target := alu.io.out
   btb.init_cnt := Mux(
     in.bits.inst(31) || in.bits.itype.is_jal,
-    3.U(2.W),
-    0.U(2.W)
+    2.U(2.W),
+    1.U(2.W)
   )
   btb.is_jump_taken := branch.io.jump || in.bits.itype.is_jal
 
