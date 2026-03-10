@@ -84,6 +84,7 @@ class ControlSignals extends Bundle {
   val is_branch = Bool()
   val is_dnpc_jal_or_jalr = Bool()
   val is_dnpc_csr_jump = Bool()
+  val is_dnpc_snpc = Bool()
 
   val is_ebreak = Bool()
   val interruption = Bool()
@@ -261,6 +262,7 @@ object decodeInstControlSignal {
     ret.is_branch := it.is_branch
     ret.is_dnpc_jal_or_jalr := it.is_jal || it.is_jalr
     ret.is_dnpc_csr_jump := it.is_ecall || it.is_mret
+    ret.is_dnpc_snpc := !ret.is_branch && !ret.is_dnpc_jal_or_jalr && !ret.is_dnpc_csr_jump
     ret.is_ebreak := it.is_ebreak
     ret.interruption := it.is_ebreak || it.is_ecall
     return ret
@@ -287,8 +289,6 @@ class MessageIDU2EXU extends Bundle {
   val sources = (new Operands)
 
   val rd_valid = (Bool())
-  val is_call = (Bool())
-  val is_ret = (Bool())
 }
 
 class ConflictInfoRS extends Bundle {
@@ -399,12 +399,7 @@ class IDU() extends Module {
     ~alu_b_raw,
     alu_b_raw
   )
-  out.bits.is_call := control_signals.is_dnpc_jal_or_jalr && (fields.rd === 1.U(
-    5.W
-  ))
-  out.bits.is_ret := inst_type.is_jalr && (fields.rd === 0.U(
-    5.W
-  )) && (fields.rs1 === 1.U(5.W))
+
   out.bits.itype := inst_type
   conf.rs1_id := fields.rs1
   conf.rs2_id := fields.rs2

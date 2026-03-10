@@ -44,7 +44,9 @@ int simulate(Config config) {
                    ref.getDataFetchCount());
   spdlog::info("Total PC predict miss count : {}", ref.getPCPredictMiss());
   spdlog::info("Total PC predict hit count : {}", ref.getPCPredictHit());
-
+  spdlog::info("PC predict accuracy : {:.3f}",
+               static_cast<double>(ref.getPCPredictHit()) /
+                   (ref.getPCPredictMiss() + ref.getPCPredictHit()));
   spdlog::info("Simulation speed : {:.2f} insts/s",
                1000 * static_cast<double>(ref.instrCount()) /
                    elapsed_ms.count());

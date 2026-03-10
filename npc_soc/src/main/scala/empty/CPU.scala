@@ -101,6 +101,8 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
   nxtpc_predictor.io.wen := exu.btb.wen
   nxtpc_predictor.io.write_pc := exu.btb.write_pc
   nxtpc_predictor.io.write_target := exu.btb.target
+  nxtpc_predictor.io.is_jump_taken := exu.btb.is_jump_taken
+  nxtpc_predictor.io.init_cnt := exu.btb.init_cnt
 
   StageConnect(ifu.out, idu.in)
   StageConnect(idu.out, exu.in)
@@ -145,6 +147,7 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
     data_exu
   ) =
     check_conflict(idu.conf, exu.conf)
+
   val (
     conf1_lsu,
     fwd1_lsu,
@@ -200,19 +203,17 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
     )
   )
   idu.conf.forward_data_src1 := MuxCase(
-    "hdeadbeef".U(32.W),
+    data_wbu,
     Seq(
       conf1_exu -> data_exu,
-      conf1_lsu -> data_lsu,
-      conf1_wbu -> data_wbu
+      conf1_lsu -> data_lsu
     )
   )
   idu.conf.forward_data_src2 := MuxCase(
-    "hdeadbeef".U(32.W),
+    data_wbu,
     Seq(
       conf2_exu -> data_exu,
-      conf2_lsu -> data_lsu,
-      conf2_wbu -> data_wbu
+      conf2_lsu -> data_lsu
     )
   )
 

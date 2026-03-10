@@ -7,6 +7,7 @@ import ujson.Arr
 class BTBLine(tag_width: Int) extends Bundle {
   val tag = UInt(tag_width.W)
   val target = UInt(32.W)
+  val saturate_count = UInt(2.W)
 }
 
 class NextPCPredict(size_2pow: Int, tag_from: Int, tag_to: Int) extends Module {
@@ -15,6 +16,8 @@ class NextPCPredict(size_2pow: Int, tag_from: Int, tag_to: Int) extends Module {
     val predicted = Output(UInt(32.W))
     val write_pc = Input(UInt(32.W))
     val write_target = Input(UInt(32.W))
+    val init_cnt = Input(UInt(2.W))
+    val is_jump_taken = Input(Bool())
     val wen = Input(Bool())
   })
   val nr_lines = (1 << size_2pow)
@@ -37,12 +40,16 @@ class NextPCPredict(size_2pow: Int, tag_from: Int, tag_to: Int) extends Module {
   }
   val read_hit = compare_results.reduce(_ || _)
   val write_hit = compare_results_write.reduce(_ || _)
-  val onehot_seq_read = Array.ofDim[(Bool, UInt)](nr_lines)
+  val onehot_seq_read = Array.ofDim[(Bool, BTBLine)](nr_lines)
   for (i <- 0 until nr_lines) {
-    onehot_seq_read(i) = (compare_results(i) -> content(i).target)
+    onehot_seq_read(i) = (compare_results(i) -> content(i))
   }
-  val read_target = Mux1H(onehot_seq_read)
-  io.predicted := Mux(read_hit, read_target, io.pc + 4.U)
+  val read_item = Mux1H(onehot_seq_read)
+  io.predicted := Mux(
+    read_hit && read_item.saturate_count >= 2.U,
+    read_item.target,
+    io.pc + 4.U
+  )
 
   val write_ptr_nxt = Wire(UInt(size_2pow.W))
   val write_ptr =
@@ -52,11 +59,25 @@ class NextPCPredict(size_2pow: Int, tag_from: Int, tag_to: Int) extends Module {
   when(io.wen) {
     when(write_hit) {
       for (i <- 0 until nr_lines) {
-        when(compare_results_write(i)) { content(i).target := io.write_target }
+        when(compare_results_write(i)) {
+          content(i).target := io.write_target
+          content(i).saturate_count := MuxLookup(
+            content(i).saturate_count,
+            io.init_cnt
+          )(
+            Seq(
+              0.U -> Mux(io.is_jump_taken, 1.U, 0.U),
+              1.U -> Mux(io.is_jump_taken, 2.U, 0.U),
+              2.U -> Mux(io.is_jump_taken, 3.U, 1.U),
+              3.U -> Mux(io.is_jump_taken, 3.U, 2.U)
+            )
+          )
+        }
       }
     }.otherwise {
       content(write_ptr).tag := write_tag
       content(write_ptr).target := io.write_target
+      content(write_ptr).saturate_count := io.init_cnt
       valid_flags(write_ptr) := true.B
     }
   }
