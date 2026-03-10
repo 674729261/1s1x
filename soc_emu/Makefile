@@ -49,8 +49,7 @@ ICACHE_N ?= 2
 ICACHE_M ?= 3
 DCACHE_N ?= 3
 DCACHE_M ?= 4
-BTB_N ?= 2
-JTB_N ?= 2
+BTB_N ?= 3
 
 
 $(LOG_DIR):
@@ -60,7 +59,7 @@ sim: build $(LOG_DIR)
 	$(MDIR)/soc_emu --image $(BIN) \
 	--nr_icacheline $(ICACHE_N) --nr_icachesize $(ICACHE_M) \
 	--nr_dcacheline $(DCACHE_N) --nr_dcachesize $(DCACHE_M) \
-	--nr_btbsize $(BTB_N) --nr_jtbsize $(JTB_N) \
+	--nr_btbsize $(BTB_N) \
 	--log $(LOG_FILE)
 
 clean:

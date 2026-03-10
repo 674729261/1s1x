@@ -13,17 +13,17 @@ struct BTB {
     nr_size_b_2pow = nr_size_b_2pow__;
     nr_size_j_2pow = nr_size_j_2pow__;
     btb_vector.resize(1 << nr_size_b_2pow);
-    jtb_vector.resize(1 << nr_size_j_2pow);
+    btb_vector.resize(1 << nr_size_j_2pow);
 
     reset();
   }
 
   void reset() {
     btb_wptr = 0;
-    jtb_wptr = 0;
+    btb_wptr = 0;
     miss_count = 0;
     std::ranges::fill(btb_vector, BTBItem{0, 0});
-    std::ranges::fill(jtb_vector, BTBItem{0, 0});
+    std::ranges::fill(btb_vector, BTBItem{0, 0});
   }
 
   struct BTBItem {
@@ -35,12 +35,13 @@ struct BTB {
         btb_vector, [pc](const BTBItem &item) { return item.tag == pc; });
     uint32_t predicted_target = pc + 4;
     if (find_pos != btb_vector.end()) {
-      if (target < pc)
-        predicted_target = find_pos->target;
-    } else {
+      predicted_target = find_pos->target;
+      find_pos->target = target;
+    } else if (target < pc) {
       btb_vector[btb_wptr] = {pc, target};
       btb_wptr = (btb_wptr + 1) % btb_vector.size();
     }
+
     uint32_t real_target = pc + 4;
     if (jump)
       real_target = target;
@@ -54,13 +55,13 @@ struct BTB {
 
   void predict_jal(uint32_t pc, uint32_t target) {
     auto find_pos = std::ranges::find_if(
-        jtb_vector, [pc](const BTBItem &item) { return item.tag == pc; });
+        btb_vector, [pc](const BTBItem &item) { return item.tag == pc; });
     uint32_t predicted_target = pc + 4;
-    if (find_pos != jtb_vector.end()) {
+    if (find_pos != btb_vector.end()) {
       predicted_target = find_pos->target;
     } else {
-      jtb_vector[jtb_wptr] = {pc, target};
-      jtb_wptr = (jtb_wptr + 1) % jtb_vector.size();
+      btb_vector[btb_wptr] = {pc, target};
+      btb_wptr = (btb_wptr + 1) % btb_vector.size();
     }
     if (predicted_target != target)
       miss_count++;
@@ -81,7 +82,5 @@ struct BTB {
   int nr_size_b_2pow;
   int nr_size_j_2pow;
   std::vector<BTBItem> btb_vector;
-  std::vector<BTBItem> jtb_vector;
   int btb_wptr;
-  int jtb_wptr;
 };

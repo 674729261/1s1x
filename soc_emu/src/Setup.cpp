@@ -60,7 +60,6 @@ Config setup(argparse::ArgumentParser &program) {
   ret.nr_dcachelines_2pow = program.get<unsigned>("--nr_dcacheline");
   ret.nr_dcacheline_words_2pow = program.get<unsigned>("--nr_dcachesize");
   ret.nr_btbsize_2pow = program.get<unsigned>("--nr_btbsize");
-  ret.nr_jtbsize_2pow = program.get<unsigned>("--nr_jtbsize");
 
   spdlog::info("Image path  : {}", ret.image_path);
   spdlog::info("Instruction cacheline count  : 2^{}", ret.nr_icachelines_2pow);
