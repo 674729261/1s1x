@@ -73,17 +73,12 @@ class EXU() extends Module {
   out.bits.inst := in.bits.inst
   out.bits.controls := in.bits.controls
   val alu = Module(new ALU(32))
-  val branch = Module(new Branch(32))
 
   alu.io.A := in.bits.sources.alu_a_or_mepc_or_mtvec
   alu.io.B := in.bits.sources.alu_b
   alu.io.controls := in.bits.controls.alu_controls
 
   out.bits.write_info.alu_out := alu.io.out
-
-  branch.io.A := in.bits.sources.src1
-  branch.io.B := in.bits.sources.src2
-  branch.io.funct3 := in.bits.controls.bra_funct3
 
   val snpc = in.bits.pc + 4.U(32.W)
 
@@ -105,7 +100,8 @@ class EXU() extends Module {
   )
 
   val should_flush = (in.bits.nxtpc_predicted =/= out_pc.dnpc)
-  val should_branch = in.bits.controls.is_branch && branch.io.jump
+  val should_branch =
+    in.bits.controls.is_branch && in.bits.controls.should_branch_if_is_branch
 
   out_pc.dnpc := MuxCase(
     snpc,

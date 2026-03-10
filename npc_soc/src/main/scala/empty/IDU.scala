@@ -79,9 +79,8 @@ class ControlSignals extends Bundle {
   val rd = UInt(5.W)
   val csrd = UInt(12.W)
 
-  val bra_funct3 = UInt(3.W)
-
   val is_branch = Bool()
+  val should_branch_if_is_branch = Bool()
   val is_dnpc_jal_or_jalr = Bool()
   val is_dnpc_csr_jump = Bool()
 
@@ -193,7 +192,8 @@ object decodeInstControlSignal {
       inst: UInt,
       it: InstType,
       fields: InstFields,
-      imm_type: ImmType
+      imm_type: ImmType,
+      branch_out: Bool
   ): ControlSignals = {
     val ret = Wire(new ControlSignals)
     val is_funct3_zero = (fields.funct3 === "b000".U(3.W))
@@ -254,8 +254,7 @@ object decodeInstControlSignal {
 
     ret.is_csr_masked := fields.funct3(1)
 
-    ret.bra_funct3 := fields.funct3
-
+    ret.should_branch_if_is_branch := branch_out
     ret.rd := fields.rd
     ret.csrd := fields.csr
     ret.is_branch := it.is_branch
@@ -349,6 +348,8 @@ class IDU() extends Module {
   out.bits.pc := in.bits.pc
   out.bits.controls := control_signals
 
+  val branch = Module(new Branch(32))
+
   imm_type := decodeImmType(in.bits.inst, inst_type)
   fields := decodeInstFields(in.bits.inst, imm_type)
   inst_type := decodeInstType(in.bits.inst, fields)
@@ -356,7 +357,8 @@ class IDU() extends Module {
     in.bits.inst,
     inst_type,
     fields,
-    imm_type
+    imm_type,
+    branch.io.jump
   )
 
   fetch_port_out.csr_raddr := fields.csr
@@ -366,6 +368,9 @@ class IDU() extends Module {
     Mux(conf.do_forward_src1, conf.forward_data_src1, fetch_port_in.gpr_rdata1)
   val gpr_rdata2 =
     Mux(conf.do_forward_src2, conf.forward_data_src2, fetch_port_in.gpr_rdata2)
+  branch.io.A := gpr_rdata1
+  branch.io.B := gpr_rdata2
+  branch.io.funct3 := fields.funct3
   out.bits.sources.src1 := gpr_rdata1
   out.bits.sources.src2 := gpr_rdata2
   out.bits.sources.imm := fields.imm
@@ -396,6 +401,7 @@ class IDU() extends Module {
     ~alu_b_raw,
     alu_b_raw
   )
+
   out.bits.itype := inst_type
   conf.rs1_id := fields.rs1
   conf.rs2_id := fields.rs2
