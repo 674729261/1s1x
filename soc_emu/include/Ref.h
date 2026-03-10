@@ -244,7 +244,7 @@ inline void Ref::step() {
            btb.predict_jal(cpu.pc, target));
   try_this("??????? ????? ????? 000 ????? 11001 11", jalr,
            dnpc = (cpu.gpr[d.src1_id] + d.imm_I) & (~0x1u);
-           cpu.gpr[d.dst_id] = cpu.pc + 4);
+           cpu.gpr[d.dst_id] = cpu.pc + 4; btb.predict_jalr(cpu.pc, dnpc));
 
   try_this("??????? ????? ????? 001 ????? 11000 11", bne,
            bool jump = cpu.gpr[d.src1_id] != cpu.gpr[d.src2_id];

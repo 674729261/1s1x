@@ -67,6 +67,12 @@ struct BTB {
     else
       hit_count++;
   }
+  void predict_jalr(uint32_t pc, uint32_t target) {
+    if (pc != target)
+      miss_count++;
+    else
+      hit_count++;
+  }
   unsigned long long getMissCount() { return miss_count; }
   unsigned long long getHitCount() { return hit_count; }
 
