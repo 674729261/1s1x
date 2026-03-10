@@ -12,6 +12,9 @@ class IFU(init_pc: UInt) extends Module {
   val in = IO(new Bundle {
     val exu_dnpc = Input(UInt(32.W))
     val flush_valid = Input(Bool())
+
+    // val btb_pc = Output(UInt(32.W))
+    // val btb_nxt_pc = Input(UInt(32.W))
   })
 
   val fetch_port = IO(new AXI)
@@ -35,7 +38,7 @@ class IFU(init_pc: UInt) extends Module {
   fetch_port <> icache.fetch_port
   icache.io.addr := fetch_pc
   icache.io.timestamp_req := timestamp
-  icache.io.avalid := true.B
+  icache.io.avalid := !in.flush_valid
   icache.io.rready := out.fire || !has_inst
 
   val cache_rfire_and_up_to_date =
@@ -56,11 +59,7 @@ class IFU(init_pc: UInt) extends Module {
   fetch_pc_r := MuxCase(
     fetch_pc_r,
     Seq(
-      (in.flush_valid) -> Mux(
-        cache_afire,
-        in.exu_dnpc + 4.U(32.W),
-        in.exu_dnpc
-      ),
+      (in.flush_valid) -> in.exu_dnpc,
       (cache_afire) -> pc_next_predicted
     )
   )
