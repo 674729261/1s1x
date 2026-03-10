@@ -49,7 +49,7 @@ ICACHE_N ?= 2
 ICACHE_M ?= 3
 DCACHE_N ?= 3
 DCACHE_M ?= 4
-BTB_N ?= 2
+BTB_N ?= 3
 JTB_N ?= 2
 
 
