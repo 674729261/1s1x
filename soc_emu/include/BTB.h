@@ -36,8 +36,10 @@ struct BTB {
     uint32_t predicted_target = pc + 4;
     if (find_pos != btb_vector.end()) {
       predicted_target = find_pos->target;
-      find_pos->target = target;
-    } else if (target < pc) {
+      if (target < pc)
+        find_pos->target = target;
+    }
+    if (find_pos == btb_vector.end() && target < pc) {
       btb_vector[btb_wptr] = {pc, target};
       btb_wptr = (btb_wptr + 1) % btb_vector.size();
     }
@@ -59,6 +61,7 @@ struct BTB {
     uint32_t predicted_target = pc + 4;
     if (find_pos != btb_vector.end()) {
       predicted_target = find_pos->target;
+      find_pos->target = target;
     } else {
       btb_vector[btb_wptr] = {pc, target};
       btb_wptr = (btb_wptr + 1) % btb_vector.size();
