@@ -17,6 +17,9 @@ struct Config {
   unsigned nr_icachelines_2pow;
   unsigned nr_dcacheline_words_2pow;
   unsigned nr_dcachelines_2pow;
+
+  unsigned nr_btbsize_2pow;
+  unsigned nr_jtbsize_2pow;
 };
 
 Config setup(argparse::ArgumentParser &program);
