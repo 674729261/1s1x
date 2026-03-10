@@ -162,8 +162,9 @@ void run(unsigned long long steps) {
       std::chrono::duration_cast<std::chrono::microseconds>(end_time -
                                                             start_time)
           .count();
-  show_efficiency(simulation_clocks_steped, simulation_instructions_steped,
-                  simulation_time_steped);
+  if (!config.batch_mode)
+    show_efficiency(simulation_clocks_steped, simulation_instructions_steped,
+                    simulation_time_steped);
   performance_statistics.simulation_instructions +=
       simulation_instructions_steped;
   performance_statistics.simulation_clocks += simulation_clocks_steped;
@@ -257,11 +258,11 @@ int simulate() {
 
   if (device_thread)
     device_thread->request_stop();
+
+  if (config.enable_audio)
+    SDL_CloseAudio();
   show_efficiency(performance_statistics.simulation_clocks,
                   performance_statistics.simulation_instructions,
                   performance_statistics.simulation_time);
-  if (config.enable_audio)
-    SDL_CloseAudio();
-
   return result;
 }
