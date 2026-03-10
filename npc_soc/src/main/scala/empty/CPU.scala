@@ -201,16 +201,14 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
       conf2_wbu -> fwd2_wbu
     )
   )
-  idu.conf.forward_data_src1 := MuxCase(
-    "hdeadbeef".U(32.W),
+  idu.conf.forward_data_src1 := Mux1H(
     Seq(
       conf1_exu -> data_exu,
       conf1_lsu -> data_lsu,
       conf1_wbu -> data_wbu
     )
   )
-  idu.conf.forward_data_src2 := MuxCase(
-    "hdeadbeef".U(32.W),
+  idu.conf.forward_data_src2 := Mux1H(
     Seq(
       conf2_exu -> data_exu,
       conf2_lsu -> data_lsu,
