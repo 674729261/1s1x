@@ -1,4 +1,4 @@
-NAME = bgeu
-SRCS = isa/rv32ui/bgeu.S
+NAME = lw
+SRCS = isa/rv32ui/lw.S
 INC_PATH += /home/shitful/1s1x/ysyx-workbench/am-kernels/tests/riscv-tests-am/env/p 	/home/shitful/1s1x/ysyx-workbench/am-kernels/tests/riscv-tests-am/isa/macros/scalar
 include /home/shitful/1s1x/ysyx-workbench/abstract-machine/Makefile
