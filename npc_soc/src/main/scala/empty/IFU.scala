@@ -43,7 +43,7 @@ class IFU(init_pc: UInt) extends Module {
   icache.io.timestamp_req := timestamp
   icache.io.avalid := !in.flush_valid
   icache.io.rready := out.fire || !has_inst
-  icache.io.rdiscard := (icache.io.timestamp_res === timestamp)
+
   val cache_rfire_and_up_to_date =
     cache_rfire && (icache.io.timestamp_res === timestamp)
 
