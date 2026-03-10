@@ -34,11 +34,13 @@ object ShouldCache {
 class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
   val io = IO(new Bundle {
     val addr = Input(UInt(32.W))
+    val predicted_nxtpc = Input(UInt(32.W))
     val timestamp_req = Input(UInt(3.W))
     val avalid = Input(Bool())
     val aready = Output(Bool())
     val rdata = Output(UInt(32.W))
     val rpc = Output(UInt(32.W))
+    val rnxtpc = Output(UInt(32.W))
     val timestamp_res = Output(UInt(3.W))
     val rvalid = Output(Bool())
     val rready = Input(Bool())
@@ -60,6 +62,7 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
 
   val addr_r = RegEnable(io.addr, ifu_afire)
   val timestamp_r = RegEnable(io.timestamp_req, ifu_afire)
+  val nxtpc_r = RegEnable(io.predicted_nxtpc, ifu_afire)
   val has_request_r = RegInit(Bool(), false.B)
   has_request_r := MuxCase(
     has_request_r,
@@ -141,7 +144,7 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
     ),
     axi_rdata_latched(words - 1)
   )
-
+  io.rnxtpc := nxtpc_r
   fetch_port.aw.id := "b0000".U(4.W)
   fetch_port.ar.id := "b0000".U(4.W)
   fetch_port.w.last := true.B
