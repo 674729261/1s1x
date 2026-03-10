@@ -12,7 +12,6 @@ class BTBLine(tag_width: Int) extends Bundle {
 class NextPCPredict(size_2pow: Int, tag_from: Int, tag_to: Int) extends Module {
   val io = IO(new Bundle {
     val pc = Input(UInt(32.W))
-    val inst = Input(UInt(32.W))
     val predicted = Output(UInt(32.W))
     val write_pc = Input(UInt(32.W))
     val write_target = Input(UInt(32.W))
@@ -40,8 +39,7 @@ class NextPCPredict(size_2pow: Int, tag_from: Int, tag_to: Int) extends Module {
     onehot_seq_read(i) = (compare_results(i) -> content(i).target)
   }
   val read_target = Mux1H(onehot_seq_read)
-  val predict_taken = io.inst(31)
-  io.predicted := Mux(read_hit && predict_taken, read_target, io.pc + 4.U)
+  io.predicted := Mux(read_hit, read_target, io.pc + 4.U)
 
   val write_ptr_nxt = Wire(UInt(size_2pow.W))
   val write_ptr =

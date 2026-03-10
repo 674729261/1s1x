@@ -104,7 +104,7 @@ class EXU() extends Module {
     in.bits.sources.src1
   )
 
-  val should_flush = (snpc =/= out_pc.dnpc)
+  val should_flush = (in.bits.nxtpc_predicted =/= out_pc.dnpc)
   val should_branch = in.bits.controls.is_branch && branch.io.jump
 
   out_pc.dnpc := MuxCase(
