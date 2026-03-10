@@ -150,10 +150,11 @@ class EXU() extends Module {
   btb.target := alu.io.out
 
   out.bits.write_info.dnpc := out_pc.dnpc
-  out_pc.ifu_flush_valid := (should_flush && is_first_cycle)
-  out_pc.idu_flush_valid := (should_flush && is_first_cycle)
+  val flush_high = (should_flush && is_first_cycle)
+  out_pc.ifu_flush_valid := flush_high
+  out_pc.idu_flush_valid := flush_high
 
-  in.ready := (out.fire || !has_signal)
+  in.ready := (out.fire || !has_signal) && !flush_high
 
   block(PerformanceCounterLayer) {
     val performancecounter_icache = Module(new PerformanceCounter_ICache)
