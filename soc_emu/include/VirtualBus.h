@@ -29,8 +29,6 @@ struct VirtualBus {
     if (check_range(sram_field)) {
       return sram[(addr & 0x00FFFFFF) >> 2];
     } else if (check_range(flash_field)) {
-      // spdlog::info("{:08x} {:08x}", (addr & 0x0FFFFFFF) >> 2,
-      //              flash_content.size());
       return flash_content[(addr & 0x0FFFFFFF) >> 2];
     } else if (check_range(uart_field)) {
       int internal_addr = (addr & 0xFFF);
