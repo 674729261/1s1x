@@ -18,11 +18,11 @@ static const char mainargs[MAINARGS_MAX_LEN] =
     TOSTRING(MAINARGS_PLACEHOLDER); // defined in CFLAGS
 
 void putch(char ch) {
-  uint8_t line_status = 0x00;
-  while (!(line_status & (1 << 5)))
-    line_status = inb(SERIAL_PORT + SERIAL_LSR_OFFSET);
+  // uint8_t line_status = 0x00;
+  // while (!(line_status & (1 << 5)))
+  //   line_status = inb(SERIAL_PORT + SERIAL_LSR_OFFSET);
 
-  outb(SERIAL_PORT, ch);
+  // outb(SERIAL_PORT, ch);
 }
 
 void halt(int code) {
