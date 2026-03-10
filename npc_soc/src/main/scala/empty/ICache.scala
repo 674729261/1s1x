@@ -113,7 +113,7 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
   val cache_wdata = Wire(new CacheLine(linesize_2pow, linecount_2pow))
   cache_wdata.data := axi_rdata_latched.asTypeOf(Vec(words, UInt(32.W)))
   cache_wdata.tag := input_tag
-  when(!in_cache && ifu_rfire && !io.rdiscard && should_cache) {
+  when(!in_cache && ifu_rfire && should_cache) {
     content.write(input_cache_index, cache_wdata)
     valid_flags(input_cache_index) := true.B
   }
