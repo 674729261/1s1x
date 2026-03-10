@@ -21,12 +21,6 @@ void register_argparse(argparse::ArgumentParser &program) {
   program.add_argument("--nr_dcachesize")
       .help("Number of words in each dcache line (2's pow)")
       .scan<'u', unsigned>();
-  program.add_argument("--nr_btbsize")
-      .help("Number of items in branch target buffer (2's pow)")
-      .scan<'u', unsigned>();
-  program.add_argument("--nr_jtbsize")
-      .help("Number of items in jal target buffer (2's pow)")
-      .scan<'u', unsigned>();
 }
 
 void register_logger(argparse::ArgumentParser &program) {
@@ -59,9 +53,6 @@ Config setup(argparse::ArgumentParser &program) {
   ret.nr_icacheline_words_2pow = program.get<unsigned>("--nr_icachesize");
   ret.nr_dcachelines_2pow = program.get<unsigned>("--nr_dcacheline");
   ret.nr_dcacheline_words_2pow = program.get<unsigned>("--nr_dcachesize");
-  ret.nr_btbsize_2pow = program.get<unsigned>("--nr_btbsize");
-  ret.nr_jtbsize_2pow = program.get<unsigned>("--nr_jtbsize");
-
   spdlog::info("Image path  : {}", ret.image_path);
   spdlog::info("Instruction cacheline count  : 2^{}", ret.nr_icachelines_2pow);
   spdlog::info("Word count in each icacheline  : 2^{}",
@@ -69,8 +60,6 @@ Config setup(argparse::ArgumentParser &program) {
   spdlog::info("Data cacheline count  : 2^{}", ret.nr_dcachelines_2pow);
   spdlog::info("Word count in each dcacheline  : 2^{}",
                ret.nr_dcacheline_words_2pow);
-  spdlog::info("Item count in branch target buffer : 2^{}",
-               ret.nr_btbsize_2pow);
 
   return ret;
 }

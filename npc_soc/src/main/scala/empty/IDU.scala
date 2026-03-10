@@ -279,7 +279,6 @@ class Operands extends Bundle {
 class MessageIDU2EXU extends Bundle {
   val pc = (UInt(32.W))
   val inst = (UInt(32.W))
-  val nxtpc_predicted = (UInt(32.W))
 
   val controls = (new ControlSignals)
   val itype = (new InstType)
@@ -372,7 +371,6 @@ class IDU() extends Module {
 
   out.bits.sources.csr := fetch_port_in.csr_rdata
   out.bits.inst := in.bits.inst
-  out.bits.nxtpc_predicted := in.bits.nxtpc_predicted
 
   val is_alu_a_pc = imm_type.is_B || imm_type.is_J || inst_type.is_auipc
   val is_alu_b_reg = imm_type.is_R

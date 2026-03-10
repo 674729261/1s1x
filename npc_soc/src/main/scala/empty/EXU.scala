@@ -54,11 +54,6 @@ class EXU() extends Module {
 
   val out = IO(DecoupledIO(new MessageEXU2LSU))
   val conf = IO(new ConflictInfoRD)
-  val btb = IO(new Bundle {
-    val write_pc = Output(UInt(32.W))
-    val target = Output(UInt(32.W))
-    val wen = Output(Bool())
-  })
   val out_pc = IO(new Bundle {
     val dnpc = Output(UInt(32.W))
     val ifu_flush_valid = Output(Bool())
@@ -109,7 +104,7 @@ class EXU() extends Module {
     in.bits.sources.src1
   )
 
-  val should_flush = (in.bits.nxtpc_predicted =/= out_pc.dnpc)
+  val should_flush = (snpc =/= out_pc.dnpc)
   val should_branch = in.bits.controls.is_branch && branch.io.jump
 
   out_pc.dnpc := MuxCase(
@@ -134,10 +129,9 @@ class EXU() extends Module {
   out.bits.itype := in.bits.itype
   out.bits.rd_valid := in.bits.rd_valid
   out.valid := has_signal
-  val is_first_cycle = RegNext(in.fire, false.B)
-  btb.wen := in.bits.controls.is_branch && in.bits.inst(31) && is_first_cycle
-  btb.write_pc := in.bits.pc
-  btb.target := alu.io.out
+  val is_first_cycle = RegInit(Bool(), false.B)
+
+  is_first_cycle := in.fire
 
   out.bits.write_info.dnpc := out_pc.dnpc
   out_pc.ifu_flush_valid := (should_flush && is_first_cycle)
