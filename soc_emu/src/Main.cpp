@@ -42,9 +42,6 @@ int simulate(Config config) {
   spdlog::info("DCache hit rate : {:.3f}",
                static_cast<double>(ref.getDCacheHit()) /
                    ref.getDataFetchCount());
-  spdlog::info("Total PC predict miss count : {}", ref.getPCPredictMiss());
-  spdlog::info("Total PC predict hit count : {}", ref.getPCPredictHit());
-
   spdlog::info("Simulation speed : {:.2f} insts/s",
                1000 * static_cast<double>(ref.instrCount()) /
                    elapsed_ms.count());
