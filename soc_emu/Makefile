@@ -42,14 +42,14 @@ $(OBJDIR):
 	mkdir -p $@
 
 TIME_STAMP := $(shell date +"%Y_%m_%d_%H_%M_%S")
-BIN ?= $(SOC_EMU_HOME)/images/microbench_test.bin
+BIN ?= $(SOC_EMU_HOME)/images/microbench_train.bin
 LOG_DIR ?= $(SOC_EMU_HOME)/logs
 LOG_FILE ?= $(LOG_DIR)/$(TIME_STAMP).log
 ICACHE_N ?= 2
 ICACHE_M ?= 3
 DCACHE_N ?= 3
 DCACHE_M ?= 4
-BTB_N ?= 3
+BTB_N ?= 2
 JTB_N ?= 2
 
 
