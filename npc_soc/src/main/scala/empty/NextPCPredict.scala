@@ -42,7 +42,8 @@ class NextPCPredict(size_2pow: Int, tag_from: Int, tag_to: Int) extends Module {
     onehot_seq_read(i) = (compare_results(i) -> content(i).target)
   }
   val read_target = Mux1H(onehot_seq_read)
-  io.predicted := Mux(read_hit, read_target, io.pc + 4.U)
+  // io.predicted := Mux(read_hit, read_target, io.pc + 4.U)
+  io.predicted := io.pc + 4.U
 
   val write_ptr_nxt = Wire(UInt(size_2pow.W))
   val write_ptr =
