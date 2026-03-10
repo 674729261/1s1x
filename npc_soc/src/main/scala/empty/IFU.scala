@@ -36,16 +36,16 @@ class IFU(init_pc: UInt) extends Module {
   val pc_next_predicted = in.btb_nxt_pc
 
   val has_inst = has_inst_r && !in.flush_valid
-
+  val should_discard = (icache.io.timestamp_res =/= timestamp);
   fetch_port <> icache.fetch_port
   icache.io.addr := fetch_pc_r
   icache.io.predicted_nxtpc := pc_next_predicted
   icache.io.timestamp_req := timestamp
   icache.io.avalid := !in.flush_valid
   icache.io.rready := out.fire || !has_inst
-
+  icache.io.rdiscard := should_discard
   val cache_rfire_and_up_to_date =
-    cache_rfire && (icache.io.timestamp_res === timestamp)
+    cache_rfire && !should_discard
 
   has_inst_r := MuxCase(
     has_inst_r,
