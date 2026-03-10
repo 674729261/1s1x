@@ -82,6 +82,6 @@ class IFU(init_pc: UInt) extends Module {
   out.bits.inst := icache.io.rdata
   out.bits.pc := icache.io.rpc
   out.bits.in_cache := icache.io.in_cache
-  out.bits.nxtpc_predicted := icache.io.predicted_nxtpc
+  out.bits.nxtpc_predicted := icache.io.rnxtpc
 
 }
