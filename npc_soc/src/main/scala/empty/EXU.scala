@@ -122,12 +122,12 @@ class EXU() extends Module {
   val should_flush = (in.bits.nxtpc_predicted =/= out_pc.dnpc)
   val should_branch = in.bits.controls.is_branch && branch.io.jump
 
-  out_pc.dnpc := MuxCase(
-    snpc,
+  out_pc.dnpc := Mux1H(
     Seq(
       should_branch -> alu.io.out,
       in.bits.controls.is_dnpc_jal_or_jalr -> alu.io.out,
-      in.bits.controls.is_dnpc_csr_jump -> in.bits.sources.alu_a_or_mepc_or_mtvec
+      in.bits.controls.is_dnpc_csr_jump -> in.bits.sources.alu_a_or_mepc_or_mtvec,
+      in.bits.controls.is_dnpc_snpc -> snpc
     )
   )
 

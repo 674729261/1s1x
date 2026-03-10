@@ -147,6 +147,7 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
     data_exu
   ) =
     check_conflict(idu.conf, exu.conf)
+
   val (
     conf1_lsu,
     fwd1_lsu,

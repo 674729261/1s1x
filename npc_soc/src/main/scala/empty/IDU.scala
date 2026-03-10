@@ -84,6 +84,7 @@ class ControlSignals extends Bundle {
   val is_branch = Bool()
   val is_dnpc_jal_or_jalr = Bool()
   val is_dnpc_csr_jump = Bool()
+  val is_dnpc_snpc = Bool()
 
   val is_ebreak = Bool()
   val interruption = Bool()
@@ -261,6 +262,7 @@ object decodeInstControlSignal {
     ret.is_branch := it.is_branch
     ret.is_dnpc_jal_or_jalr := it.is_jal || it.is_jalr
     ret.is_dnpc_csr_jump := it.is_ecall || it.is_mret
+    ret.is_dnpc_snpc := !ret.is_branch && !ret.is_dnpc_jal_or_jalr && !ret.is_dnpc_csr_jump
     ret.is_ebreak := it.is_ebreak
     ret.interruption := it.is_ebreak || it.is_ecall
     return ret
