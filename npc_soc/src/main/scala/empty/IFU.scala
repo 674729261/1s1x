@@ -22,7 +22,7 @@ class IFU(init_pc: UInt) extends Module {
   val fetch_port = IO(new AXI)
 
   val icache = Module(new ICache(5, 2))
-  // val has_inst_r = RegInit(Bool(), false.B)
+  val has_inst_r = RegInit(Bool(), false.B)
 
   val fetch_pc_r = RegInit(UInt(32.W), init_pc)
   val out = IO(DecoupledIO(new MessageIFU2IDU))
@@ -35,34 +35,33 @@ class IFU(init_pc: UInt) extends Module {
   in.btb_pc := fetch_pc_r
   val pc_next_predicted = in.btb_nxt_pc
 
-  // val has_inst = has_inst_r && !in.flush_valid
+  val has_inst = has_inst_r && !in.flush_valid
   val should_discard = (icache.io.timestamp_res =/= timestamp);
   fetch_port <> icache.fetch_port
   icache.io.addr := fetch_pc_r
   icache.io.predicted_nxtpc := pc_next_predicted
   icache.io.timestamp_req := timestamp
   icache.io.avalid := !in.flush_valid
-  icache.io.rready := out.ready || should_discard
-  icache.io.rdiscard := should_discard
+  icache.io.rready := out.fire || !has_inst
   val cache_rfire_and_up_to_date =
     cache_rfire && !should_discard
 
-  // has_inst_r := MuxCase(
-  //   has_inst_r,
-  //   Seq(
-  //     (cache_rfire_and_up_to_date && !out.fire) -> true.B,
-  //     (in.flush_valid || (out.fire && !cache_rfire_and_up_to_date)) -> false.B
-  //   )
-  // )
+  has_inst_r := MuxCase(
+    has_inst_r,
+    Seq(
+      (cache_rfire_and_up_to_date && !out.fire) -> true.B,
+      (in.flush_valid || (out.fire && !cache_rfire_and_up_to_date)) -> false.B
+    )
+  )
 
-  // val inst_reg =
-  //   RegEnable(icache.io.rdata, cache_rfire)
-  // val inst_rpc =
-  //   RegEnable(icache.io.rpc, cache_rfire)
-  // val inst_nxtpc =
-  //   RegEnable(icache.io.rnxtpc, cache_rfire)
-  // val inst_incache =
-  //   RegEnable(icache.io.in_cache, cache_rfire)
+  val inst_reg =
+    RegEnable(icache.io.rdata, cache_rfire)
+  val inst_rpc =
+    RegEnable(icache.io.rpc, cache_rfire)
+  val inst_nxtpc =
+    RegEnable(icache.io.rnxtpc, cache_rfire)
+  val inst_incache =
+    RegEnable(icache.io.in_cache, cache_rfire)
 
   fetch_pc_r := MuxCase(
     fetch_pc_r,
@@ -77,11 +76,11 @@ class IFU(init_pc: UInt) extends Module {
     Seq(in.flush_valid -> (timestamp_r + 1.U(3.W)))
   )
 
-  out.valid := icache.io.rvalid && !should_discard
+  out.valid := has_inst
 
-  out.bits.inst := icache.io.rdata
-  out.bits.pc := icache.io.rpc
-  out.bits.in_cache := icache.io.in_cache
-  out.bits.nxtpc_predicted := icache.io.rnxtpc
+  out.bits.inst := inst_reg
+  out.bits.pc := inst_rpc
+  out.bits.in_cache := inst_incache
+  out.bits.nxtpc_predicted := inst_nxtpc
 
 }

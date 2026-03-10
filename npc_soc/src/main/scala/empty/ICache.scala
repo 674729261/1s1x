@@ -37,7 +37,6 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
     val in_cache = Output(Bool())
     val rvalid = Output(Bool())
     val rready = Input(Bool())
-    val rdiscard = Input(Bool())
   })
   val fetch_port = IO(new AXI)
   set_AXIfull_zero(fetch_port)
