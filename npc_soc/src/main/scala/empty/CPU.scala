@@ -101,6 +101,8 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
   nxtpc_predictor.io.wen := exu.btb.wen
   nxtpc_predictor.io.write_pc := exu.btb.write_pc
   nxtpc_predictor.io.write_target := exu.btb.target
+  nxtpc_predictor.io.is_jump_taken := exu.btb.is_jump_taken
+  nxtpc_predictor.io.init_cnt := exu.btb.init_cnt
 
   StageConnect(ifu.out, idu.in)
   StageConnect(idu.out, exu.in)

@@ -65,6 +65,8 @@ class EXU() extends Module {
   val btb = IO(new Bundle {
     val write_pc = Output(UInt(32.W))
     val target = Output(UInt(32.W))
+    val is_jump_taken = Output(Bool())
+    val init_cnt = Output(UInt(2.W))
     val wen = Output(Bool())
   })
   val out_pc = IO(new Bundle {
@@ -143,11 +145,15 @@ class EXU() extends Module {
   out.bits.rd_valid := in.bits.rd_valid
   out.valid := has_signal
   val is_first_cycle = RegNext(in.fire, false.B)
-  btb.wen := ((in.bits.controls.is_branch && in.bits.inst(
-    31
-  )) || in.bits.itype.is_jal || in.bits.is_call) && is_first_cycle
+  btb.wen := ((in.bits.controls.is_branch) || in.bits.itype.is_jal) && is_first_cycle
   btb.write_pc := in.bits.pc
   btb.target := alu.io.out
+  btb.init_cnt := Mux(
+    in.bits.inst(31) || in.bits.itype.is_jal,
+    2.U(2.W),
+    0.U(2.W)
+  )
+  btb.is_jump_taken := branch.io.jump || in.bits.itype.is_jal
 
   out.bits.write_info.dnpc := out_pc.dnpc
   val flush_high = (should_flush && is_first_cycle)
