@@ -98,9 +98,9 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
   val nxtpc_predictor = Module(new NextPCPredict(2, 18, 2))
   ifu.in.btb_nxt_pc := nxtpc_predictor.io.predicted
   nxtpc_predictor.io.pc := ifu.in.btb_pc
-  nxtpc_predictor.io.wen := false.B
-  nxtpc_predictor.io.write_pc := 0.U
-  nxtpc_predictor.io.write_target := 0.U
+  nxtpc_predictor.io.wen := exu.btb.wen
+  nxtpc_predictor.io.write_pc := exu.btb.write_pc
+  nxtpc_predictor.io.write_target := exu.btb.target
 
   StageConnect(ifu.out, idu.in)
   StageConnect(idu.out, exu.in)
