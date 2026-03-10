@@ -135,9 +135,9 @@ class EXU() extends Module {
   out.bits.rd_valid := in.bits.rd_valid
   out.valid := has_signal
   val is_first_cycle = RegNext(in.fire, false.B)
-  // btb.wen := ((in.bits.controls.is_branch && in.bits.inst(
-  //   31
-  // )) || in.bits.itype.is_jal) && is_first_cycle
+  btb.wen := ((in.bits.controls.is_branch && in.bits.inst(
+    31
+  )) || in.bits.itype.is_jal) && is_first_cycle
   btb.wen := in.bits.itype.is_jal && is_first_cycle
   btb.write_pc := in.bits.pc
   btb.target := alu.io.out
