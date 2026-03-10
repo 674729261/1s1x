@@ -9,11 +9,9 @@
 #include <sys/types.h>
 #include <vector>
 struct BTB {
-  void init(int nr_size_b_2pow__, int nr_size_j_2pow__) {
+  void init(int nr_size_b_2pow__) {
     nr_size_b_2pow = nr_size_b_2pow__;
-    nr_size_j_2pow = nr_size_j_2pow__;
     btb_vector.resize(1 << nr_size_b_2pow);
-    btb_vector.resize(1 << nr_size_j_2pow);
 
     reset();
   }
@@ -83,7 +81,6 @@ struct BTB {
   unsigned long long miss_count;
   unsigned long long hit_count;
   int nr_size_b_2pow;
-  int nr_size_j_2pow;
   std::vector<BTBItem> btb_vector;
   int btb_wptr;
 };

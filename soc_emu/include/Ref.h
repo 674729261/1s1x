@@ -23,7 +23,7 @@ public:
     icache_hit = 0;
     dcache.init(config.nr_dcacheline_words_2pow, config.nr_dcachelines_2pow);
     dcache_hit = 0;
-    btb.init(config.nr_btbsize_2pow, config.nr_jtbsize_2pow);
+    btb.init(config.nr_btbsize_2pow);
     inst_count = 0;
     data_fetch_count = 0;
     vbus.init_flash(config.image_path);

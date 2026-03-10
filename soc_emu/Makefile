@@ -47,8 +47,8 @@ LOG_DIR ?= $(SOC_EMU_HOME)/logs
 LOG_FILE ?= $(LOG_DIR)/$(TIME_STAMP).log
 ICACHE_N ?= 2
 ICACHE_M ?= 3
-DCACHE_N ?= 3
-DCACHE_M ?= 4
+DCACHE_N ?= 0
+DCACHE_M ?= 0
 BTB_N ?= 3
 
 
