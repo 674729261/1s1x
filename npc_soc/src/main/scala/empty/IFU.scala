@@ -6,6 +6,7 @@ import chisel3.layer.block
 class MessageIFU2IDU extends Bundle {
   val pc = (UInt(32.W))
   val inst = (UInt(32.W))
+  val in_cache = (Bool())
   val nxtpc_predicted = (UInt(32.W))
 }
 
@@ -60,6 +61,8 @@ class IFU(init_pc: UInt) extends Module {
     RegEnable(icache.io.rpc, cache_rfire)
   val inst_nxtpc =
     RegEnable(icache.io.rnxtpc, cache_rfire)
+  val inst_incache =
+    RegEnable(icache.io.in_cache, cache_rfire)
 
   fetch_pc_r := MuxCase(
     fetch_pc_r,
@@ -78,6 +81,7 @@ class IFU(init_pc: UInt) extends Module {
 
   out.bits.inst := inst_reg
   out.bits.pc := inst_rpc
+  out.bits.in_cache := inst_incache
   out.bits.nxtpc_predicted := inst_nxtpc
 
 }

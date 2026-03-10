@@ -279,6 +279,7 @@ class Operands extends Bundle {
 class MessageIDU2EXU extends Bundle {
   val pc = (UInt(32.W))
   val inst = (UInt(32.W))
+  val in_cache = (Bool())
   val nxtpc_predicted = (UInt(32.W))
 
   val controls = (new ControlSignals)
@@ -405,6 +406,7 @@ class IDU() extends Module {
   conf.csr_src_valid := has_inst && (inst_type.is_csrop)
   out.bits.rd_valid := (imm_type.is_R || imm_type.is_I || imm_type.is_U || imm_type.is_J || inst_type.is_csrop)
   out.valid := has_inst && !conf.stall
+  out.bits.in_cache := in.bits.in_cache
   in.ready := (out.fire || !has_inst) && !conf.stall
 
   perf_cnt.stalled := has_inst && conf.stall
