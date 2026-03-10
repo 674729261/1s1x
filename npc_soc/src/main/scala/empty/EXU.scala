@@ -124,7 +124,7 @@ class EXU() extends Module {
 
   out_pc.dnpc := Mux1H(
     Seq(
-      should_branch -> alu.io.out,
+      in.bits.controls.is_branch -> Mux(branch.io.jump, alu.io.out, snpc),
       in.bits.controls.is_dnpc_jal_or_jalr -> alu.io.out,
       in.bits.controls.is_dnpc_csr_jump -> in.bits.sources.alu_a_or_mepc_or_mtvec,
       in.bits.controls.is_dnpc_snpc -> snpc
