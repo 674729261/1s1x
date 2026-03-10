@@ -16,7 +16,6 @@ class CacheLine(linesize_2pow: Int, linecount_2pow: Int) extends Bundle {
   val tag_width = 32 - linesize_2pow - linecount_2pow
   val tag = UInt(tag_width.W)
   val data = Vec(words, UInt(32.W))
-
 }
 
 object ShouldCache {
