@@ -23,14 +23,17 @@ class NextPCPredict(size_2pow: Int, tag_from: Int, tag_to: Int) extends Module {
   val input_tag = io.pc(tag_from, tag_to)
   val write_tag = io.write_pc(tag_from, tag_to)
 
-  val content = Reg(Vec(4, new BTBLine(tag_width)))
+  val content = Reg(Vec(nr_lines, new BTBLine(tag_width)))
+  val valid_flags =
+    RegInit(Vec(nr_lines, Bool()), VecInit(Seq.fill(nr_lines)(false.B)))
+
   var compare_results = Wire(Vec(nr_lines, Bool()))
   for (i <- 0 until nr_lines) {
-    compare_results(i) := (content(i).tag === input_tag)
+    compare_results(i) := (content(i).tag === input_tag && valid_flags(i))
   }
   var compare_results_write = Wire(Vec(nr_lines, Bool()))
   for (i <- 0 until nr_lines) {
-    compare_results_write(i) := (content(i).tag === write_tag)
+    compare_results_write(i) := (content(i).tag === write_tag && valid_flags(i))
   }
   val read_hit = compare_results.reduce(_ || _)
   val write_hit = compare_results_write.reduce(_ || _)
@@ -54,6 +57,7 @@ class NextPCPredict(size_2pow: Int, tag_from: Int, tag_to: Int) extends Module {
     }.otherwise {
       content(write_ptr).tag := write_tag
       content(write_ptr).target := io.write_target
+      valid_flags(write_ptr) := true.B
     }
   }
 
