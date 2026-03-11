@@ -28,8 +28,10 @@ int main() {
     *p = *(uint32_t *)g;
     p++;
   }
+  int r = -1;
   asm volatile("fence.i");
-  int r = f();
+  asm volatile("call f");
+  asm volatile("mv %0, a0" : "=r"(r) : :);
   printf("r is %d, should be 456\n", r);
   if (r == 456)
     return 0;
