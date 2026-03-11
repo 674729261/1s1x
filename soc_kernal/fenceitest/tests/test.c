@@ -1,7 +1,7 @@
 #include <klib.h>
 #include <stdint.h>
 int v = 0;
-__attribute__((noinline)) int f() {
+__attribute__((noinline)) __attribute__((aligned(32))) int f() {
   asm volatile("nop");
   asm volatile("nop");
   asm volatile("nop");
