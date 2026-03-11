@@ -6,9 +6,9 @@ _start:
   mv s0, zero
   la sp, _stack_pointer
   call fstbootloader
-  # fence.i
+  fence.i
   call secbootloader
-  # fence.i
+  fence.i
   call _init_uart
   csrr a0, mvendorid
   csrr a1, marchid
