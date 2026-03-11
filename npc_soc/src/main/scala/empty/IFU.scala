@@ -14,7 +14,6 @@ class IFU(init_pc: UInt) extends Module {
   val in = IO(new Bundle {
     val exu_dnpc = Input(UInt(32.W))
     val flush_valid = Input(Bool())
-    val fencei = Input(Bool())
 
     val btb_pc = Output(UInt(32.W))
     val btb_nxt_pc = Input(UInt(32.W))
@@ -46,7 +45,6 @@ class IFU(init_pc: UInt) extends Module {
   icache.io.timestamp_req := timestamp
   icache.io.avalid := !in.flush_valid
   icache.io.rready := out.fire || !has_inst
-  icache.io.clear := in.fencei && in.flush_valid
   val cache_rfire_and_up_to_date =
     cache_rfire && !should_discard
 
