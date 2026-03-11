@@ -174,7 +174,11 @@ class LSU() extends Module {
   conf.ok_to_forward_rd := has_r || !in.bits.controls.is_gpr_wdata_from_ram
   conf.rd_data := out.bits.write_info.gpr_wdata
 
-  out_pc.dnpc := in.bits.write_info.mtvec
+  out_pc.dnpc := Mux(
+    in.bits.itype.is_fence,
+    in.bits.write_info.dnpc,
+    in.bits.write_info.mtvec
+  )
   out_pc.flush_valid := has_exception || (in.bits.itype.is_fence && has_signal)
   out_pc.fencei := in.bits.itype.is_fence
 
