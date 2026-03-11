@@ -31,21 +31,21 @@ class NextPCPredict(size_2pow: Int, tag_from: Int, tag_to: Int) extends Module {
   val valid_flags =
     RegInit(Vec(nr_lines, Bool()), VecInit(Seq.fill(nr_lines)(false.B)))
 
-  // var compare_results = Wire(Vec(nr_lines, Bool()))
-  // for (i <- 0 until nr_lines) {
-  //   compare_results(i) := (content(i).tag === input_tag && valid_flags(i))
-  // }
-  var compare_results = VecInit((0 until nr_lines).map { i =>
-    content(i).tag === input_tag && valid_flags(i)
-  })
+  var compare_results = Wire(Vec(nr_lines, Bool()))
+  for (i <- 0 until nr_lines) {
+    compare_results(i) := (content(i).tag === input_tag && valid_flags(i))
+  }
+  // var compare_results = VecInit((0 until nr_lines).map { i =>
+  //   content(i).tag === input_tag && valid_flags(i)
+  // })
 
-  // var compare_results_write = Wire(Vec(nr_lines, Bool()))
-  // for (i <- 0 until nr_lines) {
-  //   compare_results_write(i) := (content(i).tag === write_tag && valid_flags(i))
-  // }
-  var compare_results_write = VecInit((0 until nr_lines).map { i =>
-    content(i).tag === write_tag && valid_flags(i)
-  })
+  var compare_results_write = Wire(Vec(nr_lines, Bool()))
+  for (i <- 0 until nr_lines) {
+    compare_results_write(i) := (content(i).tag === write_tag && valid_flags(i))
+  }
+  // var compare_results_write = VecInit((0 until nr_lines).map { i =>
+  //   content(i).tag === write_tag && valid_flags(i)
+  // })
 
   val read_hit = compare_results.reduce(_ || _)
   val write_hit = compare_results_write.reduce(_ || _)
