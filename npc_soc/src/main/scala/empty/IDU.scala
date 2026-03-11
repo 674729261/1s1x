@@ -87,7 +87,6 @@ class ControlSignals extends Bundle {
   val is_dnpc_snpc = Bool()
 
   val is_ebreak = Bool()
-  val interruption = Bool()
 
 }
 
@@ -261,17 +260,17 @@ object decodeInstControlSignal {
     ret.csrd := fields.csr
     ret.is_branch := it.is_branch
     ret.is_dnpc_jal_or_jalr := it.is_jal || it.is_jalr
-    ret.is_dnpc_csr_jump := it.is_ecall || it.is_mret
+    ret.is_dnpc_csr_jump := it.is_mret
     ret.is_dnpc_snpc := !ret.is_branch && !ret.is_dnpc_jal_or_jalr && !ret.is_dnpc_csr_jump
     ret.is_ebreak := it.is_ebreak
-    ret.interruption := it.is_ebreak || it.is_ecall
     return ret
   }
 }
 
 class Operands extends Bundle {
   val csr = UInt(32.W)
-  val alu_a_or_mepc_or_mtvec = UInt(32.W)
+  val alu_a_or_mepc = UInt(32.W)
+  val mtvec = UInt(32.W)
   val alu_b = UInt(32.W)
   val src1 = UInt(32.W)
   val src2 = UInt(32.W)
@@ -289,6 +288,8 @@ class MessageIDU2EXU extends Bundle {
   val sources = (new Operands)
 
   val rd_valid = (Bool())
+  val exception = (Bool())
+  val cause = (UInt(4.W))
 }
 
 class ConflictInfoRS extends Bundle {
@@ -380,14 +381,14 @@ class IDU() extends Module {
   val is_alu_a_pc = imm_type.is_B || imm_type.is_J || inst_type.is_auipc
   val is_alu_b_reg = imm_type.is_R
 
-  out.bits.sources.alu_a_or_mepc_or_mtvec := MuxCase(
+  out.bits.sources.alu_a_or_mepc := MuxCase(
     gpr_rdata1,
     Seq(
-      inst_type.is_ecall -> fetch_port_in.csr_mtvec,
       inst_type.is_mret -> fetch_port_in.csr_mepc,
       is_alu_a_pc -> in.bits.pc
     )
   )
+  out.bits.sources.mtvec := fetch_port_in.csr_mtvec
 
   val alu_b_raw = Mux(
     is_alu_b_reg,
@@ -414,5 +415,6 @@ class IDU() extends Module {
 
   perf_cnt.stalled := has_inst && conf.stall
   perf_cnt.flushed := has_inst_r && flush.valid
-
+  out.bits.exception := inst_type.is_ecall
+  out.bits.cause := 11.U(4.W)
 }

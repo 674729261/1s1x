@@ -8,6 +8,7 @@ class WriteInfo extends Bundle {
   val csr_wdata = (UInt(32.W))
   val gpr_wdata = (UInt(32.W))
   val dnpc = (UInt(32.W))
+  val mtvec = (UInt(32.W))
   val alu_out = (UInt(32.W))
 }
 
@@ -35,7 +36,6 @@ class ControlSignalsEXU extends Bundle {
   val rd = UInt(5.W)
   val csrd = UInt(12.W)
   val is_ebreak = (Bool())
-  val interruption = (Bool())
 }
 class MessageEXU2LSU extends Bundle {
   val pc = (UInt(32.W))
@@ -44,12 +44,14 @@ class MessageEXU2LSU extends Bundle {
   val write_info = (new WriteInfo)
   val rd_valid = (Bool())
   val itype = new InstType
+
+  val exeption = (Bool())
+  val cause = (UInt(4.W))
 }
 
 class ConflictInfoRD extends Bundle {
   val rd_valid = Output(Bool())
   val csr_dest_valid = Output(Bool())
-  val interruption = Output(Bool())
   val rd_id = Output(UInt(5.W))
   val csr_id = Output(UInt(12.W))
 
@@ -75,22 +77,26 @@ class EXU() extends Module {
 
     val idu_flush_valid = Output(Bool())
   })
+  val flush = IO(new Bundle {
+    val valid = Input(Bool())
+  })
 
-  val has_signal = RegInit(Bool(), false.B)
-  has_signal := MuxCase(
-    has_signal,
+  val has_signal_r = RegInit(Bool(), false.B)
+  has_signal_r := MuxCase(
+    has_signal_r,
     Seq(
-      in.fire -> true.B,
-      out.fire -> false.B
+      (in.fire && !flush.valid) -> true.B,
+      (out.fire || flush.valid) -> false.B
     )
   )
+  val has_signal = has_signal_r && !flush.valid
   out.bits.pc := in.bits.pc
   out.bits.inst := in.bits.inst
   out.bits.controls := in.bits.controls
   val alu = Module(new ALU(32))
   val branch = Module(new Branch(32))
 
-  alu.io.A := in.bits.sources.alu_a_or_mepc_or_mtvec
+  alu.io.A := in.bits.sources.alu_a_or_mepc
   alu.io.B := in.bits.sources.alu_b
   alu.io.controls := in.bits.controls.alu_controls
 
@@ -120,25 +126,23 @@ class EXU() extends Module {
   )
 
   val should_branch = in.bits.controls.is_branch && branch.io.jump
-  val normal_jump = should_branch || in.bits.controls.is_dnpc_jal_or_jalr
+  val static_jump = should_branch || in.bits.itype.is_jal
   val should_flush =
-    in.bits.controls.is_dnpc_csr_jump || (normal_jump ^ in.bits.predicted_jump)
+    in.bits.controls.is_dnpc_csr_jump || in.bits.itype.is_jalr || (static_jump ^ in.bits.predicted_jump)
 
   out_pc.dnpc := MuxCase(
     snpc,
     Seq(
-      normal_jump -> alu.io.out,
-      in.bits.controls.is_dnpc_csr_jump -> in.bits.sources.alu_a_or_mepc_or_mtvec
+      (should_branch || in.bits.controls.is_dnpc_jal_or_jalr) -> alu.io.out,
+      in.bits.controls.is_dnpc_csr_jump -> in.bits.sources.alu_a_or_mepc
     )
   )
 
   out.bits.controls.is_ebreak := in.bits.controls.is_ebreak
-  out.bits.controls.interruption := in.bits.controls.interruption
   conf.rd_id := in.bits.controls.rd
   conf.rd_valid := has_signal && in.bits.rd_valid
   conf.csr_dest_valid := has_signal && in.bits.controls.is_csr_visit
   conf.csr_id := in.bits.controls.csrd
-  conf.interruption := in.bits.itype.is_ecall
   conf.ok_to_forward_rd := !in.bits.controls.is_gpr_wdata_from_ram
   conf.rd_data := out.bits.write_info.gpr_wdata
 
@@ -156,10 +160,14 @@ class EXU() extends Module {
   )
   btb.is_jump_taken := branch.io.jump || in.bits.itype.is_jal
 
+  out.bits.write_info.mtvec := in.bits.sources.mtvec
   out.bits.write_info.dnpc := out_pc.dnpc
   val flush_high = (should_flush && is_first_cycle)
   out_pc.ifu_flush_valid := flush_high
   out_pc.idu_flush_valid := flush_high
+
+  out.bits.exeption := in.bits.exception
+  out.bits.cause := in.bits.cause
 
   in.ready := (out.fire || !has_signal)
 
