@@ -174,9 +174,9 @@ class LSU() extends Module {
   conf.rd_data := out.bits.write_info.gpr_wdata
 
   out_pc.dnpc := in.bits.write_info.mtvec
-  out_pc.ifu_flush_valid := bus_b_error || bus_r_error
-  out_pc.idu_flush_valid := bus_b_error || bus_r_error
-  out_pc.exu_flush_valid := bus_b_error || bus_r_error
+  out_pc.ifu_flush_valid := has_exception
+  out_pc.idu_flush_valid := has_exception
+  out_pc.exu_flush_valid := has_exception
 
   out.bits.rd_valid := in.bits.rd_valid
   out.bits.controls.is_ebreak := in.bits.controls.is_ebreak
