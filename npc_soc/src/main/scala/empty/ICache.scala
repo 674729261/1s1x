@@ -122,14 +122,14 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
       valid_flags(i) := false.B
   }
 
-  for (i <- 0 until line_count) {
-    valid_flags(i) :=
-      Mux(
-        !in_cache && ifu_rfire && should_cache && (input_cache_index === i.U),
-        true.B,
-        valid_flags(i)
-      )
-  }
+  // for (i <- 0 until line_count) {
+  //   valid_flags(i) :=
+  //     Mux(
+  //       !in_cache && ifu_rfire && should_cache && (input_cache_index === i.U),
+  //       true.B,
+  //       valid_flags(i)
+  //     )
+  // }
 
   io.aready := (in_cache && ifu_rfire) || !has_request_r
   io.timestamp_res := timestamp_r
