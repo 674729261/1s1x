@@ -97,7 +97,7 @@ class LSU() extends Module {
 
   val bus_b_error = RegEnable(fetch_port.b.resp =/= 0.U, fire.b_fire)
   val bus_r_error = RegEnable(fetch_port.r.resp =/= 0.U, fire.r_fire)
-  val should_flush = bus_b_error || bus_b_error
+  val has_exception = bus_b_error || bus_b_error || in.bits.exeption
   out.bits.exception := (bus_b_error || bus_r_error) || in.bits.exeption
   out.bits.cause := MuxCase(
     in.bits.cause,
@@ -135,7 +135,7 @@ class LSU() extends Module {
   when(in.bits.controls.is_gpr_wdata_from_ram) {
     out.bits.write_info.gpr_wdata := rdata_latched
   }
-  when(bus_b_error || bus_r_error || in.bits.exeption) {
+  when(has_exception) {
     out.bits.write_info.dnpc := in.bits.write_info.mtvec
   }
 
@@ -174,9 +174,9 @@ class LSU() extends Module {
   conf.rd_data := out.bits.write_info.gpr_wdata
 
   out_pc.dnpc := in.bits.write_info.mtvec
-  out_pc.ifu_flush_valid := should_flush
-  out_pc.idu_flush_valid := should_flush
-  out_pc.exu_flush_valid := should_flush
+  out_pc.ifu_flush_valid := bus_b_error || bus_r_error
+  out_pc.idu_flush_valid := bus_b_error || bus_r_error
+  out_pc.exu_flush_valid := bus_b_error || bus_r_error
 
   out.bits.rd_valid := in.bits.rd_valid
   out.bits.controls.is_ebreak := in.bits.controls.is_ebreak
