@@ -95,8 +95,9 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
 
   ifu.fetch_port <> arbiter.IFU_AXI
 
-  val nxtpc_predictor = Module(new NextPCPredict(3, 18, 2))
+  val nxtpc_predictor = Module(new NextPCPredict(3, 20, 2))
   ifu.in.btb_nxt_pc := nxtpc_predictor.io.predicted
+  ifu.in.btb_jump := nxtpc_predictor.io.predicted_jump
   nxtpc_predictor.io.pc := ifu.in.btb_pc
   nxtpc_predictor.io.wen := exu.btb.wen
   nxtpc_predictor.io.write_pc := exu.btb.write_pc
