@@ -175,11 +175,11 @@ class LSU() extends Module {
   conf.rd_data := out.bits.write_info.gpr_wdata
 
   out_pc.dnpc := Mux(
-    in.bits.itype.is_fence,
-    in.bits.write_info.dnpc,
-    in.bits.write_info.mtvec
+    has_exception,
+    in.bits.write_info.mtvec,
+    in.bits.write_info.dnpc
   )
-  out_pc.flush_valid := has_exception || (in.bits.itype.is_fence && has_signal)
+  out_pc.flush_valid := has_exception || ((in.bits.itype.is_fence || in.bits.csr_jump) && has_signal)
   out_pc.fencei := in.bits.itype.is_fence
 
   out.bits.rd_valid := in.bits.rd_valid

@@ -47,6 +47,7 @@ class MessageEXU2LSU extends Bundle {
 
   val exeption = (Bool())
   val cause = (UInt(4.W))
+  val csr_jump = (Bool())
 }
 
 class ConflictInfoRD extends Bundle {
@@ -165,6 +166,7 @@ class EXU() extends Module {
 
   out.bits.exeption := in.bits.exception
   out.bits.cause := in.bits.cause
+  out.bits.csr_jump := in.bits.controls.is_dnpc_csr_jump
 
   in.ready := (out.fire || !has_signal)
 
