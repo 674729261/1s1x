@@ -28,6 +28,7 @@ int main() {
     *p = *(uint32_t *)g;
     p++;
   }
+  asm volatile("fence.i");
   int r = f();
   printf("r is %d, should be 456\n", r);
 }
