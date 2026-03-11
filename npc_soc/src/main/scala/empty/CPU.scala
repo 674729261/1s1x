@@ -2,6 +2,7 @@ package empty
 import chisel3._
 import chisel3.util._
 import chisel3.layer._
+import chisel3.layers.Verification
 
 object PerformanceCounterLayer extends Layer(LayerConfig.Inline)
 
@@ -79,6 +80,8 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
     init_pc,
     wbu.out.ok_to_step
   )
+  io.pc := pc
+
   val gpr = Module(new GPR(CNT = 16, BITWIDTH = 32))
   val csrBank = Module(new CSR)
 
@@ -86,7 +89,6 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
 
   io.axi_bus <> arbiter.OUT_AXI
 
-  io.pc := pc
   io.retire_pc := wbu.out.retire_pc
   io.retire_inst := wbu.out.retire_inst
   ifu.in.exu_dnpc := Mux(
