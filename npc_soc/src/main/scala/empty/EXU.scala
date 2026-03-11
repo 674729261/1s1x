@@ -121,7 +121,7 @@ class EXU() extends Module {
 
   val should_branch = in.bits.controls.is_branch && branch.io.jump
   val should_flush =
-    in.bits.controls.is_dnpc_csr_jump || (in.bits.predicted_jump && (should_branch || in.bits.controls.is_dnpc_jal_or_jalr))
+    in.bits.controls.is_dnpc_csr_jump || ((should_branch || in.bits.controls.is_dnpc_jal_or_jalr) && !in.bits.predicted_jump)
 
   out_pc.dnpc := MuxCase(
     snpc,
