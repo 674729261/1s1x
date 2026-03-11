@@ -9,7 +9,6 @@ class ControlSignalsLSU extends Bundle {
   val rd = UInt(5.W)
   val csrd = UInt(12.W)
   val is_ebreak = Bool()
-  val interruption = Bool()
 }
 class MessageLSU2WBU extends Bundle {
   val pc = (UInt(32.W))
@@ -18,6 +17,8 @@ class MessageLSU2WBU extends Bundle {
   val write_info = (new WriteInfo)
   val itype = (new InstType)
   val rd_valid = (Bool())
+  val exception = (Bool())
+  val cause = (UInt(4.W))
 }
 
 class LSU() extends Module {
@@ -38,6 +39,12 @@ class LSU() extends Module {
 
   val fire = GenerateFireSignal(fetch_port)
   val has_signal = RegInit(false.B)
+  val out_pc = IO(new Bundle {
+    val dnpc = Output(UInt(32.W))
+    val ifu_flush_valid = Output(Bool())
+    val idu_flush_valid = Output(Bool())
+    val exu_flush_valid = Output(Bool())
+  })
 
   has_signal := MuxCase(
     has_signal,
@@ -87,6 +94,16 @@ class LSU() extends Module {
       out.fire -> false.B
     )
   )
+
+  val bus_b_error = RegEnable(fetch_port.b.resp =/= 0.U, fire.b_fire)
+  val bus_r_error = RegEnable(fetch_port.r.resp =/= 0.U, fire.r_fire)
+  val should_flush = bus_b_error || bus_b_error
+  out.bits.exception := bus_b_error || bus_r_error || in.bits.exeption
+  out.bits.cause := MuxCase(
+    in.bits.cause,
+    Seq(bus_r_error -> 5.U(4.W), bus_b_error -> 7.U(4.W))
+  )
+
   should_mem_access_r := has_signal && in.bits.controls.is_ram_valid && !in.bits.controls.is_ram_wen
   should_mem_access_w := has_signal && in.bits.controls.is_ram_valid && in.bits.controls.is_ram_wen
 
@@ -150,13 +167,16 @@ class LSU() extends Module {
   conf.rd_valid := has_signal && in.bits.rd_valid
   conf.csr_dest_valid := has_signal && in.bits.itype.is_csrop
   conf.csr_id := in.bits.controls.csrd
-  conf.interruption := in.bits.controls.interruption
   conf.ok_to_forward_rd := has_r || !in.bits.controls.is_gpr_wdata_from_ram
   conf.rd_data := out.bits.write_info.gpr_wdata
 
+  out_pc.dnpc := in.bits.write_info.mtvec
+  out_pc.ifu_flush_valid := should_flush
+  out_pc.idu_flush_valid := should_flush
+  out_pc.exu_flush_valid := should_flush
+
   out.bits.rd_valid := in.bits.rd_valid
   out.bits.controls.is_ebreak := in.bits.controls.is_ebreak
-  out.bits.controls.interruption := in.bits.controls.interruption
   out.bits.itype := in.bits.itype
   out.valid := has_signal && no_pending_memory_access
   in.ready := no_pending_memory_access
