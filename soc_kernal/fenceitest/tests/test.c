@@ -31,4 +31,8 @@ int main() {
   asm volatile("fence.i");
   int r = f();
   printf("r is %d, should be 456\n", r);
+  if (r == 456)
+    return 0;
+  else
+    return -1;
 }
