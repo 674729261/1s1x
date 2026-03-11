@@ -17,7 +17,6 @@ __attribute__((noinline)) int f() {
   asm volatile("nop");
   asm volatile("nop");
   asm volatile("nop");
-  asm volatile("nop");
   return 0;
 }
 __attribute__((noinline)) void g() { asm volatile("li a0, 456"); }
@@ -30,5 +29,5 @@ int main() {
     p++;
   }
   int r = f();
-  printf("r is %d, should be 456", r);
+  printf("r is %d, should be 456\n", r);
 }
