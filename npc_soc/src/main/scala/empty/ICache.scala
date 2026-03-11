@@ -37,7 +37,6 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
     val in_cache = Output(Bool())
     val rvalid = Output(Bool())
     val rready = Input(Bool())
-    val clear = Input(Bool())
   })
   val fetch_port = IO(new AXI)
   set_AXIfull_zero(fetch_port)
@@ -113,31 +112,19 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
   val cache_wdata = Wire(new CacheLine(linesize_2pow, linecount_2pow))
   cache_wdata.data := axi_rdata_latched.asTypeOf(Vec(words, UInt(32.W)))
   cache_wdata.tag := input_tag
-  val pending_fencei = RegInit(Bool(), false.B)
-  pending_fencei := MuxCase(
-    pending_fencei,
-    Seq(
-      io.clear -> true.B,
-      fire.r_burst_last -> false.B
-    )
-  )
-  when(!in_cache && ifu_rfire && should_cache && !pending_fencei) {
+  when(!in_cache && ifu_rfire && should_cache) {
     content.write(input_cache_index, cache_wdata)
     valid_flags(input_cache_index) := true.B
   }
-  when(io.clear) {
-    for (i <- 0 until line_count)
-      valid_flags(i) := false.B
-  }
 
-  // for (i <- 0 until line_count) {
-  //   valid_flags(i) :=
-  //     Mux(
-  //       !in_cache && ifu_rfire && should_cache && (input_cache_index === i.U),
-  //       true.B,
-  //       valid_flags(i)
-  //     )
-  // }
+  for (i <- 0 until line_count) {
+    valid_flags(i) :=
+      Mux(
+        !in_cache && ifu_rfire && should_cache && (input_cache_index === i.U),
+        true.B,
+        valid_flags(i)
+      )
+  }
 
   io.aready := (in_cache && ifu_rfire) || !has_request_r
   io.timestamp_res := timestamp_r
