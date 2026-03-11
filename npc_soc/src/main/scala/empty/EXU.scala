@@ -47,7 +47,6 @@ class MessageEXU2LSU extends Bundle {
 
   val exeption = (Bool())
   val cause = (UInt(4.W))
-  val fencei = (Bool())
 }
 
 class ConflictInfoRD extends Bundle {
@@ -166,7 +165,6 @@ class EXU() extends Module {
 
   out.bits.exeption := in.bits.exception
   out.bits.cause := in.bits.cause
-  out.bits.fencei := in.bits.itype.is_fence
 
   in.ready := (out.fire || !has_signal)
 
