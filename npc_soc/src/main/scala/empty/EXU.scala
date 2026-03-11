@@ -47,6 +47,7 @@ class MessageEXU2LSU extends Bundle {
 
   val exeption = (Bool())
   val cause = (UInt(4.W))
+  val fencei = (Bool())
 }
 
 class ConflictInfoRD extends Bundle {
@@ -73,9 +74,7 @@ class EXU() extends Module {
   })
   val out_pc = IO(new Bundle {
     val dnpc = Output(UInt(32.W))
-    val ifu_flush_valid = Output(Bool())
-
-    val idu_flush_valid = Output(Bool())
+    val flush_valid = Output(Bool())
   })
   val flush = IO(new Bundle {
     val valid = Input(Bool())
@@ -163,11 +162,11 @@ class EXU() extends Module {
   out.bits.write_info.mtvec := in.bits.sources.mtvec
   out.bits.write_info.dnpc := out_pc.dnpc
   val flush_high = (should_flush && is_first_cycle)
-  out_pc.ifu_flush_valid := flush_high
-  out_pc.idu_flush_valid := flush_high
+  out_pc.flush_valid := flush_high
 
   out.bits.exeption := in.bits.exception
   out.bits.cause := in.bits.cause
+  out.bits.fencei := in.bits.itype.is_fence
 
   in.ready := (out.fire || !has_signal)
 

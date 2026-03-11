@@ -90,13 +90,14 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
   io.retire_pc := wbu.out.retire_pc
   io.retire_inst := wbu.out.retire_inst
   ifu.in.exu_dnpc := Mux(
-    lsu.out_pc.ifu_flush_valid,
+    lsu.out_pc.flush_valid,
     lsu.out_pc.dnpc,
     exu.out_pc.dnpc
   )
-  ifu.in.flush_valid := exu.out_pc.ifu_flush_valid || lsu.out_pc.ifu_flush_valid
-  idu.flush.valid := exu.out_pc.idu_flush_valid || lsu.out_pc.idu_flush_valid
-  exu.flush.valid := lsu.out_pc.exu_flush_valid
+  ifu.in.fencei := lsu.out_pc.fencei
+  ifu.in.flush_valid := exu.out_pc.flush_valid || lsu.out_pc.flush_valid
+  idu.flush.valid := exu.out_pc.flush_valid || lsu.out_pc.flush_valid
+  exu.flush.valid := lsu.out_pc.flush_valid
 
   ifu.fetch_port <> arbiter.IFU_AXI
 
@@ -109,7 +110,7 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
   nxtpc_predictor.io.write_target := exu.btb.target
   nxtpc_predictor.io.is_jump_taken := exu.btb.is_jump_taken
   nxtpc_predictor.io.init_cnt := exu.btb.init_cnt
-
+  nxtpc_predictor.io.clear := lsu.out_pc.flush_valid && lsu.out_pc.fencei
   StageConnect(ifu.out, idu.in)
   StageConnect(idu.out, exu.in)
   StageConnect(exu.out, lsu.in)

@@ -41,9 +41,8 @@ class LSU() extends Module {
   val has_signal = RegInit(false.B)
   val out_pc = IO(new Bundle {
     val dnpc = Output(UInt(32.W))
-    val ifu_flush_valid = Output(Bool())
-    val idu_flush_valid = Output(Bool())
-    val exu_flush_valid = Output(Bool())
+    val flush_valid = Output(Bool())
+    val fencei = Output(Bool())
   })
 
   has_signal := MuxCase(
@@ -176,9 +175,8 @@ class LSU() extends Module {
   conf.rd_data := out.bits.write_info.gpr_wdata
 
   out_pc.dnpc := in.bits.write_info.mtvec
-  out_pc.ifu_flush_valid := has_exception
-  out_pc.idu_flush_valid := has_exception
-  out_pc.exu_flush_valid := has_exception
+  out_pc.flush_valid := has_exception
+  out_pc.fencei := in.bits.fencei
 
   out.bits.rd_valid := in.bits.rd_valid
   out.bits.controls.is_ebreak := in.bits.controls.is_ebreak
