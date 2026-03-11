@@ -175,7 +175,7 @@ class LSU() extends Module {
   conf.rd_data := out.bits.write_info.gpr_wdata
 
   out_pc.dnpc := in.bits.write_info.mtvec
-  out_pc.flush_valid := has_exception && in.bits.itype.is_fence
+  out_pc.flush_valid := has_exception || in.bits.itype.is_fence
   out_pc.fencei := in.bits.itype.is_fence
 
   out.bits.rd_valid := in.bits.rd_valid
