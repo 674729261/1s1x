@@ -135,7 +135,7 @@ class LSU() extends Module {
   when(in.bits.controls.is_gpr_wdata_from_ram) {
     out.bits.write_info.gpr_wdata := rdata_latched
   }
-  when(bus_b_error || bus_r_error) {
+  when(bus_b_error || bus_r_error || in.bits.exeption) {
     out.bits.write_info.dnpc := in.bits.write_info.mtvec
   }
 
