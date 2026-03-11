@@ -29,7 +29,7 @@ int main() {
     p++;
   }
   asm volatile("fence.i");
-  int r = f();
+  volatile int r = f();
   printf("r is %d, should be 456\n", r);
   if (r == 456)
     return 0;
