@@ -97,7 +97,16 @@ class LSU() extends Module {
 
   val bus_b_error = RegEnable(fetch_port.b.resp =/= 0.U, fire.b_fire)
   val bus_r_error = RegEnable(fetch_port.r.resp =/= 0.U, fire.r_fire)
-  val has_exception = bus_b_error || bus_b_error || in.bits.exeption
+  val has_exception_r = Reg(Bool())
+  has_exception_r := MuxCase(
+    has_exception_r,
+    Seq(
+      (in.fire) -> false.B,
+      ((fire.b_fire && fetch_port.b.resp =/= 0.U) || (fire.r_fire && fetch_port.r.resp =/= 0.U)) -> true.B
+    )
+  )
+  val has_exception =
+    has_signal && (has_exception_r || in.bits.exeption)
   out.bits.exception := (bus_b_error || bus_r_error) || in.bits.exeption
   out.bits.cause := MuxCase(
     in.bits.cause,
