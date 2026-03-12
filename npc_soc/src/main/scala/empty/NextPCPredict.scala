@@ -20,7 +20,6 @@ class NextPCPredict(size_2pow: Int, tag_from: Int, tag_to: Int) extends Module {
     val init_cnt = Input(UInt(2.W))
     val is_jump_taken = Input(Bool())
     val wen = Input(Bool())
-    val clear = Input(Bool())
   })
   val nr_lines = (1 << size_2pow)
   val tag_width = tag_from - tag_to + 1
@@ -90,11 +89,6 @@ class NextPCPredict(size_2pow: Int, tag_from: Int, tag_to: Int) extends Module {
       content(write_ptr).target := io.write_target
       content(write_ptr).saturate_count := io.init_cnt
       valid_flags(write_ptr) := true.B
-    }
-  }
-  when(io.clear) {
-    for (i <- 0 until nr_lines) {
-      valid_flags(i) := false.B
     }
   }
 
