@@ -129,7 +129,7 @@ struct VirtualBus {
   struct Area {
     uint32_t from, to;
   };
-  const Area clint_field = {0x02000000, 0x20000fff};
+  const Area clint_field = {0x02000000, 0x02000fff};
   const Area mrom_field = {0x20000000, 0x20000fff};
 
   const Area flash_field = {0x30000000, 0x3fffffff};
