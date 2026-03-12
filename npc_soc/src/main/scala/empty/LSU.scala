@@ -12,7 +12,8 @@ class ControlSignalsLSU extends Bundle {
 }
 
 class WriteInfoLSU extends Bundle {
-  val gpr_or_csr_wdata_or_mtvec = (UInt(32.W))
+  val csr_wdata_or_mtvec = (UInt(32.W))
+  val gpr_wdata = (UInt(32.W))
   val dnpc = (UInt(32.W))
 }
 class MessageLSU2WBU extends Bundle {
@@ -138,14 +139,19 @@ class LSU() extends Module {
   out.bits.inst := in.bits.inst
   out.bits.controls := in.bits.controls
   // out.bits.write_info := in.bits.write_info
+  // when() {
+  //   out.bits.write_info.gpr_wdata := rdata_latched
+  // }
+  out.bits.write_info.gpr_wdata := Mux(
+    in.bits.controls.is_gpr_wdata_from_ram,
+    rdata_latched,
+    in.bits.write_info.gpr_wdata
+  )
 
-  out.bits.write_info.gpr_or_csr_wdata_or_mtvec := MuxCase(
-    in.bits.write_info.gpr_wdata,
-    Seq(
-      has_exception -> in.bits.write_info.mtvec,
-      in.bits.controls.is_gpr_wdata_from_ram -> rdata_latched,
-      in.bits.controls.is_csr_visit -> in.bits.write_info.mem_word_or_csr_wdata
-    )
+  out.bits.write_info.csr_wdata_or_mtvec := Mux(
+    has_exception,
+    in.bits.write_info.mtvec,
+    in.bits.write_info.mem_word_or_csr_wdata
   )
 
   out.bits.write_info.dnpc := Mux(
@@ -186,7 +192,7 @@ class LSU() extends Module {
   conf.csr_dest_valid := has_signal && in.bits.itype.is_csrop
   conf.csr_id := in.bits.controls.csrd
   conf.ok_to_forward_rd := has_r || !in.bits.controls.is_gpr_wdata_from_ram
-  conf.rd_data := out.bits.write_info.gpr_or_csr_wdata_or_mtvec
+  conf.rd_data := out.bits.write_info.gpr_wdata
 
   out_pc.dnpc := Mux(
     has_exception,

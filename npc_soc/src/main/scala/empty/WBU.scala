@@ -37,12 +37,12 @@ class WBU() extends Module {
   out.csr_cur_pc := in.bits.pc
   out.csr_mcause := in.bits.cause
   out.csr_interruption := in.bits.exception && has_signal
-  out.csr_wdata := in.bits.write_info.gpr_or_csr_wdata_or_mtvec
+  out.csr_wdata := in.bits.write_info.csr_wdata_or_mtvec
 
   out.dnpc := in.bits.write_info.dnpc
 
   out.gpr_waddr := in.bits.controls.rd
-  out.gpr_wdata := in.bits.write_info.gpr_or_csr_wdata_or_mtvec
+  out.gpr_wdata := in.bits.write_info.gpr_wdata
   out.gpr_wen := in.bits.controls.is_gpr_wen && has_signal && !in.bits.exception
   conf.rd_id := in.bits.controls.rd
   conf.rd_valid := has_signal && in.bits.rd_valid
@@ -50,7 +50,7 @@ class WBU() extends Module {
   conf.csr_id := in.bits.controls.csrd
   conf.rd_valid := in.bits.rd_valid
   conf.ok_to_forward_rd := true.B
-  conf.rd_data := in.bits.write_info.gpr_or_csr_wdata_or_mtvec
+  conf.rd_data := in.bits.write_info.gpr_wdata
   in.ready := in.valid
   out.ok_to_step := has_signal
   out.retire_pc := in.bits.pc
