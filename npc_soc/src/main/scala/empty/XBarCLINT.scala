@@ -19,7 +19,7 @@ class XBar_CLINT() extends Module {
   val sel_clint_ar = (IN_AXI.ar.addr(31, 24) === 0x02.U(8.W))
   when(sel_clint_ar) {
     CLINT_AXI.ar <> IN_AXI.ar
-  }
+  }.otherwise { OUT_AXI.ar <> IN_AXI.ar }
 
   IN_AXI.aw <> OUT_AXI.aw
   IN_AXI.w <> OUT_AXI.w
