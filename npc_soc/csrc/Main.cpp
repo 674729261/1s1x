@@ -3,6 +3,7 @@
 #include "Flash.h"
 #include "spdlog/spdlog.h"
 #include <Args.h>
+#include <Cache.h>
 #include <MROM.h>
 #include <PerformanceCounter.h>
 #include <Ref.h>
@@ -55,7 +56,7 @@ int simulate(int argc, char *argv[], Config config) {
   Verilated::traceEverOn(true);
 
   dut = std::make_unique<Dut>(config, contextp.get());
-  Ref ref(config, *dut);
+  Ref ref(config, *dut, 2, 2);
   if (config.nvboard) {
     nvboard_bind_all_pins(dut->top.get());
     nvboard_init();
@@ -79,6 +80,7 @@ int simulate(int argc, char *argv[], Config config) {
     dut->step_one_cycle();
 
     if (retire) {
+      // std::println("{:08x}", ref.getPC());
       inst_count++;
       if (config.difftest) {
         ref.step();
@@ -107,6 +109,9 @@ int simulate(int argc, char *argv[], Config config) {
     result = -3;
   }
   dut->print_all_gpr();
+  spdlog::info("Reference cache hit count : {}", ref.cache_hit);
+  spdlog::info("Reference instruction count : {}", ref.instrCount());
+
   display_performance(start_time, end_time);
   dut = nullptr;
   return result;

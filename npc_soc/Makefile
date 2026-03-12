@@ -43,7 +43,7 @@ VERILATORFLAGS += --autoflush -I$(SOC_HOME)/perip/uart16550/rtl -I$(SOC_HOME)/pe
 --timescale "1ns/1ns" --no-timing -O3 --threads 1 --cc --exe --build -j 8 \
 '-Dlayer$$Verifying' '-Dlayer$$PerformanceCounterLayer' '-Dlayer$$AXIAssertLayer'
 VERILATOR_DISABLE_WARNINGS += -Wno-UNUSEDSIGNAL -Wno-DECLFILENAME -Wno-SYNCASYNCNET -Wno-PINCONNECTEMPTY \
--Wno-ASSIGNDLY -Wno-DEFPARAM -Wno-UNUSEDPARAM -Wno-PROCASSINIT -Wno-UNOPTFLAT
+-Wno-ASSIGNDLY -Wno-DEFPARAM -Wno-UNUSEDPARAM -Wno-PROCASSINIT
 
 FAST_FLAGS = -Ofast -march=native -mtune=native
 
@@ -86,11 +86,12 @@ nvboard: $(NXDC_CPP) nvboard-archive npc
 	$(call git_commit, "sim RTL with nvboard")
 	$(BIN) --image $(PROG) --log $(LOG_FILE) --difftest --nvboard
 
+CLK_FREQ_MHZ = 4000
 sta: sbt
 	mkdir -p $(STA_DIR)/result || true
 	make -C $(STA_HOME) sta \
-	DESIGN=ysyx_25080216 SDC_FILE=$(SDC_FILE) PDK=nangate45 \
-	CLK_FREQ_MHZ=4000 CLK_PORT_NAME=clock O=$(STA_DIR)/result \
+	DESIGN=ysyx_25080216 SDC_FILE=$(SDC_FILE) PDK=nangate45 \ 
+	CLK_FREQ_MHZ=$(CLK_FREQ_MHZ) CLK_PORT_NAME=clock O=$(STA_DIR)/result \
 	RTL_FILES="$(SVSRC)"
 
 perf: LOG_FILE = /tmp/perf.log
@@ -108,9 +109,9 @@ perf: npc
 	@cat $(shell find $(STA_DIR)/result -name "ysyx_25080216.rpt") | grep "Freq" -A 2 | grep -oP "\|\s*\d+(\.\d+)\s*\|\s*$$" | grep -oP "\d+(\.\d+)?"
 	@echo -n "Area : "
 	@cat $(shell find $(STA_DIR)/result -name "synth_stat.txt") | grep "Chip area" | grep -oP "\d+(\.\d+)?\s*$$"
-	@cat /tmp/perf.log | grep -oP "Average/Min/Max.*$$"
+	@cat /tmp/perf.log | grep -oP "Total/Average/Min/Max.*$$"
 	@echo "------------Instruction Type Statistics------------"
-	@cat /tmp/perf.log | grep "Instruction Type Statistics" -A 13 | grep -oP "[a-zA-Z ]*\|\s*\d+\s*$$"
+	@cat /tmp/perf.log | grep "Instruction Type Statistics" -A 14 | grep -oP "[a-zA-Z ]*\|\s*\d+\s*$$"
 	@cat /tmp/perf.log | grep -oP "Total ifu events : \d+"
 	@cat /tmp/perf.log | grep -oP "Total lsu read events : \d+"
 	@cat /tmp/perf.log | grep -oP "Total icache hit events : \d+"

@@ -27,6 +27,7 @@ class InstType extends Bundle {
   val is_ecall = (Bool())
   val is_mret = (Bool())
   val is_csrop = (Bool())
+  val is_fence = (Bool())
 }
 
 class ImmType extends Bundle {
@@ -37,13 +38,28 @@ class ImmType extends Bundle {
   val is_J = Bool()
   val is_U = Bool()
 }
+class ALUControl extends Bundle {
+  val is_alu_add = (Bool())
+  val is_alu_sub = (Bool())
+  val is_alu_slt = (Bool())
+  val is_alu_sltu = (Bool())
+  val is_alu_sll = (Bool())
+  val is_alu_srl = (Bool())
+  val is_alu_sra = (Bool())
+  val is_alu_and = (Bool())
+  val is_alu_or = (Bool())
+  val is_alu_xor = (Bool())
+
+  val is_alu_b_inv = (Bool())
+}
 
 class ControlSignals extends Bundle {
   val is_csr_visit = (Bool())
   val is_alu_a_pc = (Bool())
   val is_alu_b_reg = (Bool())
-  val is_alu_sub_sra = (Bool())
-  val is_alu_force_add = (Bool())
+
+  val alu_controls = new ALUControl()
+
   val is_gpr_wdata_from_ram = (Bool())
   val is_gpr_wdata_from_snpc = (Bool())
   val is_gpr_wdata_from_alu = (Bool())
@@ -81,6 +97,7 @@ object decodeInstType {
     ret.is_ebreak := ret.is_csrop && is_funct3_zero && !inst(21) && inst(20)
     ret.is_ecall := ret.is_csrop && is_funct3_zero && !inst(21) && !inst(20)
     ret.is_mret := ret.is_csrop && is_funct3_zero && inst(21)
+    ret.is_fence := (inst(6, 0) === "b0001111".U(7.W))
     return ret
   }
 }
@@ -171,11 +188,46 @@ object decodeInstControlSignal {
     ret.is_alu_a_pc := imm_type.is_B || imm_type.is_J || it.is_auipc
     ret.is_alu_b_reg := imm_type.is_R
     val is_funct3_zero = (fields.funct3 === "b000".U(3.W))
-    ret.is_alu_sub_sra :=
+    val is_alu_sub_sra =
       fields.funct7(5) && !(it.is_arithmetic_imm && is_funct3_zero)
+    val is_alu_force_add =
+      it.is_store || it.is_load || it.is_branch || it.is_auipc || it.is_jal || it.is_jalr
+
+    ret.alu_controls.is_alu_add := is_alu_force_add || (fields.funct3 === "b000"
+      .U(
+        3.W
+      ) && !is_alu_sub_sra)
+    ret.alu_controls.is_alu_sub := (fields.funct3 === "b000".U(
+      3.W
+    ) && is_alu_sub_sra) && !is_alu_force_add
+    ret.alu_controls.is_alu_sll := (fields.funct3 === "b001".U(
+      3.W
+    )) && !is_alu_force_add
+    ret.alu_controls.is_alu_slt := (fields.funct3 === "b010".U(
+      3.W
+    )) && !is_alu_force_add
+    ret.alu_controls.is_alu_sltu := (fields.funct3 === "b011".U(
+      3.W
+    )) && !is_alu_force_add
+    ret.alu_controls.is_alu_srl := (fields.funct3 === "b101".U(
+      3.W
+    )) && !is_alu_sub_sra && !is_alu_force_add
+    ret.alu_controls.is_alu_sra := (fields.funct3 === "b101".U(
+      3.W
+    )) && is_alu_sub_sra && !is_alu_force_add
+    ret.alu_controls.is_alu_and := (fields.funct3 === "b111".U(
+      3.W
+    )) && !is_alu_force_add
+    ret.alu_controls.is_alu_or := (fields.funct3 === "b110".U(
+      3.W
+    )) && !is_alu_force_add
+    ret.alu_controls.is_alu_xor := (fields.funct3 === "b100".U(
+      3.W
+    )) && !is_alu_force_add
+
+    ret.alu_controls.is_alu_b_inv := ret.alu_controls.is_alu_sub || ret.alu_controls.is_alu_slt || ret.alu_controls.is_alu_sltu
 
     ret.is_csr_visit := it.is_csrop && !is_funct3_zero
-    ret.is_alu_force_add := it.is_store || it.is_load || it.is_branch || it.is_auipc || it.is_jal || it.is_jalr
     ret.is_gpr_wdata_from_ram := it.is_load
     ret.is_gpr_wdata_from_snpc := it.is_jal || it.is_jalr
     ret.is_gpr_wdata_from_imm := it.is_lui
@@ -206,6 +258,7 @@ class Operands extends Bundle {
 
 class MessageIDU2EXU extends Bundle {
   val pc = (UInt(32.W))
+  val inst = (UInt(32.W))
 
   val fields = (new InstFields)
   val itype = (new InstType)
@@ -264,6 +317,7 @@ class IDU() extends Module {
   out.bits.sources.src2 := fetch_port_in.gpr_rdata2
   out.bits.sources.mtvec := fetch_port_in.csr_mtvec
   out.bits.sources.mepc := fetch_port_in.csr_mepc
+  out.bits.inst := in.bits.inst
 
   out.valid := in.valid
   in.ready := out.ready

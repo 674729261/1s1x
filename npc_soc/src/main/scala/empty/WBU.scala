@@ -20,11 +20,19 @@ class WBU() extends Module {
     val gpr_wdata = Output(UInt(32.W))
     val gpr_wen = Output(Bool())
 
+    val clear_icache_valid = Output(Bool())
+    val clear_icache_ok = Input(Bool())
+
     val ok_to_step = Output(Bool())
+    val retire_pc = Output(UInt(32.W))
+    val retire_inst = Output(UInt(32.W))
 
     val inst_type = Output(new InstType)
 
   })
+
+  out.clear_icache_valid := in.bits.itype.is_fence && in.valid
+  val fence_fire = out.clear_icache_valid && out.clear_icache_ok
 
   out.ebreak := in.bits.itype.is_ebreak && in.valid
 
@@ -41,7 +49,9 @@ class WBU() extends Module {
   out.gpr_wdata := in.bits.write_info.gpr_wdata
   out.gpr_wen := in.bits.controls.is_gpr_wen && in.valid
 
-  in.ready := in.valid
+  in.ready := in.valid && (fence_fire || !in.bits.itype.is_fence)
   out.ok_to_step := in.valid
+  out.retire_pc := in.bits.pc
+  out.retire_inst := in.bits.inst
   out.inst_type := in.bits.itype
 }

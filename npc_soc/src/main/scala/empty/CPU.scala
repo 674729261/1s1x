@@ -32,6 +32,7 @@ class MemAccessBus extends Bundle {
 class PerformanceCounter extends ExtModule {
   val clock = IO(Input(Clock()))
   val reset = IO(Input(Reset()))
+  val pc = IO(Input(UInt(32.W)))
   val ifu_arready = IO(Input(Bool()))
   val ifu_arvalid = IO(Input(Bool()))
   val ifu_rready = IO(Input(Bool()))
@@ -56,6 +57,8 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
     // val mem = new AXI_Lite
     val axi_bus = new AXI
     val ok_to_step = Output(Bool())
+    val retire_pc = Output(UInt(32.W))
+    val retire_inst = Output(UInt(32.W))
   })
 
   val ifu = Module(new IFU)
@@ -77,9 +80,12 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
   io.axi_bus <> arbiter.OUT_AXI
 
   io.pc := pc
-
+  io.retire_pc := wbu.out.retire_pc
+  io.retire_inst := wbu.out.retire_inst
   ifu.in.pc := pc
   ifu.fetch_port <> arbiter.IFU_AXI
+  ifu.in.clear_icache_valid := wbu.out.clear_icache_valid
+  wbu.out.clear_icache_ok := ifu.in.clear_icache_ok
 
   StageConnect(idu.in, ifu.out)
   StageConnect(exu.in, idu.out)
@@ -122,6 +128,7 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
     val m_performance_counter = Module(new PerformanceCounter)
     m_performance_counter.clock := clock
     m_performance_counter.reset := reset
+    m_performance_counter.pc := pc
     m_performance_counter.exu_ready := exu.out.ready
     m_performance_counter.exu_valid := exu.out.valid
     m_performance_counter.idu_ready := idu.out.ready

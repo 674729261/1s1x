@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Cache.h"
 #include "DUT.h"
 #include "Setup.h"
 #include <InstPattern/InstPattern.h>
@@ -10,8 +11,9 @@
 #include <stdexcept>
 // std::ofstream ref_trace_file;
 struct Ref {
-  Ref(Config config, Dut &dut)
-      : inst_count(0), dut(dut), csr({.mstatus = 0x1800,
+  Ref(Config config, Dut &dut, int nr_words_per_line_2pow, int nr_lines_2pow)
+      : cache_hit(0), cache(nr_words_per_line_2pow, nr_lines_2pow),
+        inst_count(0), dut(dut), csr({.mstatus = 0x1800,
                                       .mvendorid = 0x79737978,
                                       .marchid = 0x17eb198}) {
     // ref_trace_file.open("ref_trace.log");
@@ -25,6 +27,8 @@ struct Ref {
     for (int i = 0; i < 16; i++) {
       cpu.gpr[i] = dut.getGPR(i);
     }
+    cache.reset();
+    cache_hit = 0;
     cpu.pc = 0x30000000;
   };
   void step();
@@ -77,11 +81,13 @@ struct Ref {
     uint32_t pc;
   };
 
+  long long cache_hit;
   bool is_halt;
 
   Dut &dut;
   CPU_State cpu;
   VirtualBus vbus;
+  Cache cache;
 };
 
 #define BEGIN_PATTERN do {
@@ -96,6 +102,8 @@ struct Ref {
   }
 
 inline void Ref::step() {
+  if (cache.fetch(cpu.pc))
+    cache_hit++;
   auto ifnst_fetch = vbus.readMemory(cpu.pc, 4);
   if (ifnst_fetch.read_nonmemory) {
     log_and_throw<std::logic_error>(
@@ -277,6 +285,8 @@ inline void Ref::step() {
            uint32_t csr = inst >> 20;
            uint32_t &which = csr_id(csr); cpu.gpr[d.dst_id] = which;
            which = which | cpu.gpr[d.src1_id]);
+  try_this("??????? ????? ????? 001 ????? 00011 11", fence.i, cache.clear());
+
   try_this("??????? ????? ????? ??? ????? ????? ??", invalid,
            log_and_throw<std::logic_error>(
                "Encountered invalid instruction {:#010x} @PC={:#010x}", inst,
