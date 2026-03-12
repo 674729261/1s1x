@@ -4,7 +4,9 @@
 #include <soc.h>
 #include <stdint.h>
 uint64_t rtc_start_us;
-
+static uint64_t rtc_convert(uint32_t lower, uint32_t upper) {
+  return (((uint64_t)upper << 32ull) | (uint64_t)lower) * 3;
+}
 void __am_timer_init() {
 
   uint32_t lower;
@@ -13,7 +15,7 @@ void __am_timer_init() {
     lower = inl(RTC_ADDR);
     upper = inl(RTC_ADDR + 0x4);
   } while (upper != inl(RTC_ADDR + 0x4));
-  rtc_start_us = (((uint64_t)upper << 32ull) | (uint64_t)lower) * 2;
+  rtc_start_us = rtc_convert(lower, upper);
 }
 
 void __am_timer_uptime(AM_TIMER_UPTIME_T *uptime) {
@@ -23,8 +25,7 @@ void __am_timer_uptime(AM_TIMER_UPTIME_T *uptime) {
     lower = inl(RTC_ADDR);
     upper = inl(RTC_ADDR + 0x4);
   } while (upper != inl(RTC_ADDR + 0x4));
-  uptime->us =
-      ((((uint64_t)upper << 32ull) | (uint64_t)lower) * 2) - rtc_start_us;
+  uptime->us = rtc_convert(lower, upper) - rtc_start_us;
 }
 
 void __am_timer_rtc(AM_TIMER_RTC_T *rtc) {
