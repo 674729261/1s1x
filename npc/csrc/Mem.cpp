@@ -143,7 +143,6 @@ extern "C" void mem_write(uint32_t waddr, uint32_t wmask, uint32_t wdata) {
     } else if (offset >= AUDIO_BF_OFFSET &&
                offset < AUDIO_BF_OFFSET + AUDIO_BF_LEN) {
       // in audio buffer
-
       size_t SoundBufferOffset = (offset - AUDIO_BF_OFFSET) / sizeof(uint32_t);
       SDL_LockAudio();
       write_mask(

@@ -69,7 +69,7 @@ $(SV_FILELIST): $(CHISELSRC)
 
 
 
-PROG ?= /home/shitful/1s1x/ysyx-workbench/am-kernels/tests/cpu-tests/build/fib-riscv32e-soc.bin
+PROG ?= /home/shitful/1s1x/ysyx-workbench/am-kernels/benchmarks/microbench/build/microbench-riscv32e-soc.bin
 TIME_STAMP := $(shell date +"%Y_%m_%d_%H_%M_%S")
 LOG_FILE ?= "log/$(TIME_STAMP).log"
 
@@ -90,7 +90,7 @@ CLK_FREQ_MHZ = 4000
 sta: sbt
 	mkdir -p $(STA_DIR)/result || true
 	make -C $(STA_HOME) sta \
-	DESIGN=ysyx_25080216 SDC_FILE=$(SDC_FILE) PDK=nangate45 \ 
+	DESIGN=ysyx_25080216 SDC_FILE=$(SDC_FILE) PDK=nangate45 \
 	CLK_FREQ_MHZ=$(CLK_FREQ_MHZ) CLK_PORT_NAME=clock O=$(STA_DIR)/result \
 	RTL_FILES="$(SVSRC)"
 

@@ -4,7 +4,7 @@ import chisel3.util._
 
 class WBU() extends Module {
   val in = IO(Flipped(DecoupledIO(new MessageLSU2WBU)))
-
+  val conf = IO(new ConflictInfoRD)
   val out = IO(new Bundle {
     val ebreak = Output(Bool())
     val dnpc = Output(UInt(32.W))
@@ -30,27 +30,29 @@ class WBU() extends Module {
     val inst_type = Output(new InstType)
 
   })
-
-  out.clear_icache_valid := in.bits.itype.is_fence && in.valid
+  val has_signal = RegInit(Bool(), false.B)
+  has_signal := Mux(in.fire, true.B, false.B)
+  out.clear_icache_valid := in.bits.itype.is_fence && has_signal
   val fence_fire = out.clear_icache_valid && out.clear_icache_ok
 
   out.ebreak := in.bits.itype.is_ebreak && in.valid
 
   out.csr_waddr := in.bits.write_info.csr_addr
-  out.csr_wen := in.bits.controls.is_csr_visit && in.valid
+  out.csr_wen := in.bits.controls.is_csr_visit && has_signal
   out.csr_cur_pc := in.bits.pc
   out.csr_mcause := 11.U(32.W)
-  out.csr_interruption := in.bits.itype.is_ecall && in.valid
+  out.csr_interruption := in.bits.itype.is_ecall && has_signal
   out.csr_wdata := in.bits.write_info.csr_wdata
 
-  out.dnpc := Mux(in.valid, in.bits.write_info.dnpc, in.bits.pc)
+  out.dnpc := in.bits.write_info.dnpc
 
   out.gpr_waddr := in.bits.write_info.gpr_waddr
   out.gpr_wdata := in.bits.write_info.gpr_wdata
-  out.gpr_wen := in.bits.controls.is_gpr_wen && in.valid
-
+  out.gpr_wen := in.bits.controls.is_gpr_wen && has_signal
+  conf.rd_id := in.bits.write_info.gpr_waddr
+  conf.rd_valid := has_signal && in.bits.rd_valid
   in.ready := in.valid && (fence_fire || !in.bits.itype.is_fence)
-  out.ok_to_step := in.valid
+  out.ok_to_step := has_signal
   out.retire_pc := in.bits.pc
   out.retire_inst := in.bits.inst
   out.inst_type := in.bits.itype
