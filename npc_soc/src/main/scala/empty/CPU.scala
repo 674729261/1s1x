@@ -86,8 +86,12 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
   val csrBank = Module(new CSR)
 
   val arbiter = Module(new Arbiter_2Master)
+  val xbar = Module(new XBar_CLINT)
+  val clint = Module(new Clint)
 
-  io.axi_bus <> arbiter.OUT_AXI
+  io.axi_bus <> xbar.OUT_AXI
+  xbar.IN_AXI <> arbiter.OUT_AXI
+  xbar.CLINT_AXI <> clint.in
 
   io.retire_pc := wbu.out.retire_pc
   io.retire_inst := wbu.out.retire_inst
@@ -128,9 +132,9 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
     val conf2 =
       rs_info.rs2_valid && rd_info.rd_valid && (rs_info.rs2_id === rd_info.rd_id) && (rd_info.rd_id =/= 0
         .U(5.W))
-    val conf_csr =
-      rs_info.csr_src_valid && rd_info.csr_dest_valid && (rs_info.csr_src_id === rd_info.csr_id)
-
+    // val conf_csr =
+    //   rs_info.csr_src_valid && rd_info.csr_dest_valid && (rs_info.csr_src_id === rd_info.csr_id)
+    val conf_csr = rd_info.csr_dest_valid
     val forward1 = conf1 && (rd_info.ok_to_forward_rd)
     val forward2 = conf2 && (rd_info.ok_to_forward_rd)
 

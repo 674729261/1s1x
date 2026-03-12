@@ -24,6 +24,7 @@ class CSR extends Module {
   val is_mvendorid_r = io.csr_r === 0xf11.U(12.W)
   val is_marchid_r = io.csr_r === 0xf12.U(12.W)
   val is_mcycle_r = io.csr_r === 0xb00.U(12.W)
+  val is_mcycleh_r = io.csr_r === 0xb80.U(12.W)
   val is_mstatus_r = io.csr_r === 0x300.U(12.W)
   val is_mcause_r = io.csr_r === 0x342.U(12.W)
   val is_mtvec_r = io.csr_r === 0x305.U(12.W)
@@ -32,6 +33,7 @@ class CSR extends Module {
   val is_mvendorid_w = io.csr_w === 0xf11.U(12.W)
   val is_marchid_w = io.csr_w === 0xf12.U(12.W)
   val is_mcycle_w = io.csr_w === 0xb00.U(12.W)
+  val is_mcycleh_w = io.csr_w === 0xb80.U(12.W)
   val is_mstatus_w = io.csr_w === 0x300.U(12.W)
   val is_mcause_w = io.csr_w === 0x342.U(12.W)
   val is_mtvec_w = io.csr_w === 0x305.U(12.W)
@@ -40,12 +42,19 @@ class CSR extends Module {
   val csr_mvendorid = 0x79737978.U(32.W)
   val csr_marchid = 0x17eb198.U(32.W)
 
-  val mcycle_nxt = Wire(UInt(32.W))
-  val csr_mcycle = RegNext(mcycle_nxt, 0.U(32.W))
-  mcycle_nxt := Mux(
+  val mcycle_nxt = Wire(Vec(2, UInt(32.W)))
+  val mcycle_inc = Wire(Vec(2, UInt(32.W)))
+  val csr_mcycle = RegNext(mcycle_nxt, VecInit(Seq(0.U(32.W), 0.U(32.W))))
+  mcycle_inc := (csr_mcycle.asUInt + 1.U(64.W)).asTypeOf(Vec(2, UInt(32.W)))
+  mcycle_nxt(0) := Mux(
     io.wen && is_mcycle_w,
     io.wdata,
-    Mux(io.ok_to_step, csr_mcycle + 1.U(32.W), csr_mcycle)
+    mcycle_inc(0)
+  )
+  mcycle_nxt(1) := Mux(
+    io.wen && is_mcycleh_w,
+    io.wdata,
+    mcycle_inc(1)
   )
 
   val csr_mstatus = RegEnable(io.wdata, "h1800".U(32.W), io.wen && is_mstatus_w)
@@ -64,7 +73,8 @@ class CSR extends Module {
     Seq(
       is_mvendorid_r -> csr_mvendorid,
       is_marchid_r -> csr_marchid,
-      is_mcycle_r -> csr_mcycle,
+      is_mcycle_r -> csr_mcycle(0),
+      is_mcycleh_r -> csr_mcycle(1),
       is_mstatus_r -> csr_mstatus,
       is_mcause_r -> csr_mcause,
       is_mtvec_r -> csr_mtvec,
