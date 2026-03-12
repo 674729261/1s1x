@@ -37,7 +37,7 @@ class WBU() extends Module {
   out.csr_cur_pc := in.bits.pc
   out.csr_mcause := in.bits.cause
   out.csr_interruption := in.bits.exception && has_signal
-  out.csr_wdata := in.bits.write_info.csr_wdata_or_mtvec
+  out.csr_wdata := in.bits.write_info.mem_word_or_csr_wdata
 
   out.dnpc := in.bits.write_info.dnpc
 
