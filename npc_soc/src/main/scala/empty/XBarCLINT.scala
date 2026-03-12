@@ -55,7 +55,7 @@ class Clint extends Module {
 
   val has_ar = RegInit(Bool(), false.B)
   val out_r = RegInit(Bool(), false.B)
-  val low_or_high = RegNext(in.ar.addr(2), fire.ar_fire)
+  val low_or_high = RegEnable(in.ar.addr(2), fire.ar_fire)
   has_ar := MuxCase(
     has_ar,
     Seq(
