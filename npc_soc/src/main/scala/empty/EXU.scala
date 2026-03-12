@@ -4,8 +4,7 @@ import chisel3.util._
 import chisel3.layer.block
 
 class WriteInfo extends Bundle {
-  val mem_word = (UInt(32.W))
-  val csr_wdata = (UInt(32.W))
+  val mem_word_or_csr_wdata = (UInt(32.W))
   val gpr_wdata = (UInt(32.W))
   val dnpc = (UInt(32.W))
   val mtvec = (UInt(32.W))
@@ -95,14 +94,14 @@ class EXU() extends Module {
   val alu = Module(new ALU(32))
   val branch = Module(new Branch(32))
 
-  alu.io.A := in.bits.sources.alu_a_or_mepc
+  alu.io.A := in.bits.sources.alu_a
   alu.io.B := in.bits.sources.alu_b
   alu.io.controls := in.bits.controls.alu_controls
 
   out.bits.write_info.alu_out := alu.io.out
 
   branch.io.A := in.bits.sources.src1
-  branch.io.B := in.bits.sources.src2
+  branch.io.B := in.bits.sources.src2_or_csr
   branch.io.funct3 := in.bits.controls.bra_funct3
 
   val snpc = in.bits.pc + 4.U(32.W)
@@ -111,17 +110,20 @@ class EXU() extends Module {
     Seq(
       // in.bits.controls.is_gpr_wdata_from_ram -> fetch_port_in.bits.mem_rdata,
       in.bits.controls.is_gpr_wdata_from_snpc -> snpc,
-      in.bits.controls.is_gpr_wdata_from_imm -> in.bits.sources.imm,
+      // in.bits.controls.is_gpr_wdata_from_imm -> in.bits.sources.imm,
       in.bits.controls.is_gpr_wdata_from_alu -> alu.io.out,
-      in.bits.controls.is_gpr_wdata_from_csr -> in.bits.sources.csr
+      in.bits.controls.is_gpr_wdata_from_csr -> in.bits.sources.src2_or_csr
     )
   )
 
-  out.bits.write_info.mem_word := in.bits.sources.src2
-  out.bits.write_info.csr_wdata := Mux(
-    in.bits.controls.is_csr_masked,
-    in.bits.sources.src1 | in.bits.sources.csr,
-    in.bits.sources.src1
+  out.bits.write_info.mem_word_or_csr_wdata := Mux(
+    in.bits.itype.is_store,
+    in.bits.sources.src2_or_csr,
+    Mux(
+      in.bits.controls.is_csr_masked,
+      in.bits.sources.src1 | in.bits.sources.src2_or_csr,
+      in.bits.sources.src1
+    )
   )
 
   val should_branch = in.bits.controls.is_branch && branch.io.jump
@@ -132,8 +134,8 @@ class EXU() extends Module {
   out_pc.dnpc := MuxCase(
     snpc,
     Seq(
-      (should_branch || in.bits.controls.is_dnpc_jal_or_jalr) -> alu.io.out,
-      in.bits.controls.is_dnpc_csr_jump -> in.bits.sources.alu_a_or_mepc
+      (should_branch || in.bits.controls.is_dnpc_jal_or_jalr || in.bits.controls.is_dnpc_csr_jump) -> alu.io.out
+      // in.bits.controls.is_dnpc_csr_jump -> in.bits.sources.alu_a_or_mepc
     )
   )
 
