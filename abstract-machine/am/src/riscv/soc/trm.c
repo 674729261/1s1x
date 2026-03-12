@@ -87,29 +87,29 @@ void _trm_init() {
 
 __attribute__((section(".fsbl"))) void fstbootloader() {
   extern uint32_t __ssbl_load_start, __ssbl_load_end, __ssbl_start;
-  uint32_t *src = &__ssbl_load_start;
-  uint32_t *dst = &__ssbl_start;
-  // size_t n = &__ssbl_load_end - &__ssbl_load_start;
-  // while ((((uintptr_t)dst) & 0x3) && n) {
-  //   *dst++ = *src++;
-  //   n--;
-  // }
-
-  // while (n >= 4) {
-  //   *(uint32_t *)dst = *(const uint32_t *)src;
-  //   dst += 4;
-  //   src += 4;
-  //   n -= 4;
-  // }
-
-  // while (n-- > 0) {
-  //   *dst++ = *src++;
-  // }
-  while (src < &__ssbl_load_end) {
-    *dst = *src;
-    ++dst;
-    ++src;
+  uint8_t *src = (uint8_t *)&__ssbl_load_start;
+  uint8_t *dst = (uint8_t *)&__ssbl_start;
+  size_t n = &__ssbl_load_end - &__ssbl_load_start;
+  while ((((uintptr_t)dst) & 0x3) && n) {
+    *dst++ = *src++;
+    n--;
   }
+
+  while (n >= 4) {
+    *(uint32_t *)dst = *(const uint32_t *)src;
+    dst += 4;
+    src += 4;
+    n -= 4;
+  }
+
+  while (n-- > 0) {
+    *dst++ = *src++;
+  }
+  // while (src < &__ssbl_load_end) {
+  //   *dst = *src;
+  //   ++dst;
+  //   ++src;
+  // }
 }
 
 __attribute__((section(".ssbl"))) static void *
