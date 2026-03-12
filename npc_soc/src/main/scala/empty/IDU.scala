@@ -268,12 +268,12 @@ object decodeInstControlSignal {
 }
 
 class Operands extends Bundle {
-  val csr = UInt(32.W)
+  // val csr = UInt(32.W)
   val alu_a = UInt(32.W)
   val mtvec = UInt(32.W)
   val alu_b = UInt(32.W)
   val src1 = UInt(32.W)
-  val src2 = UInt(32.W)
+  val src2_or_csr = UInt(32.W)
   // val imm = UInt(32.W)
 }
 
@@ -371,10 +371,14 @@ class IDU() extends Module {
   val gpr_rdata2 =
     Mux(conf.do_forward_src2, conf.forward_data_src2, fetch_port_in.gpr_rdata2)
   out.bits.sources.src1 := gpr_rdata1
-  out.bits.sources.src2 := gpr_rdata2
+  out.bits.sources.src2_or_csr := Mux(
+    control_signals.is_gpr_wdata_from_csr,
+    fetch_port_in.csr_rdata,
+    gpr_rdata2
+  )
   // out.bits.sources.imm := fields.imm
 
-  out.bits.sources.csr := fetch_port_in.csr_rdata
+  // out.bits.sources.csr := fetch_port_in.csr_rdata
   out.bits.inst := in.bits.inst
   out.bits.predicted_jump := in.bits.predicted_jump
 

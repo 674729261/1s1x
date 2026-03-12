@@ -101,7 +101,7 @@ class EXU() extends Module {
   out.bits.write_info.alu_out := alu.io.out
 
   branch.io.A := in.bits.sources.src1
-  branch.io.B := in.bits.sources.src2
+  branch.io.B := in.bits.sources.src2_or_csr
   branch.io.funct3 := in.bits.controls.bra_funct3
 
   val snpc = in.bits.pc + 4.U(32.W)
@@ -112,16 +112,16 @@ class EXU() extends Module {
       in.bits.controls.is_gpr_wdata_from_snpc -> snpc,
       // in.bits.controls.is_gpr_wdata_from_imm -> in.bits.sources.imm,
       in.bits.controls.is_gpr_wdata_from_alu -> alu.io.out,
-      in.bits.controls.is_gpr_wdata_from_csr -> in.bits.sources.csr
+      in.bits.controls.is_gpr_wdata_from_csr -> in.bits.sources.src2_or_csr
     )
   )
 
   out.bits.write_info.mem_word_or_csr_wdata := Mux(
     in.bits.itype.is_store,
-    in.bits.sources.src2,
+    in.bits.sources.src2_or_csr,
     Mux(
       in.bits.controls.is_csr_masked,
-      in.bits.sources.src1 | in.bits.sources.csr,
+      in.bits.sources.src1 | in.bits.sources.src2_or_csr,
       in.bits.sources.src1
     )
   )
