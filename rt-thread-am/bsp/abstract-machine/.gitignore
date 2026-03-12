@@ -2,11 +2,3 @@ rtconfig.h
 files.mk
 !src/**
 !include/**
-*.txt
-!*.ld
-!*.py
-!*.h
-!*.c
-!Kconfig
-!SCon*
-!Makefile

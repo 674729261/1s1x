@@ -26,59 +26,9 @@ class axi4_delayer extends BlackBox {
   val io = IO(new AXI4DelayerIO)
 }
 
-class AXI4DelayerChisel(ratio: Double = 10.04477, scale_2pow: Long = 6)
-    extends Module {
+class AXI4DelayerChisel extends Module {
   val io = IO(new AXI4DelayerIO)
-  val countup_amount = math.round((ratio - 1.0) * math.pow(2.0, scale_2pow))
-  val countdown_amount = (1 << scale_2pow)
   io.out <> io.in
-  val sIDLE :: sDELAY :: sWAIT :: Nil = Enum(3)
-  val state_ar = RegInit(sIDLE)
-  val trigger_ar = io.in.ar.valid
-  val fire_ar = io.in.ar.valid && io.in.ar.ready
-  val counter_ar = RegInit(UInt(32.W), 0.U)
-
-  io.out.ar.valid := state_ar === sWAIT
-
-  state_ar := MuxLookup(state_ar, sDELAY)(
-    Seq(
-      sIDLE -> Mux(trigger_ar, sDELAY, sIDLE),
-      sDELAY -> Mux(counter_ar < countdown_amount.U, sWAIT, sDELAY),
-      sWAIT -> Mux(fire_ar, sIDLE, sWAIT)
-    )
-  )
-
-  counter_ar := MuxCase(
-    counter_ar,
-    Seq(
-      (state_ar === sWAIT && !fire_ar) -> (counter_ar + countup_amount.U),
-      (state_ar === sDELAY && counter_ar >= countdown_amount.U) -> (counter_ar - countdown_amount.U)
-    )
-  )
-
-  val state_aw = RegInit(sIDLE)
-  val trigger_aw = io.in.aw.valid
-  val fire_aw = io.in.aw.valid && io.in.aw.ready
-  val counter_aw = RegInit(UInt(32.W), 0.U)
-
-  io.out.aw.valid := state_aw === sWAIT
-
-  state_aw := MuxLookup(state_aw, sDELAY)(
-    Seq(
-      sIDLE -> Mux(trigger_aw, sDELAY, sIDLE),
-      sDELAY -> Mux(counter_aw < countdown_amount.U, sWAIT, sDELAY),
-      sWAIT -> Mux(fire_aw, sIDLE, sWAIT)
-    )
-  )
-
-  counter_aw := MuxCase(
-    counter_aw,
-    Seq(
-      (state_aw === sWAIT && !fire_aw) -> (counter_aw + countup_amount.U),
-      (state_aw === sDELAY && counter_aw >= countdown_amount.U) -> (counter_aw - countdown_amount.U)
-    )
-  )
-
 }
 
 class AXI4DelayerWrapper(implicit p: Parameters) extends LazyModule {
@@ -87,7 +37,7 @@ class AXI4DelayerWrapper(implicit p: Parameters) extends LazyModule {
   lazy val module = new Impl
   class Impl extends LazyModuleImp(this) {
     (node.in zip node.out) foreach { case ((in, edgeIn), (out, edgeOut)) =>
-      val delayer = Module(new AXI4DelayerChisel)
+      val delayer = Module(new axi4_delayer)
       delayer.io.clock := clock
       delayer.io.reset := reset
       delayer.io.in <> in

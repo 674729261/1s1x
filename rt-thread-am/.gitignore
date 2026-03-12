@@ -51,10 +51,3 @@ tags
 CMakeLists.txt
 cmake-build-debug
 *.mk
-
-!src/*
-!include/*
-!libcpu/*
-!examples/**
-!documentation/**
-!components/**

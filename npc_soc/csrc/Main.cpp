@@ -3,7 +3,6 @@
 #include "Flash.h"
 #include "spdlog/spdlog.h"
 #include <Args.h>
-#include <Cache.h>
 #include <MROM.h>
 #include <PerformanceCounter.h>
 #include <Ref.h>
@@ -25,18 +24,20 @@ static bool retire;
 
 extern "C" void notify_retire(int32_t pc, int32_t inst) { retire = true; }
 
+void nvboard_bind_all_pins(TOP_NAME *top);
+
 bool check_difftest(Dut &dut, Ref &ref) {
   bool ret = false;
   for (int i = 0; i < 16; i++) {
-    if (dut.getGPR(i) != ref.getGPR(i)) {
+    if (dut.getGPR(i) != ref.cpu.gpr[i]) {
       spdlog::error("gpr {} differs from ref : should be {:08x}, got {:08x}",
-                    gpr_names[i], ref.getGPR(i), dut.getGPR(i));
+                    gpr_names[i], ref.cpu.gpr[i], dut.getGPR(i));
       ret = true;
     }
   }
-  if (dut.getPC() != ref.getPC()) {
+  if (dut.getPC() != ref.cpu.pc) {
     spdlog::error("PC differs from ref : should be {:08x}, got {:08x}",
-                  ref.getPC(), dut.getPC());
+                  ref.cpu.pc, dut.getPC());
     ret = true;
   }
 
@@ -54,9 +55,9 @@ int simulate(int argc, char *argv[], Config config) {
   Verilated::traceEverOn(true);
 
   dut = std::make_unique<Dut>(config, contextp.get());
-  Ref ref(config, *dut, 3, 1);
+  Ref ref(config, *dut);
   if (config.nvboard) {
-    dut->nvboard_bind();
+    nvboard_bind_all_pins(dut->top.get());
     nvboard_init();
   }
   ref.reset(*dut);
@@ -66,7 +67,8 @@ int simulate(int argc, char *argv[], Config config) {
   auto start_time = std::chrono::steady_clock::now();
   while (!contextp->gotFinish()) {
     retire = false;
-    if (dut->getResetCore()) {
+    if (dut->top->rootp
+            ->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__reset) {
       ref.reset(*dut);
       ref.sync_state();
       clear_performance_count();
@@ -77,7 +79,6 @@ int simulate(int argc, char *argv[], Config config) {
     dut->step_one_cycle();
 
     if (retire) {
-      // std::println("{:08x}", dut->getPC());
       inst_count++;
       if (config.difftest) {
         ref.step();
@@ -106,9 +107,6 @@ int simulate(int argc, char *argv[], Config config) {
     result = -3;
   }
   dut->print_all_gpr();
-  spdlog::info("Reference cache hit count : {}", ref.getCacheHit());
-  spdlog::info("Reference instruction count : {}", ref.instrCount());
-
   display_performance(start_time, end_time);
   dut = nullptr;
   return result;

@@ -1,78 +1,160 @@
 #pragma once
-
-#include "Device/Audio.h"
-#include "Device/RTC.h"
-#include "spdlog/spdlog.h"
+#include "my_utils.h"
+#include <Device/Audio.h>
+#include <Device/Keyboard.h>
 #include <Device/VGA.h>
 #include <SDL2/SDL.h>
-#include <chrono>
+#include <atomic>
 #include <cstdint>
-#include <functional>
 #include <future>
-#include <lockfree/lockfree.hpp>
+#include <lockfree/spsc/queue.hpp>
 #include <memory>
-#include <stop_token>
 #include <thread>
-constexpr uint32_t SERIAL_OFFSET = 0x00003f8;
-constexpr uint32_t RTC_OFFSET = 0x0000048;
-constexpr std::size_t RTC_LEN = sizeof(uint32_t) * 2;
-constexpr uint32_t AUDIO_CTL_OFFSET = 0x0000200;
-constexpr std::size_t AUDIO_CTL_LEN = sizeof(Audio.reg_ctl);
-constexpr uint32_t AUDIO_BF_OFFSET = 0x1200000;
-constexpr std::size_t AUDIO_BF_LEN = AudioBase_t::SoundBufferSize;
-constexpr uint32_t VGA_CTL_OFFSET = 0x0000100;
-constexpr std::size_t VGA_CTL_LEN = 8;
-constexpr uint32_t VGA_BF_OFFSET = 0x1000000;
-constexpr std::size_t VGA_BF_LEN = VideoBase_t::VMemSize;
-constexpr uint32_t KBD_OFFSET = 0x0000060;
+#include <vector>
+class Devices {
+public:
+  struct DeviceSettings {
+    bool enable_vga;
+    bool enable_audio;
+    bool enable_keyboard;
+  };
+  friend class NEMUemu;
 
-inline void RTC_init() {
-  RTC.RTC_reg_bias = 0;
-  RTC.last_time = std::chrono::steady_clock::now();
-}
+  /**
+   * @brief Construct a new Devices object.
+   *
+   * @param ds define whether to enable VGA, Audio or keyboard
+   * @param MemSize the size of memory in bytes.
+   * @param program the path to the binary program file
+   * @param mtracer define thether to enable memory tracer to print each memory
+   * access
+   */
+  Devices(DeviceSettings ds, size_t MemSize, std::string_view program,
+          bool mtracer);
 
-#define MAP(c, f) c(f)
-#define NEMU_KEYS(f)                                                           \
-  f(ESCAPE) f(F1) f(F2) f(F3) f(F4) f(F5) f(F6) f(F7) f(F8) f(F9) f(F10)       \
-      f(F11) f(F12) f(GRAVE) f(1) f(2) f(3) f(4) f(5) f(6) f(7) f(8) f(9) f(0) \
-          f(MINUS) f(EQUALS) f(BACKSPACE) f(TAB) f(Q) f(W) f(E) f(R) f(T) f(Y) \
-              f(U) f(I) f(O) f(P) f(LEFTBRACKET) f(RIGHTBRACKET) f(BACKSLASH)  \
-                  f(CAPSLOCK) f(A) f(S) f(D) f(F) f(G) f(H) f(J) f(K) f(L)     \
-                      f(SEMICOLON) f(APOSTROPHE) f(RETURN) f(LSHIFT) f(Z) f(X) \
-                          f(C) f(V) f(B) f(N) f(M) f(COMMA) f(PERIOD) f(SLASH) \
-                              f(RSHIFT) f(LCTRL) f(APPLICATION) f(LALT)        \
-                                  f(SPACE) f(RALT) f(RCTRL) f(UP) f(DOWN)      \
-                                      f(LEFT) f(RIGHT) f(INSERT) f(DELETE)     \
-                                          f(HOME) f(END) f(PAGEUP) f(PAGEDOWN)
+  void init_ioe();
 
-#define NEMU_KEY_NAME(k) NEMU_KEY_##k,
+  void set_multiple_emu() { multiple_emu = true; }
 
-enum { NEMU_KEY_NONE = 0, MAP(NEMU_KEYS, NEMU_KEY_NAME) };
+  uint32_t get_instruction(uint32_t pc) {
+#ifndef DISABLE_ADDR_CHECK
+    if (pc < Devices::memOffset) [[unlikely]] {
+      log_and_throw<std::logic_error>("pc : {:08x} out of range", pc);
+    }
+#endif
+    return M[(pc - Devices::memOffset) >> 2];
+  }
 
-#define SDL_KEYMAP(k) keymap[SDL_SCANCODE_##k] = NEMU_KEY_##k;
-inline uint32_t keymap[256] = {};
+  void writeMMIO(uint32_t waddr, uint32_t mask32, uint32_t wdata);
+  std::optional<uint32_t> readMMIO(int raddr);
+  void pause(bool is_paused);
 
-inline void init_keymap() { MAP(NEMU_KEYS, SDL_KEYMAP) }
+  /**
+   * @brief Check if SDL has received a QUIT event(when receiving SIGINT or user
+   * exit).
+   *
+   * @return true if received a QUIT
+   * @return false otherwise
+   */
+  bool is_quit() { return quit.load(std::memory_order_acquire); }
 
-inline uint32_t wrap_key_event(uint8_t scancode, bool is_keydown) {
-  return keymap[scancode] | (is_keydown ? 0x8000 : 0);
-}
+  /**
+   * @brief Reset quit state.
+   *
+   */
+  void reset_quit() { quit.store(false); }
 
-inline std::unique_ptr<std::jthread> device_thread;
-void device_thread_work(std::stop_token stop_token,
-                        std::promise<void> &device_inited_promise);
+  // /**
+  //  * @brief Check the number of memory accesses since last call.
+  //  *
+  //  * @return int the number of memory accesses since last call
+  //  */
+  // int check_and_reset_op() {
+  //   int ret = operation.used;
+  //   operation.used = 0;
+  //   return ret;
+  // }
 
-inline void init_audio() {
-  Audio.sbuf = std::make_unique<AudioBase_t::SBF>();
-  spdlog::info("Allocated sound buffer of {} bytes", sizeof(AudioBase_t::SBF));
-}
-inline std::unique_ptr<std::jthread> keyboard_thread;
+  const DeviceSettings device_settings;
 
-inline void init_vga_kbd_thread() {
-  std::promise<void> device_inited_promise;
-  std::future<void> device_inited_future = device_inited_promise.get_future();
-  device_thread = std::make_unique<std::jthread>(
-      device_thread_work, std::ref(device_inited_promise));
-  device_inited_future.get();
-  spdlog::info("VGA thread initialization finished");
-}
+  ~Devices();
+
+private:
+  void update_RTC();
+
+  static void init_keymap();
+
+  void device_update_loop(std::promise<void> init_promise);
+
+  void init_audio();
+  void init_keyboard();
+  void init_vga();
+  void vga_update_screen();
+  void update_screen();
+
+  void process_keyboard();
+
+  void ensure_audio_enabled();
+  void ensure_vga_enabled();
+
+  std::mutex inited;
+
+private:
+  std::vector<uint32_t> M;
+  bool mtracer;
+  bool multiple_emu;
+
+  // struct OP {
+  //   int used;
+  //   struct OP_record {
+  //     bool is_read;
+  //     uint32_t addr;
+  //     uint32_t wdata;
+  //     uint32_t wmask;
+
+  //     bool operator==(const OP_record &o) const {
+  //       return is_read == o.is_read && addr == o.addr && wdata == o.wdata &&
+  //              wmask == o.wmask;
+  //     }
+  //   } op;
+  //   uint32_t rdata;
+  // } operation;
+
+  struct {
+    uint32_t RTC_reg[2];
+    std::chrono::steady_clock::time_point last_time;
+  } RTC;
+  KeyboardBase_t KeyboardBase;
+  AudioBase_t AudioBase;
+  VideoBase_t VideoBase;
+
+  std::atomic<bool> quit;
+
+  SDL_Renderer *renderer;
+  SDL_Texture *texture;
+  SDL_Window *window;
+
+  std::atomic<bool> device_running, device_alive;
+  std::thread device_update_thread;
+
+  std::unique_ptr<lockfree::spsc::Queue<uint32_t, 1024>> key_queue;
+
+public:
+  static constexpr size_t SoundBufferSize = 0x10000;
+  static constexpr uint32_t PC_Init = 0x80000000u;
+  static constexpr uint32_t memOffset = 0x80000000u;
+  static constexpr uint32_t deviceBase = 0xa0000000u;
+  static constexpr uint32_t RTCAddr = deviceBase + 0x0000048u;
+  static constexpr uint32_t RTCAddrEnd = RTCAddr + 0x8u;
+  static constexpr uint32_t SerialPort = deviceBase + 0x00003f8;
+  static constexpr uint32_t AudioPort = deviceBase + 0x0000200;
+  static constexpr uint32_t SoundBufferPort = deviceBase + 0x1200000;
+  static constexpr uint32_t VGAControlRegsPort = deviceBase + 0x0000100;
+  static constexpr uint32_t VGAFBPort = deviceBase + 0x1000000;
+  static constexpr uint32_t KeyboardPort = deviceBase + 0x0000060;
+
+  static constexpr uint32_t ScreenWidth = 400;
+  static constexpr uint32_t ScreenHeight = 300;
+  static constexpr uint32_t VMemSize =
+      ScreenWidth * ScreenHeight * sizeof(uint32_t);
+};

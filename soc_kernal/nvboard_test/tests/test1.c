@@ -36,7 +36,6 @@ int main() {
   y = y * 10 + rx.data - '0';
   printf("%u = %u\n", y, x + y);
   uint16_t p = 0;
-
 loop:
   if (*(volatile uint16_t *)SWITCH_GPIO == 0x8002) {
     *(volatile uint16_t *)LED_GPIO = (1 << p);

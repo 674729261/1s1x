@@ -3,7 +3,6 @@
 #include "my_utils.h"
 #include <cstddef>
 #include <cstdint>
-#include <memory>
 #include <print>
 #include <stdexcept>
 #include <vector>
@@ -73,9 +72,11 @@ public:
     }
   }
 
+  static InstRingBuffer instRingBuffer;
+
 private:
   std::vector<Item> instr_buffer;
   int pos_begin, pos_end, cnt;
 };
 
-inline std::unique_ptr<InstRingBuffer> instRingBuffer;
+// inline InstRingBuffer InstRingBuffer::instRingBuffer{};

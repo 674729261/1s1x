@@ -42,7 +42,7 @@ object AddMain extends App {
       opt[Unit]("to-soc")
         .action((_, c) => c.copy(to_soc = true)),
       opt[Unit]("to-npc")
-        .action((_, c) => c.copy(to_soc = false, performanceCounter = false))
+        .action((_, c) => c.copy(to_soc = false))
         .text("disable verifying"),
       opt[Long]("init-pc")
         .action((x, c) => c.copy(init_pc = x))

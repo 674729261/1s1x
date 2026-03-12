@@ -19,16 +19,9 @@ long long min_lsu_fetch_delay;
 long long max_lsu_fetch_delay;
 static long long last_ifu_time;
 static long long last_lsu_time;
-
-long long cycles_not_on_flash;
-long long insts_not_on_flash;
-
-long long stalled_cycles;
-long long flushed_insts;
-
 extern std::unique_ptr<Dut> dut;
 
-std::array<InstTypeItem, 14> inst_type_event = {
+std::array<InstTypeItem, 13> inst_type_event = {
     {{0, "Arithmetic immediate"},
      {0, "Arithmetic register"},
      {0, "Store"},
@@ -41,8 +34,7 @@ std::array<InstTypeItem, 14> inst_type_event = {
      {0, "Environment break"},
      {0, "Environment call"},
      {0, "Machine mode returen"},
-     {0, "Control state register operation"},
-     {0, "Fence"}}};
+     {0, "Control state register operation"}}};
 
 enum {
   TYPE_arithmetic_imm,
@@ -57,12 +49,11 @@ enum {
   TYPE_ebreak,
   TYPE_ecall,
   TYPE_mret,
-  TYPE_csrop,
-  TYPE_fence
+  TYPE_csrop
 };
 extern "C" void notify_ifu_r_event() {
   ifu_event++;
-  long long delay = dut->getSimTime() - last_ifu_time;
+  long long delay = dut->sim_time - last_ifu_time;
   sum_ifu_fetch_delay += delay;
   max_ifu_fetch_delay = std::max(max_ifu_fetch_delay, delay);
   min_ifu_fetch_delay = std::min(min_ifu_fetch_delay, delay);
@@ -70,13 +61,13 @@ extern "C" void notify_ifu_r_event() {
 extern "C" void notify_icache_hit_event() { icache_hit_event++; }
 extern "C" void notify_lsu_r_event() {
   lsu_read_event++;
-  long long delay = dut->getSimTime() - last_lsu_time;
+  long long delay = dut->sim_time - last_lsu_time;
   sum_lsu_fetch_delay += delay;
   max_lsu_fetch_delay = std::max(max_lsu_fetch_delay, delay);
   min_lsu_fetch_delay = std::min(min_lsu_fetch_delay, delay);
 }
-extern "C" void notify_ifu_ar_event() { last_ifu_time = dut->getSimTime(); }
-extern "C" void notify_lsu_ar_event() { last_lsu_time = dut->getSimTime(); }
+extern "C" void notify_ifu_ar_event() { last_ifu_time = dut->sim_time; }
+extern "C" void notify_lsu_ar_event() { last_lsu_time = dut->sim_time; }
 extern "C" void notify_exu_event() { exu_event++; }
 extern "C" void notify_idu_event() { idu_event++; }
 extern "C" void notify_wbu_event() { wbu_event++; }
@@ -115,12 +106,3 @@ extern "C" void notify_inst_type_is_mret() {
 extern "C" void notify_inst_type_is_csrop() {
   inst_type_event[TYPE_csrop].count++;
 }
-extern "C" void notify_inst_type_is_fence() {
-  inst_type_event[TYPE_fence].count++;
-}
-
-extern "C" void notify_new_cycle_not_on_flash() { cycles_not_on_flash++; }
-extern "C" void notify_new_inst_not_on_flash() { insts_not_on_flash++; }
-
-extern "C" void notify_stalled() { stalled_cycles++; }
-extern "C" void notify_flushed() { flushed_insts++; }

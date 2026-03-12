@@ -8,7 +8,6 @@
 #include <MROM.h>
 #include <Setup.h>
 #include <print>
-void nvboard_bind_all_pins(TOP_NAME *top);
 
 static constexpr std::array<std::string, 32> gpr_names = {
     "$0", "ra", "sp", "gp", "tp",  "t0",  "t1", "t2", "s0", "s1", "a0",
@@ -19,18 +18,14 @@ static constexpr std::array<std::string, 32> gpr_names = {
   rootp                                                                        \
       ->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__cpu__DOT__gpr__DOT__register_bank_regs_##X##_r
 
-class Dut {
-public:
+struct Dut {
   Dut(Config config, VerilatedContext *contextp) : sim_time{0} {
     top = std::make_unique<VysyxSoCFull>(contextp);
     m_trace = std::make_unique<VerilatedVcdC>();
     top->trace(m_trace.get(), 5);
     m_trace->open("waveform.vcd");
   }
-  void nvboard_bind() { nvboard_bind_all_pins(top.get()); }
-  bool getResetCore() {
-    return top->rootp->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__reset;
-  }
+
   void reset() {
     top->reset = 1;
     for (int i = 0; i < 32; i++) {
@@ -45,18 +40,14 @@ public:
   void step_one_cycle() {
     top->clock = 0;
     top->eval();
-    // if (getPC() < 0x30000000)
-    //   m_trace->dump(2 * sim_time);
     top->clock = 1;
     top->eval();
-    // if (getPC() < 0x30000000)
-    //   m_trace->dump(2 * sim_time + 1);
+    // m_trace->dump(sim_time);
     sim_time++;
-    // println("PC : {:08x}, a5 = {:08x}", getPC(), getGPR(15));
   }
 
   void step_one_inst() {}
-  vluint64_t getSimTime() { return sim_time; }
+
   uint32_t getPC() {
     return top->rootp
         ->ysyxSoCFull__DOT__asic__DOT__cpu__DOT__cpu__DOT__cpu__DOT__pc;
@@ -145,7 +136,6 @@ public:
 
   ~Dut() { m_trace->close(); }
 
-private:
   vluint64_t sim_time;
   std::unique_ptr<VysyxSoCFull> top;
   std::unique_ptr<VerilatedVcdC> m_trace;

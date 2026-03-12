@@ -4,158 +4,111 @@ import chisel3._
 import chisel3.util._
 import chisel3.layer.block
 
+class PerformanceCounter_ICache extends ExtModule {
+  val clock = IO(Input(Clock()))
+  val reset = IO(Input(Reset()))
+  val icache_hit = IO(Input(Bool()))
+
+}
+
 class CacheLine(linesize_2pow: Int, linecount_2pow: Int) extends Bundle {
   val words = (1 << (linesize_2pow - 2))
   val tag_width = 32 - linesize_2pow - linecount_2pow
   val tag = UInt(tag_width.W)
   val data = Vec(words, UInt(32.W))
+
 }
 
 object ShouldCache {
   def apply(addr: UInt): Bool = {
     val high_4bit = addr(31, 28)
-    val high_8bit = addr(31, 24)
     return high_4bit === 0x3.U(4.W) || high_4bit === 0x8.U(
       4.W
-    ) || high_4bit === 0xa.U(
-      4.W
-    ) || high_4bit === 0xb.U(4.W) || high_8bit === 0x0f.U(8.W)
+    ) || high_4bit === 0xa.U(4.W)
   }
 }
 
 class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
   val io = IO(new Bundle {
     val addr = Input(UInt(32.W))
-    val predicted_jump = Input(Bool())
-    val timestamp_req = Input(UInt(3.W))
-    val avalid = Input(Bool())
-    val aready = Output(Bool())
+    val valid = Input(Bool())
     val rdata = Output(UInt(32.W))
-    val rpc = Output(UInt(32.W))
-    val rjump = Output(UInt(32.W))
-    val timestamp_res = Output(UInt(3.W))
-    val in_cache = Output(Bool())
-    val rvalid = Output(Bool())
-    val rready = Input(Bool())
-    val clear = Input(Bool())
+    val ready = Output(Bool())
   })
   val fetch_port = IO(new AXI)
   set_AXIfull_zero(fetch_port)
 
+  val input_tag = io.addr(31, linecount_2pow + linesize_2pow)
+  val input_cache_index =
+    io.addr(linecount_2pow + linesize_2pow - 1, linesize_2pow)
+
   val bytes = (1 << linesize_2pow)
-  val words = (1 << (linesize_2pow - 2))
   val line_count = (1 << linecount_2pow)
   val content =
     Mem(line_count, new CacheLine(linesize_2pow, linecount_2pow))
   val valid_flags =
     RegInit(Vec(line_count, Bool()), VecInit(Seq.fill(line_count)(false.B)))
 
-  val fire = GenerateFireSignal(fetch_port)
-  val ifu_afire = io.avalid && io.aready
-  val ifu_rfire = io.rvalid && io.rready
-
-  val addr_r = RegEnable(io.addr, ifu_afire)
-  val timestamp_r = RegEnable(io.timestamp_req, ifu_afire)
-  val jump_r = RegEnable(io.predicted_jump, ifu_afire)
-  val has_request_r = RegInit(Bool(), false.B)
-  has_request_r := MuxCase(
-    has_request_r,
-    Seq(
-      (ifu_afire && !ifu_rfire) -> true.B,
-      (!ifu_afire && ifu_rfire) -> false.B
-    )
-  )
-
-  val input_tag = addr_r(31, linecount_2pow + linesize_2pow)
-  val input_cache_index =
-    addr_r(linecount_2pow + linesize_2pow - 1, linesize_2pow)
-  val input_index_inside_cacheline = addr_r(linesize_2pow - 1, 2)
-
   val cache_rdata =
     content.read(input_cache_index)
-  val should_cache = ShouldCache(addr_r)
-  val in_cache = should_cache && valid_flags(
-    input_cache_index
-  ) && (cache_rdata.tag === input_tag)
-  io.rpc := addr_r
-  io.in_cache := in_cache
+  val ar_fire = fetch_port.ar.valid && fetch_port.ar.ready
+  val r_fire = fetch_port.r.valid && fetch_port.r.ready
+  val out_ar = RegInit(Bool(), false.B)
+  val has_r = RegInit(Bool(), false.B)
 
-  val out_ar = RegInit(false.B)
-  val has_r = RegInit(false.B)
+  val ifu_fire = io.valid && io.ready
+
   out_ar := MuxCase(
     out_ar,
     Seq(
-      ifu_rfire -> false.B,
-      fire.ar_fire -> true.B
+      ar_fire -> true.B,
+      ifu_fire -> false.B
     )
   )
+
   has_r := MuxCase(
     has_r,
     Seq(
-      ifu_rfire -> false.B,
-      fire.r_burst_last -> true.B
+      r_fire -> true.B,
+      ifu_fire -> false.B
     )
   )
 
-  fetch_port.ar.addr := Mux(
-    should_cache,
-    Cat(addr_r(31, linesize_2pow), 0.U(linesize_2pow.W)),
-    addr_r
-  )
-  fetch_port.ar.valid := has_request_r && !out_ar && (!in_cache || !should_cache)
+  val should_cache = ShouldCache(io.addr)
+
+  val in_cache = should_cache && valid_flags(
+    input_cache_index
+  ) && cache_rdata.tag === input_tag
+  fetch_port.ar.valid := !out_ar && !in_cache && io.valid
   fetch_port.r.ready := out_ar && !has_r
+  io.ready := io.valid && (in_cache || has_r)
 
-  val axi_rdata_latched_next = Wire(Vec(words, UInt(32.W)))
-  val axi_rdata_latched = RegEnable(axi_rdata_latched_next, fire.r_fire)
-  axi_rdata_latched_next(words - 1) := fetch_port.r.data
-  for (i <- 0 until (words - 1))
-    axi_rdata_latched_next(i) := axi_rdata_latched(i + 1)
+  val axi_rdata_latched = RegEnable(fetch_port.r.data, r_fire)
+
+  io.rdata := Mux(in_cache, cache_rdata.data.asUInt, axi_rdata_latched)
+  io.ready := io.valid && (has_r || in_cache)
+
   val cache_wdata = Wire(new CacheLine(linesize_2pow, linecount_2pow))
-  cache_wdata.data := axi_rdata_latched.asTypeOf(Vec(words, UInt(32.W)))
+  cache_wdata.data := axi_rdata_latched.asTypeOf(Vec(1, UInt(32.W)))
   cache_wdata.tag := input_tag
-  val pending_fencei = RegInit(Bool(), false.B)
-  pending_fencei := MuxCase(
-    pending_fencei,
-    Seq(
-      io.clear -> true.B,
-      fire.r_burst_last -> false.B
-    )
-  )
-  when(!in_cache && ifu_rfire && should_cache && !pending_fencei) {
+
+  when(!in_cache && ifu_fire && should_cache) {
     content.write(input_cache_index, cache_wdata)
     valid_flags(input_cache_index) := true.B
   }
-  when(io.clear) {
-    for (i <- 0 until line_count)
-      valid_flags(i) := false.B
-  }
 
-  // for (i <- 0 until line_count) {
-  //   valid_flags(i) :=
-  //     Mux(
-  //       !in_cache && ifu_rfire && should_cache && (input_cache_index === i.U),
-  //       true.B,
-  //       valid_flags(i)
-  //     )
-  // }
+  fetch_port.ar.addr := io.addr
 
-  io.aready := (in_cache && ifu_rfire) || !has_request_r
-  io.timestamp_res := timestamp_r
-  io.rvalid := has_request_r && (in_cache || has_r)
-  io.rdata := Mux(
-    should_cache,
-    Mux(
-      in_cache,
-      cache_rdata.data(input_index_inside_cacheline),
-      axi_rdata_latched(input_index_inside_cacheline)
-    ),
-    axi_rdata_latched(words - 1)
-  )
-  io.rjump := jump_r
   fetch_port.aw.id := "b0000".U(4.W)
   fetch_port.ar.id := "b0000".U(4.W)
   fetch_port.w.last := true.B
-  fetch_port.ar.len := Mux(should_cache, (words - 1).U(8.W), 0.U(8.W))
+
+  block(PerformanceCounterLayer) {
+    val performancecounter_icache = Module(new PerformanceCounter_ICache)
+    performancecounter_icache.clock := clock
+    performancecounter_icache.reset := reset
+    performancecounter_icache.icache_hit := ifu_fire && in_cache
+  }
 
   block(AXIAssertLayer) {
     check_signal_stable(
@@ -171,8 +124,8 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
       "IFU.ar"
     )
     assert(!fetch_port.aw.valid && !fetch_port.w.valid, "ifu should not write")
-    when(fire.r_fire) {
-      // assert(fetch_port.r.last, "ifu.axi.rlast is not set")
+    when(r_fire) {
+      assert(fetch_port.r.last, "ifu.axi.rlast is not set")
       assert(fetch_port.r.resp === "b00".U, "ifu.axi.rresp is not b00")
       assert(fetch_port.r.id === "b0000".U, "ifu.axi.rid is not b0000")
 

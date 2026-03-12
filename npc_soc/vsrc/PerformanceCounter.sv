@@ -18,19 +18,11 @@ import "DPI-C" function void notify_inst_type_is_ebreak();
 import "DPI-C" function void notify_inst_type_is_ecall();
 import "DPI-C" function void notify_inst_type_is_mret();
 import "DPI-C" function void notify_inst_type_is_csrop();
-import "DPI-C" function void notify_inst_type_is_fence();
-import "DPI-C" function void notify_new_cycle_not_on_flash();
-import "DPI-C" function void notify_new_inst_not_on_flash();
-import "DPI-C" function void notify_stalled();
-import "DPI-C" function void notify_flushed();
-
-
 
 
 module PerformanceCounter (
     input clock,
     input reset,
-    input [31:0] pc,
     input ifu_arready,
     input ifu_arvalid,
     input ifu_rready,
@@ -56,11 +48,7 @@ module PerformanceCounter (
     input inst_type_is_ebreak,
     input inst_type_is_ecall,
     input inst_type_is_mret,
-    input inst_type_is_csrop,
-    input inst_type_is_fence,
-
-    input stalled,
-    input flushed
+    input inst_type_is_csrop
 );
 
   reg exu_clear, idu_clear;
@@ -75,10 +63,6 @@ module PerformanceCounter (
       exu_clear <= 1'b0;
       idu_clear <= 1'b0;
     end else begin
-
-      if (stalled) notify_stalled();
-      if (flushed) notify_flushed();
-
       if (ifu_rready && ifu_rvalid) notify_ifu_r_event();
       if (lsu_rready && lsu_rvalid) notify_lsu_r_event();
       if (ifu_arready && ifu_arvalid) notify_ifu_ar_event();
@@ -86,8 +70,6 @@ module PerformanceCounter (
       if (!exu_clear && exu_valid) notify_exu_event();
       if (!idu_clear && idu_valid) notify_idu_event();
       if (wbu_valid) notify_wbu_event();
-      if (pc[31:28] == 4'ha) notify_new_cycle_not_on_flash();
-      if (pc[31:28] == 4'ha && wbu_valid) notify_new_inst_not_on_flash();
 
       exu_clear <= next_clear(exu_clear, exu_ready, exu_valid);
       idu_clear <= next_clear(idu_clear, exu_ready, exu_valid);
@@ -104,7 +86,6 @@ module PerformanceCounter (
         if (inst_type_is_ebreak) notify_inst_type_is_ebreak();
         if (inst_type_is_ecall) notify_inst_type_is_ecall();
         if (inst_type_is_mret) notify_inst_type_is_mret();
-        if (inst_type_is_fence) notify_inst_type_is_fence();
         if (inst_type_is_csrop && !inst_type_is_mret && !inst_type_is_ecall && !inst_type_is_ebreak)
           notify_inst_type_is_csrop();
       end

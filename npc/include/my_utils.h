@@ -4,7 +4,6 @@
 #include <charconv>
 #include <concepts>
 #include <cstdint>
-#include <expected>
 #include <format>
 #include <limits>
 #include <optional>
@@ -18,12 +17,6 @@ using std::println, std::print;
 
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
-
-template <typename T> using Result = std::expected<T, std::string>;
-constexpr std::array<uint32_t, 16> lookup_mask32 = {
-    0x00000000, 0x000000FF, 0x0000FF00, 0x0000FFFF, 0x00FF0000, 0x00FF00FF,
-    0x00FFFF00, 0x00FFFFFF, 0xFF000000, 0xFF0000FF, 0xFF00FF00, 0xFF00FFFF,
-    0xFFFF0000, 0xFFFF00FF, 0xFFFFFF00, 0xFFFFFFFF};
 
 template <class T> inline std::optional<T> to_number(std::string_view p) {
   int base = 10, offset = 0;
@@ -54,15 +47,8 @@ public:
 template <class ExceptionType, typename... Args>
 [[noreturn]] void log_and_throw(std::format_string<Args...> fmt,
                                 Args &&...args) {
-  auto err_msg = std::format(fmt, std::forward<Args>(args)...);
-  spdlog::error(err_msg);
-  throw ExceptionType(err_msg);
-}
-
-[[noreturn]] inline void todo(std::string_view part) {
-  auto err_msg = std::format("{} is not implemented", part);
-  spdlog::error(err_msg);
-  throw std::logic_error(err_msg);
+  spdlog::error(fmt, std::forward<Args>(args)...);
+  throw ExceptionType(std::format(fmt, std::forward<Args>(args)...));
 }
 
 template <uint64_t Len, class T = uint32_t>
@@ -89,16 +75,4 @@ constexpr T bits(T raw) {
     uint64_t high_mask = (1ull << (High + 1)) - 1;
     return (raw & high_mask) >> Low;
   }
-}
-
-inline void write_mask(uint32_t &dst, uint32_t mask32, uint32_t wdata) {
-  dst = (dst & ~mask32) | (wdata & mask32);
-}
-
-inline void write_mask(std::atomic<uint32_t> &dst, uint32_t mask32,
-                       uint32_t wdata) {
-  uint32_t t = dst.load(), new_value;
-  do {
-    new_value = (t & ~mask32) | (wdata & mask32);
-  } while (!dst.compare_exchange_weak(t, new_value));
 }

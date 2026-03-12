@@ -1,7 +1,7 @@
 package empty
 import chisel3._
 import chisel3.util._
-import chisel3.layer._
+import ujson.True
 
 class InstFields extends Bundle {
   val rs1 = (UInt(5.W))
@@ -27,7 +27,6 @@ class InstType extends Bundle {
   val is_ecall = (Bool())
   val is_mret = (Bool())
   val is_csrop = (Bool())
-  val is_fence = (Bool())
 }
 
 class ImmType extends Bundle {
@@ -38,30 +37,17 @@ class ImmType extends Bundle {
   val is_J = Bool()
   val is_U = Bool()
 }
-class ALUControl extends Bundle {
-  val is_alu_add = (Bool())
-  val is_alu_sub = (Bool())
-  val is_alu_slt = (Bool())
-  val is_alu_sltu = (Bool())
-  val is_alu_sll = (Bool())
-  val is_alu_srl = (Bool())
-  val is_alu_sra = (Bool())
-  val is_alu_and = (Bool())
-  val is_alu_or = (Bool())
-  val is_alu_xor = (Bool())
-
-  val is_alu_b_inv = (Bool())
-}
 
 class ControlSignals extends Bundle {
   val is_csr_visit = (Bool())
-
-  val alu_controls = new ALUControl()
-
+  val is_alu_a_pc = (Bool())
+  val is_alu_b_reg = (Bool())
+  val is_alu_sub_sra = (Bool())
+  val is_alu_force_add = (Bool())
   val is_gpr_wdata_from_ram = (Bool())
   val is_gpr_wdata_from_snpc = (Bool())
   val is_gpr_wdata_from_alu = (Bool())
-  // val is_gpr_wdata_from_imm = (Bool())
+  val is_gpr_wdata_from_imm = (Bool())
   val is_gpr_wdata_from_csr = (Bool())
 
   val is_gpr_wen = (Bool())
@@ -75,43 +61,26 @@ class ControlSignals extends Bundle {
   val is_ram_wen = (Bool())
 
   val is_csr_masked = (Bool())
-
-  val rd = UInt(5.W)
-  val csrd = UInt(12.W)
-
-  val bra_funct3 = UInt(3.W)
-
-  val is_branch = Bool()
-  val is_dnpc_jal_or_jalr = Bool()
-  val is_dnpc_csr_jump = Bool()
-  val is_dnpc_snpc = Bool()
-
-  val is_ebreak = Bool()
-
 }
 
 object decodeInstType {
   def apply(inst: UInt, fields: InstFields): InstType = {
-    val ret = WireInit(0.U.asTypeOf(new InstType))
-    val opcode = inst(6, 2)
-    switch(opcode) {
-      is("b00100".U) { ret.is_arithmetic_imm := true.B }
-      is("b01100".U) { ret.is_arithmetic_reg := true.B }
-      is("b01000".U) { ret.is_store := true.B }
-      is("b00000".U) { ret.is_load := true.B }
-      is("b11000".U) { ret.is_branch := true.B }
-      is("b11011".U) { ret.is_jal := true.B }
-      is("b11001".U) { ret.is_jalr := true.B }
-      is("b01101".U) { ret.is_lui := true.B }
-      is("b00101".U) { ret.is_auipc := true.B }
-      is("b11100".U) { ret.is_csrop := true.B }
-      is("b00011".U) { ret.is_fence := true.B }
-    }
+    val ret = Wire(new InstType)
+
+    ret.is_arithmetic_imm := (inst(6, 0) === "b0010011".U(7.W))
+    ret.is_arithmetic_reg := (inst(6, 0) === "b0110011".U(7.W))
+    ret.is_store := (inst(6, 0) === "b0100011".U(7.W))
+    ret.is_load := (inst(6, 0) === "b0000011".U(7.W))
+    ret.is_branch := (inst(6, 0) === "b1100011".U(7.W))
+    ret.is_jal := (inst(6, 0) === "b1101111".U(7.W))
+    ret.is_jalr := (inst(6, 0) === "b1100111".U(7.W))
+    ret.is_lui := (inst(6, 0) === "b0110111".U(7.W))
+    ret.is_auipc := (inst(6, 0) === "b0010111".U(7.W))
+    ret.is_csrop := (inst(6, 0) === "b1110011".U(7.W))
     val is_funct3_zero = (fields.funct3 === "b000".U(3.W))
     ret.is_ebreak := ret.is_csrop && is_funct3_zero && !inst(21) && inst(20)
     ret.is_ecall := ret.is_csrop && is_funct3_zero && !inst(21) && !inst(20)
     ret.is_mret := ret.is_csrop && is_funct3_zero && inst(21)
-
     return ret
   }
 }
@@ -199,52 +168,19 @@ object decodeInstControlSignal {
       imm_type: ImmType
   ): ControlSignals = {
     val ret = Wire(new ControlSignals)
+    ret.is_alu_a_pc := imm_type.is_B || imm_type.is_J || it.is_auipc
+    ret.is_alu_b_reg := imm_type.is_R
     val is_funct3_zero = (fields.funct3 === "b000".U(3.W))
-    val is_alu_sub_sra =
+    ret.is_alu_sub_sra :=
       fields.funct7(5) && !(it.is_arithmetic_imm && is_funct3_zero)
-    val is_alu_force_add =
-      it.is_mret || it.is_store || it.is_load || it.is_branch || it.is_auipc || it.is_jal || it.is_jalr || it.is_lui
-
-    ret.alu_controls.is_alu_add := is_alu_force_add || (fields.funct3 === "b000"
-      .U(
-        3.W
-      ) && !is_alu_sub_sra)
-    ret.alu_controls.is_alu_sub := (fields.funct3 === "b000".U(
-      3.W
-    ) && is_alu_sub_sra) && !is_alu_force_add
-    ret.alu_controls.is_alu_sll := (fields.funct3 === "b001".U(
-      3.W
-    )) && !is_alu_force_add
-    ret.alu_controls.is_alu_slt := (fields.funct3 === "b010".U(
-      3.W
-    )) && !is_alu_force_add
-    ret.alu_controls.is_alu_sltu := (fields.funct3 === "b011".U(
-      3.W
-    )) && !is_alu_force_add
-    ret.alu_controls.is_alu_srl := (fields.funct3 === "b101".U(
-      3.W
-    )) && !is_alu_sub_sra && !is_alu_force_add
-    ret.alu_controls.is_alu_sra := (fields.funct3 === "b101".U(
-      3.W
-    )) && is_alu_sub_sra && !is_alu_force_add
-    ret.alu_controls.is_alu_and := (fields.funct3 === "b111".U(
-      3.W
-    )) && !is_alu_force_add
-    ret.alu_controls.is_alu_or := (fields.funct3 === "b110".U(
-      3.W
-    )) && !is_alu_force_add
-    ret.alu_controls.is_alu_xor := (fields.funct3 === "b100".U(
-      3.W
-    )) && !is_alu_force_add
-
-    ret.alu_controls.is_alu_b_inv := ret.alu_controls.is_alu_sub || ret.alu_controls.is_alu_slt || ret.alu_controls.is_alu_sltu
 
     ret.is_csr_visit := it.is_csrop && !is_funct3_zero
+    ret.is_alu_force_add := it.is_store || it.is_load || it.is_branch || it.is_auipc || it.is_jal || it.is_jalr
     ret.is_gpr_wdata_from_ram := it.is_load
     ret.is_gpr_wdata_from_snpc := it.is_jal || it.is_jalr
-    // ret.is_gpr_wdata_from_imm := it.is_lui
+    ret.is_gpr_wdata_from_imm := it.is_lui
     ret.is_gpr_wdata_from_csr := ret.is_csr_visit
-    ret.is_gpr_wdata_from_alu := (!ret.is_gpr_wdata_from_csr) && (!ret.is_gpr_wdata_from_ram) && (!ret.is_gpr_wdata_from_snpc)
+    ret.is_gpr_wdata_from_alu := (!ret.is_gpr_wdata_from_csr) && (!ret.is_gpr_wdata_from_imm) && (!ret.is_gpr_wdata_from_ram) && (!ret.is_gpr_wdata_from_snpc)
     ret.is_gpr_wen := ret.is_csr_visit || imm_type.is_U || it.is_load || imm_type.is_R || it.is_arithmetic_imm || it.is_jal || it.is_jalr
 
     ret.is_ram_byte := (fields.funct3(1, 0) === "b00".U(2.W))
@@ -256,71 +192,32 @@ object decodeInstControlSignal {
     ret.is_ram_wen := it.is_store
 
     ret.is_csr_masked := fields.funct3(1)
-
-    ret.bra_funct3 := fields.funct3
-
-    ret.rd := fields.rd
-    ret.csrd := fields.csr
-    ret.is_branch := it.is_branch
-    ret.is_dnpc_jal_or_jalr := it.is_jal || it.is_jalr
-    ret.is_dnpc_csr_jump := it.is_mret
-    ret.is_dnpc_snpc := !ret.is_branch && !ret.is_dnpc_jal_or_jalr && !ret.is_dnpc_csr_jump
-    ret.is_ebreak := it.is_ebreak
     return ret
   }
 }
 
 class Operands extends Bundle {
-  // val csr = UInt(32.W)
-  val alu_a = UInt(32.W)
-  val mtvec = UInt(32.W)
-  val alu_b = UInt(32.W)
   val src1 = UInt(32.W)
-  val src2_or_csr = UInt(32.W)
-  // val imm = UInt(32.W)
+  val src2 = UInt(32.W)
+  val csr = UInt(32.W)
+  val mtvec = UInt(32.W)
+  val mepc = UInt(32.W)
 }
 
 class MessageIDU2EXU extends Bundle {
   val pc = (UInt(32.W))
-  val inst = (UInt(32.W))
-  val in_cache = (Bool())
-  val predicted_jump = (Bool())
 
-  val controls = (new ControlSignals)
+  val fields = (new InstFields)
   val itype = (new InstType)
+  val controls = (new ControlSignals)
+
   val sources = (new Operands)
-
-  val rd_valid = (Bool())
-  val exception = (Bool())
-  val cause = (UInt(4.W))
-}
-
-class ConflictInfoRS extends Bundle {
-  val rs1_valid = Output(Bool())
-  val rs2_valid = Output(Bool())
-  val csr_src_valid = Output(Bool())
-  val rs1_id = Output(UInt(5.W))
-  val rs2_id = Output(UInt(5.W))
-  val csr_src_id = Output(UInt(12.W))
-  val stall = Input(Bool())
-  val do_forward_src1 = Input(Bool())
-  val do_forward_src2 = Input(Bool())
-  val forward_data_src1 = Input(UInt(32.W))
-  val forward_data_src2 = Input(UInt(32.W))
-
 }
 
 class IDU() extends Module {
   val in = IO(Flipped(DecoupledIO(new MessageIFU2IDU)))
-  val perf_cnt = IO(new Bundle {
-    val stalled = Output(Bool())
-    val flushed = Output(Bool())
-  })
+
   val out = IO(DecoupledIO(new MessageIDU2EXU))
-  val conf = IO(new ConflictInfoRS)
-  val flush = IO(new Bundle {
-    val valid = Input(Bool())
-  })
 
   val fetch_port_out = IO(new Bundle {
     val gpr_raddr1 = Output(UInt(5.W))
@@ -338,22 +235,14 @@ class IDU() extends Module {
     val csr_mepc = Input(UInt(32.W))
   })
 
-  val has_inst_r = RegInit(false.B)
-  has_inst_r := MuxCase(
-    has_inst_r,
-    Seq(
-      (in.fire && !flush.valid) -> true.B,
-      (out.fire || flush.valid) -> false.B
-    )
-  )
-  val has_inst = has_inst_r && !flush.valid
+  out.bits.pc := in.bits.pc
 
   val imm_type = Wire(new ImmType)
   val fields = Wire(new InstFields)
   val inst_type = Wire(new InstType)
   val control_signals = Wire(new ControlSignals)
-
-  out.bits.pc := in.bits.pc
+  out.bits.fields := fields
+  out.bits.itype := inst_type
   out.bits.controls := control_signals
 
   imm_type := decodeImmType(in.bits.inst, inst_type)
@@ -369,63 +258,14 @@ class IDU() extends Module {
   fetch_port_out.csr_raddr := fields.csr
   fetch_port_out.gpr_raddr1 := fields.rs1
   fetch_port_out.gpr_raddr2 := fields.rs2
-  val gpr_rdata1 =
-    Mux(conf.do_forward_src1, conf.forward_data_src1, fetch_port_in.gpr_rdata1)
-  val gpr_rdata2 =
-    Mux(conf.do_forward_src2, conf.forward_data_src2, fetch_port_in.gpr_rdata2)
-  out.bits.sources.src1 := gpr_rdata1
-  out.bits.sources.src2_or_csr := Mux(
-    control_signals.is_gpr_wdata_from_csr,
-    fetch_port_in.csr_rdata,
-    gpr_rdata2
-  )
-  // out.bits.sources.imm := fields.imm
 
-  // out.bits.sources.csr := fetch_port_in.csr_rdata
-  out.bits.inst := in.bits.inst
-  out.bits.predicted_jump := in.bits.predicted_jump
-
-  val is_alu_a_pc = imm_type.is_B || imm_type.is_J || inst_type.is_auipc
-  val is_alu_b_reg = imm_type.is_R
-
-  out.bits.sources.alu_a := MuxCase(
-    gpr_rdata1,
-    Seq(
-      (inst_type.is_lui || inst_type.is_mret) -> 0.U(32.W),
-      is_alu_a_pc -> in.bits.pc
-    )
-  )
+  out.bits.sources.csr := fetch_port_in.csr_rdata
+  out.bits.sources.src1 := fetch_port_in.gpr_rdata1
+  out.bits.sources.src2 := fetch_port_in.gpr_rdata2
   out.bits.sources.mtvec := fetch_port_in.csr_mtvec
+  out.bits.sources.mepc := fetch_port_in.csr_mepc
 
-  val alu_b_raw = Mux(
-    inst_type.is_mret,
-    fetch_port_in.csr_mepc,
-    Mux(
-      is_alu_b_reg,
-      gpr_rdata2,
-      fields.imm
-    )
-  )
-  out.bits.sources.alu_b := Mux(
-    control_signals.alu_controls.is_alu_b_inv,
-    ~alu_b_raw,
-    alu_b_raw
-  )
+  out.valid := in.valid
+  in.ready := out.ready
 
-  out.bits.itype := inst_type
-  conf.rs1_id := fields.rs1
-  conf.rs2_id := fields.rs2
-  conf.csr_src_id := control_signals.csrd
-  conf.rs1_valid := has_inst && (imm_type.is_R || imm_type.is_I || imm_type.is_S || imm_type.is_B || inst_type.is_csrop)
-  conf.rs2_valid := has_inst && (imm_type.is_R || imm_type.is_S || imm_type.is_B)
-  conf.csr_src_valid := has_inst && (inst_type.is_csrop)
-  out.bits.rd_valid := (imm_type.is_R || imm_type.is_I || imm_type.is_U || imm_type.is_J || inst_type.is_csrop)
-  out.valid := has_inst && !conf.stall
-  out.bits.in_cache := in.bits.in_cache
-  in.ready := (out.fire || !has_inst) && !conf.stall
-
-  perf_cnt.stalled := has_inst && conf.stall
-  perf_cnt.flushed := has_inst_r && flush.valid
-  out.bits.exception := inst_type.is_ecall
-  out.bits.cause := 11.U(4.W)
 }

@@ -73,10 +73,8 @@ ENTRY(_start)
 MEMORY {
   sram (rw) : ORIGIN = 0x0f000000, LENGTH = 8K
   prog (rx)  : ORIGIN = 0x30000000, LENGTH = _pmem_size
-  psram_heap (rw) : ORIGIN = 0x80000000, LENGTH = 4M 
-  sdram (rwx) : ORIGIN = 0xa0000000, LENGTH = 64M
-  sdram_heap (rwx) : ORIGIN = 0xa4000000, LENGTH = 64M
-
+  psram_heap (rw) : ORIGIN = 0x80000000, LENGTH = 4M
+  sdram (rwx) : ORIGIN = 0xa0000000, LENGTH = 128M
 }
 
 SECTIONS
@@ -132,8 +130,8 @@ SECTIONS
     __bss_end = .;
   } > sdram
 
-  _heap_start = ORIGIN(sdram_heap);
-  _heap_end = ORIGIN(sdram_heap) + LENGTH(sdram_heap);
+  _heap_start = ORIGIN(psram_heap);
+  _heap_end = ORIGIN(psram_heap) + LENGTH(psram_heap);
   _stack_pointer = ORIGIN(sram) + LENGTH(sram);
 }
 

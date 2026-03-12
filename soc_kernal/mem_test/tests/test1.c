@@ -9,17 +9,17 @@
       return -1;                                                               \
   } while (0)
 
-#define TEST_ADDR_START 0xa4000000
-#define TEST_ADDR_END 0xa4000100
+#define TEST_ADDR_START 0x0f000000
+#define TEST_ADDR_END 0x0f001000
 
 int test_word() {
   uint32_t *start = (uint32_t *)(TEST_ADDR_START);
   uint32_t *end = (uint32_t *)(TEST_ADDR_END);
   for (volatile uint32_t *p = start; p < end; p++) {
-    *p = (uint32_t)((uint32_t)p + 0x12345);
+    *p = (uint32_t)((uint32_t)p * 23);
   }
   for (volatile uint32_t *p = start; p < end; p++) {
-    MY_CHECK(*p == (uint32_t)((uint32_t)p + 0x12345));
+    MY_CHECK(*p == (uint32_t)((uint32_t)p * 23));
   }
   return 0;
 }
@@ -52,11 +52,11 @@ int main() {
   int return_value = test_word();
   if (return_value)
     return -1;
-  // return_value = test_half();
-  // if (return_value)
-  //   return -1;
-  // return_value = test_byte();
-  // if (return_value)
-  //   return -1;
+  return_value = test_half();
+  if (return_value)
+    return -1;
+  return_value = test_byte();
+  if (return_value)
+    return -1;
   return 0;
 }
