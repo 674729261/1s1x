@@ -92,23 +92,26 @@ class ControlSignals extends Bundle {
 
 object decodeInstType {
   def apply(inst: UInt, fields: InstFields): InstType = {
-    val ret = Wire(new InstType)
-
-    ret.is_arithmetic_imm := (inst(6, 2) === "b00100".U(5.W))
-    ret.is_arithmetic_reg := (inst(6, 2) === "b01100".U(5.W))
-    ret.is_store := (inst(6, 2) === "b01000".U(5.W))
-    ret.is_load := (inst(6, 2) === "b00000".U(5.W))
-    ret.is_branch := (inst(6, 2) === "b11000".U(5.W))
-    ret.is_jal := (inst(6, 2) === "b11011".U(5.W))
-    ret.is_jalr := (inst(6, 2) === "b11001".U(5.W))
-    ret.is_lui := (inst(6, 2) === "b01101".U(5.W))
-    ret.is_auipc := (inst(6, 2) === "b00101".U(5.W))
-    ret.is_csrop := (inst(6, 2) === "b11100".U(5.W))
+    val ret = WireInit(0.U.asTypeOf(new InstType))
+    val opcode = inst(6, 2)
+    switch(opcode) {
+      is("b00100".U) { ret.is_arithmetic_imm := true.B }
+      is("b01100".U) { ret.is_arithmetic_reg := true.B }
+      is("b01000".U) { ret.is_store := true.B }
+      is("b00000".U) { ret.is_load := true.B }
+      is("b11000".U) { ret.is_branch := true.B }
+      is("b11011".U) { ret.is_jal := true.B }
+      is("b11001".U) { ret.is_jalr := true.B }
+      is("b01101".U) { ret.is_lui := true.B }
+      is("b00101".U) { ret.is_auipc := true.B }
+      is("b11100".U) { ret.is_csrop := true.B }
+      is("b00011".U) { ret.is_fence := true.B }
+    }
     val is_funct3_zero = (fields.funct3 === "b000".U(3.W))
     ret.is_ebreak := ret.is_csrop && is_funct3_zero && !inst(21) && inst(20)
     ret.is_ecall := ret.is_csrop && is_funct3_zero && !inst(21) && !inst(20)
     ret.is_mret := ret.is_csrop && is_funct3_zero && inst(21)
-    ret.is_fence := (inst(6, 2) === "b00011".U(5.W))
+
     return ret
   }
 }
@@ -201,38 +204,25 @@ object decodeInstControlSignal {
       fields.funct7(5) && !(it.is_arithmetic_imm && is_funct3_zero)
     val is_alu_force_add =
       it.is_mret || it.is_store || it.is_load || it.is_branch || it.is_auipc || it.is_jal || it.is_jalr || it.is_lui
-
-    ret.alu_controls.is_alu_add := is_alu_force_add || (fields.funct3 === "b000"
-      .U(
-        3.W
-      ) && !is_alu_sub_sra)
-    ret.alu_controls.is_alu_sub := (fields.funct3 === "b000".U(
-      3.W
+    val funct3_1H = UIntToOH(fields.funct3).asBools
+    ret.alu_controls.is_alu_add := is_alu_force_add || (funct3_1H(
+      0
+    ) && !is_alu_sub_sra)
+    ret.alu_controls.is_alu_sub := (funct3_1H(
+      0
     ) && is_alu_sub_sra) && !is_alu_force_add
-    ret.alu_controls.is_alu_sll := (fields.funct3 === "b001".U(
-      3.W
-    )) && !is_alu_force_add
-    ret.alu_controls.is_alu_slt := (fields.funct3 === "b010".U(
-      3.W
-    )) && !is_alu_force_add
-    ret.alu_controls.is_alu_sltu := (fields.funct3 === "b011".U(
-      3.W
-    )) && !is_alu_force_add
-    ret.alu_controls.is_alu_srl := (fields.funct3 === "b101".U(
-      3.W
+    ret.alu_controls.is_alu_sll := (funct3_1H(1)) && !is_alu_force_add
+    ret.alu_controls.is_alu_slt := (funct3_1H(2)) && !is_alu_force_add
+    ret.alu_controls.is_alu_sltu := (funct3_1H(3)) && !is_alu_force_add
+    ret.alu_controls.is_alu_srl := (funct3_1H(
+      5
     )) && !is_alu_sub_sra && !is_alu_force_add
-    ret.alu_controls.is_alu_sra := (fields.funct3 === "b101".U(
-      3.W
+    ret.alu_controls.is_alu_sra := (funct3_1H(
+      5
     )) && is_alu_sub_sra && !is_alu_force_add
-    ret.alu_controls.is_alu_and := (fields.funct3 === "b111".U(
-      3.W
-    )) && !is_alu_force_add
-    ret.alu_controls.is_alu_or := (fields.funct3 === "b110".U(
-      3.W
-    )) && !is_alu_force_add
-    ret.alu_controls.is_alu_xor := (fields.funct3 === "b100".U(
-      3.W
-    )) && !is_alu_force_add
+    ret.alu_controls.is_alu_and := (funct3_1H(7)) && !is_alu_force_add
+    ret.alu_controls.is_alu_or := (funct3_1H(6)) && !is_alu_force_add
+    ret.alu_controls.is_alu_xor := (funct3_1H(4)) && !is_alu_force_add
 
     ret.alu_controls.is_alu_b_inv := ret.alu_controls.is_alu_sub || ret.alu_controls.is_alu_slt || ret.alu_controls.is_alu_sltu
 
