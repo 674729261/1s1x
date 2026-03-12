@@ -33,10 +33,10 @@ class XBar_CLINT() extends Module {
       sCLINT -> Mux(CLINT_fire.r_burst_last, sOUT, sCLINT)
     )
   )
-  val should_bind_to_CLINT_r = (r_state === sOUT)
-  when(should_bind_to_CLINT_r) {
-    CLINT_AXI.r <> IN_AXI.r
-  }.otherwise { OUT_AXI.r <> IN_AXI.r }
+  val should_bind_to_OUT_r = (r_state === sOUT)
+  when(should_bind_to_OUT_r) {
+    OUT_AXI.r <> IN_AXI.r
+  }.otherwise { CLINT_AXI.r <> IN_AXI.r }
 
 }
 
