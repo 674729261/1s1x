@@ -111,7 +111,7 @@ class EXU() extends Module {
     Seq(
       // in.bits.controls.is_gpr_wdata_from_ram -> fetch_port_in.bits.mem_rdata,
       in.bits.controls.is_gpr_wdata_from_snpc -> snpc,
-      in.bits.controls.is_gpr_wdata_from_imm -> in.bits.sources.imm,
+      // in.bits.controls.is_gpr_wdata_from_imm -> in.bits.sources.imm,
       in.bits.controls.is_gpr_wdata_from_alu -> alu.io.out,
       in.bits.controls.is_gpr_wdata_from_csr -> in.bits.sources.csr
     )

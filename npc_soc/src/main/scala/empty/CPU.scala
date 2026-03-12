@@ -132,9 +132,9 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
     val conf2 =
       rs_info.rs2_valid && rd_info.rd_valid && (rs_info.rs2_id === rd_info.rd_id) && (rd_info.rd_id =/= 0
         .U(5.W))
-    val conf_csr =
-      rs_info.csr_src_valid && rd_info.csr_dest_valid && (rs_info.csr_src_id === rd_info.csr_id)
-
+    // val conf_csr =
+    //   rs_info.csr_src_valid && rd_info.csr_dest_valid && (rs_info.csr_src_id === rd_info.csr_id)
+    val conf_csr = rd_info.csr_dest_valid
     val forward1 = conf1 && (rd_info.ok_to_forward_rd)
     val forward2 = conf2 && (rd_info.ok_to_forward_rd)
 

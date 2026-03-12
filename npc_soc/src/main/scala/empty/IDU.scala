@@ -61,7 +61,7 @@ class ControlSignals extends Bundle {
   val is_gpr_wdata_from_ram = (Bool())
   val is_gpr_wdata_from_snpc = (Bool())
   val is_gpr_wdata_from_alu = (Bool())
-  val is_gpr_wdata_from_imm = (Bool())
+  // val is_gpr_wdata_from_imm = (Bool())
   val is_gpr_wdata_from_csr = (Bool())
 
   val is_gpr_wen = (Bool())
@@ -239,9 +239,9 @@ object decodeInstControlSignal {
     ret.is_csr_visit := it.is_csrop && !is_funct3_zero
     ret.is_gpr_wdata_from_ram := it.is_load
     ret.is_gpr_wdata_from_snpc := it.is_jal || it.is_jalr
-    ret.is_gpr_wdata_from_imm := it.is_lui
+    // ret.is_gpr_wdata_from_imm := it.is_lui
     ret.is_gpr_wdata_from_csr := ret.is_csr_visit
-    ret.is_gpr_wdata_from_alu := (!ret.is_gpr_wdata_from_csr) && (!ret.is_gpr_wdata_from_imm) && (!ret.is_gpr_wdata_from_ram) && (!ret.is_gpr_wdata_from_snpc)
+    ret.is_gpr_wdata_from_alu := (!ret.is_gpr_wdata_from_csr) && (!ret.is_gpr_wdata_from_ram) && (!ret.is_gpr_wdata_from_snpc)
     ret.is_gpr_wen := ret.is_csr_visit || imm_type.is_U || it.is_load || imm_type.is_R || it.is_arithmetic_imm || it.is_jal || it.is_jalr
 
     ret.is_ram_byte := (fields.funct3(1, 0) === "b00".U(2.W))
@@ -274,7 +274,7 @@ class Operands extends Bundle {
   val alu_b = UInt(32.W)
   val src1 = UInt(32.W)
   val src2 = UInt(32.W)
-  val imm = UInt(32.W)
+  // val imm = UInt(32.W)
 }
 
 class MessageIDU2EXU extends Bundle {
@@ -372,7 +372,7 @@ class IDU() extends Module {
     Mux(conf.do_forward_src2, conf.forward_data_src2, fetch_port_in.gpr_rdata2)
   out.bits.sources.src1 := gpr_rdata1
   out.bits.sources.src2 := gpr_rdata2
-  out.bits.sources.imm := fields.imm
+  // out.bits.sources.imm := fields.imm
 
   out.bits.sources.csr := fetch_port_in.csr_rdata
   out.bits.inst := in.bits.inst
@@ -385,6 +385,7 @@ class IDU() extends Module {
     gpr_rdata1,
     Seq(
       inst_type.is_mret -> fetch_port_in.csr_mepc,
+      inst_type.is_lui -> 0.U(32.W),
       is_alu_a_pc -> in.bits.pc
     )
   )
