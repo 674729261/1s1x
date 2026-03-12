@@ -85,35 +85,26 @@ void _trm_init() {
   halt(ret);
 }
 
-__attribute__((section(".fsbl"))) static void *
-__fsbl__memcpy(void *out, const void *in, size_t n) {
-  unsigned char *d = (unsigned char *)out;
-  const unsigned char *s = (const unsigned char *)in;
-
-  while ((((uintptr_t)d) & 0x3) && n) {
-    *d++ = *s++;
-    n--;
-  }
-
-  while (n >= 4) {
-    *(uint32_t *)d = *(const uint32_t *)s;
-    d += 4;
-    s += 4;
-    n -= 4;
-  }
-
-  while (n-- > 0) {
-    *d++ = *s++;
-  }
-  return out;
-}
-
 __attribute__((section(".fsbl"))) void fstbootloader() {
   extern uint32_t __ssbl_load_start, __ssbl_load_end, __ssbl_start;
   uint32_t *src = &__ssbl_load_start;
   uint32_t *dst = &__ssbl_start;
-  __fsbl__memcpy(dst, src, &__ssbl_load_end - &__ssbl_load_start);
+  size_t n = &__ssbl_load_end - &__ssbl_load_start;
+  while ((((uintptr_t)dst) & 0x3) && n) {
+    *dst++ = *src++;
+    n--;
+  }
 
+  while (n >= 4) {
+    *(uint32_t *)dst = *(const uint32_t *)src;
+    dst += 4;
+    src += 4;
+    n -= 4;
+  }
+
+  while (n-- > 0) {
+    *dst++ = *src++;
+  }
   // while (src < &__ssbl_load_end) {
   //   *dst = *src;
   //   ++dst;
