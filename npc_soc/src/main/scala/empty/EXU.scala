@@ -95,7 +95,7 @@ class EXU() extends Module {
   val alu = Module(new ALU(32))
   val branch = Module(new Branch(32))
 
-  alu.io.A := in.bits.sources.alu_a_or_mepc
+  alu.io.A := in.bits.sources.alu_a
   alu.io.B := in.bits.sources.alu_b
   alu.io.controls := in.bits.controls.alu_controls
 
@@ -132,8 +132,8 @@ class EXU() extends Module {
   out_pc.dnpc := MuxCase(
     snpc,
     Seq(
-      (should_branch || in.bits.controls.is_dnpc_jal_or_jalr) -> alu.io.out,
-      in.bits.controls.is_dnpc_csr_jump -> in.bits.sources.alu_a_or_mepc
+      (should_branch || in.bits.controls.is_dnpc_jal_or_jalr || in.bits.controls.is_dnpc_csr_jump) -> alu.io.out
+      // in.bits.controls.is_dnpc_csr_jump -> in.bits.sources.alu_a_or_mepc
     )
   )
 

@@ -200,7 +200,7 @@ object decodeInstControlSignal {
     val is_alu_sub_sra =
       fields.funct7(5) && !(it.is_arithmetic_imm && is_funct3_zero)
     val is_alu_force_add =
-      it.is_store || it.is_load || it.is_branch || it.is_auipc || it.is_jal || it.is_jalr || it.is_lui
+      it.is_mret || it.is_store || it.is_load || it.is_branch || it.is_auipc || it.is_jal || it.is_jalr || it.is_lui
 
     ret.alu_controls.is_alu_add := is_alu_force_add || (fields.funct3 === "b000"
       .U(
@@ -269,7 +269,7 @@ object decodeInstControlSignal {
 
 class Operands extends Bundle {
   val csr = UInt(32.W)
-  val alu_a_or_mepc = UInt(32.W)
+  val alu_a = UInt(32.W)
   val mtvec = UInt(32.W)
   val alu_b = UInt(32.W)
   val src1 = UInt(32.W)
@@ -381,20 +381,23 @@ class IDU() extends Module {
   val is_alu_a_pc = imm_type.is_B || imm_type.is_J || inst_type.is_auipc
   val is_alu_b_reg = imm_type.is_R
 
-  out.bits.sources.alu_a_or_mepc := MuxCase(
+  out.bits.sources.alu_a := MuxCase(
     gpr_rdata1,
     Seq(
-      inst_type.is_mret -> fetch_port_in.csr_mepc,
-      inst_type.is_lui -> 0.U(32.W),
+      (inst_type.is_lui || inst_type.is_mret) -> 0.U(32.W),
       is_alu_a_pc -> in.bits.pc
     )
   )
   out.bits.sources.mtvec := fetch_port_in.csr_mtvec
 
   val alu_b_raw = Mux(
-    is_alu_b_reg,
-    gpr_rdata2,
-    fields.imm
+    inst_type.is_mret,
+    fetch_port_in.csr_mepc,
+    Mux(
+      is_alu_b_reg,
+      gpr_rdata2,
+      fields.imm
+    )
   )
   out.bits.sources.alu_b := Mux(
     control_signals.alu_controls.is_alu_b_inv,
