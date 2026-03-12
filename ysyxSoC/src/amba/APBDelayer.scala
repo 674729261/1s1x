@@ -22,7 +22,7 @@ class apb_delayer extends BlackBox {
   val io = IO(new APBDelayerIO)
 }
 
-class APBDelayerChisel(ratio: Double = 8.33611, scale_2pow: Long = 6)
+class APBDelayerChisel(ratio: Double = 8.24938, scale_2pow: Long = 6)
     extends Module {
   val io = IO(new APBDelayerIO)
   val countup_amount = math.round((ratio - 1.0) * math.pow(2.0, scale_2pow))

@@ -84,6 +84,7 @@ class ControlSignals extends Bundle {
   val is_branch = Bool()
   val is_dnpc_jal_or_jalr = Bool()
   val is_dnpc_csr_jump = Bool()
+  val is_dnpc_snpc = Bool()
 
   val is_ebreak = Bool()
   val interruption = Bool()
@@ -261,6 +262,7 @@ object decodeInstControlSignal {
     ret.is_branch := it.is_branch
     ret.is_dnpc_jal_or_jalr := it.is_jal || it.is_jalr
     ret.is_dnpc_csr_jump := it.is_ecall || it.is_mret
+    ret.is_dnpc_snpc := !ret.is_branch && !ret.is_dnpc_jal_or_jalr && !ret.is_dnpc_csr_jump
     ret.is_ebreak := it.is_ebreak
     ret.interruption := it.is_ebreak || it.is_ecall
     return ret
@@ -279,6 +281,8 @@ class Operands extends Bundle {
 class MessageIDU2EXU extends Bundle {
   val pc = (UInt(32.W))
   val inst = (UInt(32.W))
+  val in_cache = (Bool())
+  val nxtpc_predicted = (UInt(32.W))
 
   val controls = (new ControlSignals)
   val itype = (new InstType)
@@ -371,6 +375,7 @@ class IDU() extends Module {
 
   out.bits.sources.csr := fetch_port_in.csr_rdata
   out.bits.inst := in.bits.inst
+  out.bits.nxtpc_predicted := in.bits.nxtpc_predicted
 
   val is_alu_a_pc = imm_type.is_B || imm_type.is_J || inst_type.is_auipc
   val is_alu_b_reg = imm_type.is_R
@@ -394,6 +399,7 @@ class IDU() extends Module {
     ~alu_b_raw,
     alu_b_raw
   )
+
   out.bits.itype := inst_type
   conf.rs1_id := fields.rs1
   conf.rs2_id := fields.rs2
@@ -403,6 +409,7 @@ class IDU() extends Module {
   conf.csr_src_valid := has_inst && (inst_type.is_csrop)
   out.bits.rd_valid := (imm_type.is_R || imm_type.is_I || imm_type.is_U || imm_type.is_J || inst_type.is_csrop)
   out.valid := has_inst && !conf.stall
+  out.bits.in_cache := in.bits.in_cache
   in.ready := (out.fire || !has_inst) && !conf.stall
 
   perf_cnt.stalled := has_inst && conf.stall

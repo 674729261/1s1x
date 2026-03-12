@@ -4,19 +4,11 @@ import chisel3._
 import chisel3.util._
 import chisel3.layer.block
 
-class PerformanceCounter_ICache extends ExtModule {
-  val clock = IO(Input(Clock()))
-  val reset = IO(Input(Reset()))
-  val icache_hit = IO(Input(Bool()))
-
-}
-
 class CacheLine(linesize_2pow: Int, linecount_2pow: Int) extends Bundle {
   val words = (1 << (linesize_2pow - 2))
   val tag_width = 32 - linesize_2pow - linecount_2pow
   val tag = UInt(tag_width.W)
   val data = Vec(words, UInt(32.W))
-
 }
 
 object ShouldCache {
@@ -34,12 +26,15 @@ object ShouldCache {
 class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
   val io = IO(new Bundle {
     val addr = Input(UInt(32.W))
+    val predicted_nxtpc = Input(UInt(32.W))
     val timestamp_req = Input(UInt(3.W))
     val avalid = Input(Bool())
     val aready = Output(Bool())
     val rdata = Output(UInt(32.W))
     val rpc = Output(UInt(32.W))
+    val rnxtpc = Output(UInt(32.W))
     val timestamp_res = Output(UInt(3.W))
+    val in_cache = Output(Bool())
     val rvalid = Output(Bool())
     val rready = Input(Bool())
   })
@@ -60,6 +55,7 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
 
   val addr_r = RegEnable(io.addr, ifu_afire)
   val timestamp_r = RegEnable(io.timestamp_req, ifu_afire)
+  val nxtpc_r = RegEnable(io.predicted_nxtpc, ifu_afire)
   val has_request_r = RegInit(Bool(), false.B)
   has_request_r := MuxCase(
     has_request_r,
@@ -81,6 +77,7 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
     input_cache_index
   ) && (cache_rdata.tag === input_tag)
   io.rpc := addr_r
+  io.in_cache := in_cache
 
   val out_ar = RegInit(false.B)
   val has_r = RegInit(false.B)
@@ -141,18 +138,11 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
     ),
     axi_rdata_latched(words - 1)
   )
-
+  io.rnxtpc := nxtpc_r
   fetch_port.aw.id := "b0000".U(4.W)
   fetch_port.ar.id := "b0000".U(4.W)
   fetch_port.w.last := true.B
   fetch_port.ar.len := Mux(should_cache, (words - 1).U(8.W), 0.U(8.W))
-
-  block(PerformanceCounterLayer) {
-    val performancecounter_icache = Module(new PerformanceCounter_ICache)
-    performancecounter_icache.clock := clock
-    performancecounter_icache.reset := reset
-    performancecounter_icache.icache_hit := ifu_rfire && in_cache
-  }
 
   block(AXIAssertLayer) {
     check_signal_stable(

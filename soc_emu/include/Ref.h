@@ -1,5 +1,6 @@
 #pragma once
 
+#include "BTB.h"
 #include "Cache.h"
 #include "Setup.h"
 #include <InstPattern/InstPattern.h>
@@ -22,6 +23,7 @@ public:
     icache_hit = 0;
     dcache.init(config.nr_dcacheline_words_2pow, config.nr_dcachelines_2pow);
     dcache_hit = 0;
+    btb.init(config.nr_btbsize_2pow);
     inst_count = 0;
     data_fetch_count = 0;
     vbus.init_flash(config.image_path);
@@ -29,6 +31,9 @@ public:
   bool isHalt() { return is_halt; }
   unsigned long long getICacheHit() { return icache_hit; }
   unsigned long long getDCacheHit() { return dcache_hit; }
+  unsigned long long getPCPredictMiss() { return btb.getMissCount(); }
+  unsigned long long getPCPredictHit() { return btb.getHitCount(); }
+
   unsigned long long getDataFetchCount() { return data_fetch_count; }
   uint32_t getGPR(int id) { return cpu.gpr[id]; }
   uint32_t getPC() { return cpu.pc; };
@@ -42,6 +47,7 @@ public:
     icache_hit = 0;
     dcache.reset();
     dcache_hit = 0;
+    btb.reset();
     cpu.pc = 0x30000000;
   };
   void step();
@@ -96,6 +102,7 @@ private:
   CPU_State cpu;
   VirtualBus vbus;
   Cache icache, dcache;
+  BTB btb;
 };
 
 #define BEGIN_PATTERN do {
@@ -232,30 +239,39 @@ inline void Ref::step() {
            uint32_t result = vbus.readMemory(cpu.gpr[d.src1_id] + d.imm_I, 4);
            cpu.gpr[d.dst_id] = result);
   try_this("??????? ????? ????? ??? ????? 11011 11", jal,
-           cpu.gpr[d.dst_id] = cpu.pc + 4;
-           dnpc = cpu.pc + d.imm_J);
+           uint32_t target = cpu.pc + d.imm_J;
+           cpu.gpr[d.dst_id] = cpu.pc + 4; dnpc = cpu.pc + d.imm_J;
+           btb.predict_jal(cpu.pc, target));
   try_this("??????? ????? ????? 000 ????? 11001 11", jalr,
            dnpc = (cpu.gpr[d.src1_id] + d.imm_I) & (~0x1u);
-           cpu.gpr[d.dst_id] = cpu.pc + 4);
+           cpu.gpr[d.dst_id] = cpu.pc + 4; btb.predict_jalr(cpu.pc, dnpc));
 
   try_this("??????? ????? ????? 001 ????? 11000 11", bne,
-           if (cpu.gpr[d.src1_id] != cpu.gpr[d.src2_id]) dnpc =
-               cpu.pc + d.imm_B);
+           bool jump = cpu.gpr[d.src1_id] != cpu.gpr[d.src2_id];
+           uint32_t target = cpu.pc + d.imm_B; if (jump) dnpc = target;
+           btb.predict_branch(cpu.pc, target, jump));
   try_this("??????? ????? ????? 000 ????? 11000 11", beq,
-           if (cpu.gpr[d.src1_id] == cpu.gpr[d.src2_id]) dnpc =
-               cpu.pc + d.imm_B);
+           bool jump = cpu.gpr[d.src1_id] == cpu.gpr[d.src2_id];
+           uint32_t target = cpu.pc + d.imm_B; if (jump) dnpc = target;
+           btb.predict_branch(cpu.pc, target, jump));
   try_this("??????? ????? ????? 101 ????? 11000 11", bge,
-           if ((int32_t)cpu.gpr[d.src1_id] >= (int32_t)cpu.gpr[d.src2_id])
-               dnpc = cpu.pc + d.imm_B);
+           bool jump =
+               (int32_t)cpu.gpr[d.src1_id] >= (int32_t)cpu.gpr[d.src2_id];
+           uint32_t target = cpu.pc + d.imm_B; if (jump) dnpc = target;
+           btb.predict_branch(cpu.pc, target, jump));
   try_this("??????? ????? ????? 100 ????? 11000 11", blt,
-           if ((int32_t)cpu.gpr[d.src1_id] < (int32_t)cpu.gpr[d.src2_id]) dnpc =
-               cpu.pc + d.imm_B);
+           bool jump =
+               (int32_t)cpu.gpr[d.src1_id] < (int32_t)cpu.gpr[d.src2_id];
+           uint32_t target = cpu.pc + d.imm_B; if (jump) dnpc = target;
+           btb.predict_branch(cpu.pc, target, jump));
   try_this("??????? ????? ????? 111 ????? 11000 11", bgeu,
-           if (cpu.gpr[d.src1_id] >= cpu.gpr[d.src2_id]) dnpc =
-               cpu.pc + d.imm_B);
+           bool jump = cpu.gpr[d.src1_id] >= cpu.gpr[d.src2_id];
+           uint32_t target = cpu.pc + d.imm_B; if (jump) dnpc = target;
+           btb.predict_branch(cpu.pc, target, jump));
   try_this("??????? ????? ????? 110 ????? 11000 11", bltu,
-           if (cpu.gpr[d.src1_id] < cpu.gpr[d.src2_id]) dnpc =
-               cpu.pc + d.imm_B);
+           bool jump = cpu.gpr[d.src1_id] < cpu.gpr[d.src2_id];
+           uint32_t target = cpu.pc + d.imm_B; if (jump) dnpc = target;
+           btb.predict_branch(cpu.pc, target, jump));
 
   try_this("??????? ????? ????? 000 ????? 01000 11", sb,
            uint32_t addr = cpu.gpr[d.src1_id] + d.imm_S;
