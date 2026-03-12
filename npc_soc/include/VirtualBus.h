@@ -28,8 +28,9 @@ struct VirtualBus {
     auto check_range = [=](Area area) {
       return addr >= area.from && addr + sz - 1 <= area.to;
     };
-
-    if (check_range(mrom_field)) {
+    if (check_range(clint_field)) {
+      return {0xdeadbeef, true};
+    } else if (check_range(mrom_field)) {
       {
         log_and_throw<std::logic_error>(
             "Failed to read from address {:08x} : MROM is no longer supported",
@@ -81,7 +82,10 @@ struct VirtualBus {
                                       addr);
     }
     uint32_t mask32 = lookup_mask32[wmask];
-    if (check_range(mrom_field)) {
+    if (check_range(clint_field)) {
+      log_and_throw<std::logic_error>(
+          "Failed to write to address {:08x} : CLINT can not be written", addr);
+    } else if (check_range(mrom_field)) {
       log_and_throw<std::logic_error>(
           "Failed to write to address {:08x} : MROM can not be written", addr);
     } else if (check_range(sram_field)) {
@@ -125,7 +129,7 @@ struct VirtualBus {
   struct Area {
     uint32_t from, to;
   };
-
+  const Area clint_field = {0x02000000, 0x20000fff};
   const Area mrom_field = {0x20000000, 0x20000fff};
 
   const Area flash_field = {0x30000000, 0x3fffffff};
