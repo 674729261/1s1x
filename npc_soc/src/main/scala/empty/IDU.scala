@@ -94,21 +94,21 @@ object decodeInstType {
   def apply(inst: UInt, fields: InstFields): InstType = {
     val ret = Wire(new InstType)
 
-    ret.is_arithmetic_imm := (inst(6, 0) === "b0010011".U(7.W))
-    ret.is_arithmetic_reg := (inst(6, 0) === "b0110011".U(7.W))
-    ret.is_store := (inst(6, 0) === "b0100011".U(7.W))
-    ret.is_load := (inst(6, 0) === "b0000011".U(7.W))
-    ret.is_branch := (inst(6, 0) === "b1100011".U(7.W))
-    ret.is_jal := (inst(6, 0) === "b1101111".U(7.W))
-    ret.is_jalr := (inst(6, 0) === "b1100111".U(7.W))
-    ret.is_lui := (inst(6, 0) === "b0110111".U(7.W))
-    ret.is_auipc := (inst(6, 0) === "b0010111".U(7.W))
-    ret.is_csrop := (inst(6, 0) === "b1110011".U(7.W))
+    ret.is_arithmetic_imm := (inst(6, 2) === "b00100".U(5.W))
+    ret.is_arithmetic_reg := (inst(6, 2) === "b01100".U(5.W))
+    ret.is_store := (inst(6, 2) === "b01000".U(5.W))
+    ret.is_load := (inst(6, 2) === "b00000".U(5.W))
+    ret.is_branch := (inst(6, 2) === "b11000".U(5.W))
+    ret.is_jal := (inst(6, 2) === "b11011".U(5.W))
+    ret.is_jalr := (inst(6, 2) === "b11001".U(5.W))
+    ret.is_lui := (inst(6, 2) === "b01101".U(5.W))
+    ret.is_auipc := (inst(6, 2) === "b00101".U(5.W))
+    ret.is_csrop := (inst(6, 2) === "b11100".U(5.W))
     val is_funct3_zero = (fields.funct3 === "b000".U(3.W))
     ret.is_ebreak := ret.is_csrop && is_funct3_zero && !inst(21) && inst(20)
     ret.is_ecall := ret.is_csrop && is_funct3_zero && !inst(21) && !inst(20)
     ret.is_mret := ret.is_csrop && is_funct3_zero && inst(21)
-    ret.is_fence := (inst(6, 0) === "b0001111".U(7.W))
+    ret.is_fence := (inst(6, 2) === "b00011".U(5.W))
     return ret
   }
 }
