@@ -14,6 +14,7 @@ class NextPCPredict(size_2pow: Int, tag_from: Int, tag_to: Int) extends Module {
   val io = IO(new Bundle {
     val pc = Input(UInt(32.W))
     val predicted = Output(UInt(32.W))
+    val predicted_jump = Output(Bool())
     val write_pc = Input(UInt(32.W))
     val write_target = Input(UInt(32.W))
     val init_cnt = Input(UInt(2.W))
@@ -30,26 +31,35 @@ class NextPCPredict(size_2pow: Int, tag_from: Int, tag_to: Int) extends Module {
   val valid_flags =
     RegInit(Vec(nr_lines, Bool()), VecInit(Seq.fill(nr_lines)(false.B)))
 
-  var compare_results = Wire(Vec(nr_lines, Bool()))
-  for (i <- 0 until nr_lines) {
-    compare_results(i) := (content(i).tag === input_tag && valid_flags(i))
-  }
-  var compare_results_write = Wire(Vec(nr_lines, Bool()))
-  for (i <- 0 until nr_lines) {
-    compare_results_write(i) := (content(i).tag === write_tag && valid_flags(i))
-  }
+  // var compare_results = Wire(Vec(nr_lines, Bool()))
+  // for (i <- 0 until nr_lines) {
+  //   compare_results(i) := (content(i).tag === input_tag && valid_flags(i))
+  // }
+  var compare_results = VecInit((0 until nr_lines).map { i =>
+    content(i).tag === input_tag && valid_flags(i)
+  })
+
+  // var compare_results_write = Wire(Vec(nr_lines, Bool()))
+  // for (i <- 0 until nr_lines) {
+  //   compare_results_write(i) := (content(i).tag === write_tag && valid_flags(i))
+  // }
+  var compare_results_write = VecInit((0 until nr_lines).map { i =>
+    content(i).tag === write_tag && valid_flags(i)
+  })
+
   val read_hit = compare_results.reduce(_ || _)
   val write_hit = compare_results_write.reduce(_ || _)
-  val onehot_seq_read = Array.ofDim[(Bool, BTBLine)](nr_lines)
-  for (i <- 0 until nr_lines) {
-    onehot_seq_read(i) = (compare_results(i) -> content(i))
+  val onehot_seq_read = (0 until nr_lines).map { i =>
+    compare_results(i) -> content(i)
   }
+  // for (i <- 0 until nr_lines) {
+  //   onehot_seq_read(i) = (compare_results(i) -> content(i))
+  // }
   val read_item = Mux1H(onehot_seq_read)
-  io.predicted := Mux(
-    read_hit && read_item.saturate_count >= 2.U,
-    read_item.target,
-    io.pc + 4.U
-  )
+  val should_jump = read_hit && read_item.saturate_count >= 2.U
+
+  io.predicted := Mux(should_jump, read_item.target, io.pc + 4.U)
+  io.predicted_jump := should_jump
 
   val write_ptr_nxt = Wire(UInt(size_2pow.W))
   val write_ptr =

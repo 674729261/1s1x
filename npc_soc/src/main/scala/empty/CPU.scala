@@ -89,14 +89,20 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
   io.pc := pc
   io.retire_pc := wbu.out.retire_pc
   io.retire_inst := wbu.out.retire_inst
-  ifu.in.exu_dnpc := exu.out_pc.dnpc
-  ifu.in.flush_valid := exu.out_pc.ifu_flush_valid
-  idu.flush.valid := exu.out_pc.idu_flush_valid
+  ifu.in.exu_dnpc := Mux(
+    lsu.out_pc.ifu_flush_valid,
+    lsu.out_pc.dnpc,
+    exu.out_pc.dnpc
+  )
+  ifu.in.flush_valid := exu.out_pc.ifu_flush_valid || lsu.out_pc.ifu_flush_valid
+  idu.flush.valid := exu.out_pc.idu_flush_valid || lsu.out_pc.idu_flush_valid
+  exu.flush.valid := lsu.out_pc.exu_flush_valid
 
   ifu.fetch_port <> arbiter.IFU_AXI
 
-  val nxtpc_predictor = Module(new NextPCPredict(3, 18, 2))
+  val nxtpc_predictor = Module(new NextPCPredict(3, 31, 2))
   ifu.in.btb_nxt_pc := nxtpc_predictor.io.predicted
+  ifu.in.btb_jump := nxtpc_predictor.io.predicted_jump
   nxtpc_predictor.io.pc := ifu.in.btb_pc
   nxtpc_predictor.io.wen := exu.btb.wen
   nxtpc_predictor.io.write_pc := exu.btb.write_pc
@@ -121,9 +127,6 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
         .U(5.W))
     val conf_csr =
       rs_info.csr_src_valid && rd_info.csr_dest_valid && (rs_info.csr_src_id === rd_info.csr_id)
-    val conf_interruption =
-      rs_info.csr_src_valid && rd_info.interruption && (rs_info.csr_src_id === 0x342
-        .U(12.W) || rs_info.csr_src_id === 0x341.U(12.W))
 
     val forward1 = conf1 && (rd_info.ok_to_forward_rd)
     val forward2 = conf2 && (rd_info.ok_to_forward_rd)
@@ -133,7 +136,7 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
       forward1,
       conf2,
       forward2,
-      conf_csr || conf_interruption,
+      conf_csr,
       rd_info.rd_data
     )
   }
