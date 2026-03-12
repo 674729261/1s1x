@@ -22,7 +22,7 @@ class apb_delayer extends BlackBox {
   val io = IO(new APBDelayerIO)
 }
 
-class APBDelayerChisel(ratio: Double = 6.48760, scale_2pow: Long = 6)
+class APBDelayerChisel(ratio: Double = 6.41071, scale_2pow: Long = 6)
     extends Module {
   val io = IO(new APBDelayerIO)
   val countup_amount = math.round((ratio - 1.0) * math.pow(2.0, scale_2pow))
@@ -35,7 +35,7 @@ class APBDelayerChisel(ratio: Double = 6.48760, scale_2pow: Long = 6)
   val out_fire = io.out.psel && io.out.penable && io.out.pready
   state := MuxLookup(state, sDELAY)(
     Seq(
-      sIDLE -> Mux(trigger, sWAIT, sIDLE),
+      sIDLE -> Mux(trigger, Mux(out_fire, sDELAY, sWAIT), sIDLE),
       sWAIT -> Mux(out_fire, sDELAY, sWAIT),
       sDELAY -> Mux(counter < countdown_amount.U, sRESP, sDELAY),
       sRESP -> sIDLE

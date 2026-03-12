@@ -50,6 +50,10 @@ class PerformanceCounter extends ExtModule {
   val idu_valid = IO(Input(Bool()))
   val wbu_valid = IO(Input(Bool()))
   val inst_type = IO(Input(new InstType))
+
+  val stalled = IO(Input(Bool()))
+  val flushed = IO(Input(Bool()))
+
 }
 
 class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
@@ -86,14 +90,10 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
   io.retire_pc := wbu.out.retire_pc
   io.retire_inst := wbu.out.retire_inst
   ifu.in.exu_dnpc := exu.out_pc.dnpc
-  ifu.in.exu_dnpc_valid := exu.out_pc.valid
-  exu.out_pc.ready := ifu.in.exu_dnpc_ready
-  exu.out_pc.idu_flush_ready := idu.flush.ready
+  ifu.in.flush_valid := exu.out_pc.ifu_flush_valid
   idu.flush.valid := exu.out_pc.idu_flush_valid
 
   ifu.fetch_port <> arbiter.IFU_AXI
-  ifu.in.clear_icache_valid := wbu.out.clear_icache_valid
-  wbu.out.clear_icache_ok := ifu.in.clear_icache_ok
 
   StageConnect(ifu.out, idu.in)
   StageConnect(idu.out, exu.in)
@@ -107,7 +107,12 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
     val conf2 =
       rs_info.rs2_valid && rd_info.rd_valid && (rs_info.rs2_id === rd_info.rd_id) && (rd_info.rd_id =/= 0
         .U(5.W))
-    return conf1 || conf2
+    val conf_csr =
+      rs_info.csr_src_valid && rd_info.csr_dest_valid && (rs_info.csr_src_id === rd_info.csr_id)
+    val conf_interruption =
+      rs_info.csr_src_valid && rd_info.interruption && (rs_info.csr_src_id === 0x342
+        .U(12.W) || rs_info.csr_src_id === 0x341.U(12.W))
+    return conf1 || conf2 || conf_csr || conf_interruption
   }
 
   val is_RAW = check_conflict(idu.conf, exu.conf) || check_conflict(
@@ -165,6 +170,9 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
     m_performance_counter.lsu_arvalid := lsu.fetch_port.ar.valid
     m_performance_counter.lsu_rready := lsu.fetch_port.r.ready
     m_performance_counter.lsu_rvalid := lsu.fetch_port.r.valid
+
+    m_performance_counter.stalled := idu.perf_cnt.stalled
+    m_performance_counter.flushed := idu.perf_cnt.flushed
 
   }
 }

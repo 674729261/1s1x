@@ -22,6 +22,10 @@ static long long last_lsu_time;
 
 long long cycles_not_on_flash;
 long long insts_not_on_flash;
+
+long long stalled_cycles;
+long long flushed_insts;
+
 extern std::unique_ptr<Dut> dut;
 
 std::array<InstTypeItem, 14> inst_type_event = {
@@ -117,3 +121,6 @@ extern "C" void notify_inst_type_is_fence() {
 
 extern "C" void notify_new_cycle_not_on_flash() { cycles_not_on_flash++; }
 extern "C" void notify_new_inst_not_on_flash() { insts_not_on_flash++; }
+
+extern "C" void notify_stalled() { stalled_cycles++; }
+extern "C" void notify_flushed() { flushed_insts++; }
