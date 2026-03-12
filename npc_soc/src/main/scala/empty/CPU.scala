@@ -86,8 +86,12 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
   val csrBank = Module(new CSR)
 
   val arbiter = Module(new Arbiter_2Master)
+  val xbar = Module(new XBar_CLINT)
+  val clint = Module(new Clint)
 
-  io.axi_bus <> arbiter.OUT_AXI
+  io.axi_bus <> xbar.OUT_AXI
+  xbar.IN_AXI <> arbiter.OUT_AXI
+  xbar.CLINT_AXI <> clint.in
 
   io.retire_pc := wbu.out.retire_pc
   io.retire_inst := wbu.out.retire_inst

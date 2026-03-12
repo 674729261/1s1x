@@ -49,7 +49,7 @@ ICACHE_N ?= 2
 ICACHE_M ?= 3
 DCACHE_N ?= 0
 DCACHE_M ?= 0
-BTB_N ?= 3
+BTB_N ?= 2
 
 
 $(LOG_DIR):
