@@ -4,8 +4,7 @@ import chisel3.util._
 import chisel3.layer.block
 
 class WriteInfo extends Bundle {
-  val mem_word = (UInt(32.W))
-  val csr_wdata = (UInt(32.W))
+  val mem_word_or_csr_wdata = (UInt(32.W))
   val gpr_wdata = (UInt(32.W))
   val dnpc = (UInt(32.W))
   val mtvec = (UInt(32.W))
@@ -117,11 +116,14 @@ class EXU() extends Module {
     )
   )
 
-  out.bits.write_info.mem_word := in.bits.sources.src2
-  out.bits.write_info.csr_wdata := Mux(
-    in.bits.controls.is_csr_masked,
-    in.bits.sources.src1 | in.bits.sources.csr,
-    in.bits.sources.src1
+  out.bits.write_info.mem_word_or_csr_wdata := Mux(
+    in.bits.itype.is_store,
+    in.bits.sources.src2,
+    Mux(
+      in.bits.controls.is_csr_masked,
+      in.bits.sources.src1 | in.bits.sources.csr,
+      in.bits.sources.src1
+    )
   )
 
   val should_branch = in.bits.controls.is_branch && branch.io.jump

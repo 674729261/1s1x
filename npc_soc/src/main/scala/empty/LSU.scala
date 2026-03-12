@@ -121,7 +121,7 @@ class LSU() extends Module {
   ramLoader.io.is_unsigned := in.bits.controls.is_load_unsigned
   ramLoader.io.lower2bit := in.bits.write_info.alu_out(1, 0)
 
-  ramWriter.io.word := in.bits.write_info.mem_word
+  ramWriter.io.word := in.bits.write_info.mem_word_or_csr_wdata
   ramWriter.io.is_word := in.bits.controls.is_ram_word
   ramWriter.io.is_half := in.bits.controls.is_ram_half
   ramWriter.io.is_byte := in.bits.controls.is_ram_byte
