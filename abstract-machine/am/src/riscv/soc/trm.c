@@ -89,7 +89,7 @@ __attribute__((section(".fsbl"))) void fstbootloader() {
   extern uint32_t __ssbl_load_start, __ssbl_load_end, __ssbl_start;
   uint8_t *src = (uint8_t *)&__ssbl_load_start;
   uint8_t *dst = (uint8_t *)&__ssbl_start;
-  size_t n = &__ssbl_load_end - &__ssbl_load_start;
+  size_t n = (uint8_t *)&__ssbl_load_end - (uint8_t *)&__ssbl_load_start;
   while ((((uintptr_t)dst) & 0x3) && n) {
     *dst++ = *src++;
     n--;
