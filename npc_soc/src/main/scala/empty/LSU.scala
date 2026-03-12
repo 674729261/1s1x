@@ -143,7 +143,8 @@ class LSU() extends Module {
     in.bits.write_info.gpr_wdata,
     Seq(
       has_exception -> in.bits.write_info.mtvec,
-      in.bits.controls.is_gpr_wdata_from_ram -> rdata_latched
+      in.bits.controls.is_gpr_wdata_from_ram -> rdata_latched,
+      in.bits.controls.is_csr_visit -> in.bits.write_info.mem_word_or_csr_wdata
     )
   )
 
