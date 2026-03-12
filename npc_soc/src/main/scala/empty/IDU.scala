@@ -200,7 +200,7 @@ object decodeInstControlSignal {
     val is_alu_sub_sra =
       fields.funct7(5) && !(it.is_arithmetic_imm && is_funct3_zero)
     val is_alu_force_add =
-      it.is_store || it.is_load || it.is_branch || it.is_auipc || it.is_jal || it.is_jalr
+      it.is_store || it.is_load || it.is_branch || it.is_auipc || it.is_jal || it.is_jalr || it.is_lui
 
     ret.alu_controls.is_alu_add := is_alu_force_add || (fields.funct3 === "b000"
       .U(
