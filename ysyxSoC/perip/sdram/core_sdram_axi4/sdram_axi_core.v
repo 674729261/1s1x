@@ -90,13 +90,13 @@ module sdram_axi_core (
   assign inport_error_o = 1'b0;
 
   wire in_req = inport_wr_i != 4'b0000 || inport_rd_i;
-  reg  ok_to_accept;
+  reg  ok_to_accept_r;
   always @(posedge clk_i or posedge rst_i) begin
-    if (rst_i) ok_to_accept <= 1'b1;
-    else if (req_fire) ok_to_accept <= 1'b0;
-    else if (state == ST_IDLE) ok_to_accept <= 1'b1;
+    if (rst_i) ok_to_accept_r <= 1'b1;
+    else if (req_fire) ok_to_accept_r <= 1'b0;
+    else if (state == ST_IDLE) ok_to_accept_r <= 1'b1;
   end
-  assign inport_accept_o = ok_to_accept && (in_req && ((inport_rd_i && (state == ST_READ_WAIT || state == ST_READ)) || (state == ST_WRITE && inport_wr_i != 4'b0)));
+  assign inport_accept_o =   in_req && ((ok_to_accept_r && inport_rd_i && (state == ST_READ_WAIT || state == ST_READ)) || (state == ST_WRITE && inport_wr_i != 4'b0));
   wire req_fire = in_req && inport_accept_o;
 
   wire which_chip = inport_addr_i[SDRAM_ADDR_W+1+1];
