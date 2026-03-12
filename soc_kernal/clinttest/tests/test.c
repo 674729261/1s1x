@@ -3,7 +3,7 @@
 
 int main() {
   volatile uint32_t *mtime_addr = (volatile uint32_t *)0x02000000;
-  volatile uint32_t *mtimeh_addr = (volatile uint32_t *)0x02000040;
+  volatile uint32_t *mtimeh_addr = (volatile uint32_t *)0x02000004;
 
   uint32_t mcycle, mcycleh, mtime, mtimeh;
   for (int i = 0; i < 16; i++) {
