@@ -25,23 +25,18 @@ class XBar_CLINT() extends Module {
   IN_AXI.w <> OUT_AXI.w
   IN_AXI.b <> OUT_AXI.b
 
-  val sIDLE :: sOUT :: sCLINT :: Nil = Enum(3)
-  val r_state = RegInit(sIDLE)
-  r_state := MuxLookup(r_state, sIDLE)(
+  val sOUT :: sCLINT :: Nil = Enum(2)
+  val r_state = RegInit(sOUT)
+  r_state := MuxLookup(r_state, sOUT)(
     Seq(
-      sIDLE -> MuxCase(
-        sIDLE,
-        Seq(OUT_AXI.r.valid -> sOUT, CLINT_AXI.r.valid -> sCLINT)
-      ),
-      sOUT -> Mux(OUT_fire.r_burst_last, sIDLE, sOUT),
-      sCLINT -> Mux(CLINT_fire.r_burst_last, sIDLE, sCLINT)
+      sOUT -> Mux(CLINT_AXI.r.valid && !OUT_AXI.r.valid, sCLINT, sOUT),
+      sCLINT -> Mux(CLINT_fire.r_burst_last, sOUT, sCLINT)
     )
   )
-  when(r_state === sIDLE || r_state === sOUT) {
-    OUT_AXI.r <> IN_AXI.r
-  }.otherwise {
+  val should_bind_to_CLINT_r = (r_state === sOUT)
+  when(should_bind_to_CLINT_r) {
     CLINT_AXI.r <> IN_AXI.r
-  }
+  }.otherwise { OUT_AXI.r <> IN_AXI.r }
 
 }
 

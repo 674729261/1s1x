@@ -204,25 +204,38 @@ object decodeInstControlSignal {
       fields.funct7(5) && !(it.is_arithmetic_imm && is_funct3_zero)
     val is_alu_force_add =
       it.is_mret || it.is_store || it.is_load || it.is_branch || it.is_auipc || it.is_jal || it.is_jalr || it.is_lui
-    val funct3_1H = UIntToOH(fields.funct3).asBools
-    ret.alu_controls.is_alu_add := is_alu_force_add || (funct3_1H(
-      0
-    ) && !is_alu_sub_sra)
-    ret.alu_controls.is_alu_sub := (funct3_1H(
-      0
+
+    ret.alu_controls.is_alu_add := is_alu_force_add || (fields.funct3 === "b000"
+      .U(
+        3.W
+      ) && !is_alu_sub_sra)
+    ret.alu_controls.is_alu_sub := (fields.funct3 === "b000".U(
+      3.W
     ) && is_alu_sub_sra) && !is_alu_force_add
-    ret.alu_controls.is_alu_sll := (funct3_1H(1)) && !is_alu_force_add
-    ret.alu_controls.is_alu_slt := (funct3_1H(2)) && !is_alu_force_add
-    ret.alu_controls.is_alu_sltu := (funct3_1H(3)) && !is_alu_force_add
-    ret.alu_controls.is_alu_srl := (funct3_1H(
-      5
+    ret.alu_controls.is_alu_sll := (fields.funct3 === "b001".U(
+      3.W
+    )) && !is_alu_force_add
+    ret.alu_controls.is_alu_slt := (fields.funct3 === "b010".U(
+      3.W
+    )) && !is_alu_force_add
+    ret.alu_controls.is_alu_sltu := (fields.funct3 === "b011".U(
+      3.W
+    )) && !is_alu_force_add
+    ret.alu_controls.is_alu_srl := (fields.funct3 === "b101".U(
+      3.W
     )) && !is_alu_sub_sra && !is_alu_force_add
-    ret.alu_controls.is_alu_sra := (funct3_1H(
-      5
+    ret.alu_controls.is_alu_sra := (fields.funct3 === "b101".U(
+      3.W
     )) && is_alu_sub_sra && !is_alu_force_add
-    ret.alu_controls.is_alu_and := (funct3_1H(7)) && !is_alu_force_add
-    ret.alu_controls.is_alu_or := (funct3_1H(6)) && !is_alu_force_add
-    ret.alu_controls.is_alu_xor := (funct3_1H(4)) && !is_alu_force_add
+    ret.alu_controls.is_alu_and := (fields.funct3 === "b111".U(
+      3.W
+    )) && !is_alu_force_add
+    ret.alu_controls.is_alu_or := (fields.funct3 === "b110".U(
+      3.W
+    )) && !is_alu_force_add
+    ret.alu_controls.is_alu_xor := (fields.funct3 === "b100".U(
+      3.W
+    )) && !is_alu_force_add
 
     ret.alu_controls.is_alu_b_inv := ret.alu_controls.is_alu_sub || ret.alu_controls.is_alu_slt || ret.alu_controls.is_alu_sltu
 
