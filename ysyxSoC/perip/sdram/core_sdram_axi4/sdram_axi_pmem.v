@@ -190,7 +190,7 @@ module sdram_axi_pmem (
       if (send_cnt == 3'd0 && ram_accept_i) nxt_state = ST_WAIT_READ;
       else nxt_state = ST_RAM_ACCESS_READ;
       ST_WAIT_READ:
-      if (read_cnt == 3'd0) nxt_state = ST_AXI_R;
+      if (read_cnt == 3'd0 && ram_ack_i) nxt_state = ST_AXI_R;
       else nxt_state = ST_WAIT_READ;
       ST_RAM_ACCESS_WRITE:
       if (ram_accept_i) nxt_state = ST_AXI_B;
