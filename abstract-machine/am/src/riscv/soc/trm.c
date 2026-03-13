@@ -105,6 +105,8 @@ __attribute__((section(".fsbl"))) void fstbootloader() {
   while (n-- > 0) {
     *dst++ = *src++;
   }
+
+  asm volatile("fence.i");
   // while (src < &__ssbl_load_end) {
   //   *dst = *src;
   //   ++dst;
@@ -182,4 +184,5 @@ __attribute__((section(".ssbl"))) void secbootloader() {
   //   dst = &rt_begin;
   //   __ssbl__memcpy(dst, src, &rt_load_end - &rt_load_begin);
   // #endif
+  asm volatile("fence.i");
 }
