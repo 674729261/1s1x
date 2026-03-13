@@ -133,9 +133,6 @@ module sdram_axi_core (
     case (state)
       ST_INIT: state_nxt = ST_MODE;
       ST_MODE: state_nxt = ST_IDLE;
-      ST_SLEEP1: state_nxt = ST_SLEEP2;
-      ST_SLEEP2: state_nxt = ST_SLEEP3;
-      ST_SLEEP3: state_nxt = ST_IDLE;
       ST_IDLE:
       if (inport_rd_i) state_nxt = ST_READ_ACTIVATE;
       else if (inport_wr_i != 4'b0000) state_nxt = ST_WRITE_ACTIVATE;
