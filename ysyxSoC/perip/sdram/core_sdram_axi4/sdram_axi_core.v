@@ -91,15 +91,11 @@ module sdram_axi_core (
 
   wire in_req = inport_wr_i != 4'b0000 || inport_rd_i;
 
-  // reg  ready_accept_r;
-  // always @(posedge clk_i or posedge rst_i) begin
-  //   if (rst_i) ready_accept_r <= 1'b1;
-  //   else if (state == ST_IDLE) ready_accept_r <= 1'b1;
-  //   else if (req_fire) ready_accept_r <= 1'b0;
-  // end
+  wire ready_accept_r;
 
 
-  assign inport_accept_o = in_req && ((inport_rd_i && (state == ST_READ_WAIT || state == ST_READ)) || (state == ST_WRITE && inport_wr_i != 4'b0));
+
+  assign inport_accept_o = in_req && ((inport_rd_i && (state == ST_IDLE || (read_count != 8'd0)) && (state == ST_READ_WAIT || state == ST_READ)) || (state == ST_WRITE && inport_wr_i != 4'b0));
   wire req_fire = in_req && inport_accept_o;
 
   wire which_chip = inport_addr_i[SDRAM_ADDR_W+1+1];
