@@ -52,6 +52,9 @@ module sdram_axi_core (
   localparam ST_READ_WAIT = 4'd5;
   localparam ST_WRITE_ACTIVATE = 4'd6;
   localparam ST_WRITE = 4'd7;
+  localparam ST_SLEEP1 = 4'd8;
+  localparam ST_SLEEP2 = 4'd9;
+  localparam ST_SLEEP3 = 4'd10;
 
   localparam CMD_W = 4;
   localparam CMD_NOP = 4'b0111;
@@ -130,15 +133,18 @@ module sdram_axi_core (
     case (state)
       ST_INIT: state_nxt = ST_MODE;
       ST_MODE: state_nxt = ST_IDLE;
+      ST_SLEEP1: state_nxt = ST_SLEEP2;
+      ST_SLEEP2: state_nxt = ST_SLEEP3;
+      ST_SLEEP3: state_nxt = ST_IDLE;
       ST_IDLE:
       if (inport_rd_i) state_nxt = ST_READ_ACTIVATE;
       else if (inport_wr_i != 4'b0000) state_nxt = ST_WRITE_ACTIVATE;
       else state_nxt = ST_IDLE;
       ST_READ_ACTIVATE: state_nxt = ST_READ_WAIT;
       ST_READ_WAIT: state_nxt = (wait_count == 'd0) ? ST_READ : ST_READ_WAIT;
-      ST_READ: state_nxt = (read_count == 'd0) ? ST_IDLE : ST_READ;
+      ST_READ: state_nxt = (read_count == 'd0) ? ST_SLEEP1 : ST_READ;
       ST_WRITE_ACTIVATE: state_nxt = ST_WRITE;
-      ST_WRITE: state_nxt = ST_IDLE;
+      ST_WRITE: state_nxt = ST_SLEEP1;
       default: state_nxt = state;
     endcase
   end
@@ -188,6 +194,9 @@ module sdram_axi_core (
       ST_INIT: dbg_state = "INIT";
       ST_MODE: dbg_state = "MODE";
       ST_IDLE: dbg_state = "IDLE";
+      ST_SLEEP1: dbg_state = "SLEEP1";
+      ST_SLEEP2: dbg_state = "SLEEP2";
+      ST_SLEEP3: dbg_state = "SLEEP3";
       ST_READ_ACTIVATE: dbg_state = "READ_ACT";
       ST_READ: dbg_state = "READ";
       ST_READ_WAIT: dbg_state = "READ_WAIT";
