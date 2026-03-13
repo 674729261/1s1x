@@ -139,7 +139,11 @@ void run(unsigned long long steps) {
   long long simulation_time_steped = 0;
   auto start_time = std::chrono::steady_clock::now();
   unsigned long long cur_step = 0;
+  uint8_t check_quit_counter = 0xFF;
   while (sim_state == SimulationState::RUNNING && steps != cur_step) {
+    if (check_quit_counter == 0)
+      break;
+    check_quit_counter--;
     if (retire && config.ftracer) {
       sync_ftracer();
     }
