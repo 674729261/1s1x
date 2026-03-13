@@ -82,14 +82,18 @@ std::string Capstone::disassemble(uint64_t pc, uint8_t *code, int nbyte,
 
   size_t count = cs_disasm_dl(handle, code, nbyte, pc, 0, &insn);
 
-  if (count != 1)
-    log_and_throw<std::logic_error>(
-        "Capstone encountered an invalid instruction@{:#010x}", pc);
+  // if (count != 1)
+  //   log_and_throw<std::logic_error>(
+  //       "Capstone encountered an invalid instruction@{:#010x}", pc);
 
   std::string str;
-  str = std::format("{:#010x}\t{:08x}\t{}\t{}", pc,
-                    *reinterpret_cast<uint32_t *>(code), insn->mnemonic,
-                    insn->op_str);
+  if (count != 1)
+    str = std::format("{:#010x}\t{:08x}\tinvalid", pc,
+                      *reinterpret_cast<uint32_t *>(code));
+  else
+    str = std::format("{:#010x}\t{:08x}\t{}\t{}", pc,
+                      *reinterpret_cast<uint32_t *>(code), insn->mnemonic,
+                      insn->op_str);
   if (display)
     std::println("{}", str);
   cs_free_dl(insn, count);
