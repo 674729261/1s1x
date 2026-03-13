@@ -26,7 +26,7 @@ class axi4_delayer extends BlackBox {
   val io = IO(new AXI4DelayerIO)
 }
 
-class AXI4DelayerChisel(ratio: Double = 6, scale_2pow: Long = 6)
+class AXI4DelayerChisel(ratio: Double = 10, scale_2pow: Long = 6)
     extends Module {
   val io = IO(new AXI4DelayerIO)
   val countup_amount = math.round((ratio - 1.0) * math.pow(2.0, scale_2pow))
@@ -87,8 +87,8 @@ class AXI4DelayerWrapper(implicit p: Parameters) extends LazyModule {
   lazy val module = new Impl
   class Impl extends LazyModuleImp(this) {
     (node.in zip node.out) foreach { case ((in, edgeIn), (out, edgeOut)) =>
-      // val delayer = Module(new AXI4DelayerChisel)
-      val delayer = Module(new axi4_delayer)
+      val delayer = Module(new AXI4DelayerChisel)
+      // val delayer = Module(new axi4_delayer)
 
       delayer.io.clock := clock
       delayer.io.reset := reset
