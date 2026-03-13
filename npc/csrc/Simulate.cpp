@@ -141,7 +141,7 @@ void run(unsigned long long steps) {
   unsigned long long cur_step = 0;
   uint8_t check_quit_counter = 0xFF;
   while (sim_state == SimulationState::RUNNING && steps != cur_step) {
-    if (check_quit_counter == 0)
+    if (check_quit_counter == 0 && quit.load())
       break;
     check_quit_counter--;
     if (retire && config.ftracer) {
