@@ -22,8 +22,7 @@ class apb_delayer extends BlackBox {
   val io = IO(new APBDelayerIO)
 }
 
-class APBDelayerChisel(ratio: Double = 10, scale_2pow: Long = 6)
-    extends Module {
+class APBDelayerChisel(ratio: Double = 6, scale_2pow: Long = 6) extends Module {
   val io = IO(new APBDelayerIO)
   val countup_amount = math.round((ratio - 1.0) * math.pow(2.0, scale_2pow))
   val countdown_amount = (1 << scale_2pow)
@@ -75,8 +74,8 @@ class APBDelayerWrapper(implicit p: Parameters) extends LazyModule {
   lazy val module = new Impl
   class Impl extends LazyModuleImp(this) {
     (node.in zip node.out) foreach { case ((in, edgeIn), (out, edgeOut)) =>
-      val delayer = Module(new APBDelayerChisel)
-      // val delayer = Module(new apb_delayer)
+      // val delayer = Module(new APBDelayerChisel)
+      val delayer = Module(new apb_delayer)
 
       delayer.io.clock := clock
       delayer.io.reset := reset
