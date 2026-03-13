@@ -10,7 +10,7 @@
 #define COL_WHITE 0xeeeeee
 #define COL_RED 0xff0033
 #define COL_GREEN 0x00cc33
-#define COL_PURPLE 0x43aebd
+#define COL_PURPLE 0xbc5142
 
 enum { WHITE = 0, RED, GREEN, PURPLE };
 struct character {
