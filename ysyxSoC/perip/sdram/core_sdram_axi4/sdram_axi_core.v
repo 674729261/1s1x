@@ -98,7 +98,7 @@ module sdram_axi_core (
 
 
 
-  assign inport_accept_o = in_req && ((inport_rd_i && (state == ST_READ_WAIT || (state == ST_READ && read_count != 8'd0))) || (state == ST_WRITE && inport_wr_i != 4'b0));
+  assign inport_accept_o = in_req && ((inport_rd_i && (state == ST_READ_WAIT || (state == ST_READ && read_count >= 8'd2))) || (state == ST_WRITE && inport_wr_i != 4'b0));
   wire req_fire = in_req && inport_accept_o;
 
   wire which_chip = inport_addr_i[SDRAM_ADDR_W+1+1];
