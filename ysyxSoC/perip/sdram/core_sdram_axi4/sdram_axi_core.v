@@ -152,7 +152,7 @@ module sdram_axi_core (
   always @(*) begin
     if (state == ST_MODE) command_q = CMD_LOAD_MODE;
     else if (state == ST_READ_WAIT || state == ST_READ)
-      command_q = (inport_rd_i && in_req) ? CMD_READ : CMD_NOP;
+      command_q = (inport_rd_i && req_fire) ? CMD_READ : CMD_NOP;
     else if (state == ST_WRITE) command_q = CMD_WRITE;
     else if (state == ST_READ_ACTIVATE || state == ST_WRITE_ACTIVATE) command_q = CMD_ACTIVE;
     else command_q = CMD_NOP;
