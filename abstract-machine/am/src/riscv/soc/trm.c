@@ -105,6 +105,7 @@ __attribute__((section(".fsbl"))) void fstbootloader() {
   while (n-- > 0) {
     *dst++ = *src++;
   }
+
   // while (src < &__ssbl_load_end) {
   //   *dst = *src;
   //   ++dst;
