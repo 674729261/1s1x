@@ -1,40 +1,16 @@
 #include <klib.h>
 #include <stdint.h>
-int v = 0;
-__attribute__((noinline)) __attribute__((aligned(32))) int f() {
-  asm volatile("nop");
-  asm volatile("nop");
-  asm volatile("nop");
-  asm volatile("nop");
-  asm volatile("nop");
-  asm volatile("nop");
-  asm volatile("nop");
-  asm volatile("nop");
-  asm volatile("nop");
-  asm volatile("nop");
-  asm volatile("nop");
-  asm volatile("nop");
-  asm volatile("nop");
-  asm volatile("nop");
-  asm volatile("nop");
-  return 0;
-}
-__attribute__((noinline)) void g() { asm volatile("li a0, 456"); }
 
 int main() {
-  f();
-  volatile uint32_t *p = (uint32_t *)f;
+  uint32_t a = 0xabcdef12;
+  uint32_t b = 0x12345678;
   for (int i = 0; i < 16; i++) {
-    *p = *(uint32_t *)g;
-    p++;
+    asm volatile("csrw mtvec, %0" ::"r"(a) :);
+    asm volatile("csrrw %0, mtvec, %1" ::"r"(a), "r"(b) :);
+
+    asm volatile("csrw mepc, %0" ::"r"(a) :);
+    asm volatile("csrrw %0, mepc, %1" ::"r"(a), "r"(b) :);
+    a += 1;
+    b -= 1;
   }
-  int r = -1;
-  asm volatile("fence.i");
-  asm volatile("call f");
-  asm volatile("mv %0, a0" : "=r"(r) : :);
-  printf("r is %d, should be 456\n", r);
-  if (r == 456)
-    return 0;
-  else
-    return -1;
 }
