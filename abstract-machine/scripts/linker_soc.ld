@@ -134,8 +134,8 @@ SECTIONS
 
   _heap_start = ORIGIN(sdram_heap);
   _heap_end = ORIGIN(sdram_heap) + LENGTH(sdram_heap);
-  /* _stack_pointer = ORIGIN(sram) + LENGTH(sram); */
-  _stack_pointer = ORIGIN(psram) + LENGTH(psram);
+  _stack_pointer = ORIGIN(sram) + LENGTH(sram);
+  /* _stack_pointer = ORIGIN(psram) + LENGTH(psram); */
 }
 
 
