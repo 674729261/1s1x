@@ -187,7 +187,7 @@ module sdram_axi_pmem (
   assign axi_arready_o = !has_ar && !has_aw && !has_w && !axi_awvalid_i && !axi_wvalid_i;
   assign axi_awready_o = !has_ar && !has_aw;
   assign axi_wready_o = !has_ar && !has_w;
-  assign axi_rvalid_o = ((state == ST_AXI_R || state == ST_RAM_ACCESS_READ) && data_cnt_r_remaining != 4'd0);
+  assign axi_rvalid_o = ((state == ST_AXI_R || state == ST_WAIT_READ || state == ST_RAM_ACCESS_READ) && data_cnt_r_remaining != 4'd0);
   assign axi_bvalid_o = (state == ST_AXI_B);
 
 
