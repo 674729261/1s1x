@@ -144,7 +144,7 @@ module sdram_axi_pmem (
 
   assign ram_addr_o = addr;
   assign ram_rd_o = (has_ar && !ram_out_last_r);
-  assign ram_wr_o = ((has_aw && has_w) ? wstrb : 4'b0000);
+  assign ram_wr_o = ((has_aw && has_w && !ram_out_last_w) ? wstrb : 4'b0000);
   assign ram_len_o = {5'b0, read_cnt};
   assign ram_write_data_o = wdata;
 
@@ -160,7 +160,7 @@ module sdram_axi_pmem (
   assign axi_awready_o = !has_ar && !has_aw;
   assign axi_wready_o = !has_ar && !has_w;
   assign axi_rvalid_o = (has_ar && data_cnt_r_remaining != 4'd0);
-  assign axi_bvalid_o = (has_aw && has_w);
+  assign axi_bvalid_o = (has_aw && has_w && ram_out_last_w);
 
 
 
