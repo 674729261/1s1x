@@ -14,6 +14,8 @@ VSRC = $(wildcard vsrc/*.v)
 VSRC += $(wildcard vsrc/*.sv)
 VSRC += $(wildcard $(SOC_HOME)/build/*.v)
 VSRC += $(shell find $(SOC_HOME)/perip -name *.v)
+VSRC += $(shell find $(SOC_HOME)/perip -name *.sv)
+
 CHISELSRC += $(wildcard src/main/scala/empty/*.scala)
 TOPNAME = ysyxSoCFull
 BIN = $(MDIR)/V$(TOPNAME)
