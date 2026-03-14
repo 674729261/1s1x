@@ -117,9 +117,6 @@ module sdram_axi_pmem (
   localparam ST_RAM_ACCESS_WRITE = 4;
   localparam ST_AXI_B = 5;
 
-  reg [31:0] read_buffer[0:7];
-  reg [2:0] in_ptr, out_ptr;
-
   always_ff @(posedge clk_i) begin
     if (aw_fire) axi_id <= axi_awid_i;
     else if (ar_fire) axi_id <= axi_arid_i;
@@ -139,30 +136,21 @@ module sdram_axi_pmem (
 
     if (w_fire) wstrb <= axi_wstrb_i;
     if (w_fire) wdata <= axi_wdata_i;
-
-    if (ar_fire) in_ptr <= 3'd0;
-    else if (ram_ack_i) in_ptr <= in_ptr + 3'd1;
-
-    if (ar_fire) out_ptr <= 3'd0;
-    else if (r_fire) out_ptr <= out_ptr + 3'd1;
   end
 
+  reg [31:0] read_buffer[0:7];
 
-  reg [3:0] data_cnt_r_remaining;
-  always_ff @(posedge clk_i) begin
-    if (ar_fire) data_cnt_r_remaining <= 4'd0;
-    else if (ram_ack_i && !r_fire) data_cnt_r_remaining <= data_cnt_r_remaining + 4'd1;
-    else if (!ram_ack_i && r_fire) data_cnt_r_remaining <= data_cnt_r_remaining - 4'd1;
-
-  end
-
-
-
-  always_ff @(posedge clk_i) begin
-    if (ram_ack_i) read_buffer[in_ptr] <= ram_read_data_i;
-  end
-
-
+  genvar i;
+  generate
+    for (i = 1; i < 8; i++) begin
+      always_ff @(posedge clk_i) begin
+        if (ram_ack_i) read_buffer[i-1] <= read_buffer[i];
+      end
+    end
+    always @(posedge clk_i) begin
+      if (ram_ack_i) read_buffer[7] <= ram_read_data_i;
+    end
+  endgenerate
 
   always_ff @(posedge clk_i or posedge rst_i) begin
     if (rst_i) state <= ST_IDLE;
@@ -180,14 +168,14 @@ module sdram_axi_pmem (
   assign axi_bid_o = axi_id;
   assign axi_rresp_o = 2'b00;
   assign axi_bresp_o = 2'b00;
-  assign axi_rdata_o = read_buffer[out_ptr];
+  assign axi_rdata_o = read_buffer[3'd7-burst_cnt];
   assign axi_rlast_o = (burst_cnt == 3'd0);
 
 
   assign axi_arready_o = !has_ar && !has_aw && !has_w && !axi_awvalid_i && !axi_wvalid_i;
   assign axi_awready_o = !has_ar && !has_aw;
   assign axi_wready_o = !has_ar && !has_w;
-  assign axi_rvalid_o = ((state == ST_AXI_R || state == ST_WAIT_READ || state == ST_RAM_ACCESS_READ) && data_cnt_r_remaining != 4'd0);
+  assign axi_rvalid_o = (state == ST_AXI_R);
   assign axi_bvalid_o = (state == ST_AXI_B);
 
 

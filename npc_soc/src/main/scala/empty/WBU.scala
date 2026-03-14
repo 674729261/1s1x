@@ -13,7 +13,7 @@ class WBU() extends Module {
     val csr_wen = Output(Bool())
     val csr_wdata = Output(UInt(32.W))
     val csr_cur_pc = Output(UInt(32.W))
-    val csr_interruption = Output(Bool())
+    val csr_interruption = Output(UInt(32.W))
     val csr_mcause = Output(UInt(32.W))
 
     val gpr_waddr = Output(UInt(5.W))

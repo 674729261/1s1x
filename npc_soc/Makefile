@@ -14,8 +14,6 @@ VSRC = $(wildcard vsrc/*.v)
 VSRC += $(wildcard vsrc/*.sv)
 VSRC += $(wildcard $(SOC_HOME)/build/*.v)
 VSRC += $(shell find $(SOC_HOME)/perip -name *.v)
-VSRC += $(shell find $(SOC_HOME)/perip -name *.sv)
-
 CHISELSRC += $(wildcard src/main/scala/empty/*.scala)
 TOPNAME = ysyxSoCFull
 BIN = $(MDIR)/V$(TOPNAME)
@@ -88,7 +86,7 @@ nvboard: $(NXDC_CPP) nvboard-archive npc
 	$(call git_commit, "sim RTL with nvboard")
 	$(BIN) --image $(PROG) --log $(LOG_FILE) --difftest --nvboard
 
-CLK_FREQ_MHZ = 1200
+CLK_FREQ_MHZ = 1000
 sta: sbt
 	mkdir -p $(STA_DIR)/result || true
 	make -C $(STA_HOME) sta \
