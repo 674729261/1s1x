@@ -112,10 +112,10 @@ module sdram_axi_pmem (
     else if (r_fire) out_ptr <= out_ptr + 3'd1;
 
     if (ar_fire) ram_out_last_r <= 1'b0;
-    else if (send_cnt == 3'd0 && ram_accept_i) ram_out_last_r <= 1'b1;
+    else if (has_ar && send_cnt == 3'd0 && ram_accept_i) ram_out_last_r <= 1'b1;
 
-    if ((aw_fire || has_aw) && (w_fire || has_w)) ram_out_last_w <= 1'b0;
-    else if (ram_accept_i) ram_out_last_w <= 1'b1;
+    if (aw_fire || w_fire) ram_out_last_w <= 1'b0;
+    else if (has_aw && has_w && ram_accept_i) ram_out_last_w <= 1'b1;
 
   end
 
