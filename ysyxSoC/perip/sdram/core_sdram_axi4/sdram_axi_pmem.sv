@@ -143,7 +143,7 @@ module sdram_axi_pmem (
 
 
   assign ram_addr_o = addr;
-  assign ram_rd_o = (has_ar && ram_out_last_r);
+  assign ram_rd_o = (has_ar && !ram_out_last_r);
   assign ram_wr_o = ((has_aw && has_w) ? wstrb : 4'b0000);
   assign ram_len_o = {5'b0, read_cnt};
   assign ram_write_data_o = wdata;
