@@ -193,7 +193,8 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
       conf2_wbu -> !fwd2_wbu
     )
   )
-  val stall_csr = conf_csr_exu || conf_csr_lsu || conf_csr_wbu
+  val stall_csr =
+    conf_csr_exu || conf_csr_lsu || conf_csr_wbu || wbu.out.csr_interruption
   idu.conf.stall := stall_src1 || stall_src2 || stall_csr
 
   idu.conf.do_forward_src1 := MuxCase(
