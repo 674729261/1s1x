@@ -31,8 +31,8 @@ class IFU(init_pc: UInt) extends Module {
   val cache_afire = icache.io.avalid && icache.io.aready
   val cache_rfire = icache.io.rvalid && icache.io.rready
 
-  val timestamp_r = RegInit(UInt(2.W), 0.U(2.W))
-  val timestamp = Mux(in.flush_valid, timestamp_r + 1.U(2.W), timestamp_r)
+  val timestamp_r = RegInit(UInt(3.W), 0.U(3.W))
+  val timestamp = Mux(in.flush_valid, timestamp_r + 1.U(3.W), timestamp_r)
 
   in.btb_pc := fetch_pc_r
   val pc_next_predicted = in.btb_nxt_pc
@@ -77,7 +77,7 @@ class IFU(init_pc: UInt) extends Module {
 
   timestamp_r := MuxCase(
     timestamp_r,
-    Seq(in.flush_valid -> (timestamp_r + 1.U(2.W)))
+    Seq(in.flush_valid -> (timestamp_r + 1.U(3.W)))
   )
 
   out.valid := has_inst

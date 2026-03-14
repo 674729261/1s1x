@@ -26,7 +26,7 @@ class axi4_delayer extends BlackBox {
   val io = IO(new AXI4DelayerIO)
 }
 
-class AXI4DelayerChisel(ratio: Double = 10, scale_2pow: Long = 6)
+class AXI4DelayerChisel(ratio: Double = 6, scale_2pow: Long = 6)
     extends Module {
   val io = IO(new AXI4DelayerIO)
   val countup_amount = math.round((ratio - 1.0) * math.pow(2.0, scale_2pow))
@@ -35,11 +35,10 @@ class AXI4DelayerChisel(ratio: Double = 10, scale_2pow: Long = 6)
   val sIDLE :: sDELAY :: sWAIT :: Nil = Enum(3)
   val state_ar = RegInit(sIDLE)
   val trigger_ar = io.in.ar.valid
-  val fire_ar = io.out.ar.valid && io.out.ar.ready
+  val fire_ar = io.in.ar.valid && io.in.ar.ready
   val counter_ar = RegInit(UInt(32.W), 0.U)
 
   io.out.ar.valid := state_ar === sWAIT
-  io.in.ar.ready := (state_ar === sWAIT) && io.out.ar.ready
 
   state_ar := MuxLookup(state_ar, sDELAY)(
     Seq(
@@ -59,11 +58,10 @@ class AXI4DelayerChisel(ratio: Double = 10, scale_2pow: Long = 6)
 
   val state_aw = RegInit(sIDLE)
   val trigger_aw = io.in.aw.valid
-  val fire_aw = io.out.aw.valid && io.out.aw.ready
+  val fire_aw = io.in.aw.valid && io.in.aw.ready
   val counter_aw = RegInit(UInt(32.W), 0.U)
 
   io.out.aw.valid := state_aw === sWAIT
-  io.in.aw.ready := (state_aw === sWAIT) && io.out.aw.ready
 
   state_aw := MuxLookup(state_aw, sDELAY)(
     Seq(
@@ -89,8 +87,8 @@ class AXI4DelayerWrapper(implicit p: Parameters) extends LazyModule {
   lazy val module = new Impl
   class Impl extends LazyModuleImp(this) {
     (node.in zip node.out) foreach { case ((in, edgeIn), (out, edgeOut)) =>
-      val delayer = Module(new AXI4DelayerChisel)
-      // val delayer = Module(new axi4_delayer)
+      // val delayer = Module(new AXI4DelayerChisel)
+      val delayer = Module(new axi4_delayer)
 
       delayer.io.clock := clock
       delayer.io.reset := reset
