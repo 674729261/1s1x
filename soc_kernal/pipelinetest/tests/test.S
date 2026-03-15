@@ -2,7 +2,7 @@
 .type main, @function
 
 main:
-    li a0, 65536
+    li a0, 100000
 begin_test_loop:
     addi t0, t0, 1
     add t0, t0, t0
