@@ -3,7 +3,7 @@
 
 int main() {
 
-  asm volatile("lui a0, 0xf\n"
+  asm volatile("lui a0, 0x8\n"
                "begin_test_loop:\n"
                "addi t0, t0, 1\n"
                "add t0, t0, t0\n"
