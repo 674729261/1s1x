@@ -1,39 +1,4 @@
-//-----------------------------------------------------------------
-//                    SDRAM Controller (AXI4)
-//                           V1.0
-//                     Ultra-Embedded.com
-//                     Copyright 2015-2019
-//
-//                 Email: admin@ultra-embedded.com
-//
-//                         License: GPL
-// If you would like a version with a more permissive license for
-// use in closed source commercial applications please contact me
-// for details.
-//-----------------------------------------------------------------
-//
-// This file is open source HDL; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License as
-// published by the Free Software Foundation; either version 2 of
-// the License, or (at your option) any later version.
-//
-// This file is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public
-// License along with this file; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-// USA
-//-----------------------------------------------------------------
-
-//-----------------------------------------------------------------
-//                          Generated File
-//-----------------------------------------------------------------
-
 module sdram_axi_pmem (
-    // Inputs
       input        clk_i
     , input        rst_i
     , input        axi_awvalid_i
@@ -57,7 +22,6 @@ module sdram_axi_pmem (
     , input        ram_error_i
     , input [31:0] ram_read_data_i
 
-    // Outputs
     , output        axi_awready_o
     , output        axi_wready_o
     , output        axi_bvalid_o
@@ -109,13 +73,17 @@ module sdram_axi_pmem (
   reg [31:0] addr;
   reg [31:0] wdata;
   reg [ 3:0] wstrb;
-  reg [3:0] state, nxt_state;
-  localparam ST_IDLE = 0;
-  localparam ST_RAM_ACCESS_READ = 1;
-  localparam ST_WAIT_READ = 2;
-  localparam ST_AXI_R = 3;
-  localparam ST_RAM_ACCESS_WRITE = 4;
-  localparam ST_AXI_B = 5;
+  // reg [3:0] state, nxt_state;
+  // localparam ST_IDLE = 0;
+  // localparam ST_RAM_ACCESS_READ = 1;
+  // localparam ST_WAIT_READ = 2;
+  // localparam ST_AXI_R = 3;
+  // localparam ST_RAM_ACCESS_WRITE = 4;
+  // localparam ST_AXI_B = 5;
+
+  reg [31:0] read_buffer[0:7];
+  reg [2:0] in_ptr, out_ptr;
+  reg ram_out_last_r, ram_out_last_w;
 
   always_ff @(posedge clk_i) begin
     if (aw_fire) axi_id <= axi_awid_i;
@@ -136,31 +104,47 @@ module sdram_axi_pmem (
 
     if (w_fire) wstrb <= axi_wstrb_i;
     if (w_fire) wdata <= axi_wdata_i;
+
+    if (ar_fire) in_ptr <= 3'd0;
+    else if (ram_ack_i) in_ptr <= in_ptr + 3'd1;
+
+    if (ar_fire) out_ptr <= 3'd0;
+    else if (r_fire) out_ptr <= out_ptr + 3'd1;
+
+    if (ar_fire) ram_out_last_r <= 1'b0;
+    else if (has_ar && send_cnt == 3'd0 && ram_accept_i) ram_out_last_r <= 1'b1;
+
+    if (aw_fire || w_fire) ram_out_last_w <= 1'b0;
+    else if (has_aw && has_w && ram_accept_i) ram_out_last_w <= 1'b1;
+
   end
 
-  reg [31:0] read_buffer[0:7];
 
-  genvar i;
-  generate
-    for (i = 1; i < 8; i++) begin
-      always_ff @(posedge clk_i) begin
-        if (ram_ack_i) read_buffer[i-1] <= read_buffer[i];
-      end
-    end
-    always @(posedge clk_i) begin
-      if (ram_ack_i) read_buffer[7] <= ram_read_data_i;
-    end
-  endgenerate
+  reg [3:0] data_cnt_r_remaining;
+  always_ff @(posedge clk_i) begin
+    if (ar_fire) data_cnt_r_remaining <= 4'd0;
+    else if (ram_ack_i && !r_fire) data_cnt_r_remaining <= data_cnt_r_remaining + 4'd1;
+    else if (!ram_ack_i && r_fire) data_cnt_r_remaining <= data_cnt_r_remaining - 4'd1;
 
-  always_ff @(posedge clk_i or posedge rst_i) begin
-    if (rst_i) state <= ST_IDLE;
-    else state <= nxt_state;
   end
+
+
+
+  always_ff @(posedge clk_i) begin
+    if (ram_ack_i) read_buffer[in_ptr] <= ram_read_data_i;
+  end
+
+
+
+  // always_ff @(posedge clk_i or posedge rst_i) begin
+  //   if (rst_i) state <= ST_IDLE;
+  //   else state <= nxt_state;
+  // end
 
 
   assign ram_addr_o = addr;
-  assign ram_rd_o = (state == ST_RAM_ACCESS_READ);
-  assign ram_wr_o = (state == ST_RAM_ACCESS_WRITE ? wstrb : 4'b0000);
+  assign ram_rd_o = (has_ar && !ram_out_last_r);
+  assign ram_wr_o = ((has_aw && has_w && !ram_out_last_w) ? wstrb : 4'b0000);
   assign ram_len_o = {5'b0, read_cnt};
   assign ram_write_data_o = wdata;
 
@@ -168,42 +152,42 @@ module sdram_axi_pmem (
   assign axi_bid_o = axi_id;
   assign axi_rresp_o = 2'b00;
   assign axi_bresp_o = 2'b00;
-  assign axi_rdata_o = read_buffer[3'd7-burst_cnt];
+  assign axi_rdata_o = read_buffer[out_ptr];
   assign axi_rlast_o = (burst_cnt == 3'd0);
 
 
   assign axi_arready_o = !has_ar && !has_aw && !has_w && !axi_awvalid_i && !axi_wvalid_i;
   assign axi_awready_o = !has_ar && !has_aw;
   assign axi_wready_o = !has_ar && !has_w;
-  assign axi_rvalid_o = (state == ST_AXI_R);
-  assign axi_bvalid_o = (state == ST_AXI_B);
+  assign axi_rvalid_o = (has_ar && data_cnt_r_remaining != 4'd0);
+  assign axi_bvalid_o = (has_aw && has_w && ram_out_last_w);
 
 
 
-  always_comb begin
-    case (state)
-      ST_IDLE:
-      if (ar_fire) nxt_state = ST_RAM_ACCESS_READ;
-      else if ((aw_fire || has_aw) && (w_fire || has_w)) nxt_state = ST_RAM_ACCESS_WRITE;
-      else nxt_state = ST_IDLE;
-      ST_RAM_ACCESS_READ:
-      if (send_cnt == 3'd0 && ram_accept_i) nxt_state = ST_WAIT_READ;
-      else nxt_state = ST_RAM_ACCESS_READ;
-      ST_WAIT_READ:
-      if (read_cnt == 3'd0 && ram_ack_i) nxt_state = ST_AXI_R;
-      else nxt_state = ST_WAIT_READ;
-      ST_RAM_ACCESS_WRITE:
-      if (ram_accept_i) nxt_state = ST_AXI_B;
-      else nxt_state = ST_RAM_ACCESS_WRITE;
-      ST_AXI_B:
-      if (b_fire) nxt_state = ST_IDLE;
-      else nxt_state = ST_AXI_B;
-      ST_AXI_R:
-      if (r_fire_last) nxt_state = ST_IDLE;
-      else nxt_state = ST_AXI_R;
-      default: nxt_state = ST_IDLE;
-    endcase
-  end
+  // always_comb begin
+  //   case (state)
+  //     ST_IDLE:
+  //     if (ar_fire) nxt_state = ST_RAM_ACCESS_READ;
+  //     else if ((aw_fire || has_aw) && (w_fire || has_w)) nxt_state = ST_RAM_ACCESS_WRITE;
+  //     else nxt_state = ST_IDLE;
+  //     ST_RAM_ACCESS_READ:
+  //     if (send_cnt == 3'd0 && ram_accept_i) nxt_state = ST_WAIT_READ;
+  //     else nxt_state = ST_RAM_ACCESS_READ;
+  //     ST_WAIT_READ:
+  //     if (read_cnt == 3'd0 && ram_ack_i) nxt_state = ST_AXI_R;
+  //     else nxt_state = ST_WAIT_READ;
+  //     ST_RAM_ACCESS_WRITE:
+  //     if (ram_accept_i) nxt_state = ST_AXI_B;
+  //     else nxt_state = ST_RAM_ACCESS_WRITE;
+  //     ST_AXI_B:
+  //     if (b_fire) nxt_state = ST_IDLE;
+  //     else nxt_state = ST_AXI_B;
+  //     ST_AXI_R:
+  //     if (r_fire_last) nxt_state = ST_IDLE;
+  //     else nxt_state = ST_AXI_R;
+  //     default: nxt_state = ST_IDLE;
+  //   endcase
+  // end
 
 
 
@@ -223,18 +207,18 @@ module sdram_axi_pmem (
 
 
 `ifdef verilator
-  reg [255:0] dbg_state;
+  // reg [255:0] dbg_state;
 
-  always @* begin
-    case (state)
-      ST_IDLE: dbg_state = "ST_IDLE";
-      ST_RAM_ACCESS_READ: dbg_state = "ST_RAM_ACCESS_READ";
-      ST_WAIT_READ: dbg_state = "ST_WAIT_READ";
-      ST_RAM_ACCESS_WRITE: dbg_state = "ST_RAM_ACCESS_WRITE";
-      ST_AXI_B: dbg_state = "ST_AXI_B";
-      ST_AXI_R: dbg_state = "ST_AXI_R";
-      default: dbg_state = "UNKNOWN";
-    endcase
-  end
+  // always @* begin
+  //   case (state)
+  //     ST_IDLE: dbg_state = "ST_IDLE";
+  //     ST_RAM_ACCESS_READ: dbg_state = "ST_RAM_ACCESS_READ";
+  //     ST_WAIT_READ: dbg_state = "ST_WAIT_READ";
+  //     ST_RAM_ACCESS_WRITE: dbg_state = "ST_RAM_ACCESS_WRITE";
+  //     ST_AXI_B: dbg_state = "ST_AXI_B";
+  //     ST_AXI_R: dbg_state = "ST_AXI_R";
+  //     default: dbg_state = "UNKNOWN";
+  //   endcase
+  // end
 `endif
 endmodule

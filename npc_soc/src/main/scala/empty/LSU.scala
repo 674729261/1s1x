@@ -106,8 +106,8 @@ class LSU() extends Module {
     Seq(bus_r_error -> 5.U(4.W), bus_b_error -> 7.U(4.W))
   )
 
-  should_mem_access_r := has_signal && in.bits.controls.is_ram_valid && !in.bits.controls.is_ram_wen
-  should_mem_access_w := has_signal && in.bits.controls.is_ram_valid && in.bits.controls.is_ram_wen
+  should_mem_access_r := !in.bits.exeption && has_signal && in.bits.controls.is_ram_valid && !in.bits.controls.is_ram_wen
+  should_mem_access_w := !in.bits.exeption && has_signal && in.bits.controls.is_ram_valid && in.bits.controls.is_ram_wen
 
   fetch_port.ar.valid := has_signal && should_mem_access_r && !out_ar
   fetch_port.r.ready := out_ar && !has_r

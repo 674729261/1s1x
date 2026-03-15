@@ -17,3 +17,5 @@ struct Config {
 };
 
 Config setup(argparse::ArgumentParser &program);
+
+inline Config config;

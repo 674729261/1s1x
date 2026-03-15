@@ -33,6 +33,14 @@ extern std::array<InstTypeItem, 14> inst_type_event;
 
 extern std::unique_ptr<Dut> dut;
 
+struct Statistics {
+  long long simulation_time;
+  long long simulation_clocks;
+  long long simulation_instructions;
+};
+
+inline Statistics performance_statistics;
+
 inline void clear_performance_count() {
   ifu_event = 0;
   icache_hit_event = 0;
