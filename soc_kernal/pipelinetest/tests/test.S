@@ -3,7 +3,7 @@
 
 main:
     li a0, 65536
-a:
+begin_test_loop:
     addi t0, t0, 1
     add t0, t0, t0
     addi t1, t1, 2
@@ -15,5 +15,5 @@ a:
     add t1, t1, t1
     sub t0, t1, t0
     addi a0, a0, -1
-    bnez a0, a
+    bnez a0, begin_test_loop
     ret
