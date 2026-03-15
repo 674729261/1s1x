@@ -1,3 +1,3 @@
 NAME = test
-SRCS = tests/test.c
+SRCS = tests/test.S
 include /home/shitful/1s1x/ysyx-workbench/abstract-machine/Makefile
