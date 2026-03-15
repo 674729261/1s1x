@@ -1,5 +1,6 @@
 #include "Expression/Expression.h"
 #include "Expression/Watcher.h"
+#include "RingBuffer.hpp"
 #include "Setup.h"
 #include "Simulate.h"
 #include "my_utils.h"
@@ -100,6 +101,12 @@ CmdResult cmd_l(std::string_view arg) {
           println("{0}\t        \tError     \t{1}", i, watchers[i].display);
       }
     }
+  } else if (match<R"(\s*i\s*)">(arg)) {
+    if (config.itracer > 0)
+      instRingBuffer->display();
+    else
+      println("Instruction ringbuffer is not enabled.");
+
   } else {
     return CmdResult::INVALID_ARG;
   }
