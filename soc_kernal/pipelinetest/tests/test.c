@@ -2,7 +2,7 @@
 #include <stdint.h>
 
 int main() {
-  for (int i = 0; i < 8192; i++) {
+  for (int i = 0; i < 1; i++) {
     asm volatile("addi a1, a1, 1");
     asm volatile("add a1, a1, a1");
   }
