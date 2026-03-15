@@ -16,6 +16,6 @@ int main() {
                "add t1, t1, t1\n"
                "sub t0, t1, t0\n"
                "addi a0, a0, -1\n"
-               "bnez a0, begin_test_loop\n");
+               "bnez a0, begin_test_loop\nli a0,1");
   asm("ret");
 }
