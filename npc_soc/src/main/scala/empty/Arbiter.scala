@@ -27,7 +27,7 @@ object GenerateFireSignal {
   }
 }
 
-class Arbiter_2Master() extends Module {
+class Arbiter_2Master() extends PrefixedModule {
   val IFU_AXI = IO(Flipped(new AXI))
   val LSU_AXI = IO(Flipped(new AXI))
   val OUT_AXI = IO(new AXI)

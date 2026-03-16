@@ -1,6 +1,7 @@
 
 #include "DUT.h"
 #include "Flash.h"
+#include "Setup.h"
 #include "spdlog/spdlog.h"
 #include <Args.h>
 #include <Cache.h>
@@ -10,6 +11,7 @@
 #include <VysyxSoCFull.h>
 #include <VysyxSoCFull___024root.h>
 #include <chrono>
+#include <cstdint>
 #include <exception>
 #include <iostream>
 #include <memory>
@@ -24,6 +26,18 @@ std::unique_ptr<Dut> dut;
 static bool retire;
 
 extern "C" void notify_retire(int32_t pc, int32_t inst) { retire = true; }
+extern "C" void notify_bus_read(int id, uint32_t addr, int len, int rsize) {
+  if (config.mtracer)
+    spdlog::info(
+        "Read  {:#010x}, arid = {:2}, arlen = {:3}, arsize = {:2}, time = {}",
+        addr, id, len, rsize, dut->getSimTime());
+}
+extern "C" void notify_bus_write(int id, uint32_t addr, int len, int wsize) {
+  if (config.mtracer)
+    spdlog::info(
+        "Write {:#010x}, arid = {:2}, arlen = {:3}, arsize = {:2}, time = {}",
+        addr, id, len, wsize, dut->getSimTime());
+}
 
 bool check_difftest(Dut &dut, Ref &ref) {
   bool ret = false;
@@ -43,13 +57,13 @@ bool check_difftest(Dut &dut, Ref &ref) {
   return ret;
 }
 
-int simulate(int argc, char *argv[], Config config) {
+int simulate() {
   // init_mrom(config.image_path);
   init_flash(config.image_path);
-  Verilated::commandArgs(argc, argv);
+  // Verilated::commandArgs(argc, argv);
   std::unique_ptr<VerilatedContext> contextp =
       std::make_unique<VerilatedContext>();
-  contextp->commandArgs(argc, argv);
+  // contextp->commandArgs(argc, argv);
 
   Verilated::traceEverOn(true);
 
@@ -115,10 +129,10 @@ int simulate(int argc, char *argv[], Config config) {
 }
 
 int main(int argc, char *argv[]) {
-  Config config = process_args(argc, argv);
+  config = process_args(argc, argv);
   int return_value = -1;
   try {
-    return_value = simulate(argc, argv, config);
+    return_value = simulate();
   } catch (std::exception e) {
     std::println(std::cerr, "Error : {}", e.what());
   }

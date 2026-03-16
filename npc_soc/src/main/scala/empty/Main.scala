@@ -6,6 +6,11 @@ import chisel3.layer._
 
 import scopt.OParser
 
+abstract class PrefixedModule(prefix: String = "ysyx_25080216") extends Module {
+  override val desiredName = s"${prefix}_${this.getClass.getSimpleName}"
+  println(s"Module name: $name")
+}
+
 object AddMain extends App {
 
   case class Config(

@@ -3,7 +3,7 @@ package empty
 import chisel3._
 import chisel3.util._
 
-class GPR(CNT: Int, BITWIDTH: Int) extends Module {
+class GPR(CNT: Int, BITWIDTH: Int) extends PrefixedModule {
   val log_cnt = log2Ceil(CNT)
   val io = IO(new Bundle {
     val raddr1 = Input(UInt(log_cnt.W))

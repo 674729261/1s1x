@@ -57,7 +57,8 @@ class PerformanceCounter extends ExtModule {
 
 }
 
-class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends Module {
+class CPU_Core(init_pc: UInt, performance_counter: Boolean)
+    extends PrefixedModule {
   val io = IO(new Bundle {
     val pc = Output(UInt(32.W))
     // val inst_bus_axi = new AXI_Lite

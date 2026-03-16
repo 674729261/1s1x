@@ -10,7 +10,7 @@ class MessageIFU2IDU extends Bundle {
   val predicted_jump = (Bool())
 }
 
-class IFU(init_pc: UInt) extends Module {
+class IFU(init_pc: UInt) extends PrefixedModule {
   val in = IO(new Bundle {
     val exu_dnpc = Input(UInt(32.W))
     val flush_valid = Input(Bool())

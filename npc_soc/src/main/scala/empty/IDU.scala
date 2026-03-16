@@ -310,7 +310,7 @@ class ConflictInfoRS extends Bundle {
 
 }
 
-class IDU() extends Module {
+class IDU() extends PrefixedModule {
   val in = IO(Flipped(DecoupledIO(new MessageIFU2IDU)))
   val perf_cnt = IO(new Bundle {
     val stalled = Output(Bool())

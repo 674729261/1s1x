@@ -22,7 +22,7 @@ class MessageLSU2WBU extends Bundle {
   val cause = (UInt(4.W))
 }
 
-class LSU() extends Module {
+class LSU() extends PrefixedModule {
 
   val in = IO(Flipped(DecoupledIO(new MessageEXU2LSU)))
 

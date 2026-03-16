@@ -55,7 +55,7 @@ public:
     // println("PC : {:08x}, a5 = {:08x}", getPC(), getGPR(15));
   }
 
-  void step_one_inst() {}
+  // void step_one_inst() {}
   vluint64_t getSimTime() { return sim_time; }
   uint32_t getPC() {
     return top->rootp

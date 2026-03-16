@@ -10,7 +10,8 @@ class BTBLine(tag_width: Int) extends Bundle {
   val saturate_count = UInt(2.W)
 }
 
-class NextPCPredict(size_2pow: Int, tag_from: Int, tag_to: Int) extends Module {
+class NextPCPredict(size_2pow: Int, tag_from: Int, tag_to: Int)
+    extends PrefixedModule {
   val io = IO(new Bundle {
     val pc = Input(UInt(32.W))
     val predicted = Output(UInt(32.W))
