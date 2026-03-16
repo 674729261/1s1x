@@ -14,6 +14,7 @@ struct Config {
   std::string image_path;
   bool batch_mode;
   bool difftest;
+  bool mtracer;
   bool nvboard;
   bool waveform;
   uint32_t wave_pc_start;

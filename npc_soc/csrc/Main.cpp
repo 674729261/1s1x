@@ -1,6 +1,7 @@
 
 #include "DUT.h"
 #include "Flash.h"
+#include "Setup.h"
 #include "spdlog/spdlog.h"
 #include <Args.h>
 #include <Cache.h>
@@ -10,6 +11,7 @@
 #include <VysyxSoCFull.h>
 #include <VysyxSoCFull___024root.h>
 #include <chrono>
+#include <cstdint>
 #include <exception>
 #include <iostream>
 #include <memory>
@@ -24,6 +26,19 @@ std::unique_ptr<Dut> dut;
 static bool retire;
 
 extern "C" void notify_retire(int32_t pc, int32_t inst) { retire = true; }
+extern "C" void notify_bus_read(int id, uint32_t addr, int len, int rsize,
+                                uint64_t timestamp) {
+  if (config.mtracer)
+    spdlog::info("Read {:#010x}, arid = {}, arlen = {}, arsize = {}, time = {}",
+                 addr, id, len, rsize, timestamp);
+}
+extern "C" void notify_bus_write(int id, uint32_t addr, int len, int wsize,
+                                 uint64_t timestamp) {
+  if (config.mtracer)
+    spdlog::info(
+        "Write {:#010x}, arid = {}, arlen = {}, arsize = {}, time = {}", addr,
+        id, len, wsize, timestamp);
+}
 
 bool check_difftest(Dut &dut, Ref &ref) {
   bool ret = false;

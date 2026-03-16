@@ -56,6 +56,23 @@ class AXI_Checker extends ExtModule {
   val rresp = IO(Input(UInt(2.W)))
 }
 
+class mtracer_soc extends ExtModule {
+  val clock = IO(Input(Clock()))
+  val reset = IO(Input(Reset()))
+  val arvalid = IO(Input(Bool()))
+  val arready = IO(Input(Bool()))
+  val arid = IO(Input(UInt(4.W)))
+  val araddr = IO(Input(UInt(32.W)))
+  val arlen = IO(Input(UInt(8.W)))
+  val arsize = IO(Input(UInt(3.W)))
+  val awvalid = IO(Input(Bool()))
+  val awready = IO(Input(Bool()))
+  val awid = IO(Input(UInt(4.W)))
+  val awaddr = IO(Input(UInt(32.W)))
+  val awlen = IO(Input(UInt(8.W)))
+  val awsize = IO(Input(UInt(3.W)))
+}
+
 class Inst_Retire extends ExtModule {
   val clock = IO(Input(Clock()))
   val reset = IO(Input(Reset()))
@@ -91,6 +108,23 @@ class ysyx_25080216(
     val ebreaker = Module(new Ebreaker)
     val axi_checker = Module(new AXI_Checker)
     val inst_retire = Module(new Inst_Retire)
+    val mtracer = Module(new mtracer_soc)
+
+    mtracer.clock := clock
+    mtracer.reset := reset
+    mtracer.arvalid := io.master.arvalid
+    mtracer.arready := io.master.arready
+    mtracer.arid := io.master.arid
+    mtracer.araddr := io.master.araddr
+    mtracer.arlen := io.master.arlen
+    mtracer.arsize := io.master.arsize
+    mtracer.awvalid := io.master.awvalid
+    mtracer.awready := io.master.awready
+    mtracer.awid := io.master.awid
+    mtracer.awaddr := io.master.awaddr
+    mtracer.awlen := io.master.awlen
+    mtracer.awsize := io.master.awsize
+
     inst_retire.clock := clock
     inst_retire.reset := reset
     inst_retire.pc := cpu.io.pc

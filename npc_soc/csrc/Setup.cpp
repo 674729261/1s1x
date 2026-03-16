@@ -11,6 +11,7 @@ void register_argparse(argparse::ArgumentParser &program) {
   program.add_argument("-d", "--difftest")
       .help("Use NEMUemu as differential test")
       .flag();
+  program.add_argument("-m", "--mtracer").help("Enable mtracer").flag();
   program.add_argument("-b", "--batch").help("Use batch mode").flag();
   program.add_argument("-n", "--nvboard").help("Use nvboard").flag();
 }
@@ -42,11 +43,15 @@ Config setup(argparse::ArgumentParser &program) {
   ret.batch_mode = program.get<bool>("--batch");
   spdlog::info("Image path  : {}", ret.image_path);
   ret.difftest = program.get<bool>("--difftest");
+  ret.mtracer = program.get<bool>("--mtracer");
   ret.nvboard = program.get<bool>("--nvboard");
 
   if (ret.difftest)
     spdlog::info("Using difftest");
   if (ret.nvboard)
     spdlog::info("Using nvboard");
+  if (ret.mtracer)
+    spdlog::info("Using mtracer");
+
   return ret;
 }
