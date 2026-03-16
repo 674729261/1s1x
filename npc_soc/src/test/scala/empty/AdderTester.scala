@@ -13,7 +13,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 
 import scala.util.Random
 
-class __Adder_test(WIDTH: Int) extends Module {
+class __Adder_test(WIDTH: Int) extends PrefixedModule {
   val io = IO(new Bundle {
     val A = Input(UInt(WIDTH.W))
     val B = Input(UInt(WIDTH.W))

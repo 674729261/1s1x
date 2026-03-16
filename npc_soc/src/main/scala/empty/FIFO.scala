@@ -1,7 +1,7 @@
 package empty
 import chisel3._
 import chisel3.util._
-class FIFO(BITWIDTH: Int, DEPTH_2POW: Int) extends Module {
+class FIFO(BITWIDTH: Int, DEPTH_2POW: Int) extends PrefixedModule {
   val DEPTH = (1 << DEPTH_2POW)
   val io = IO(new Bundle {
     val front = Output(UInt(BITWIDTH.W))

@@ -23,7 +23,7 @@ object ShouldCache {
   }
 }
 
-class ICache(linesize_2pow: Int, linecount_2pow: Int) extends Module {
+class ICache(linesize_2pow: Int, linecount_2pow: Int) extends PrefixedModule {
   val io = IO(new Bundle {
     val addr = Input(UInt(32.W))
     val predicted_jump = Input(Bool())

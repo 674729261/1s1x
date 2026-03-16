@@ -3,7 +3,7 @@ package empty
 import chisel3._
 import chisel3.util._
 
-class CSR extends Module {
+class CSR extends PrefixedModule {
   val io = IO(new Bundle {
     val csr_w = Input(UInt(12.W))
     val csr_r = Input(UInt(12.W))

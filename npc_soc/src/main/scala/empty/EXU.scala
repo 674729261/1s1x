@@ -59,7 +59,7 @@ class ConflictInfoRD extends Bundle {
   val rd_data = Output(UInt(32.W))
 }
 
-class EXU() extends Module {
+class EXU() extends PrefixedModule {
   val in = IO(Flipped(DecoupledIO(new MessageIDU2EXU)))
 
   val out = IO(DecoupledIO(new MessageEXU2LSU))

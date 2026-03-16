@@ -14,7 +14,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import scala.util.Random
 import empty.Branch
 
-class __Branch_test(WIDTH: Int) extends Module {
+class __Branch_test(WIDTH: Int) extends PrefixedModule {
   val io = IO(new Bundle {
     val A = Input(UInt(WIDTH.W))
     val B = Input(UInt(WIDTH.W))

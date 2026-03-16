@@ -2,7 +2,7 @@ package empty
 import chisel3._
 import chisel3.util._
 
-class WBU() extends Module {
+class WBU() extends PrefixedModule {
   val in = IO(Flipped(DecoupledIO(new MessageLSU2WBU)))
   val conf = IO(new ConflictInfoRD)
   val out = IO(new Bundle {

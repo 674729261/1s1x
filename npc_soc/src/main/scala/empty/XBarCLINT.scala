@@ -3,7 +3,7 @@ import chisel3._
 import chisel3.util._
 import chisel3.layer._
 
-class XBar_CLINT() extends Module {
+class XBar_CLINT() extends PrefixedModule {
   val IN_AXI = IO(Flipped(new AXI))
   val OUT_AXI = IO(new AXI)
   val CLINT_AXI = IO(new AXI)
@@ -40,7 +40,7 @@ class XBar_CLINT() extends Module {
 
 }
 
-class Clint extends Module {
+class Clint extends PrefixedModule {
   val in = IO(Flipped(new AXI))
   set_flipped_AXIfull_zero(in)
   val fire = GenerateFireSignal(in)

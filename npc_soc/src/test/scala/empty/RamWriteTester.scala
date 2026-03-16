@@ -13,7 +13,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 
 import scala.util.Random
 
-class __RamWriteTester_test() extends Module {
+class __RamWriteTester_test() extends PrefixedModule {
   val io = IO(new Bundle {
     val word = Input(UInt(32.W))
     val lower2bit = Input(UInt(2.W))

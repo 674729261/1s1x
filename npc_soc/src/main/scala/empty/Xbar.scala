@@ -2,7 +2,7 @@
 // import chisel3._
 // import chisel3.util._
 
-// class Xbar() extends Module {
+// class Xbar() extends PrefixedModule {
 //   val IN_AXI = IO(Flipped(new AXI_Lite))
 //   val UART_AXI = IO(new AXI_Lite)
 //   val CLINT_AXI = IO(new AXI_Lite)
