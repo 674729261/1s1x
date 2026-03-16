@@ -32,7 +32,7 @@ VERILATOR_DISABLE_WARNINGS += -Wno-DECLFILENAME
 
 FAST_FLAGS = -Ofast -march=native -mtune=native
 
--include $(NPC_OLD_HOME)/scripts/*.mk
+include $(NPC_OLD_HOME)/scripts/*.mk
 
 MDIR = $(NPC_OLD_HOME)/build/default/
 
