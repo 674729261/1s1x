@@ -51,6 +51,9 @@ $(SV_FILELIST): $(CHISELSRC)
 	sbt "run --init-pc 0x80000000 --to-npc" 
 # 	bash -c "find generated_svsrc/ -name *.sv -exec sed -i 's+src/main/scala/empty/++g' {} \\;"
 
+iverilog: sbt
+	
+
 
 
 PROG ?= test_progs/recursion.bin

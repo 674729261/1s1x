@@ -11,7 +11,8 @@ abstract class PrefixedModule(prefix: String = "ysyx_25080216") extends Module {
   println(s"Module name: $name")
 }
 
-abstract class PrefixedRawModule(prefix: String = "ysyx_25080216") extends Module {
+abstract class PrefixedRawModule(prefix: String = "ysyx_25080216")
+    extends Module {
   override val desiredName = s"${prefix}_${this.getClass.getSimpleName}"
   println(s"Module name: $name")
 }
@@ -53,7 +54,13 @@ object AddMain extends App {
       opt[Unit]("to-soc")
         .action((_, c) => c.copy(to_soc = true, output_dir = "../build")),
       opt[Unit]("to-npc")
-        .action((_, c) => c.copy(to_soc = false, performanceCounter = false, output_dir = "generated_svsrc"))
+        .action((_, c) =>
+          c.copy(
+            to_soc = false,
+            performanceCounter = false,
+            output_dir = "generated_svsrc"
+          )
+        )
         .text("disable verifying"),
       opt[Long]("init-pc")
         .action((x, c) => c.copy(init_pc = x))
@@ -110,7 +117,27 @@ object AddMain extends App {
         ).reduce(_ + "," + _)
       )
     )
-
+    ChiselStage.emitSystemVerilogFile(
+      new npc_top_iverilog(
+        performance_counter = conf.performanceCounter,
+        init_pc = conf.init_pc
+      ),
+      Array(
+        "--target-dir",
+        "generated_svsrc"
+      ),
+      Array(
+        "--disable-all-randomization",
+        "--disable-layers=Verification",
+        "--lowering-options=" + List(
+          // make yosys happy
+          // see https://github.com/llvm/circt/blob/main/docs/VerilogGeneration.md
+          "disallowLocalVariables",
+          "disallowPackedArrays",
+          "locationInfoStyle=wrapInAtSquareBracket"
+        ).reduce(_ + "," + _)
+      )
+    )
   }
 
 }
