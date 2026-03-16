@@ -97,27 +97,6 @@ object AddMain extends App {
     )
   } else {
     ChiselStage.emitSystemVerilogFile(
-      new npc_top(
-        performance_counter = conf.performanceCounter,
-        init_pc = conf.init_pc
-      ),
-      Array(
-        "--target-dir",
-        "generated_svsrc"
-      ),
-      Array(
-        "--disable-all-randomization",
-        "--disable-layers=Verification",
-        "--lowering-options=" + List(
-          // make yosys happy
-          // see https://github.com/llvm/circt/blob/main/docs/VerilogGeneration.md
-          "disallowLocalVariables",
-          "disallowPackedArrays",
-          "locationInfoStyle=wrapInAtSquareBracket"
-        ).reduce(_ + "," + _)
-      )
-    )
-    ChiselStage.emitSystemVerilogFile(
       new npc_top_iverilog(
         performance_counter = conf.performanceCounter,
         init_pc = conf.init_pc
@@ -138,6 +117,29 @@ object AddMain extends App {
         ).reduce(_ + "," + _)
       )
     )
+
+    ChiselStage.emitSystemVerilogFile(
+      new npc_top(
+        performance_counter = conf.performanceCounter,
+        init_pc = conf.init_pc
+      ),
+      Array(
+        "--target-dir",
+        "generated_svsrc"
+      ),
+      Array(
+        "--disable-all-randomization",
+        "--disable-layers=Verification",
+        "--lowering-options=" + List(
+          // make yosys happy
+          // see https://github.com/llvm/circt/blob/main/docs/VerilogGeneration.md
+          "disallowLocalVariables",
+          "disallowPackedArrays",
+          "locationInfoStyle=wrapInAtSquareBracket"
+        ).reduce(_ + "," + _)
+      )
+    )
+
   }
 
 }
