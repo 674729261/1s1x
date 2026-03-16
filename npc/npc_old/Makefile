@@ -3,7 +3,7 @@
 NPC_OLD_HOME := $(NPC_HOME)/npc_old
 
 CSRC = $(shell find csrc -name "*.cpp")
-CSRC += /usr/local/lib/libreplxx.a
+CSRC += $(NPC_HOME)/libreplxx.a
 
 VSRC = $(wildcard vsrc/*.v)
 VSRC += $(wildcard vsrc/*.sv)
