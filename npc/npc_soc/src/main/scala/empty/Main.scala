@@ -11,6 +11,11 @@ abstract class PrefixedModule(prefix: String = "ysyx_25080216") extends Module {
   println(s"Module name: $name")
 }
 
+abstract class PrefixedRawModule(prefix: String = "ysyx_25080216") extends Module {
+  override val desiredName = s"${prefix}_${this.getClass.getSimpleName}"
+  println(s"Module name: $name")
+}
+
 object AddMain extends App {
 
   case class Config(

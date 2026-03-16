@@ -1,7 +1,7 @@
 package empty
 import chisel3._
 import chisel3.util._
-class Adder(WIDTH: Int) extends RawModule {
+class Adder(WIDTH: Int) extends PrefixedRawModule {
   val io = IO(new Bundle {
     val A = Input(UInt(WIDTH.W))
     val B = Input(UInt(WIDTH.W))
@@ -26,7 +26,7 @@ class Adder(WIDTH: Int) extends RawModule {
   io.overflow := (signA === signB) && (signA =/= signS)
 }
 
-class ALU(WIDTH: Int) extends RawModule {
+class ALU(WIDTH: Int) extends PrefixedRawModule {
   val io = IO(new Bundle {
     val A = Input(UInt(WIDTH.W))
     val B = Input(UInt(WIDTH.W))
