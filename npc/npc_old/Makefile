@@ -1,5 +1,7 @@
 .DEFAULT_GOAL := sim
 
+NPC_OLD_HOME := $(NPC_HOME)/npc_old
+
 CSRC = $(shell find csrc -name "*.cpp")
 CSRC += /usr/local/lib/libreplxx.a
 
@@ -22,7 +24,7 @@ VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -Ofast \
 VERILATOR_LDFLAGS = -flto=auto -fipa-pta 
 
 
-V_CXXFLAGS += -CFLAGS "$(VERILATOR_CFLAGS) -std=c++23 -I$(NPC_HOME)/include"  -LDFLAGS "-lSDL2" 
+V_CXXFLAGS += -CFLAGS "$(VERILATOR_CFLAGS) -std=c++23 -I$(NPC_OLD_HOME)/include"  -LDFLAGS "-lSDL2" 
 # VERILATORFLAGS += --noassert --trace --no-coverage --x-assign fast --x-initial fast -O3 --threads 1 --cc --exe --build -j 8 
 VERILATORFLAGS += --trace -O3 --threads 1 --cc --exe --build -j 8 '-Dlayer$$Verifying' '-Dlayer$$AXIAssertLayer'
 VERILATOR_DISABLE_WARNINGS += -Wno-DECLFILENAME
@@ -32,7 +34,7 @@ FAST_FLAGS = -Ofast -march=native -mtune=native
 
 -include scripts/*.mk
 
-MDIR = $(NPC_HOME)/build/default/
+MDIR = $(NPC_OLD_HOME)/build/default/
 
 npc: $(SV_FILELIST) $(LIBCAPSTONE) $(SO_PATH_NEMU)
 	mkdir -p $(MDIR) || true
@@ -73,7 +75,7 @@ sim_full_speed: VERILATOR_CFLAGS+=-DNDEBUG -fstrict-aliasing \
 -frename-registers -fomit-frame-pointer \
 -DDISABLE_ALL_TRACER -DNO_DIFFTEST
 sim_full_speed: VERILATOR_LDFLAGS+=-fuse-linker-plugin
-sim_full_speed: MDIR = $(NPC_HOME)/build/full_speed/
+sim_full_speed: MDIR = $(NPC_OLD_HOME)/build/full_speed/
 sim_full_speed: npc
 	$(call git_commit, "sim RTL full speed") # DO NOT REMOVE THIS LINE!!!
 	$(BIN) --image $(PROG) \
@@ -87,7 +89,7 @@ sim_ftracer: npc
 
 valgrind: FAST_FLAGS = -O0 -g
 valgrind: VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -O0 -g -flto=auto
-valgrind: MDIR = $(NPC_HOME)/build/valgrind/
+valgrind: MDIR = $(NPC_OLD_HOME)/build/valgrind/
 valgrind: npc
 	valgrind --leak-check=full --show-leak-kinds=all \
 	$(BIN) --image $(PROG) \
@@ -98,7 +100,7 @@ valgrind: npc
 
 gdb: FAST_FLAGS = -O0 -g
 gdb: VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -O0 -g
-gdb: MDIR = $(NPC_HOME)/build/gdb/
+gdb: MDIR = $(NPC_OLD_HOME)/build/gdb/
 gdb: npc
 	gdb --args $(BIN) --image $(PROG) \
 	--mem_size $(MEM_SIZE) --mem_base $(MEM_BASE) \
@@ -117,4 +119,4 @@ clean_log:
 
 .PHONY: npc sim sim_full_speed sim_ftracer clean sbt gdb valgrind
 
-include ../Makefile
+include ../../Makefile
