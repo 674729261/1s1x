@@ -15,8 +15,7 @@ class Mem_operator extends ExtModule {
   val rdata = IO(Output(UInt(32.W)))
 }
 
-class npc_top(init_pc: Long, performance_counter: Boolean)
-    extends PrefixedModule {
+class npc_top(init_pc: Long, performance_counter: Boolean) extends Module {
   val io = IO(new Bundle {
     val pc = Output(UInt(32.W))
     val ebreak = Output(Bool())

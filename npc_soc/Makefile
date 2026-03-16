@@ -81,7 +81,7 @@ $(NXDC_CPP): $(NXDC)
 
 sim: npc
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
-	$(BIN) --image $(PROG) --log $(LOG_FILE) --difftest --mtracer
+	$(BIN) --image $(PROG) --log $(LOG_FILE) --difftest
 
 
 nvboard: $(NXDC_CPP) nvboard-archive npc
