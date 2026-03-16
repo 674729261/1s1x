@@ -11,7 +11,7 @@ CHISELSRC += $(wildcard src/main/scala/empty/*.scala)
 TOPNAME = npc_top
 BIN = $(MDIR)/V$(TOPNAME)
 
-SV_FILELIST=generated_svsrc/filelist.f
+SV_FILELIST=build/filelist.f
 
 SVSRC_FILES = $(shell cat $(SV_FILELIST))
 SVSRC = $(patsubst %,generated_svsrc/%,$(SVSRC_FILES))
