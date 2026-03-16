@@ -26,18 +26,17 @@ std::unique_ptr<Dut> dut;
 static bool retire;
 
 extern "C" void notify_retire(int32_t pc, int32_t inst) { retire = true; }
-extern "C" void notify_bus_read(int id, uint32_t addr, int len, int rsize,
-                                uint64_t timestamp) {
-  if (config.mtracer)
-    spdlog::info("Read {:#010x}, arid = {}, arlen = {}, arsize = {}, time = {}",
-                 addr, id, len, rsize, timestamp);
-}
-extern "C" void notify_bus_write(int id, uint32_t addr, int len, int wsize,
-                                 uint64_t timestamp) {
+extern "C" void notify_bus_read(int id, uint32_t addr, int len, int rsize) {
   if (config.mtracer)
     spdlog::info(
-        "Write {:#010x}, arid = {}, arlen = {}, arsize = {}, time = {}", addr,
-        id, len, wsize, timestamp);
+        "Read  {:#010x}, arid = {:2}, arlen = {:3}, arsize = {:2}, time = {}",
+        addr, id, len, rsize, dut->getSimTime());
+}
+extern "C" void notify_bus_write(int id, uint32_t addr, int len, int wsize) {
+  if (config.mtracer)
+    spdlog::info(
+        "Write {:#010x}, arid = {:2}, arlen = {:3}, arsize = {:2}, time = {}",
+        addr, id, len, wsize, dut->getSimTime());
 }
 
 bool check_difftest(Dut &dut, Ref &ref) {

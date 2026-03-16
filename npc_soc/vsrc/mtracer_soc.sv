@@ -2,15 +2,13 @@ import "DPI-C" function void notify_bus_read(
   input int id,
   input int addr,
   input int len,
-  input int rsize,
-  input longint timestamp
+  input int rsize
 );
 import "DPI-C" function void notify_bus_write(
   input int id,
   input int addr,
   input int len,
-  input int wsize,
-  input longint timestamp
+  input int wsize
 );
 
 module mtracer_soc (
@@ -51,9 +49,9 @@ module mtracer_soc (
   always @(posedge clock) begin
     if (!reset) begin
       if (arvalid && !ar_busy)
-        notify_bus_read({28'b0, arid}, araddr, {24'b0, arlen}, {29'b0, arsize}, $time);
+        notify_bus_read({28'b0, arid}, araddr, {24'b0, arlen}, {29'b0, arsize});
       if (awvalid && !aw_busy)
-        notify_bus_write({28'b0, awid}, awaddr, {24'b0, awlen}, {29'b0, awsize}, $time);
+        notify_bus_write({28'b0, awid}, awaddr, {24'b0, awlen}, {29'b0, awsize});
     end
   end
 
