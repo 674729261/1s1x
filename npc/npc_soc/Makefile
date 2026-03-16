@@ -9,7 +9,7 @@ NXDC_CPP_PATH = $(SOC_NPC_HOME)/nvboard/generated
 NXDC_CPP = $(SOC_NPC_HOME)/nvboard/generated/auto_bind.cpp
 
 CSRC = $(shell find csrc -name "*.cpp")
-CSRC += /usr/local/lib/libreplxx.a $(NVBOARD_ARCHIVE)
+CSRC += $(NPC_HOME)/npc_old/tools/replxx/libreplxx.a $(NVBOARD_ARCHIVE)
 CSRC += $(NXDC_CPP)
 
 VSRC = $(wildcard vsrc/*.v)
