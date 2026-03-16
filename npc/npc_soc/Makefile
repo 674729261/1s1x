@@ -140,6 +140,7 @@ gdb: npc
 
 clean:
 	rm -rf build
+	rm -rf ../build
 	sbt clean
 	rm -rf generated_svsrc/*
 
