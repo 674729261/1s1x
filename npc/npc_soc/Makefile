@@ -1,5 +1,7 @@
 .DEFAULT_GOAL := sim
 
+SOC_NPC_HOME := $(NPC_HOME)/npc_soc
+
 include $(NVBOARD_HOME)/scripts/nvboard.mk
 
 NXDC = $(SOC_NPC_HOME)/nvboard/top.nxdc
@@ -151,4 +153,4 @@ clean_sta:
 
 .PHONY: npc sim nvboard sta clean clean_log clean_sta sbt gdb valgrind perf
 
-include ../Makefile
+include ../../Makefile
