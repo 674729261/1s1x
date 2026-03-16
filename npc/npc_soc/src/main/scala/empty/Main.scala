@@ -18,7 +18,8 @@ object AddMain extends App {
       axiasset: Boolean = true,
       verifying: Boolean = true,
       init_pc: Long = 0x30000000,
-      to_soc: Boolean = true
+      to_soc: Boolean = true,
+      output_dir: String = "../build"
   )
 
   val builder = OParser.builder[Config]
@@ -45,9 +46,9 @@ object AddMain extends App {
         .action((_, c) => c.copy(verifying = false))
         .text("disable verifying"),
       opt[Unit]("to-soc")
-        .action((_, c) => c.copy(to_soc = true)),
+        .action((_, c) => c.copy(to_soc = true, output_dir = "../build")),
       opt[Unit]("to-npc")
-        .action((_, c) => c.copy(to_soc = false, performanceCounter = false))
+        .action((_, c) => c.copy(to_soc = false, performanceCounter = false, output_dir = "generated_svsrc"))
         .text("disable verifying"),
       opt[Long]("init-pc")
         .action((x, c) => c.copy(init_pc = x))
@@ -68,7 +69,7 @@ object AddMain extends App {
       ),
       Array(
         "--target-dir",
-        "generated_svsrc"
+        conf.output_dir
       ),
       Array(
         "--disable-all-randomization",

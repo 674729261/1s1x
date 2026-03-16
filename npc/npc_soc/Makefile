@@ -22,10 +22,10 @@ CHISELSRC += $(wildcard src/main/scala/empty/*.scala)
 TOPNAME = ysyxSoCFull
 BIN = $(MDIR)/V$(TOPNAME)
 
-SV_FILELIST=generated_svsrc/filelist.f
+SV_FILELIST=$(NPC_HOME)/build/filelist.f
 
 SVSRC_FILES = $(shell cat $(SV_FILELIST))
-SVSRC = $(patsubst %,$(SOC_NPC_HOME)/generated_svsrc/%,$(SVSRC_FILES))
+SVSRC = $(patsubst %,$(NPC_HOME)/build/%,$(SVSRC_FILES))
 
 VERILATOR = verilator
 PYTHON = python
