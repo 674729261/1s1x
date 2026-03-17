@@ -3,7 +3,7 @@
 verilog:
 	make -C ./npc_soc sbt
 
-IMG ?= ./test_progs/microbench-riscv32e-npc.bin
+IMG ?= ./test_progs/rtthread-riscv32e-npc.bin
 
 iverilog: verilog
 	mkdir -p ./iv_temp/|| true

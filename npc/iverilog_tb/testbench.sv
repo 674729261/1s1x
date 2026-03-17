@@ -61,7 +61,7 @@ module tb_npc;
     end
 
     $readmemh("./iv_temp/temp.hex", mem);
-    for (integer i = 0; i < 32'h2FFFF; i = i + 1) begin : convert_endian
+    for (integer i = 0; i < 32'h3FFFF; i = i + 1) begin : convert_endian
       reg [31:0] raw;
       raw = mem[i];
       mem[i] = {raw[7-:8], raw[15-:8], raw[23-:8], raw[31-:8]};
@@ -80,7 +80,7 @@ module tb_npc;
     if (reset) clock_cnt = 0;
     else begin
       clock_cnt = clock_cnt + 1;
-      if (clock_cnt >= 3000000) begin
+      if (clock_cnt >= 6000000) begin
         $display("Simulation end");
         $finish;
       end
@@ -196,8 +196,8 @@ module tb_npc;
       else if (tb_raddr == 32'ha0000048 || tb_raddr == 32'ha000004c) begin : rtc
         integer offset = (tb_raddr - 32'ha0000048);
         reg [63:0] rtc_us;
-        rtc_us = ($time) / 1;
-        $display("time : %d", rtc_us);
+        rtc_us = ($time) / 1000;
+        // $display("time : %d", rtc_us);
         if (offset == 32'h0) tb_rdata <= rtc_us[31:0];
         else tb_rdata <= rtc_us[63:32];
       end else begin
