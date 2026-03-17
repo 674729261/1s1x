@@ -1,18 +1,46 @@
 .DEFAULT_GOAL := sim
 
+
 verilog:
 	make -C ./npc_soc sbt
+	mkdir -p build || true
+	iverilog -E -o ./build/ysyx_25080216.sv -s ysyx_25080216 ./generated_svsrc/*.sv
 
-IMG ?= ./test_progs/rtthread-riscv32e-npc.bin
+IMG ?= ./test_progs/microbench-riscv32e-npc.bin
+
+
+STA_DIR = $(NPC_HOME)/sta
+SDC_FILE = $(STA_DIR)/npc.sdc
+SCRIPT_FILE = $(STA_DIR)/sta.tcl
 
 iverilog: verilog
-	mkdir -p ./iv_temp/|| true
+	mkdir -p ./iv_temp/ || true
 	objcopy -I binary -O verilog --verilog-data-width=4 $(IMG) ./iv_temp/temp.hex
-	iverilog -E -o ./iv_temp/pp.sv -s tb_npc ./build/*.sv iverilog_tb/*.sv
-	iverilog -o ./iv_temp/tb.vvp -s tb_npc ./iv_temp/pp.sv -g2012
+	iverilog -o ./iv_temp/tb.vvp -s tb_npc ./build/ysyx_25080216.sv iverilog_tb/*.sv -g2012
+	vvp -n ./iv_temp/tb.vvp
+
+CLK_FREQ_MHZ = 1000
+sta: verilog
+	rm -rf $(STA_DIR)/result
+	mkdir -p $(STA_DIR)
+	make -C $(STA_HOME) sta \
+	DESIGN=ysyx_25080216 SDC_FILE=$(SDC_FILE) PDK=nangate45 \
+	CLK_FREQ_MHZ=$(CLK_FREQ_MHZ) CLK_PORT_NAME=clock O=$(STA_DIR)/result \
+	RTL_FILES="$(NPC_HOME)/build/ysyx_25080216.sv"
+
+PDK_CELLS ?= $(STA_HOME)/pdk/nangate45/sim/cells.v
+NETLIST_PATH ?= $(shell find $(STA_DIR)/result -name "ysyx_25080216.netlist.v.sim")
+
+iverilog-netlist: verilog
+	mkdir -p ./iv_temp/ || true
+	cp $(NETLIST_PATH) ./iv_temp/netlist.v
+	objcopy -I binary -O verilog --verilog-data-width=4 $(IMG) ./iv_temp/temp.hex
+	iverilog -o ./iv_temp/tb.vvp -s tb_npc ./iv_temp/netlist.v $(PDK_CELLS) iverilog_tb/*.sv -g2012
 	vvp -n ./iv_temp/tb.vvp
 
 clean:
-	rm build/*.sv
+	rm -rf sta/result/*
+	rm -rf build/*.sv generated_svsrc/*.* iv_temp/*
 
-.PHONY: clean verilog iverilog
+
+.PHONY: clean verilog iverilog sta

@@ -75,7 +75,6 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean)
   val exu = Module(new EXU)
   val lsu = Module(new LSU)
   val wbu = Module(new WBU)
-
   val pc = RegEnable(
     Cat(wbu.out.dnpc(31, 1), 0.U(1.W)),
     init_pc,

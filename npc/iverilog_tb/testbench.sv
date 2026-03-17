@@ -53,7 +53,7 @@ module tb_npc;
   integer clock_cnt;
   initial begin : init
     // $dumpfile("wave.vcd");
-    // $dumpvars(0, dut);
+    // $dumpvars(1, tb_npc);
     clock_cnt   = 0;
     mem_init[0] = 32'h800002b7;
     for (integer i = 1; i < 16; i = i + 1) begin
@@ -61,7 +61,7 @@ module tb_npc;
     end
 
     $readmemh("./iv_temp/temp.hex", mem);
-    for (integer i = 0; i < 32'h3FFFF; i = i + 1) begin : convert_endian
+    for (integer i = 0; i < 32'h3FFFFF; i = i + 1) begin : convert_endian
       reg [31:0] raw;
       raw = mem[i];
       mem[i] = {raw[7-:8], raw[15-:8], raw[23-:8], raw[31-:8]};
@@ -69,18 +69,19 @@ module tb_npc;
     $display("First 8 instructions :");
     $display("%08x %08x %08x %08x", mem[0], mem[1], mem[2], mem[3]);
     $display("%08x %08x %08x %08x", mem[4], mem[5], mem[6], mem[7]);
+    $display("----------------- Simulation Begin -----------------");
 
     clock = 1'b1;
     reset = 1'b1;
     repeat (3) @(negedge clock);
     reset = 1'b0;
   end
-
+  wire [3:0] dbg;
   always @(posedge clock)
     if (reset) clock_cnt = 0;
     else begin
       clock_cnt = clock_cnt + 1;
-      if (clock_cnt >= 6000000) begin
+      if (clock_cnt >= 10000000) begin
         $display("Simulation end");
         $finish;
       end
@@ -126,7 +127,9 @@ module tb_npc;
       .io_master_rresp(rresp),
       .io_master_rdata(rdata_bus),
       .io_master_rlast(rlast),
-      .io_master_rid(rid)
+      .io_master_rid(rid),
+
+      .io_slave_bid(dbg)
   );
 
   __sim_bus u_simbus (
@@ -194,11 +197,12 @@ module tb_npc;
       if (tb_raddr >= 32'h80000000 && tb_raddr < 32'ha0000000)
         tb_rdata <= mem[(tb_raddr-32'h80000000)>>2];
       else if (tb_raddr == 32'ha0000048 || tb_raddr == 32'ha000004c) begin : rtc
-        integer offset = (tb_raddr - 32'ha0000048);
+        integer offset;
         reg [63:0] rtc_us;
+        offset = (tb_raddr - 32'ha0000048);
         rtc_us = ($time) / 1000;
-        // $display("time : %d", rtc_us);
-        if (offset == 32'h0) tb_rdata <= rtc_us[31:0];
+        // $display("time : %0d, offset %0d.  %08x %08x", rtc_us, offset, rtc_us[31:0], rtc_us[63:32]);
+        if (offset == 0) tb_rdata <= rtc_us[31:0];
         else tb_rdata <= rtc_us[63:32];
       end else begin
         tb_rdata <= mem_init[(tb_raddr-32'h30000000)>>2];

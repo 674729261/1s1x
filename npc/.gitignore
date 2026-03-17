@@ -1,3 +1,1 @@
-!/build
-!/build/filelist.f
 !/iverilog_tb/*.sv

@@ -52,7 +52,9 @@ object AddMain extends App {
         .action((_, c) => c.copy(verifying = false))
         .text("disable verifying"),
       opt[Unit]("to-soc")
-        .action((_, c) => c.copy(to_soc = true, output_dir = "../build")),
+        .action((_, c) =>
+          c.copy(to_soc = true, output_dir = "../generated_svsrc")
+        ),
       opt[Unit]("to-npc")
         .action((_, c) =>
           c.copy(
