@@ -1,24 +1,66 @@
 `timescale 1ns / 100ps
 module tb_npc;
   reg clock, reset;
-  reg [31:0] mem_init[0:2];
+  reg [31:0] mem_init[0:15];
 
-  reg [31:0] mem[0:32'h1FFFFFF];
+  reg [31:0] mem[0:32'h3FFFFFF];
   always #0.5 clock = ~clock;
 
-  wire [31:0] raddr;
-  wire [31:0] waddr;
+  wire [31:0] tb_raddr;
+  wire [31:0] tb_waddr;
+  wire [31:0] tb_wdata;
+  wire [3:0] tb_wmask;
+  wire [31:0] tb_wmask32;
+  wire tb_wen;
+  wire tb_valid;
+  reg [31:0] tb_rdata;
+  // AXI write address channel
+  wire awready, awvalid;
+  wire [31:0] awaddr;
+  wire [ 3:0] awid;
+  wire [ 7:0] awlen;
+  wire [ 2:0] awsize;
+  wire [ 1:0] awburst;
+
+  // AXI write data channel
+  wire wready, wvalid;
   wire [31:0] wdata;
-  wire [3:0] wmask;
-  wire [31:0] wmask32;
-  wire wen;
-  wire valid;
-  reg [31:0] rdata;
-  integer inst_cnt;
+  wire [3:0] wstrb;
+  wire wlast;
+
+  // AXI write response
+  wire bready, bvalid;
+  wire [1:0] bresp;
+  wire [3:0] bid;
+
+  // AXI read address channel
+  wire arready, arvalid;
+  wire [31:0] araddr;
+  wire [ 3:0] arid;
+  wire [ 7:0] arlen;
+  wire [ 2:0] arsize;
+  wire [ 1:0] arburst;
+
+  // AXI read data channel
+  wire rready, rvalid;
+  wire [1:0] rresp;
+  wire [31:0] rdata_bus;
+  wire rlast;
+  wire [3:0] rid;
+
+
+
+  integer clock_cnt;
   initial begin : init
+    // $dumpfile("wave.vcd");
+    // $dumpvars(0, dut);
+    clock_cnt   = 0;
     mem_init[0] = 32'h800002b7;
-    mem_init[1] = 32'h00028067;
-    $readmemh("../build/iv/temp.hex", mem);
+    for (integer i = 1; i < 16; i = i + 1) begin
+      mem_init[i] = 32'h00028067;
+    end
+
+    $readmemh("./iv_temp/temp.hex", mem);
     for (integer i = 0; i < 32'h2FFFF; i = i + 1) begin : convert_endian
       reg [31:0] raw;
       raw = mem[i];
@@ -28,113 +70,148 @@ module tb_npc;
     $display("%08x %08x %08x %08x", mem[0], mem[1], mem[2], mem[3]);
     $display("%08x %08x %08x %08x", mem[4], mem[5], mem[6], mem[7]);
 
-    inst_cnt = 0;
     clock = 1'b1;
     reset = 1'b1;
     repeat (3) @(negedge clock);
     reset = 1'b0;
   end
+
+  always @(posedge clock)
+    if (reset) clock_cnt = 0;
+    else begin
+      clock_cnt = clock_cnt + 1;
+      if (clock_cnt >= 3000000) begin
+        $display("Simulation end");
+        $finish;
+      end
+    end
   ysyx_25080216 dut (
       .clock(clock),
       .reset(reset),
 
-      .io_master_awready(u_simbus.awready),
-      .io_master_awvalid(u_simbus.awvalid),
-      .io_master_awaddr (u_simbus.awaddr),
-      .io_master_awid   (u_simbus.awid),
-      .io_master_awlen  (u_simbus.awlen),
-      .io_master_awsize (u_simbus.awsize),
-      .io_master_awburst(u_simbus.awburst),
+      // AXI master write address
+      .io_master_awready(awready),
+      .io_master_awvalid(awvalid),
+      .io_master_awaddr(awaddr),
+      .io_master_awid(awid),
+      .io_master_awlen(awlen),
+      .io_master_awsize(awsize),
+      .io_master_awburst(awburst),
 
-      .io_master_wready(u_simbus.wready),
-      .io_master_wvalid(u_simbus.wvalid),
-      .io_master_wdata (u_simbus.wdata),
-      .io_master_wstrb (u_simbus.wstrb),
-      .io_master_wlast (u_simbus.wlast),
+      // AXI master write data
+      .io_master_wready(wready),
+      .io_master_wvalid(wvalid),
+      .io_master_wdata (wdata),
+      .io_master_wstrb (wstrb),
+      .io_master_wlast (wlast),
 
-      .io_master_bready(u_simbus.bready),
-      .io_master_bvalid(u_simbus.bvalid),
-      .io_master_bresp (u_simbus.bresp),
-      .io_master_bid   (u_simbus.bid),
+      // AXI master write response
+      .io_master_bready(bready),
+      .io_master_bvalid(bvalid),
+      .io_master_bresp(bresp),
+      .io_master_bid(bid),
 
-      .io_master_arready(u_simbus.arready),
-      .io_master_arvalid(u_simbus.arvalid),
-      .io_master_araddr (u_simbus.araddr),
-      .io_master_arid   (u_simbus.arid),
-      .io_master_arlen  (u_simbus.arlen),
-      .io_master_arsize (u_simbus.arsize),
-      .io_master_arburst(u_simbus.arburst),
+      // AXI master read address
+      .io_master_arready(arready),
+      .io_master_arvalid(arvalid),
+      .io_master_araddr(araddr),
+      .io_master_arid(arid),
+      .io_master_arlen(arlen),
+      .io_master_arsize(arsize),
+      .io_master_arburst(arburst),
 
-      .io_master_rready(u_simbus.rready),
-      .io_master_rvalid(u_simbus.rvalid),
-      .io_master_rresp (u_simbus.rresp),
-      .io_master_rdata (u_simbus.rdata),
-      .io_master_rlast (u_simbus.rlast),
-      .io_master_rid   (u_simbus.rid)
+      // AXI master read data
+      .io_master_rready(rready),
+      .io_master_rvalid(rvalid),
+      .io_master_rresp(rresp),
+      .io_master_rdata(rdata_bus),
+      .io_master_rlast(rlast),
+      .io_master_rid(rid)
   );
 
   __sim_bus u_simbus (
       .clock(clock),
       .reset(reset),
 
-      .io_raddr(raddr),
-      .io_waddr(waddr),
-      .io_wdata(wdata),
-      .io_rdata(rdata),
-      .io_wmask(wmask),
-      .io_valid(valid),
-      .io_wen  (wen),
+      // memory interface
+      .io_raddr(tb_raddr),
+      .io_waddr(tb_waddr),
+      .io_wdata(tb_wdata),
+      .io_rdata(tb_rdata),
+      .io_wmask(tb_wmask),
+      .io_valid(tb_valid),
+      .io_wen  (tb_wen),
 
-      .fetch_port_aw_ready(u_simbus.awready),
-      .fetch_port_aw_valid(u_simbus.awvalid),
-      .fetch_port_aw_addr (u_simbus.awaddr),
-      .fetch_port_aw_id   (u_simbus.awid),
-      .fetch_port_aw_len  (u_simbus.awlen),
-      .fetch_port_aw_size (u_simbus.awsize),
-      .fetch_port_aw_burst(u_simbus.awburst),
+      // AXI write address
+      .fetch_port_aw_ready(awready),
+      .fetch_port_aw_valid(awvalid),
+      .fetch_port_aw_addr(awaddr),
+      .fetch_port_aw_id(awid),
+      // .fetch_port_aw_len(awlen),
+      // .fetch_port_aw_size(awsize),
+      // .fetch_port_aw_burst(awburst),
 
-      .fetch_port_w_ready(u_simbus.wready),
-      .fetch_port_w_valid(u_simbus.wvalid),
-      .fetch_port_w_data (u_simbus.wdata),
-      .fetch_port_w_strb (u_simbus.wstrb),
-      .fetch_port_w_last (u_simbus.wlast),
+      // AXI write data
+      .fetch_port_w_ready(wready),
+      .fetch_port_w_valid(wvalid),
+      .fetch_port_w_data (wdata),
+      .fetch_port_w_strb (wstrb),
+      .fetch_port_w_last (wlast),
 
-      .fetch_port_b_ready(u_simbus.bready),
-      .fetch_port_b_valid(u_simbus.bvalid),
-      .fetch_port_b_resp (u_simbus.bresp),
-      .fetch_port_b_id   (u_simbus.bid),
+      // AXI write response
+      .fetch_port_b_ready(bready),
+      .fetch_port_b_valid(bvalid),
+      // .fetch_port_b_resp(bresp),
+      .fetch_port_b_id(bid),
 
-      .fetch_port_a_rready(u_simbus.arready),
-      .fetch_port_a_rvalid(u_simbus.arvalid),
-      .fetch_port_a_raddr (u_simbus.araddr),
-      .fetch_port_a_rid   (u_simbus.arid),
-      .fetch_port_a_rlen  (u_simbus.arlen),
-      .fetch_port_a_rsize (u_simbus.arsize),
-      .fetch_port_a_rburst(u_simbus.arburst),
+      // AXI read address
+      .fetch_port_ar_ready(arready),
+      .fetch_port_ar_valid(arvalid),
+      .fetch_port_ar_addr(araddr),
+      .fetch_port_ar_id(arid),
+      .fetch_port_ar_len(arlen),
+      .fetch_port_ar_size(arsize),
+      // .fetch_port_ar_burst(arburst),
 
-      .fetch_port_r_ready(u_simbus.rready),
-      .fetch_port_r_valid(u_simbus.rvalid),
-      .fetch_port_r_resp (u_simbus.rresp),
-      .fetch_port_r_data (u_simbus.rdata),
-      .fetch_port_r_last (u_simbus.rlast),
-      .fetch_port_r_id   (u_simbus.rid)
+      // AXI read data
+      .fetch_port_r_ready(rready),
+      .fetch_port_r_valid(rvalid),
+      // .fetch_port_r_resp(rresp),
+      .fetch_port_r_data(rdata_bus),
+      .fetch_port_r_last(rlast),
+      .fetch_port_r_id(rid)
   );
 
+  assign rresp = 2'b00;
+  assign bresp = 2'b00;
 
-  assign wmask32 = {{8{wmask[3]}}, {8{wmask[2]}}, {8{wmask[1]}}, {8{wmask[0]}}};
+
+  assign tb_wmask32 = {{8{tb_wmask[3]}}, {8{tb_wmask[2]}}, {8{tb_wmask[1]}}, {8{tb_wmask[0]}}};
 
   always @(posedge clock) begin
-    if (valid && !reset) begin
-      if (raddr >= 32'h80000000) rdata <= mem[(raddr-32'h80000000)>>2];
-      else rdata <= mem_init[(raddr-32'h30000000)>>2];
+    if (tb_valid && !reset) begin
+      // $display("%08x", tb_raddr);
+      if (tb_raddr >= 32'h80000000 && tb_raddr < 32'ha0000000)
+        tb_rdata <= mem[(tb_raddr-32'h80000000)>>2];
+      else if (tb_raddr == 32'ha0000048 || tb_raddr == 32'ha000004c) begin : rtc
+        integer offset = (tb_raddr - 32'ha0000048);
+        reg [63:0] rtc_us;
+        rtc_us = ($time) / 1;
+        // $display("time : %d", rtc_us);
+        if (offset == 32'h0) tb_rdata <= rtc_us[31:0];
+        else tb_rdata <= rtc_us[63:32];
+      end else begin
+        tb_rdata <= mem_init[(tb_raddr-32'h30000000)>>2];
+        // $display("rd : %08x", mem_init[(tb_raddr-32'h30000000)>>2]);
+      end
     end
   end
 
   always @(posedge clock) begin
-    if (wen && !reset) begin
-      if (waddr < 32'ha0000000)
-        mem[(waddr-32'h80000000)>>2] = (mem[(waddr-32'h80000000)>>2] & ~wmask32) | (wdata & wmask32);
-      else if (waddr == 32'ha00003f8) $fwrite("%c", wdata[7:0]);
+    if (tb_wen && !reset) begin
+      if (tb_waddr < 32'ha0000000)
+        mem[(tb_waddr-32'h80000000)>>2] = (mem[(tb_waddr-32'h80000000)>>2] & ~tb_wmask32) | (tb_wdata & tb_wmask32);
+      else if (tb_waddr == 32'ha00003f8) $write("%c", tb_wdata[7:0]);
     end
   end
 
@@ -146,20 +223,20 @@ module tb_npc;
   //   end
   // end
 
-  always @(posedge clock) begin
-    if (ebreak && !reset) begin
-      $display("HALT@PC=%08h, inst count : %0d", pc, inst_cnt);
-      $display("a0 = %08h", dut.cpu.gpr.register_bank_regs_9_r);
-      if (dut.cpu.gpr.register_bank_regs_9_r === 32'h0) begin
-        $display("HIT GOOD TRAP");
-        $finish;
-      end else begin
-        $display("HIT BAD TRAP");
-        $fatal;
-      end
+  // always @(posedge clock) begin
+  //   if (ebreak && !reset) begin
+  //     $display("HALT@PC=%08h, inst count : %0d", pc, inst_cnt);
+  //     $display("a0 = %08h", dut.cpu.gpr.register_bank_regs_9_r);
+  //     if (dut.cpu.gpr.register_bank_regs_9_r === 32'h0) begin
+  //       $display("HIT GOOD TRAP");
+  //       $finish;
+  //     end else begin
+  //       $display("HIT BAD TRAP");
+  //       $fatal;
+  //     end
 
-    end
-  end
+  //   end
+  // end
 
 
 

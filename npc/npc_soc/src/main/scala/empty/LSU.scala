@@ -95,8 +95,22 @@ class LSU() extends PrefixedModule {
     )
   )
 
-  val bus_b_error = RegEnable(fetch_port.b.resp =/= 0.U, fire.b_fire)
-  val bus_r_error = RegEnable(fetch_port.r.resp =/= 0.U, fire.r_fire)
+  val bus_b_error = Reg(Bool())
+  val bus_r_error = Reg(Bool())
+  bus_b_error := MuxCase(
+    bus_b_error,
+    Seq(
+      (in.fire || out.fire) -> false.B,
+      fire.b_fire -> (fetch_port.b.resp =/= "b00".U(2.W))
+    )
+  )
+  bus_r_error := MuxCase(
+    bus_r_error,
+    Seq(
+      (in.fire || out.fire) -> false.B,
+      fire.r_fire -> (fetch_port.r.resp =/= "b00".U(2.W))
+    )
+  )
 
   val has_exception =
     has_signal && (bus_b_error || bus_r_error || in.bits.exeption)
