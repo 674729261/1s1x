@@ -1,5 +1,7 @@
 .DEFAULT_GOAL := sim
 
+SOC_NPC_HOME := $(NPC_HOME)/npc_soc
+
 include $(NVBOARD_HOME)/scripts/nvboard.mk
 
 NXDC = $(SOC_NPC_HOME)/nvboard/top.nxdc
@@ -7,7 +9,7 @@ NXDC_CPP_PATH = $(SOC_NPC_HOME)/nvboard/generated
 NXDC_CPP = $(SOC_NPC_HOME)/nvboard/generated/auto_bind.cpp
 
 CSRC = $(shell find csrc -name "*.cpp")
-CSRC += /usr/local/lib/libreplxx.a $(NVBOARD_ARCHIVE)
+CSRC += $(NPC_HOME)/npc_old/tools/replxx/libreplxx.a $(NVBOARD_ARCHIVE)
 CSRC += $(NXDC_CPP)
 
 VSRC = $(wildcard vsrc/*.v)
@@ -20,10 +22,10 @@ CHISELSRC += $(wildcard src/main/scala/empty/*.scala)
 TOPNAME = ysyxSoCFull
 BIN = $(MDIR)/V$(TOPNAME)
 
-SV_FILELIST=generated_svsrc/filelist.f
+SV_FILELIST = $(NPC_HOME)/generated_svsrc/filelist.f
 
 SVSRC_FILES = $(shell cat $(SV_FILELIST))
-SVSRC = $(patsubst %,$(SOC_NPC_HOME)/generated_svsrc/%,$(SVSRC_FILES))
+SVSRC = $(patsubst %,$(NPC_HOME)/generated_svsrc/%,$(SVSRC_FILES))
 
 VERILATOR = verilator
 PYTHON = python
@@ -88,13 +90,14 @@ nvboard: $(NXDC_CPP) nvboard-archive npc
 	$(call git_commit, "sim RTL with nvboard")
 	$(BIN) --image $(PROG) --log $(LOG_FILE) --difftest --nvboard
 
-CLK_FREQ_MHZ = 1200
+CLK_FREQ_MHZ = 1000
 sta: sbt
 	mkdir -p $(STA_DIR)/result || true
 	make -C $(STA_HOME) sta \
 	DESIGN=ysyx_25080216 SDC_FILE=$(SDC_FILE) PDK=nangate45 \
 	CLK_FREQ_MHZ=$(CLK_FREQ_MHZ) CLK_PORT_NAME=clock O=$(STA_DIR)/result \
 	RTL_FILES="$(SVSRC)"
+
 
 perf: LOG_FILE = /tmp/perf.log
 perf: npc
@@ -138,6 +141,7 @@ gdb: npc
 
 clean:
 	rm -rf build
+	rm -rf ../build
 	sbt clean
 	rm -rf generated_svsrc/*
 
@@ -151,4 +155,4 @@ clean_sta:
 
 .PHONY: npc sim nvboard sta clean clean_log clean_sta sbt gdb valgrind perf
 
-include ../Makefile
+include ../../Makefile

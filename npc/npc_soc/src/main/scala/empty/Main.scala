@@ -11,6 +11,12 @@ abstract class PrefixedModule(prefix: String = "ysyx_25080216") extends Module {
   println(s"Module name: $name")
 }
 
+abstract class PrefixedRawModule(prefix: String = "ysyx_25080216")
+    extends Module {
+  override val desiredName = s"${prefix}_${this.getClass.getSimpleName}"
+  println(s"Module name: $name")
+}
+
 object AddMain extends App {
 
   case class Config(
@@ -18,7 +24,8 @@ object AddMain extends App {
       axiasset: Boolean = true,
       verifying: Boolean = true,
       init_pc: Long = 0x30000000,
-      to_soc: Boolean = true
+      to_soc: Boolean = true,
+      output_dir: String = "../build"
   )
 
   val builder = OParser.builder[Config]
@@ -45,9 +52,17 @@ object AddMain extends App {
         .action((_, c) => c.copy(verifying = false))
         .text("disable verifying"),
       opt[Unit]("to-soc")
-        .action((_, c) => c.copy(to_soc = true)),
+        .action((_, c) =>
+          c.copy(to_soc = true, output_dir = "../generated_svsrc")
+        ),
       opt[Unit]("to-npc")
-        .action((_, c) => c.copy(to_soc = false, performanceCounter = false))
+        .action((_, c) =>
+          c.copy(
+            to_soc = false,
+            performanceCounter = false,
+            output_dir = "generated_svsrc"
+          )
+        )
         .text("disable verifying"),
       opt[Long]("init-pc")
         .action((x, c) => c.copy(init_pc = x))
@@ -58,6 +73,7 @@ object AddMain extends App {
   val conf = OParser.parse(parser, args, Config()).getOrElse(sys.exit(1))
 
   println("Generating the CPU RTL")
+
   if (conf.to_soc) {
     ChiselStage.emitSystemVerilogFile(
       new ysyx_25080216(
@@ -68,7 +84,7 @@ object AddMain extends App {
       ),
       Array(
         "--target-dir",
-        "generated_svsrc"
+        conf.output_dir
       ),
       Array(
         "--disable-all-randomization",
@@ -83,15 +99,13 @@ object AddMain extends App {
       )
     )
   } else {
+
     ChiselStage.emitSystemVerilogFile(
       new npc_top(
         performance_counter = conf.performanceCounter,
         init_pc = conf.init_pc
       ),
-      Array(
-        "--target-dir",
-        "generated_svsrc"
-      ),
+      Array("--target-dir", conf.output_dir),
       Array(
         "--disable-all-randomization",
         "--disable-layers=Verification",

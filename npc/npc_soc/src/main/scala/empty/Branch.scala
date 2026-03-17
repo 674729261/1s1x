@@ -3,7 +3,7 @@ package empty
 import chisel3._
 import chisel3.util._
 
-class Branch(WIDTH: Int) extends RawModule {
+class Branch(WIDTH: Int) extends PrefixedRawModule {
   val io = IO(new Bundle {
     val A = Input(UInt(WIDTH.W))
     val B = Input(UInt(WIDTH.W))

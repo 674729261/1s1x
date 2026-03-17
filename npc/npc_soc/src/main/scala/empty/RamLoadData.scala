@@ -3,7 +3,7 @@ package empty
 import chisel3._
 import chisel3.util._
 import chisel3.util.circt.Mux4Cell
-class RamLoadData extends RawModule {
+class RamLoadData extends PrefixedRawModule {
   val io = IO(new Bundle {
     val word = Input(UInt(32.W))
     val lower2bit = Input(UInt(2.W))

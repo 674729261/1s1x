@@ -47,6 +47,7 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends PrefixedModule {
   val line_count = (1 << linecount_2pow)
   val content =
     Mem(line_count, new CacheLine(linesize_2pow, linecount_2pow))
+  content.suggestName("ysyx_25080216_ICacheRegisterFile")
   val valid_flags =
     RegInit(Vec(line_count, Bool()), VecInit(Seq.fill(line_count)(false.B)))
 
