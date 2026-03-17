@@ -51,19 +51,19 @@ $(SV_FILELIST): $(CHISELSRC)
 	sbt "run --init-pc 0x80000000 --to-npc" 
 # 	bash -c "find generated_svsrc/ -name *.sv -exec sed -i 's+src/main/scala/empty/++g' {} \\;"
 
-iverilog: sbt
-	
 
 
 
-PROG ?= test_progs/recursion.bin
-ELF  ?= test_progs/recursion.elf
+
+PROG ?= test_progs/matrix.bin
+ELF  ?= test_progs/matrix.elf
 MEM_SIZE ?= 0x8000000
 MEM_BASE ?= 0x80000000
 DEV_SIZE ?= 0x10000000
 DEV_BASE ?= 0xa0000000
 TIME_STAMP := $(shell date +"%Y_%m_%d_%H_%M_%S")
 LOG_FILE ?= "log/$(TIME_STAMP).log"
+
 
 
 
@@ -120,6 +120,6 @@ clean_log:
 	rm -rf log/*
 
 
-.PHONY: npc sim sim_full_speed sim_ftracer clean sbt gdb valgrind
+.PHONY: npc sim sim_full_speed sim_ftracer clean sbt gdb valgrind iverilog
 
 include ../../Makefile

@@ -90,13 +90,14 @@ nvboard: $(NXDC_CPP) nvboard-archive npc
 	$(call git_commit, "sim RTL with nvboard")
 	$(BIN) --image $(PROG) --log $(LOG_FILE) --difftest --nvboard
 
-CLK_FREQ_MHZ = 1200
+CLK_FREQ_MHZ = 1000
 sta: sbt
 	mkdir -p $(STA_DIR)/result || true
 	make -C $(STA_HOME) sta \
 	DESIGN=ysyx_25080216 SDC_FILE=$(SDC_FILE) PDK=nangate45 \
 	CLK_FREQ_MHZ=$(CLK_FREQ_MHZ) CLK_PORT_NAME=clock O=$(STA_DIR)/result \
 	RTL_FILES="$(SVSRC)"
+
 
 perf: LOG_FILE = /tmp/perf.log
 perf: npc
