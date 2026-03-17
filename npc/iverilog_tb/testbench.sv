@@ -197,7 +197,7 @@ module tb_npc;
         integer offset = (tb_raddr - 32'ha0000048);
         reg [63:0] rtc_us;
         rtc_us = ($time) / 1;
-        // $display("time : %d", rtc_us);
+        $display("time : %d", rtc_us);
         if (offset == 32'h0) tb_rdata <= rtc_us[31:0];
         else tb_rdata <= rtc_us[63:32];
       end else begin
