@@ -52,8 +52,8 @@ module tb_npc;
 
   integer clock_cnt;
   initial begin : init
-    $dumpfile("wave.vcd");
-    $dumpvars(0, u_simbus);
+    // $dumpfile("wave.vcd");
+    // $dumpvars(1, tb_npc);
     clock_cnt   = 0;
     mem_init[0] = 32'h800002b7;
     for (integer i = 1; i < 16; i = i + 1) begin
@@ -76,12 +76,12 @@ module tb_npc;
     repeat (3) @(negedge clock);
     reset = 1'b0;
   end
-
+  wire [3:0] dbg;
   always @(posedge clock)
     if (reset) clock_cnt = 0;
     else begin
       clock_cnt = clock_cnt + 1;
-      if (clock_cnt >= 100) begin
+      if (clock_cnt >= 10000000) begin
         $display("Simulation end");
         $finish;
       end
@@ -127,7 +127,9 @@ module tb_npc;
       .io_master_rresp(rresp),
       .io_master_rdata(rdata_bus),
       .io_master_rlast(rlast),
-      .io_master_rid(rid)
+      .io_master_rid(rid),
+
+      .io_slave_bid(dbg)
   );
 
   __sim_bus u_simbus (
@@ -191,7 +193,7 @@ module tb_npc;
 
   always @(posedge clock) begin
     if (tb_valid && !reset) begin
-      $display("%08x", tb_raddr);
+      // $display("%08x", tb_raddr);
       if (tb_raddr >= 32'h80000000 && tb_raddr < 32'ha0000000)
         tb_rdata <= mem[(tb_raddr-32'h80000000)>>2];
       else if (tb_raddr == 32'ha0000048 || tb_raddr == 32'ha000004c) begin : rtc
