@@ -1,0 +1,4 @@
+NAME = auipc
+SRCS = isa/rv32ui/auipc.S
+INC_PATH += /home/shitful/Repo/1s1x/am-kernels/tests/riscv-tests-am/env/p 	/home/shitful/Repo/1s1x/am-kernels/tests/riscv-tests-am/isa/macros/scalar
+include /home/shitful/Repo/1s1x/abstract-machine/Makefile
