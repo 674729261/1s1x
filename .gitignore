@@ -37,4 +37,7 @@
 **/compile_commands.json
 **/obj_dir/
 /nvboard
+**/.vscode/
 
+!patch/**
+/ysyxSoC
