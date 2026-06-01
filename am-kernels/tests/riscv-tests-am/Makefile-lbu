@@ -1,4 +1,4 @@
-NAME = bge
-SRCS = isa/rv32ui/bge.S
+NAME = lbu
+SRCS = isa/rv32ui/lbu.S
 INC_PATH += /home/shitful/Repo/1s1x/am-kernels/tests/riscv-tests-am/env/p 	/home/shitful/Repo/1s1x/am-kernels/tests/riscv-tests-am/isa/macros/scalar
 include /home/shitful/Repo/1s1x/abstract-machine/Makefile
