@@ -1,4 +1,4 @@
-NAME = lb
-SRCS = isa/rv32ui/lb.S
+NAME = simple
+SRCS = isa/rv32ui/simple.S
 INC_PATH += /home/shitful/Repo/1s1x/am-kernels/tests/riscv-tests-am/env/p 	/home/shitful/Repo/1s1x/am-kernels/tests/riscv-tests-am/isa/macros/scalar
 include /home/shitful/Repo/1s1x/abstract-machine/Makefile
