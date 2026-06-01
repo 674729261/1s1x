@@ -1,4 +1,4 @@
-NAME = addi
-SRCS = isa/rv32ui/addi.S
+NAME = or
+SRCS = isa/rv32ui/or.S
 INC_PATH += /home/shitful/Repo/1s1x/am-kernels/tests/riscv-tests-am/env/p 	/home/shitful/Repo/1s1x/am-kernels/tests/riscv-tests-am/isa/macros/scalar
 include /home/shitful/Repo/1s1x/abstract-machine/Makefile
