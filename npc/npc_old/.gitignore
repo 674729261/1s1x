@@ -36,3 +36,4 @@ log
 replxx_history
 !vsrc
 !src
+!**/libreplxx.a
