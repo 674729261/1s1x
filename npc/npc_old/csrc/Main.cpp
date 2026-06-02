@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
   if (config.itracer > 0)
     instRingBuffer->display();
   spdlog::shutdown();
-  // dut = nullptr;
-  // contextp = nullptr;
+  dut = nullptr;
+  contextp = nullptr;
   return return_value;
 }
