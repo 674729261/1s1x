@@ -91,7 +91,7 @@ sim_ftracer: npc
 	$(BIN) --ftracer $(ELF) --itracer 8 --image $(PROG) --mem_size $(MEM_SIZE) --log $(LOG_FILE) $(NPC_FLAGS) --difftest
 
 valgrind: FAST_FLAGS = -O0 -g
-valgrind: VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -O0 -g -flto=auto
+valgrind: VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -O0 -g
 valgrind: MDIR = $(NPC_OLD_HOME)/build/valgrind/
 valgrind: npc
 	valgrind --leak-check=full --show-leak-kinds=all \
