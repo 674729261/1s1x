@@ -1,16 +1,21 @@
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
-
+#endif
 #include "platform.h"
 
 #include <dlfcn.h>
 #include <elf.h>
 #include <stdio.h>
 #include <stdlib.h>
+
 #ifndef __USE_GNU
 #define __USE_GNU
 #endif
 #include <sys/auxv.h>
 #include <sys/mman.h>
+#include <sys/time.h>
+#include <unistd.h>
+
 
 #define MAX_CPU 16
 #define TRAP_PAGE_START (void *)0x100000
@@ -190,7 +195,8 @@ void __am_exit_platform(int code) {
   extern int __am_mpe_init;
   if (__am_mpe_init && cpu_count() > 1)
     kill(0, SIGKILL);
-  exit(code);
+  fflush(NULL);
+  _exit(code);
 }
 
 void __am_pmem_map(void *va, void *pa, int prot) {

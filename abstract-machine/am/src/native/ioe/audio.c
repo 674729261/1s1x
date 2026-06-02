@@ -1,4 +1,6 @@
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 #include <SDL.h>
 #include <fcntl.h>
 #include <klib.h>
