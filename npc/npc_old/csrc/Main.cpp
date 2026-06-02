@@ -32,8 +32,9 @@ int main(int argc, char *argv[]) {
     dut->print_all_gpr();
   if (config.itracer > 0)
     instRingBuffer->display();
-  spdlog::shutdown();
+
   dut = nullptr;
   contextp = nullptr;
+  spdlog::shutdown();
   return return_value;
 }
