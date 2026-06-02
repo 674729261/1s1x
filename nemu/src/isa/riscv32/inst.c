@@ -239,17 +239,20 @@ static int decode_exec(Decode *s) {
           R(rd) = (sword_t)src1 < (sword_t)imm ? 1 : 0);
 
   INSTPAT("0000000 ????? ????? 001 ????? 00100 11", slli, I,
-          R(rd) = src1 << imm);
+          word_t shamt = imm & 0x1f;
+          R(rd) = src1 << shamt);
   INSTPAT("0000000 ????? ????? 001 ????? 01100 11", sll, R,
           word_t shift = BITS(src2, 4, 0);
           R(rd) = src1 << shift);
   INSTPAT("0000000 ????? ????? 101 ????? 00100 11", srli, I,
-          R(rd) = src1 >> imm);
+          word_t shamt = imm & 0x1f;
+          R(rd) = src1 >> shamt);
   INSTPAT("0000000 ????? ????? 101 ????? 01100 11", srl, R,
           word_t shift = BITS(src2, 4, 0);
           R(rd) = src1 >> shift);
   INSTPAT("0100000 ????? ????? 101 ????? 00100 11", srai, I,
-          R(rd) = (word_t)((sword_t)src1 >> (sword_t)imm));
+          word_t shamt = imm & 0x1f;
+          R(rd) = (word_t)((sword_t)src1 >> (sword_t)shamt));
   INSTPAT("0100000 ????? ????? 101 ????? 01100 11", sra, R,
           word_t shift = src2 & 0x1f;
           R(rd) = (word_t)((sword_t)src1 >> (sword_t)shift));

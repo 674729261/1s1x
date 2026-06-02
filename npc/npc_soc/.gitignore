@@ -37,3 +37,4 @@ replxx_history
 !*.sdc
 !*.tcl
 /sta/result
+!**/libreplxx.a

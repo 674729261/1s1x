@@ -260,9 +260,10 @@ int simulate() {
     result = 0;
   }
 
-  if (device_thread)
+  if (device_thread) {
     device_thread->request_stop();
-
+    device_thread.reset();
+  }
   if (config.enable_audio)
     SDL_CloseAudio();
   show_efficiency(performance_statistics.simulation_clocks,

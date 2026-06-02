@@ -52,7 +52,7 @@ bool Capstone::load_libcapstone() {
     return false;
   }
   cs_free_dl = (csfree_fn_type)dlsym(loaded_lib, "cs_free");
-  if (cs_disasm_dl == nullptr) {
+  if (cs_free_dl == nullptr) {
     log_and_throw<std::runtime_error>("Failed to load symbol cs_free from {}",
                                       STR(SO_PATH_CAPSTONE));
     dlclose(loaded_lib);
