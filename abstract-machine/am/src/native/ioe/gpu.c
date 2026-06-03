@@ -20,11 +20,19 @@ const int disp_w = 400, disp_h = 300;
 
 static SDL_Window *window = NULL;
 static SDL_Surface *surface = NULL;
+static SDL_TimerID texture_timer = 0;
+static SDL_mutex *texture_lock = NULL;
 
 static Uint32 texture_sync(Uint32 interval, void *param) {
-  SDL_BlitScaled(surface, NULL, SDL_GetWindowSurface(window), NULL);
-  SDL_UpdateWindowSurface(window);
-  return interval;
+  if (texture_lock)
+    SDL_LockMutex(texture_lock);
+  if (texture_timer != 0 && surface && window) {
+    SDL_BlitScaled(surface, NULL, SDL_GetWindowSurface(window), NULL);
+    SDL_UpdateWindowSurface(window);
+  }
+  if (texture_lock)
+    SDL_UnlockMutex(texture_lock);
+  return texture_timer != 0 ? interval : 0;
 }
 
 void __am_gpu_init() {
@@ -34,7 +42,22 @@ void __am_gpu_init() {
                             SDL_WINDOW_OPENGL);
   surface = SDL_CreateRGBSurface(SDL_SWSURFACE, disp_w, disp_h, 32, RMASK,
                                  GMASK, BMASK, AMASK);
-  SDL_AddTimer(1000 / FPS, texture_sync, NULL);
+  texture_lock = SDL_CreateMutex();
+  texture_timer = SDL_AddTimer(1000 / FPS, texture_sync, NULL);
+}
+
+void __am_gpu_close() {
+  if (texture_timer != 0) {
+    SDL_TimerID timer = texture_timer;
+    texture_timer = 0;
+    SDL_RemoveTimer(timer);
+    if (texture_lock) {
+      SDL_LockMutex(texture_lock);
+      SDL_UnlockMutex(texture_lock);
+    }
+  }
+  if (SDL_WasInit(SDL_INIT_TIMER))
+    SDL_QuitSubSystem(SDL_INIT_TIMER);
 }
 
 void __am_gpu_config(AM_GPU_CONFIG_T *cfg) {
