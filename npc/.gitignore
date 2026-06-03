@@ -1,2 +1,4 @@
 !/iverilog_tb/*.sv
 !/build
+!/sta/*.sdc
+!/sta/*.tcl
