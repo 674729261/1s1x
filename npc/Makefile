@@ -9,7 +9,7 @@ verilog:
 	awk 'NF{print;blank=0}!NF{if(!blank)print;blank=1}' ./build/__ysyx_25080216__temp__.sv > ./build/ysyx_25080216.sv
 	rm ./build/__ysyx_25080216__temp__.sv
 
-IMG ?= ./test_progs/rtthread-riscv32e-npc.bin
+IMG ?= ./test_progs/yield-os.bin
 
 
 STA_DIR = $(NPC_HOME)/sta
