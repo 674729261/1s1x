@@ -35,7 +35,7 @@ sta: verilog
 PDK_CELLS ?= $(STA_HOME)/pdk/nangate45/sim/cells.v
 NETLIST_PATH ?= $(shell find $(STA_DIR)/result -name "ysyx_25080216.netlist.v.sim")
 
-formal: 
+formal: sta
 	yosys -c $(FORMAL_SCRIPT_FILE) -- \
 	-top ysyx_25080216 \
 	-rtl $(NPC_HOME)/build/ysyx_25080216.sv \
