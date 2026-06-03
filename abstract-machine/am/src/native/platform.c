@@ -67,6 +67,8 @@ static void setup_sigaltstack() {
 }
 
 int main(const char *args);
+void __am_audio_close();
+void __am_gpu_close();
 
 static void init_platform() __attribute__((constructor));
 static void init_platform() {
@@ -191,12 +193,14 @@ static void init_platform() {
 }
 
 void __am_exit_platform(int code) {
+  __am_audio_close();
+  __am_gpu_close();
   // let Linux clean up other resource
   extern int __am_mpe_init;
   if (__am_mpe_init && cpu_count() > 1)
     kill(0, SIGKILL);
   fflush(NULL);
-  _exit(code);
+  exit(code);
 }
 
 void __am_pmem_map(void *va, void *pa, int prot) {

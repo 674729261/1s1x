@@ -11,6 +11,7 @@
 
 static int rfd = -1, wfd = -1;
 static volatile int count = 0;
+static int audio_enabled = 0;
 
 void __am_audio_init() {
   int fds[2];
@@ -48,6 +49,16 @@ static void audio_write(uint8_t *buf, int len) {
   }
 }
 
+void __am_audio_close() {
+  if (audio_enabled) {
+    SDL_PauseAudio(1);
+    SDL_CloseAudio();
+    audio_enabled = 0;
+  }
+  if (SDL_WasInit(SDL_INIT_AUDIO))
+    SDL_QuitSubSystem(SDL_INIT_AUDIO);
+}
+
 void __am_audio_ctrl(AM_AUDIO_CTRL_T *ctrl) {
   SDL_AudioSpec s = {};
   s.freq = ctrl->freq;
@@ -58,10 +69,10 @@ void __am_audio_ctrl(AM_AUDIO_CTRL_T *ctrl) {
   s.userdata = NULL;
 
   count = 0;
-  SDL_CloseAudio();
+  __am_audio_close();
   int ret = SDL_InitSubSystem(SDL_INIT_AUDIO);
-  if (ret == 0) {
-    SDL_OpenAudio(&s, NULL);
+  if (ret == 0 && SDL_OpenAudio(&s, NULL) == 0) {
+    audio_enabled = 1;
     SDL_PauseAudio(0);
   }
 }
