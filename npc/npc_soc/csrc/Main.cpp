@@ -78,18 +78,8 @@ int simulate() {
   clear_performance_count();
   bool difftest_state = false;
   auto start_time = std::chrono::steady_clock::now();
+  retire = true;
   while (!contextp->gotFinish()) {
-    retire = false;
-    if (dut->getResetCore()) {
-      ref.reset(*dut);
-      ref.sync_state();
-      clear_performance_count();
-    }
-    if (config.nvboard)
-      nvboard_update();
-    clock_count++;
-    dut->step_one_cycle();
-
     if (retire) {
       // std::println("{:08x}", dut->getPC());
       inst_count++;
@@ -99,7 +89,17 @@ int simulate() {
         if (difftest_state)
           break;
       }
+      retire = true;
     }
+    if (dut->getResetCore()) {
+      ref.reset(*dut);
+      ref.sync_state();
+      clear_performance_count();
+    }
+    if (config.nvboard)
+      nvboard_update();
+    clock_count++;
+    dut->step_one_cycle();
   }
   auto end_time = std::chrono::steady_clock::now();
 

@@ -143,7 +143,7 @@ clean:
 	rm -rf build
 	rm -rf ../build
 	sbt clean
-	rm -rf generated_svsrc/*
+	rm -rf ../generated_svsrc/*
 
 clean_log:
 	rm -rf $(SOC_NPC_HOME)/log/*
