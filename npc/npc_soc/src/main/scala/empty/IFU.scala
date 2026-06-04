@@ -23,7 +23,7 @@ class IFU(init_pc: UInt) extends PrefixedModule {
 
   val fetch_port = IO(new AXI)
 
-  val icache = Module(new ICache(4, 3))
+  val icache = Module(new ICache(5, 2))
   val has_inst_r = RegInit(Bool(), false.B)
 
   val fetch_pc_r = RegInit(UInt(32.W), init_pc)
