@@ -88,12 +88,9 @@ int simulate() {
     if (retire) {
       // std::println("{:08x}", dut->getPC());
       inst_count++;
-      if (config.difftest) {
-        difftest_state = check_difftest(*dut, ref);
-        if (difftest_state)
-          break;
+      if (config.difftest)
         ref.step();
-      }
+
       retire = false;
     }
 
@@ -101,6 +98,11 @@ int simulate() {
       nvboard_update();
     clock_count++;
     dut->step_one_cycle();
+    if (config.difftest) {
+      difftest_state = check_difftest(*dut, ref);
+      if (difftest_state)
+        break;
+    }
   }
   auto end_time = std::chrono::steady_clock::now();
 
