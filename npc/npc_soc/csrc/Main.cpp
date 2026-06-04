@@ -90,7 +90,7 @@ int simulate() {
       inst_count++;
       if (config.difftest)
         ref.step();
-
+      std::println("{:08x}", ref.getPC());
       retire = false;
     }
 
