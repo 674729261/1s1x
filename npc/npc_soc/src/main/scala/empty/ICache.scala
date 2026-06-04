@@ -56,8 +56,8 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends PrefixedModule {
   val ifu_rfire = io.rvalid && io.rready
 
   val addr_r = RegEnable(io.addr, ifu_afire)
-  val timestamp_r = RegEnable(io.timestamp_req, ifu_afire)
-  val jump_r = RegEnable(io.predicted_jump, ifu_afire)
+  val timestamp_r = RegEnable(io.timestamp_req, 0.U(2.W), ifu_afire)
+  val jump_r = RegEnable(io.predicted_jump, false.B, ifu_afire)
   val has_request_r = RegInit(Bool(), false.B)
   has_request_r := MuxCase(
     has_request_r,
