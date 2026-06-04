@@ -94,7 +94,7 @@ int simulate() {
           break;
         ref.step();
       }
-      retire = true;
+      retire = false;
     }
 
     if (config.nvboard)
