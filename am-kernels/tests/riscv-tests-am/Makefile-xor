@@ -1,4 +1,4 @@
-NAME = ori
-SRCS = isa/rv32ui/ori.S
+NAME = xor
+SRCS = isa/rv32ui/xor.S
 INC_PATH += /home/shitful/Repo/1s1x/am-kernels/tests/riscv-tests-am/env/p 	/home/shitful/Repo/1s1x/am-kernels/tests/riscv-tests-am/isa/macros/scalar
 include /home/shitful/Repo/1s1x/abstract-machine/Makefile
