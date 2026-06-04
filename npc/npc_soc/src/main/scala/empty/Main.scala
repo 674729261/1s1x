@@ -95,8 +95,8 @@ object AddMain extends App {
           "disallowLocalVariables",
           "disallowPackedArrays",
           "disallowPackedStructAssignments",
-          "disallowDeclAssignments",
-          "disallowPortDeclSharing",
+          // "disallowDeclAssignments",
+          // "disallowPortDeclSharing",
           "disallowExpressionInliningInPorts",
           "locationInfoStyle=wrapInAtSquareBracket"
         ).reduce(_ + "," + _)
@@ -119,8 +119,8 @@ object AddMain extends App {
           "disallowLocalVariables",
           "disallowPackedArrays",
           "disallowPackedStructAssignments",
-          "disallowDeclAssignments",
-          "disallowPortDeclSharing",
+          // "disallowDeclAssignments",
+          // "disallowPortDeclSharing",
           "disallowExpressionInliningInPorts",
           "locationInfoStyle=wrapInAtSquareBracket"
         ).reduce(_ + "," + _)
