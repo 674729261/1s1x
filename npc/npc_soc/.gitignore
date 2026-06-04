@@ -34,6 +34,6 @@ thirdparty/**/*
 !thirdparty/Makefile
 log
 replxx_history
-/tools/capstone/repo/
+/tools/capstone/repo
 /sta/result
 !**/libreplxx.a
