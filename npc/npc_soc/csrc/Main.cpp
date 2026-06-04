@@ -78,14 +78,14 @@ int simulate() {
   clear_performance_count();
   bool difftest_state = false;
   auto start_time = std::chrono::steady_clock::now();
-  retire = true;
+
   while (!contextp->gotFinish()) {
     if (dut->getResetCore()) {
       ref.reset(*dut);
       ref.sync_state();
       clear_performance_count();
-    }
-    if (retire) {
+      retire = true;
+    } else if (retire) {
       // std::println("{:08x}", dut->getPC());
       inst_count++;
       if (config.difftest)
