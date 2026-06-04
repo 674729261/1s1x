@@ -98,7 +98,7 @@ int simulate() {
       nvboard_update();
     clock_count++;
     dut->step_one_cycle();
-    if (config.difftest) {
+    if (retire && config.difftest) {
       difftest_state = check_difftest(*dut, ref);
       if (difftest_state)
         break;
