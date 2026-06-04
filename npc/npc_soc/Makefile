@@ -73,7 +73,7 @@ $(SV_FILELIST): $(CHISELSRC)
 
 
 
-PROG ?= /home/shitful/1s1x/ysyx-workbench/am-kernels/benchmarks/microbench/build/microbench-riscv32e-soc.bin
+PROG ?= $(NPC_HOME)/../am-kernels/benchmarks/microbench/build/microbench-riscv32e-soc.bin
 TIME_STAMP := $(shell date +"%Y_%m_%d_%H_%M_%S")
 LOG_FILE ?= "log/$(TIME_STAMP).log"
 
@@ -143,7 +143,7 @@ clean:
 	rm -rf build
 	rm -rf ../build
 	sbt clean
-	rm -rf generated_svsrc/*
+	rm -rf ../generated_svsrc/*
 
 clean_log:
 	rm -rf $(SOC_NPC_HOME)/log/*
