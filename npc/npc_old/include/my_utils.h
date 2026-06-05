@@ -4,7 +4,7 @@
 #include <charconv>
 #include <concepts>
 #include <cstdint>
-#include <expected>
+#include <variant>
 #include <fmt/format.h>
 #include <limits>
 #include <optional>
@@ -19,7 +19,51 @@ using fmt::println, fmt::print;
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
 
-template <typename T> using Result = std::expected<T, std::string>;
+// --- C++20-compatible Result<T> (replaces std::expected<T, std::string>) ---
+struct UnexpectedError {
+  std::string msg;
+};
+
+template <typename T>
+class Result {
+  std::variant<T, std::string> data_;
+
+public:
+  Result(T val) : data_(std::move(val)) {}
+  Result(UnexpectedError err) : data_(std::move(err.msg)) {}
+
+  explicit operator bool() const noexcept { return data_.index() == 0; }
+  bool has_value() const noexcept { return data_.index() == 0; }
+
+  T &value() {
+    if (!has_value())
+      throw std::logic_error("bad Result access: no value");
+    return std::get<0>(data_);
+  }
+  const T &value() const {
+    if (!has_value())
+      throw std::logic_error("bad Result access: no value");
+    return std::get<0>(data_);
+  }
+
+  std::string &error() {
+    if (has_value())
+      throw std::logic_error("bad Result access: no error");
+    return std::get<1>(data_);
+  }
+  const std::string &error() const {
+    if (has_value())
+      throw std::logic_error("bad Result access: no error");
+    return std::get<1>(data_);
+  }
+
+  T *operator->() { return &value(); }
+  const T *operator->() const { return &value(); }
+  T &operator*() { return value(); }
+  const T &operator*() const { return value(); }
+};
+
+inline UnexpectedError Err(std::string msg) { return {std::move(msg)}; }
 constexpr std::array<uint32_t, 16> lookup_mask32 = {
     0x00000000, 0x000000FF, 0x0000FF00, 0x0000FFFF, 0x00FF0000, 0x00FF00FF,
     0x00FFFF00, 0x00FFFFFF, 0xFF000000, 0xFF0000FF, 0xFF00FF00, 0xFF00FFFF,
