@@ -1,11 +1,15 @@
-From 6760605e52bd1f39427576195f9b511a998af3a3 Mon Sep 17 00:00:00 2001
-From: ysyx_25080216-Wang Xiangyu <2292683261@qq.com>
-Date: Wed, 18 Mar 2026 13:56:21 +0800
-Subject: [PATCH] My modification
+From abe7d608d83e35ae7b8d7e2c938066e345bccbfe Mon Sep 17 00:00:00 2001
+From: Shitful <2292683261@qq.com>
+Date: Mon, 1 Jun 2026 21:09:50 +0800
+Subject: [PATCH] Migrate to Fedora
 
 ---
- .metals/metals.lock.db                        |   6 +
+ .gitignore                                    |   3 +
+ .gitmodules                                   |   2 +-
+ .mill-version                                 |   2 +-
  .scalafmt.conf                                |   2 +
+ Makefile                                      |   2 +-
+ patch/0001-AXI-resp-2-b11-bug.patch           |  51 +
  perip/bitrev/bitrev.v                         |  12 +-
  perip/psram/efabless/EF_INIT.v                |  64 ++
  perip/psram/efabless/EF_PSRAM_CTRL.v          |  54 +-
@@ -31,27 +35,44 @@ Subject: [PATCH] My modification
  src/device/PSRAM.scala                        | 136 ++-
  src/device/SDRAM.scala                        | 253 ++++-
  src/device/VGA.scala                          |  95 +-
- 27 files changed, 3509 insertions(+), 1829 deletions(-)
- create mode 100644 .metals/metals.lock.db
+ 31 files changed, 3560 insertions(+), 1832 deletions(-)
  create mode 100644 .scalafmt.conf
+ create mode 100644 patch/0001-AXI-resp-2-b11-bug.patch
  create mode 100644 perip/psram/efabless/EF_INIT.v
  create mode 100644 perip/sdram/core_sdram_axi4/sdram_axi_core_disabled.v
  create mode 100644 perip/sdram/core_sdram_axi4/sdram_axi_pmem.sv
  delete mode 100644 perip/sdram/core_sdram_axi4/sdram_axi_pmem.v
  create mode 100644 perip/sdram/core_sdram_axi4/sdram_axi_pmem_disabled.v
 
-diff --git a/.metals/metals.lock.db b/.metals/metals.lock.db
-new file mode 100644
-index 00000000..7e2bbbf7
---- /dev/null
-+++ b/.metals/metals.lock.db
-@@ -0,0 +1,6 @@
-+#FileLock
-+#Wed Mar 18 13:44:54 CST 2026
-+hostName=localhost
-+id=19cff77622bce53f48a4644450b0b67637a0e5fc519
-+method=file
-+server=localhost\:46651
+diff --git a/.gitignore b/.gitignore
+index 3c0160d0..b3d550c7 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -1,2 +1,5 @@
+ build/
+ out/
++.bloop/
++.metals/
++.vscode/
+\ No newline at end of file
+diff --git a/.gitmodules b/.gitmodules
+index d4be386b..c713ce7f 100644
+--- a/.gitmodules
++++ b/.gitmodules
+@@ -1,3 +1,3 @@
+ [submodule "rocket-chip"]
+ 	path = rocket-chip
+-	url = git@github.com:chipsalliance/rocket-chip.git
++	url = https://v4.gh-proxy.org/https://github.com/chipsalliance/rocket-chip.git 
+diff --git a/.mill-version b/.mill-version
+index 7fd0b1e8..1592299c 100644
+--- a/.mill-version
++++ b/.mill-version
+@@ -1 +1 @@
+-0.12.4
+\ No newline at end of file
++0.12.16
+\ No newline at end of file
 diff --git a/.scalafmt.conf b/.scalafmt.conf
 new file mode 100644
 index 00000000..69f31be3
@@ -61,6 +82,75 @@ index 00000000..69f31be3
 +version = "3.10.0"
 +runner.dialect = scala213
 \ No newline at end of file
+diff --git a/Makefile b/Makefile
+index c30262ea..5c12f8c8 100644
+--- a/Makefile
++++ b/Makefile
+@@ -23,6 +23,6 @@ clean:
+ 
+ dev-init:
+ 	git submodule update --init --recursive
+-	cd rocket-chip && git apply ../patch/rocket-chip.patch
++	cd rocket-chip && git apply ../patch/rocket-chip.patch && git apply ../patch/0001-AXI-resp-2-b11-bug.patch || true
+ 
+ .PHONY: verilog clean dev-init
+diff --git a/patch/0001-AXI-resp-2-b11-bug.patch b/patch/0001-AXI-resp-2-b11-bug.patch
+new file mode 100644
+index 00000000..73aaf7b6
+--- /dev/null
++++ b/patch/0001-AXI-resp-2-b11-bug.patch
+@@ -0,0 +1,51 @@
++From d388bab8397975ad51c300fe46132c570297af3b Mon Sep 17 00:00:00 2001
++From: Shitful <2292683261@qq.com>
++Date: Thu, 4 Jun 2026 22:08:45 +0800
++Subject: [PATCH] =?UTF-8?q?=E4=BF=AE=E5=A4=8DAXI=20resp=E9=80=9A=E9=81=93?=
++ =?UTF-8?q?=E6=94=B9=E5=8F=98=E4=B8=BA2'b11=E7=9A=84bug?=
++MIME-Version: 1.0
++Content-Type: text/plain; charset=UTF-8
++Content-Transfer-Encoding: 8bit
++
++---
++ src/main/scala/amba/axi4/Parameters.scala | 8 ++++----
++ src/main/scala/amba/axi4/SRAM.scala       | 4 ++--
++ 2 files changed, 6 insertions(+), 6 deletions(-)
++
++diff --git a/src/main/scala/amba/axi4/Parameters.scala b/src/main/scala/amba/axi4/Parameters.scala
++index 088c226d8..20522d11e 100644
++--- a/src/main/scala/amba/axi4/Parameters.scala
+++++ b/src/main/scala/amba/axi4/Parameters.scala
++@@ -127,10 +127,10 @@ case class AXI4BundleParameters(
++   val lenBits   = AXI4Parameters.lenBits
++   val sizeBits  = AXI4Parameters.sizeBits
++   val burstBits = AXI4Parameters.burstBits
++-  val lockBits  = AXI4Parameters.lockBits
++-  val cacheBits = AXI4Parameters.cacheBits
++-  val protBits  = AXI4Parameters.protBits
++-  val qosBits   = AXI4Parameters.qosBits
+++  val lockBits  = 0 //AXI4Parameters.lockBits
+++  val cacheBits = 0 //AXI4Parameters.cacheBits
+++  val protBits  = 0 //AXI4Parameters.protBits
+++  val qosBits   = 0 //AXI4Parameters.qosBits
++   val respBits  = AXI4Parameters.respBits
++ 
++   def union(x: AXI4BundleParameters) =
++diff --git a/src/main/scala/amba/axi4/SRAM.scala b/src/main/scala/amba/axi4/SRAM.scala
++index f4838b73a..d5afbe6e2 100644
++--- a/src/main/scala/amba/axi4/SRAM.scala
+++++ b/src/main/scala/amba/axi4/SRAM.scala
++@@ -75,8 +75,8 @@ class AXI4RAM(
++     val w_full = RegInit(false.B)
++     val w_id   = Reg(UInt())
++     val w_echo = Reg(BundleMap(in.params.echoFields))
++-    val r_sel1 = RegNext(r_sel0)
++-    val w_sel1 = RegNext(w_sel0)
+++    val r_sel1 = Reg(Bool())
+++    val w_sel1 = Reg(Bool())
++ 
++     when (in. b.fire) { w_full := false.B }
++     when (in.aw.fire) { w_full := true.B }
++-- 
++2.54.0
++
 diff --git a/perip/bitrev/bitrev.v b/perip/bitrev/bitrev.v
 index f1c3b363..9546532d 100644
 --- a/perip/bitrev/bitrev.v
@@ -4518,12 +4608,12 @@ index 92d37516..9eadb3b3 100644
  
  endmodule
 diff --git a/rocket-chip b/rocket-chip
-index d0c6b50f..885dd596 160000
+index d0c6b50f..d388bab8 160000
 --- a/rocket-chip
 +++ b/rocket-chip
 @@ -1 +1 @@
 -Subproject commit d0c6b50fdefcdbe121e9788433ea51f7efaf1d32
-+Subproject commit 885dd5966a49ce19512e3cc3275515926e729ba2
++Subproject commit d388bab8397975ad51c300fe46132c570297af3b
 diff --git a/src/CPU.scala b/src/CPU.scala
 index 7559195f..edb24a58 100644
 --- a/src/CPU.scala
@@ -5948,5 +6038,5 @@ index 6724bc38..2d545fb6 100644
      mvga.io.reset := reset
      mvga.io.in <> in
 -- 
-2.43.0
+2.54.0
 
