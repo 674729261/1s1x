@@ -1,4 +1,4 @@
-!include/*
+!include/**/*
 !src/*
 !auto_search.py
 !images/*

@@ -25,8 +25,9 @@ struct VirtualBus {
     auto check_range = [=](Area area) {
       return addr >= area.from && addr + sz - 1 <= area.to;
     };
-
-    if (check_range(sram_field)) {
+    if (check_range(clint_field)) {
+      return 0;
+    } else if (check_range(sram_field)) {
       return sram[(addr & 0x00FFFFFF) >> 2];
     } else if (check_range(flash_field)) {
       // spdlog::info("{:08x} {:08x}", (addr & 0x0FFFFFFF) >> 2,
@@ -162,6 +163,7 @@ struct VirtualBus {
   };
 
   std::vector<uint32_t> flash;
+  const Area clint_field = {0x02000000, 0x0200ffff};
   const Area flash_field = {0x30000000, 0x3fffffff};
 
   std::vector<uint32_t> sram;
