@@ -114,19 +114,20 @@ class Arbiter_2Master() extends PrefixedModule {
     MuxCase(
       out_aw,
       Seq(
-        out_fire.aw_fire -> true.B,
-        (out_aw && out_fire.w_burst_last ) -> false.B
+        (out_fire.aw_fire && !out_fire.w_burst_last) -> true.B,
+        (out_aw && out_fire.w_burst_last) -> false.B
       )
     )
-    out_w :=
+  out_w :=
     MuxCase(
       out_w,
       Seq(
-        out_fire.w_burst_last -> true.B,
-        (out_w && out_fire.aw_fire ) -> false.B
+        (out_fire.w_burst_last && !out_fire.aw_fire )-> true.B,
+        (out_w && out_fire.aw_fire) -> false.B
       )
     )
-  val write_remove = (out_aw && out_fire.w_burst_last) || (out_w && out_fire.aw_fire) || (out_fire.aw_fire && out_fire.w_burst_last) 
+  val write_remove =
+    (out_aw && out_fire.w_burst_last) || (out_w && out_fire.aw_fire) || (out_fire.aw_fire && out_fire.w_burst_last)
 
   aw_w_owner := MuxLookup(aw_w_owner, sIDLE)(
     Seq(
