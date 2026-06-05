@@ -109,7 +109,7 @@ inline void Ref::step() {
         cpu.pc);
   }
   const uint32_t inst = ifnst_fetch.data;
-  // std::println("PC = {:08x}, inst = {:08x}", cpu.pc, inst);
+  // fmt::println("PC = {:08x}, inst = {:08x}", cpu.pc, inst);
   Decoded d = decode(inst);
   // ref_trace_file
   //     << fmt::format(

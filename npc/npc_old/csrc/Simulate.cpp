@@ -210,8 +210,8 @@ void monitor_loop() {
         std::string_view arg_sv = line_sv.substr(item.command.length());
         CmdResult ret = item.call(std::string(arg_sv));
         if (ret == CmdResult::INVALID_ARG) {
-          std::println("Invalid argument.");
-          std::println("{}", item.help);
+          fmt::println("Invalid argument.");
+          fmt::println("{}", item.help);
         }
         command_found = true;
         rx.history_add(std::string(line_sv));
@@ -219,7 +219,7 @@ void monitor_loop() {
       }
     }
     if (!command_found) {
-      std::println("Unknown command");
+      fmt::println("Unknown command");
     }
   }
   rx.history_save(history_file);

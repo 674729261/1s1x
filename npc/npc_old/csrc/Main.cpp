@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
   try {
     return_value = simulate();
   } catch (const std::exception &e) {
-    std::println(std::cerr, "Error : {}", e.what());
+    fmt::println(std::cerr, "Error : {}", e.what());
     if (device_thread) {
       device_thread->request_stop();
     }

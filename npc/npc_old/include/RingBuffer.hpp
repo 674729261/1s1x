@@ -54,9 +54,9 @@ public:
 
   void display() {
     if (cnt == 0)
-      std::println("No instruction recorded");
+      fmt::println("No instruction recorded");
     else {
-      std::println("Recent {} instructions", cnt);
+      fmt::println("Recent {} instructions", cnt);
       int pos = pos_begin;
       for (int i = 0; i < cnt; i++) {
         auto show = Capstone::capstone.disassemble(

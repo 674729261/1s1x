@@ -133,7 +133,7 @@ public:
         int gpr_id = i * 4 + j;
         print("{:3}= {:08x} ", gpr_names[gpr_id], getGPR(gpr_id));
       }
-      std::println();
+      fmt::println();
     }
     println("PC = {:#010x}", getPC());
   }
