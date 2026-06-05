@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <elfio/elfio.hpp>
-#include <format>
+#include <fmt/format.h>
 #include <memory>
 #include <my_utils.h>
 #include <spdlog/spdlog.h>

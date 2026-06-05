@@ -21,9 +21,9 @@
 #include <chrono>
 #include <cstdint>
 #include <filesystem>
-#include <format>
+#include <fmt/format.h>
 #include <memory>
-#include <print>
+#include <fmt/format.h>
 #include <replxx.hxx>
 #include <string>
 #include <verilated.h>
@@ -70,10 +70,10 @@ bool check_watchers() {
     if (!result || result.value() != w.last_value) {
       ret = true;
       std::string old =
-          (w.last_value ? std::format("{:#010x}", w.last_value.value())
+          (w.last_value ? fmt::format("{:#010x}", w.last_value.value())
                         : "Error");
       std::string now =
-          (result ? std::format("{:#010x}", result.value()) : "Error");
+          (result ? fmt::format("{:#010x}", result.value()) : "Error");
       spdlog::info("Watcher {} changed from {} to {} at PC={:#010x}", w.display,
                    old, now, dut->getPC());
     }
@@ -210,8 +210,8 @@ void monitor_loop() {
         std::string_view arg_sv = line_sv.substr(item.command.length());
         CmdResult ret = item.call(std::string(arg_sv));
         if (ret == CmdResult::INVALID_ARG) {
-          std::println("Invalid argument.");
-          std::println("{}", item.help);
+          fmt::println("Invalid argument.");
+          fmt::println("{}", item.help);
         }
         command_found = true;
         rx.history_add(std::string(line_sv));
@@ -219,7 +219,7 @@ void monitor_loop() {
       }
     }
     if (!command_found) {
-      std::println("Unknown command");
+      fmt::println("Unknown command");
     }
   }
   rx.history_save(history_file);

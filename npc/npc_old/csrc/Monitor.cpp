@@ -7,7 +7,7 @@
 #include <Monitor.h>
 #include <cstdint>
 #include <ctre/ctre.hpp>
-#include <print>
+#include <fmt/format.h>
 using ctll::fixed_string;
 using ctre::match;
 static constexpr auto RE_NO_ARG = fixed_string{R"(\s*)"};
@@ -129,21 +129,21 @@ CmdResult cmd_p(std::string_view arg) {
 CmdResult cmd_help(std::string_view arg) {
   if (match<RE_NO_ARG>(arg)) {
     for (int i = 0; i < NR_CMD; i++) {
-      std::println("{}\t{}", cmd_list[i].command, cmd_list[i].help);
+      fmt::println("{}\t{}", cmd_list[i].command, cmd_list[i].help);
     }
   } else {
     auto [whole, cmd] = match<R"(\s*([a-z]+)\s*)">(arg);
     for (int i = 0; i < NR_CMD; i++) {
       if (cmd.to_view() == cmd_list[i].command) {
         {
-          std::println("{}\t{}", cmd_list[i].command, cmd_list[i].help);
+          fmt::println("{}\t{}", cmd_list[i].command, cmd_list[i].help);
           return CmdResult::OKAY;
         }
       }
     }
     println("No such command. All command list:");
     for (int i = 0; i < NR_CMD; i++) {
-      std::println("{}\t{}", cmd_list[i].command, cmd_list[i].help);
+      fmt::println("{}\t{}", cmd_list[i].command, cmd_list[i].help);
     }
   }
   return CmdResult::OKAY;

@@ -11,8 +11,8 @@
 #include <Vnpc_top.h>
 #include <Vnpc_top___024root.h>
 #include <exception>
+#include <fmt/format.h>
 #include <iostream>
-#include <print>
 #include <verilated.h>
 #include <verilated_vcd_c.h>
 using std::string;
@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
   try {
     return_value = simulate();
   } catch (const std::exception &e) {
-    std::println(std::cerr, "Error : {}", e.what());
+    std::cerr << "Error : " << e.what() << std::endl;
     if (device_thread) {
       device_thread->request_stop();
     }

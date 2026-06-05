@@ -9,7 +9,7 @@
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
-#include <print>
+#include <fmt/format.h>
 #include <stdexcept>
 
 extern "C" uint32_t mem_read(uint32_t raddr) {
