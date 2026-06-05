@@ -41,6 +41,8 @@ class Arbiter_2Master() extends PrefixedModule {
   val out_fire = GenerateFireSignal(OUT_AXI)
 
   val sIDLE :: sIFU :: sLSU :: Nil = Enum(3)
+  val out_aw = RegInit(false.B)
+  val out_w = RegInit(false.B)
   val ar_owner = RegInit(sIDLE)
   val r_owner = RegInit(sIDLE)
   val aw_w_owner = RegInit(sIDLE)
@@ -71,11 +73,11 @@ class Arbiter_2Master() extends PrefixedModule {
   }
 
   when(bind_to_IFU_aw_w) {
-    IFU_AXI.w <> OUT_AXI.w
-    IFU_AXI.aw <> OUT_AXI.aw
+    when(!out_w) { IFU_AXI.w <> OUT_AXI.w }
+    when(!out_aw) { IFU_AXI.aw <> OUT_AXI.aw }
   }.elsewhen(bind_to_LSU_aw_w) {
-    LSU_AXI.w <> OUT_AXI.w
-    LSU_AXI.aw <> OUT_AXI.aw
+    when(!out_w) { LSU_AXI.w <> OUT_AXI.w }
+    when(!out_aw) { LSU_AXI.aw <> OUT_AXI.aw }
   }
 
   when(bind_to_IFU_b) {
@@ -107,6 +109,24 @@ class Arbiter_2Master() extends PrefixedModule {
       sLSU -> Mux(LSU_fire.r_burst_last, sIDLE, sLSU)
     )
   )
+  val write_remove =
+    (out_aw && out_fire.w_burst_last) || (out_w && out_fire.aw_fire) || (out_fire.aw_fire && out_fire.w_burst_last)
+  out_aw :=
+    MuxCase(
+      out_aw,
+      Seq(
+        write_remove -> false.B,
+        (out_fire.aw_fire && !out_fire.w_burst_last) -> true.B
+      )
+    )
+  out_w :=
+    MuxCase(
+      out_w,
+      Seq(
+        write_remove -> false.B,
+        (out_fire.w_burst_last && !out_fire.aw_fire) -> true.B
+      )
+    )
 
   aw_w_owner := MuxLookup(aw_w_owner, sIDLE)(
     Seq(
@@ -115,8 +135,8 @@ class Arbiter_2Master() extends PrefixedModule {
         sLSU,
         Mux(IFU_AXI.aw.valid, sIFU, sIDLE)
       ),
-      sIFU -> Mux(IFU_fire.w_burst_last, sIDLE, sIFU),
-      sLSU -> Mux(LSU_fire.w_burst_last, sIDLE, sLSU)
+      sIFU -> Mux(write_remove, sIDLE, sIFU),
+      sLSU -> Mux(write_remove, sIDLE, sLSU)
     )
   )
 
