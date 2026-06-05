@@ -12,7 +12,7 @@
 #include <Vnpc_top___024root.h>
 #include <exception>
 #include <iostream>
-#include <print>
+#include <fmt/format.h>
 #include <verilated.h>
 #include <verilated_vcd_c.h>
 using std::string;

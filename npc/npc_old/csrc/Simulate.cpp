@@ -23,7 +23,7 @@
 #include <filesystem>
 #include <fmt/format.h>
 #include <memory>
-#include <print>
+#include <fmt/format.h>
 #include <replxx.hxx>
 #include <string>
 #include <verilated.h>

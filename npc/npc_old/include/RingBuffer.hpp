@@ -4,7 +4,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
-#include <print>
+#include <fmt/format.h>
 #include <stdexcept>
 #include <vector>
 class InstRingBuffer {

@@ -1,7 +1,7 @@
 #include <Args.h>
 #include <Vnpc_top.h>
 #include <iostream>
-#include <print>
+#include <fmt/format.h>
 #include <verilated.h>
 #include <verilated_vcd_c.h>
 

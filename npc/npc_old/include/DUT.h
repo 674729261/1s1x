@@ -7,7 +7,7 @@
 #include "verilated_vcd_c.h"
 #include <ELFParser.h>
 #include <Setup.h>
-#include <print>
+#include <fmt/format.h>
 
 static constexpr std::array<std::string, 32> gpr_names = {
     "$0", "ra", "sp", "gp", "tp",  "t0",  "t1", "t2", "s0", "s1", "a0",
@@ -131,9 +131,9 @@ public:
     for (int i = 0; i < 4; i++) {
       for (int j = 0; j < 4; j++) {
         int gpr_id = i * 4 + j;
-        print("{:3}= {:08x} ", gpr_names[gpr_id], getGPR(gpr_id));
+        fmt::print("{:3}= {:08x} ", gpr_names[gpr_id], getGPR(gpr_id));
       }
-      fmt::println();
+      fmt::print("\n");
     }
     println("PC = {:#010x}", getPC());
   }

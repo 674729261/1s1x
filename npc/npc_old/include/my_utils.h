@@ -9,7 +9,7 @@
 #include <limits>
 #include <optional>
 #include <ostream>
-#include <print>
+#include <fmt/format.h>
 #include <stdexcept>
 #include <string_view>
 #include <utility>
