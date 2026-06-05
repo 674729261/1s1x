@@ -1,22 +1,19 @@
-#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
-#endif
-#include "platform.h"
+#define __USE_GNU
+
 
 #include <dlfcn.h>
 #include <elf.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifndef __USE_GNU
-#define __USE_GNU
-#endif
+
 #include <sys/auxv.h>
 #include <sys/mman.h>
 #include <sys/time.h>
 #include <unistd.h>
 
-
+#include "platform.h"
 #define MAX_CPU 16
 #define TRAP_PAGE_START (void *)0x100000
 #define PMEM_START (void *)0x1000000  // for nanos-lite with vme disabled
