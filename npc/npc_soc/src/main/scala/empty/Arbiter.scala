@@ -115,16 +115,16 @@ class Arbiter_2Master() extends PrefixedModule {
     MuxCase(
       out_aw,
       Seq(
-        (out_fire.aw_fire && !out_fire.w_burst_last) -> true.B,
-        write_remove -> false.B
+        write_remove -> false.B,
+        (out_fire.aw_fire && !out_fire.w_burst_last) -> true.B
       )
     )
   out_w :=
     MuxCase(
       out_w,
       Seq(
-        (out_fire.w_burst_last && !out_fire.aw_fire) -> true.B,
-        write_remove -> false.B
+        write_remove -> false.B,
+        (out_fire.w_burst_last && !out_fire.aw_fire) -> true.B
       )
     )
 
