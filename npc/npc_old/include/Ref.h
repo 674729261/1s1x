@@ -6,7 +6,7 @@
 #include <InstPattern/InstPattern.h>
 #include <VirtualBus.h>
 #include <cstdint>
-#include <format>
+#include <fmt/format.h>
 #include <my_utils.h>
 #include <stdexcept>
 // std::ofstream ref_trace_file;
@@ -112,7 +112,7 @@ inline void Ref::step() {
   // std::println("PC = {:08x}, inst = {:08x}", cpu.pc, inst);
   Decoded d = decode(inst);
   // ref_trace_file
-  //     << std::format(
+  //     << fmt::format(
   //            "{:08x} {:08x} | {:08x} {:08x} {:08x} | {:08x} {:08x} {:08x}\n",
   //            cpu.pc, inst, cpu.gpr[10], cpu.gpr[11], cpu.gpr[12],
   //            cpu.gpr[13], cpu.gpr[14], cpu.gpr[15])

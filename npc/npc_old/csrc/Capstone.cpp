@@ -3,7 +3,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <dlfcn.h>
-#include <format>
+#include <fmt/format.h>
 #include <my_utils.h>
 #include <print>
 #include <spdlog/spdlog.h>
@@ -88,10 +88,10 @@ std::string Capstone::disassemble(uint64_t pc, uint8_t *code, int nbyte,
 
   std::string str;
   if (count != 1)
-    str = std::format("{:#010x}\t{:08x}\tinvalid", pc,
+    str = fmt::format("{:#010x}\t{:08x}\tinvalid", pc,
                       *reinterpret_cast<uint32_t *>(code));
   else
-    str = std::format("{:#010x}\t{:08x}\t{}\t{}", pc,
+    str = fmt::format("{:#010x}\t{:08x}\t{}\t{}", pc,
                       *reinterpret_cast<uint32_t *>(code), insn->mnemonic,
                       insn->op_str);
   if (display)

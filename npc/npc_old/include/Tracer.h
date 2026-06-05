@@ -4,7 +4,7 @@
 #include <Simulate.h>
 #include <cstddef>
 #include <cstdint>
-#include <format>
+#include <fmt/format.h>
 inline std::array<uint32_t, 16> ftracer_gpr_last;
 
 inline void sync_ftracer() {
@@ -36,12 +36,12 @@ inline void update_ftracer(uint32_t inst, uint32_t pc) {
     indent.push_back(' ');
   if ((opcode == 0x67 || opcode == 0x6f) && rd == 1) {
     int to_symbol = sym_table->find_symbol_by_addr(dnxt_pc);
-    info = std::format("{}call {}@{:#010x}", indent,
+    info = fmt::format("{}call {}@{:#010x}", indent,
                        sym_table->find_symbol_name(to_symbol), pc);
     sym_table->push_call_stack(to_symbol, pc);
   } else if (inst == 0x00008067) {
     ProgSymTab::Call top = sym_table->pop_call_stack();
-    info = std::format("{}ret  {}@{:#010x}", indent,
+    info = fmt::format("{}ret  {}@{:#010x}", indent,
                        sym_table->find_symbol_name(top.symbol), pc);
   } else
     return;

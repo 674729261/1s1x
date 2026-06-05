@@ -21,7 +21,7 @@
 #include <chrono>
 #include <cstdint>
 #include <filesystem>
-#include <format>
+#include <fmt/format.h>
 #include <memory>
 #include <print>
 #include <replxx.hxx>
@@ -70,10 +70,10 @@ bool check_watchers() {
     if (!result || result.value() != w.last_value) {
       ret = true;
       std::string old =
-          (w.last_value ? std::format("{:#010x}", w.last_value.value())
+          (w.last_value ? fmt::format("{:#010x}", w.last_value.value())
                         : "Error");
       std::string now =
-          (result ? std::format("{:#010x}", result.value()) : "Error");
+          (result ? fmt::format("{:#010x}", result.value()) : "Error");
       spdlog::info("Watcher {} changed from {} to {} at PC={:#010x}", w.display,
                    old, now, dut->getPC());
     }

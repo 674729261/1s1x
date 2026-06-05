@@ -5,7 +5,7 @@
 #include <concepts>
 #include <cstdint>
 #include <expected>
-#include <format>
+#include <fmt/format.h>
 #include <limits>
 #include <optional>
 #include <ostream>
@@ -52,15 +52,15 @@ public:
 };
 
 template <class ExceptionType, typename... Args>
-[[noreturn]] void log_and_throw(std::format_string<Args...> fmt,
+[[noreturn]] void log_and_throw(fmt::format_string<Args...> fmt,
                                 Args &&...args) {
-  auto err_msg = std::format(fmt, std::forward<Args>(args)...);
+  auto err_msg = fmt::format(fmt, std::forward<Args>(args)...);
   spdlog::error(err_msg);
   throw ExceptionType(err_msg);
 }
 
 [[noreturn]] inline void todo(std::string_view part) {
-  auto err_msg = std::format("{} is not implemented", part);
+  auto err_msg = fmt::format("{} is not implemented", part);
   spdlog::error(err_msg);
   throw std::logic_error(err_msg);
 }

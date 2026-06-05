@@ -103,7 +103,7 @@ Expression::create_expression(std::string_view expr_str) {
     }
     if (which == NR_TOKEN_TYPES) {
       return std::unexpected(
-          std::format("Unknown token at pos {} : {}", cur_pos, cur_substr));
+          fmt::format("Unknown token at pos {} : {}", cur_pos, cur_substr));
     }
     const auto &tt = token_types[which];
 
@@ -111,7 +111,7 @@ Expression::create_expression(std::string_view expr_str) {
     if (tt.id == TK_NUM) {
       auto parse_num = to_number<uint32_t>(result);
       if (!parse_num.has_value())
-        return std::unexpected(std::format("Invalid number : {}", result));
+        return std::unexpected(fmt::format("Invalid number : {}", result));
       cur_token.data = parse_num.value();
     } else if (tt.id == TK_REG) {
       if (result == "$0")
@@ -129,7 +129,7 @@ Expression::create_expression(std::string_view expr_str) {
           }
         }
         if (!found) {
-          return std::unexpected(std::format("Invalid gpr name : {}", result));
+          return std::unexpected(fmt::format("Invalid gpr name : {}", result));
         }
       }
     }
@@ -140,7 +140,7 @@ Expression::create_expression(std::string_view expr_str) {
     if ((prev_is_operator && cur_token.cata == Catagory::OPERATOR_2) ||
         (!prev_is_operator && cur_token.cata == Catagory::OPERAND)) {
       return std::unexpected(
-          std::format("Invalid token '{}' at pos {}", result, cur_pos));
+          fmt::format("Invalid token '{}' at pos {}", result, cur_pos));
     }
     prev_is_operator = (cur_token.cata != Catagory::OPERAND);
     if (tt.id == '(')

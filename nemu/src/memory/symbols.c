@@ -71,7 +71,9 @@ long load_symbols(char *elf) {
   size_t size_file = ftell(fp);
   fseek(fp, 0, SEEK_SET);
   char *elf_data = malloc(size_file);
-  fread(elf_data, size_file, 1, fp);
+  size_t read_size = fread(elf_data, size_file, 1, fp);
+  if(read_size != 1)
+  	perror("Failed to read elf data.");
   fclose(fp);
   Elf32_Ehdr *elf_header = (Elf32_Ehdr *)elf_data;
 
