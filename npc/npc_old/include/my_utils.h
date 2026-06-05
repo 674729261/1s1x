@@ -29,6 +29,7 @@ class Result {
   std::variant<T, std::string> data_;
 
 public:
+  Result() = default;
   Result(T val) : data_(std::move(val)) {}
   Result(UnexpectedError err) : data_(std::move(err.msg)) {}
 
