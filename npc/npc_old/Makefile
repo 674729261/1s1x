@@ -24,7 +24,7 @@ VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -Ofast \
 VERILATOR_LDFLAGS = -flto=auto -fipa-pta 
 
 
-V_CXXFLAGS += -CFLAGS "$(VERILATOR_CFLAGS) -std=c++23 -I$(NPC_OLD_HOME)/include -I$(NPC_OLD_HOME)/tools/capstone/repo/include -DFMT_HEADER_ONLY=1"  -LDFLAGS "-lSDL2" 
+V_CXXFLAGS += -CFLAGS "$(VERILATOR_CFLAGS) -std=c++17 -I$(NPC_OLD_HOME)/include -I$(NPC_OLD_HOME)/tools/capstone/repo/include -DFMT_HEADER_ONLY=1"  -LDFLAGS "-lSDL2" 
 # VERILATORFLAGS += --noassert --trace --no-coverage --x-assign fast --x-initial fast -O3 --threads 1 --cc --exe --build -j 8 
 VERILATORFLAGS += --trace -O3 --threads 1 --cc --exe --build -j 8 '-Dlayer$$Verifying' '-Dlayer$$AXIAssertLayer'
 VERILATOR_DISABLE_WARNINGS += -Wno-DECLFILENAME
