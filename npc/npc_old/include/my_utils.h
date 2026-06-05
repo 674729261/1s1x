@@ -14,7 +14,7 @@
 #include <string_view>
 #include <utility>
 using std::optional;
-using fmt::println, std::print;
+using fmt::println, fmt::print;
 
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
