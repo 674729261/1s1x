@@ -58,6 +58,10 @@ public:
     return std::get<1>(data_);
   }
 
+  bool operator==(const T &val) const {
+    return has_value() && value() == val;
+  }
+
   T *operator->() { return &value(); }
   const T *operator->() const { return &value(); }
   T &operator*() { return value(); }
