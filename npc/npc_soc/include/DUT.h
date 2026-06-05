@@ -43,9 +43,9 @@ public:
   }
 
   void step_one_cycle() {
-    static bool start_record_wave = false;
-    if (getPC() == 0xa00008c4)
-      start_record_wave = true;
+    static bool start_record_wave = true;
+    // if (getPC() == 0xa00008c4)
+    //   start_record_wave = true;
     top->clock = 0;
     top->eval();
     if (getPC() >= 0xa0000000 && start_record_wave)
