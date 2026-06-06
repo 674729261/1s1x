@@ -1,6 +1,6 @@
 #pragma once
 #include <cstdint>
-#include <print>
+#include <fmt/format.h>
 #include <vector>
 
 extern std::vector<uint32_t> flash_content;

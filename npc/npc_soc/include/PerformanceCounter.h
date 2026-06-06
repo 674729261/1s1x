@@ -111,7 +111,7 @@ inline void display_performance(auto start_time, auto end_time) {
                static_cast<double>(clock_count) / inst_count);
   spdlog::info("Clocks per instruction outside flash : {:.3f}",
                static_cast<double>(cycles_not_on_flash) / insts_not_on_flash);
-  spdlog::info("Total simulation time : {:%Hh %Mm %Ss}", elapsed_ms);
+  spdlog::info("Total simulation time : {} ms", elapsed_ms.count());
   spdlog::info("Simulation speed : {:.2f} clocks/s , {:.2f} insts/s",
                1000 * static_cast<double>(clock_count) / elapsed_ms.count(),
                1000 * static_cast<double>(inst_count) / elapsed_ms.count());
