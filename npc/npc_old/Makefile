@@ -18,13 +18,13 @@ SVSRC = $(patsubst %,generated_svsrc/%,$(SVSRC_FILES))
 
 VERILATOR = verilator
 
-VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -Ofast \
--march=native -mtune=native \
+VERILATOR_CFLAGS = -DFMT_HEADER_ONLY=1 -DSPDLOG_FMT_EXTERNAL=1 -Ofast -fPIE \
+-march=native -mtune=native -DFMT_HEADER_ONLY=1 -DSPDLOG_FMT_EXTERNAL=1 \
 -funroll-loops -flto=auto -ffast-math -fno-math-errno -funsafe-math-optimizations 
 VERILATOR_LDFLAGS = -flto=auto -fipa-pta 
 
 
-V_CXXFLAGS += -CFLAGS "$(VERILATOR_CFLAGS) -std=c++20 -DSPDLOG_USE_STD_FORMAT -I$(NPC_OLD_HOME)/include -I$(NPC_OLD_HOME)/tools/capstone/repo/include -DFMT_HEADER_ONLY=1"  -LDFLAGS "-lSDL2" 
+V_CXXFLAGS += -CFLAGS "$(VERILATOR_CFLAGS) -std=c++20 -fPIE -I$(NPC_OLD_HOME)/include -I$(NPC_OLD_HOME)/tools/capstone/repo/include -DFMT_HEADER_ONLY=1 -DSPDLOG_FMT_EXTERNAL=1"  -LDFLAGS "-lSDL2" 
 # VERILATORFLAGS += --noassert --trace --no-coverage --x-assign fast --x-initial fast -O3 --threads 1 --cc --exe --build -j 8 
 VERILATORFLAGS += --trace -O3 --threads 1 --cc --exe --build -j 8 '-Dlayer$$Verifying' '-Dlayer$$AXIAssertLayer'
 VERILATOR_DISABLE_WARNINGS += -Wno-DECLFILENAME
@@ -91,7 +91,7 @@ sim_ftracer: npc
 	$(BIN) --ftracer $(ELF) --itracer 8 --image $(PROG) --mem_size $(MEM_SIZE) --log $(LOG_FILE) $(NPC_FLAGS) --difftest
 
 valgrind: FAST_FLAGS = -O0 -g
-valgrind: VERILATOR_CFLAGS = -O0 -g '-Dlayer$$Verifying' '-Dlayer$$AXIAssertLayer'
+valgrind: VERILATOR_CFLAGS = -fPIE -DFMT_HEADER_ONLY=1 -DSPDLOG_FMT_EXTERNAL=1 -O0 -g '-Dlayer$$Verifying' '-Dlayer$$AXIAssertLayer'
 valgrind: MDIR = $(NPC_OLD_HOME)/build/valgrind/
 valgrind: npc
 	valgrind --leak-check=full --show-leak-kinds=all \
@@ -102,7 +102,7 @@ valgrind: npc
 
 
 gdb: FAST_FLAGS = -O0 -g
-gdb: VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -O0 -g  '-Dlayer$$Verifying' '-Dlayer$$AXIAssertLayer'
+gdb: VERILATOR_CFLAGS = -fPIE -DFMT_HEADER_ONLY=1 -DSPDLOG_FMT_EXTERNAL=1 -O0 -g  '-Dlayer$$Verifying' '-Dlayer$$AXIAssertLayer'
 gdb: MDIR = $(NPC_OLD_HOME)/build/gdb/
 gdb: npc
 	gdb --args $(BIN) --image $(PROG) \
