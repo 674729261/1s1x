@@ -85,7 +85,7 @@ sim: npc
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
 	$(BIN) --image $(PROG) --log $(LOG_FILE) --difftest
 
-
+nvboard: CXXFLAGS+=-fPIC
 nvboard: $(NXDC_CPP) nvboard-archive npc
 	$(call git_commit, "sim RTL with nvboard")
 	$(BIN) --image $(PROG) --log $(LOG_FILE) --difftest --nvboard
