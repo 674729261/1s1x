@@ -16,7 +16,7 @@
 #include <iostream>
 #include <memory>
 #include <nvboard.h>
-#include <print>
+#include <fmt/format.h>
 #include <verilated.h>
 #include <verilated_vcd_c.h>
 
@@ -91,7 +91,7 @@ int simulate() {
     dut->step_one_cycle();
 
     if (retire) {
-      // std::println("{:08x}", dut->getPC());
+      // fmt::println("{:08x}", dut->getPC());
       inst_count++;
       if (config.difftest) {
         ref.step();
@@ -134,7 +134,7 @@ int main(int argc, char *argv[]) {
   try {
     return_value = simulate();
   } catch (std::exception e) {
-    std::println(std::cerr, "Error : {}", e.what());
+    std::cerr << "Error : " << e.what() << std::endl;
   }
   spdlog::shutdown();
   return return_value;

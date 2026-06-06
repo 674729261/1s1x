@@ -3,17 +3,16 @@
 #include <charconv>
 #include <concepts>
 #include <cstdint>
-#include <format>
+#include <fmt/format.h>
 #include <limits>
 #include <optional>
-#include <ostream>
-#include <print>
+#include <fmt/format.h>
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 #include <string_view>
 #include <utility>
 using std::optional;
-using std::println, std::print;
+using fmt::println, fmt::print;
 
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
@@ -45,10 +44,11 @@ public:
 };
 
 template <class ExceptionType, typename... Args>
-[[noreturn]] void log_and_throw(std::format_string<Args...> fmt,
+[[noreturn]] void log_and_throw(fmt::format_string<Args...> fmt,
                                 Args &&...args) {
-  spdlog::error(fmt, std::forward<Args>(args)...);
-  throw ExceptionType(std::format(fmt, std::forward<Args>(args)...));
+  auto err_msg = fmt::format(fmt, std::forward<Args>(args)...);
+  spdlog::error(err_msg);
+  throw ExceptionType(err_msg);
 }
 
 template <uint64_t Len, class T = uint32_t>

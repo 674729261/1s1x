@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
-#include <print>
+#include <fmt/format.h>
 #include <vector>
 
 std::vector<uint32_t> flash_content;

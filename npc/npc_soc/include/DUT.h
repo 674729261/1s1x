@@ -7,7 +7,7 @@
 #include "verilated_vcd_c.h"
 #include <MROM.h>
 #include <Setup.h>
-#include <print>
+#include <fmt/format.h>
 void nvboard_bind_all_pins(TOP_NAME *top);
 
 static constexpr std::array<std::string, 32> gpr_names = {
@@ -141,7 +141,7 @@ public:
         int gpr_id = i * 4 + j;
         print("{:3}= {:08x} ", gpr_names[gpr_id], getGPR(gpr_id));
       }
-      std::println();
+      std::cout << "\n";
     }
     println("PC = {:#010x}", getPC());
   }

@@ -34,13 +34,13 @@ STA_DIR = $(SOC_NPC_HOME)/sta
 SDC_FILE = $(STA_DIR)/npc.sdc
 SCRIPT_FILE = $(STA_DIR)/sta.tcl
 
-VERILATOR_CFLAGS = -DSPDLOG_USE_STD_FORMAT -Ofast   \
+VERILATOR_CFLAGS = -Ofast -DFMT_HEADER_ONLY=1 -DSPDLOG_FMT_EXTERNAL=1  \
 -march=native -mtune=native \
 -funroll-loops -flto=auto -ffast-math -fno-math-errno -funsafe-math-optimizations 
 VERILATOR_LDFLAGS = -flto=auto -fipa-pta 
 
 
-V_CXXFLAGS += -CFLAGS "$(VERILATOR_CFLAGS) -std=c++23 -I$(SOC_NPC_HOME)/include -I$(NVBOARD_HOME)/usr/include" \
+V_CXXFLAGS += -CFLAGS "$(VERILATOR_CFLAGS) -std=c++20 -I$(SOC_NPC_HOME)/include -DFMT_HEADER_ONLY=1 -DSPDLOG_FMT_EXTERNAL=1 -I$(NVBOARD_HOME)/usr/include" \
 -LDFLAGS "-lSDL2 -lSDL2_image -lSDL2_ttf" 
 # VERILATORFLAGS += --noassert --trace --no-coverage --x-assign fast --x-initial fast -O3 --threads 1 --cc --exe --build -j 8 
 VERILATORFLAGS += --autoflush -I$(SOC_HOME)/perip/uart16550/rtl -I$(SOC_HOME)/perip/spi/rtl --trace \

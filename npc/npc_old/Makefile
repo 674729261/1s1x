@@ -19,7 +19,7 @@ SVSRC = $(patsubst %,generated_svsrc/%,$(SVSRC_FILES))
 VERILATOR = verilator
 
 VERILATOR_CFLAGS = -DFMT_HEADER_ONLY=1 -DSPDLOG_FMT_EXTERNAL=1 -Ofast -fPIE \
--march=native -mtune=native \
+-march=native -mtune=native -DFMT_HEADER_ONLY=1 -DSPDLOG_FMT_EXTERNAL=1 \
 -funroll-loops -flto=auto -ffast-math -fno-math-errno -funsafe-math-optimizations 
 VERILATOR_LDFLAGS = -flto=auto -fipa-pta 
 

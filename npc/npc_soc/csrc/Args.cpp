@@ -2,7 +2,7 @@
 #include <MROM.h>
 #include <VysyxSoCFull.h>
 #include <iostream>
-#include <print>
+#include <fmt/format.h>
 #include <verilated.h>
 #include <verilated_vcd_c.h>
 
