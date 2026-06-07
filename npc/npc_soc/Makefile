@@ -55,7 +55,8 @@ FAST_FLAGS = -Ofast -march=native -mtune=native
 
 MDIR = $(NPC_HOME)/npc_soc/build/default/
 
-npc: $(SV_FILELIST) $(LIBCAPSTONE) $(NXDC_CPP)
+npc: CXXFLAGS+=-fPIC
+npc: $(SV_FILELIST) $(LIBCAPSTONE) $(NXDC_CPP) nvboard-archive
 	make -C $(SOC_HOME) verilog
 	mkdir -p $(MDIR) || true
 	$(VERILATOR)  $(VERILATORFLAGS) \
