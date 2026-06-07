@@ -17,7 +17,7 @@ SDC_FILE = $(STA_DIR)/npc.sdc
 SCRIPT_FILE = $(STA_DIR)/sta.tcl
 FORMAL_SCRIPT_FILE = $(STA_DIR)/equiv_check.tcl
 
-iverilog: verilog
+sim-iverilog: verilog
 	mkdir -p ./iv_temp/ || true
 	objcopy -I binary -O verilog --verilog-data-width=4 $(IMG) ./iv_temp/temp.hex
 	iverilog -o ./iv_temp/tb.vvp -s tb_npc ./build/ysyx_25080216.sv iverilog_tb/*.sv -g2012
@@ -32,8 +32,8 @@ sta: verilog
 	CLK_FREQ_MHZ=$(CLK_FREQ_MHZ) CLK_PORT_NAME=clock O=$(STA_DIR)/result \
 	RTL_FILES="$(NPC_HOME)/build/ysyx_25080216.sv"
 
-PDK_CELLS ?= $(STA_HOME)/pdk/nangate45/sim/cells.v
-NETLIST_PATH ?= $(shell find $(STA_DIR)/result -name "ysyx_25080216.netlist.v.sim")
+CELLS ?= $(STA_HOME)/pdk/nangate45/sim/cells.v
+NETLIST ?= $(shell find $(STA_DIR)/result -name "ysyx_25080216.netlist.v.sim")
 
 formal: sta
 	yosys -c $(FORMAL_SCRIPT_FILE) -- \
@@ -51,11 +51,11 @@ formal: sta
 
 
 
-iverilog-netlist: sta
+sim-iverilog-netlist:
 	mkdir -p ./iv_temp/ || true
-	cp $(NETLIST_PATH) ./iv_temp/netlist.v
+	cp $(NETLIST) ./iv_temp/netlist.v
 	objcopy -I binary -O verilog --verilog-data-width=4 $(IMG) ./iv_temp/temp.hex
-	iverilog -o ./iv_temp/tb.vvp -s tb_npc ./iv_temp/netlist.v $(PDK_CELLS) iverilog_tb/*.sv -g2012
+	iverilog -o ./iv_temp/tb.vvp -s tb_npc ./iv_temp/netlist.v $(CELLS) iverilog_tb/*.sv -g2012 -DSOC=1
 	vvp -n ./iv_temp/tb.vvp
 
 clean:
