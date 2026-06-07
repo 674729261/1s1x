@@ -29,7 +29,10 @@ void init_flash(std::string_view image_path) {
   prog_file.seekg(0, ios::end);
   size_prog = prog_file.tellg();
   prog_file.seekg(0, ios::beg);
+    spdlog::info("Image size : {} bytes", size_prog);
   flash_content.resize((size_prog + 3) / 4);
+  spdlog::info("Buffer allocated, loading image");
+
 
   prog_file.read(reinterpret_cast<char *>(flash_content.data()), size_prog);
   prog_file.close();
