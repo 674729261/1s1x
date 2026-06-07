@@ -1,0 +1,38 @@
+From ea6853639676017f168fd6e24f5dcfaabe01832b Mon Sep 17 00:00:00 2001
+From: Shitful <2292683261@qq.com>
+Date: Sun, 7 Jun 2026 14:20:22 +0800
+Subject: [PATCH 2/2] Modify .gitmodules
+
+---
+ .gitignore  | 7 ++++---
+ .gitmodules | 2 +-
+ 2 files changed, 5 insertions(+), 4 deletions(-)
+
+diff --git a/.gitignore b/.gitignore
+index b3d550c7..c8b15335 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -1,5 +1,6 @@
++/.bloop/
++/.metals/
++/.vscode/
+ build/
+ out/
+-.bloop/
+-.metals/
+-.vscode/
+\ No newline at end of file
++patch/firtool/firtool-1.105.0/bin/*
+\ No newline at end of file
+diff --git a/.gitmodules b/.gitmodules
+index c713ce7f..37e1965b 100644
+--- a/.gitmodules
++++ b/.gitmodules
+@@ -1,3 +1,3 @@
+ [submodule "rocket-chip"]
+ 	path = rocket-chip
+-	url = https://v4.gh-proxy.org/https://github.com/chipsalliance/rocket-chip.git 
++	url = https://github.com/chipsalliance/rocket-chip.git 
+-- 
+2.54.0
+
