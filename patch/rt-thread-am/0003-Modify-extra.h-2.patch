@@ -1,0 +1,149 @@
+From 7b5bbab99688e32372d8770db0144c987a542ab1 Mon Sep 17 00:00:00 2001
+From: Shitful <2292683261@qq.com>
+Date: Sun, 7 Jun 2026 18:07:07 +0800
+Subject: [PATCH 3/3] Modify extra.h 2
+
+---
+ bsp/abstract-machine/include/extra.h | 90 +++++++++++++++++++++-------
+ 1 file changed, 70 insertions(+), 20 deletions(-)
+
+diff --git a/bsp/abstract-machine/include/extra.h b/bsp/abstract-machine/include/extra.h
+index 200f12b7a..d31406d03 100644
+--- a/bsp/abstract-machine/include/extra.h
++++ b/bsp/abstract-machine/include/extra.h
+@@ -1,46 +1,84 @@
+-/*
+- * Work around newlib + RT-Thread header include cycle.
+- *
+- * newlib's sys/types.h may include <sys/select.h> before defining
+- * clock_t/time_t/clockid_t/timer_t.  Because RT-Thread's sys/select.h
+- * can be found first in the include path, it pulls in RT-Thread's
+- * sys/time.h, which then includes newlib's time.h too early.
+- *
+- * Define these types using newlib's own internal type macros, so the ABI
+- * stays consistent with the toolchain instead of guessing with plain long.
+- */
++#ifndef __RTTHREAD_AM_EXTRA_H__
++#define __RTTHREAD_AM_EXTRA_H__
++
++#include <stdint.h>
++#include <stddef.h>
++
++#ifndef __has_include
++#define __has_include(x) 0
++#endif
++
++
+ #if defined(__GNUC__) && !defined(__ISA_NATIVE__) && !defined(__ARMCC_VERSION)
++
+ #if __has_include(<sys/_types.h>)
+ #include <sys/_types.h>
+-#else
+-#include <sys/types.h>
+-#endif
+ 
+-#if !defined(__clock_t_defined) && !defined(_CLOCK_T_DECLARED)
++#if !defined(__clock_t_defined) && !defined(_CLOCK_T_DECLARED) && defined(_CLOCK_T_)
+ typedef _CLOCK_T_ clock_t;
+ #define __clock_t_defined
+ #define _CLOCK_T_DECLARED
+ #endif
+ 
+-#if !defined(__time_t_defined) && !defined(_TIME_T_DECLARED)
++#if !defined(__time_t_defined) && !defined(_TIME_T_DECLARED) && defined(_TIME_T_)
+ typedef _TIME_T_ time_t;
+ #define __time_t_defined
+ #define _TIME_T_DECLARED
+ #endif
+ 
+-#if !defined(__clockid_t_defined) && !defined(_CLOCKID_T_DECLARED)
++#if !defined(__clockid_t_defined) && !defined(_CLOCKID_T_DECLARED) && defined(_CLOCKID_T_)
+ typedef _CLOCKID_T_ clockid_t;
+ #define __clockid_t_defined
+ #define _CLOCKID_T_DECLARED
+ #endif
+ 
+-#if !defined(__timer_t_defined) && !defined(_TIMER_T_DECLARED)
++#if !defined(__timer_t_defined) && !defined(_TIMER_T_DECLARED) && defined(_TIMER_T_)
+ typedef _TIMER_T_ timer_t;
+ #define __timer_t_defined
+ #define _TIMER_T_DECLARED
+ #endif
++
++#else
++
++/*
++ * riscv64-linux-gnu used as a freestanding cross compiler:
++ * Avoid including <sys/types.h> here, because it may trigger the RT-Thread
++ * sys/select.h -> sys/time.h include cycle too early.
++ *
++ * These definitions are enough for RT-Thread/AM builds.  The exact Linux
++ * userspace ABI is not relevant here because we are not linking against
++ * Linux libc as a normal userspace program.
++ */
++#if !defined(__clock_t_defined) && !defined(_CLOCK_T_DECLARED)
++typedef long clock_t;
++#define __clock_t_defined
++#define _CLOCK_T_DECLARED
++#endif
++
++#if !defined(__time_t_defined) && !defined(_TIME_T_DECLARED)
++typedef long time_t;
++#define __time_t_defined
++#define _TIME_T_DECLARED
++#endif
++
++#if !defined(__clockid_t_defined) && !defined(_CLOCKID_T_DECLARED)
++typedef int clockid_t;
++#define __clockid_t_defined
++#define _CLOCKID_T_DECLARED
++#endif
++
++#if !defined(__timer_t_defined) && !defined(_TIMER_T_DECLARED)
++typedef void *timer_t;
++#define __timer_t_defined
++#define _TIMER_T_DECLARED
+ #endif
+ 
++#endif /* __has_include(<sys/_types.h>) */
++
++/*
++ * RT-Thread's sys/time.h needs these very early.
++ * Put them before any possible <sys/types.h> include.
++ */
+ #if !defined(__suseconds_t_defined) && !defined(_SUSECONDS_T_DECLARED)
+ typedef long suseconds_t;
+ #define __suseconds_t_defined
+@@ -53,10 +91,20 @@ typedef unsigned long useconds_t;
+ #define _USECONDS_T_DECLARED
+ #endif
+ 
++#endif /* GCC && !native && !ARMCC */
++
++
++/*
++ * Now it is safe to include sys/types.h.
++ * If it accidentally pulls RT-Thread sys/time.h first, the needed types
++ * above have already been declared.
++ */
+ #include <sys/types.h>
+ 
++
+ #ifdef __ISA_NATIVE__
+-// rename posix API to avoid conflict with glibc in native
++
++/* rename POSIX API to avoid conflict with glibc in native */
+ #define open rt_open
+ #define creat rt_creat
+ #define close rt_close
+@@ -88,4 +136,6 @@ typedef unsigned long useconds_t;
+ 
+ #define gettimeofday rt_gettimeofday
+ 
+-#endif
++#endif /* __ISA_NATIVE__ */
++
++#endif /* __RTTHREAD_AM_EXTRA_H__ */
+-- 
+2.54.0
+

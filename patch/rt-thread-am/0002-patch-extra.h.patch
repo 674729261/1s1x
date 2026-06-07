@@ -1,7 +1,7 @@
 From cac59a029d1dacca6016dc5f757ee0d8060330c7 Mon Sep 17 00:00:00 2001
 From: Shitful <2292683261@qq.com>
 Date: Sun, 7 Jun 2026 17:21:33 +0800
-Subject: [PATCH 2/2] patch extra.h
+Subject: [PATCH 2/3] patch extra.h
 
 ---
  bsp/abstract-machine/include/extra.h | 57 +++++++++++++++-------------
