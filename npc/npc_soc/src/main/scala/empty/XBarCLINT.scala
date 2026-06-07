@@ -45,8 +45,8 @@ class Clint extends PrefixedModule {
   set_flipped_AXIfull_zero(in)
   val fire = GenerateFireSignal(in)
 
-  val mtime = RegInit(Vec(2, UInt(32.W)), VecInit(Seq(0.U(32.W), 0.U(32.W))))
-  mtime := (mtime.asUInt + 1.U(64.W)).asTypeOf(Vec(2, UInt(32.W)))
+  val mtime = RegInit(0.U(32.W))
+  mtime := mtime + 1.U
 
   val has_ar = RegInit(Bool(), false.B)
   val out_r = RegInit(Bool(), false.B)
@@ -60,7 +60,7 @@ class Clint extends PrefixedModule {
   )
   in.ar.ready := !has_ar
   in.r.valid := has_ar
-  in.r.data := Mux(low_or_high, mtime(1), mtime(0))
+  in.r.data := Mux(low_or_high, 0.U(32.W), mtime)
   in.r.last := true.B
   in.r.id := "b1000".U(4.W)
 

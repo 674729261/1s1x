@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := sim
 
 
-SOC_HOME ?= $(NPC_HOME)/../ysyxSoC
+SOC_HOME := $(NPC_HOME)/../ysyxSoC
 include $(NVBOARD_HOME)/scripts/nvboard.mk
 
 NXDC = $(NPC_HOME)/npc_soc/nvboard/top.nxdc
@@ -55,7 +55,8 @@ FAST_FLAGS = -Ofast -march=native -mtune=native
 
 MDIR = $(NPC_HOME)/npc_soc/build/default/
 
-npc: $(SV_FILELIST) $(LIBCAPSTONE) $(NXDC_CPP)
+npc: CXXFLAGS+=-fPIC
+npc: $(SV_FILELIST) $(LIBCAPSTONE) $(NXDC_CPP) nvboard-archive
 	make -C $(SOC_HOME) verilog
 	mkdir -p $(MDIR) || true
 	$(VERILATOR)  $(VERILATORFLAGS) \

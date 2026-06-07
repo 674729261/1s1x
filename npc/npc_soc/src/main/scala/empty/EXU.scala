@@ -11,22 +11,25 @@ class WriteInfo extends Bundle {
   val alu_out = (UInt(32.W))
 }
 
+class WriteInfoWBU extends Bundle {
+  val mem_word_or_csr_wdata = (UInt(32.W))
+  val gpr_wdata = (UInt(32.W))
+  val dnpc = (UInt(32.W))
+}
+
 class PerformanceCounter_ICache extends ExtModule {
   val clock = IO(Input(Clock()))
   val reset = IO(Input(Reset()))
   val icache_hit = IO(Input(Bool()))
-
 }
 
 class ControlSignalsEXU extends Bundle {
   val is_csr_visit = (Bool())
 
   val is_gpr_wen = (Bool())
-  val is_gpr_wdata_from_ram = (Bool())
+  val gpr_wdata_sel = UInt(2.W)
 
-  val is_ram_word = (Bool())
-  val is_ram_half = (Bool())
-  val is_ram_byte = (Bool())
+  val ram_size = UInt(2.W)
   val is_load_unsigned = (Bool())
 
   val is_ram_valid = (Bool())
@@ -94,8 +97,37 @@ class EXU() extends PrefixedModule {
   val alu = Module(new ALU(32))
   val branch = Module(new Branch(32))
 
-  alu.io.A := in.bits.sources.alu_a
-  alu.io.B := in.bits.sources.alu_b
+  val imm_I = Cat(Fill(20, in.bits.inst(31)), in.bits.inst(31, 20))
+  val imm_S = Cat(Fill(20, in.bits.inst(31)), in.bits.inst(31, 25), in.bits.inst(11, 7))
+  val imm_B = Cat(Fill(20, in.bits.inst(31)), in.bits.inst(7), in.bits.inst(30, 25), in.bits.inst(11, 8), 0.U(1.W))
+  val imm_U = Cat(in.bits.inst(31, 12), 0.U(12.W))
+  val imm_J = Cat(Fill(12, in.bits.inst(31)), in.bits.inst(19, 12), in.bits.inst(20), in.bits.inst(30, 21), 0.U(1.W))
+
+  val alu_imm = Mux1H(
+    Seq(
+      in.bits.itype.is_branch -> imm_B,
+      in.bits.itype.is_store -> imm_S,
+      in.bits.itype.is_jal -> imm_J,
+      (in.bits.itype.is_auipc || in.bits.itype.is_lui) -> imm_U,
+      (in.bits.itype.is_arithmetic_imm || in.bits.itype.is_load || in.bits.itype.is_jalr || in.bits.itype.is_ebreak) -> imm_I
+    )
+  )
+
+  val alu_a = MuxCase(
+    in.bits.sources.src1,
+    Seq(
+      (in.bits.itype.is_lui || in.bits.itype.is_mret) -> 0.U(32.W),
+      (in.bits.itype.is_branch || in.bits.itype.is_jal || in.bits.itype.is_auipc) -> in.bits.pc
+    )
+  )
+  val alu_b = Mux(
+    in.bits.itype.is_mret || in.bits.itype.is_arithmetic_reg,
+    in.bits.sources.src2_or_csr,
+    alu_imm
+  )
+
+  alu.io.A := alu_a
+  alu.io.B := alu_b
   alu.io.controls := in.bits.controls.alu_controls
 
   out.bits.write_info.alu_out := alu.io.out
@@ -106,13 +138,14 @@ class EXU() extends PrefixedModule {
 
   val snpc = in.bits.pc + 4.U(32.W)
 
-  out.bits.write_info.gpr_wdata := Mux1H(
+  out.bits.write_info.gpr_wdata := MuxLookup(
+    in.bits.controls.gpr_wdata_sel,
+    alu.io.out
+  )(
     Seq(
-      // in.bits.controls.is_gpr_wdata_from_ram -> fetch_port_in.bits.mem_rdata,
-      in.bits.controls.is_gpr_wdata_from_snpc -> snpc,
-      // in.bits.controls.is_gpr_wdata_from_imm -> in.bits.sources.imm,
-      in.bits.controls.is_gpr_wdata_from_alu -> alu.io.out,
-      in.bits.controls.is_gpr_wdata_from_csr -> in.bits.sources.src2_or_csr
+      GprWdataSel.SNPC -> snpc,
+      GprWdataSel.CSR -> in.bits.sources.src2_or_csr,
+      GprWdataSel.ALU -> alu.io.out
     )
   )
 
@@ -135,7 +168,6 @@ class EXU() extends PrefixedModule {
     snpc,
     Seq(
       (should_branch || in.bits.controls.is_dnpc_jal_or_jalr || in.bits.controls.is_dnpc_csr_jump) -> alu.io.out
-      // in.bits.controls.is_dnpc_csr_jump -> in.bits.sources.alu_a_or_mepc
     )
   )
 
@@ -144,7 +176,7 @@ class EXU() extends PrefixedModule {
   conf.rd_valid := has_signal && in.bits.rd_valid
   conf.csr_dest_valid := has_signal && in.bits.controls.is_csr_visit
   conf.csr_id := in.bits.controls.csrd
-  conf.ok_to_forward_rd := !in.bits.controls.is_gpr_wdata_from_ram
+  conf.ok_to_forward_rd := in.bits.controls.gpr_wdata_sel =/= GprWdataSel.RAM
   conf.rd_data := out.bits.write_info.gpr_wdata
 
   out.bits.itype := in.bits.itype
