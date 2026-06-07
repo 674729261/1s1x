@@ -90,13 +90,24 @@ class EXU() extends PrefixedModule {
   val has_signal = has_signal_r && !flush.valid
   out.bits.pc := in.bits.pc
   out.bits.inst := in.bits.inst
-  out.bits.controls := in.bits.controls
+  out.bits.controls.is_csr_visit := in.bits.controls.is_csr_visit
+  out.bits.controls.is_gpr_wen := in.bits.controls.is_gpr_wen
+  out.bits.controls.is_gpr_wdata_from_ram := in.bits.controls.gpr_wdata_sel === WbSel.ram
+  out.bits.controls.is_ram_word := in.bits.controls.ram_size === MemSize.word
+  out.bits.controls.is_ram_half := in.bits.controls.ram_size === MemSize.half
+  out.bits.controls.is_ram_byte := in.bits.controls.ram_size === MemSize.byte
+  out.bits.controls.is_load_unsigned := in.bits.controls.is_load_unsigned
+  out.bits.controls.is_ram_valid := in.bits.controls.is_ram_valid
+  out.bits.controls.is_ram_wen := in.bits.controls.is_ram_wen
+  out.bits.controls.rd := in.bits.controls.rd
+  out.bits.controls.csrd := in.bits.controls.csrd
+  out.bits.controls.is_ebreak := in.bits.controls.is_ebreak
   val alu = Module(new ALU(32))
   val branch = Module(new Branch(32))
 
   alu.io.A := in.bits.sources.alu_a
   alu.io.B := in.bits.sources.alu_b
-  alu.io.controls := in.bits.controls.alu_controls
+  alu.io.controls := ALUOp.toControls(in.bits.controls.alu_op)
 
   out.bits.write_info.alu_out := alu.io.out
 
@@ -106,13 +117,11 @@ class EXU() extends PrefixedModule {
 
   val snpc = in.bits.pc + 4.U(32.W)
 
-  out.bits.write_info.gpr_wdata := Mux1H(
+  out.bits.write_info.gpr_wdata := MuxCase(
+    alu.io.out,
     Seq(
-      // in.bits.controls.is_gpr_wdata_from_ram -> fetch_port_in.bits.mem_rdata,
-      in.bits.controls.is_gpr_wdata_from_snpc -> snpc,
-      // in.bits.controls.is_gpr_wdata_from_imm -> in.bits.sources.imm,
-      in.bits.controls.is_gpr_wdata_from_alu -> alu.io.out,
-      in.bits.controls.is_gpr_wdata_from_csr -> in.bits.sources.src2_or_csr
+      (in.bits.controls.gpr_wdata_sel === WbSel.snpc) -> snpc,
+      (in.bits.controls.gpr_wdata_sel === WbSel.csr) -> in.bits.sources.src2_or_csr
     )
   )
 
@@ -139,12 +148,11 @@ class EXU() extends PrefixedModule {
     )
   )
 
-  out.bits.controls.is_ebreak := in.bits.controls.is_ebreak
   conf.rd_id := in.bits.controls.rd
   conf.rd_valid := has_signal && in.bits.rd_valid
   conf.csr_dest_valid := has_signal && in.bits.controls.is_csr_visit
   conf.csr_id := in.bits.controls.csrd
-  conf.ok_to_forward_rd := !in.bits.controls.is_gpr_wdata_from_ram
+  conf.ok_to_forward_rd := in.bits.controls.gpr_wdata_sel =/= WbSel.ram
   conf.rd_data := out.bits.write_info.gpr_wdata
 
   out.bits.itype := in.bits.itype

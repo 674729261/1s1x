@@ -1,7 +1,7 @@
 From da849d76e2c090170d0326982c5b38e973e41051 Mon Sep 17 00:00:00 2001
 From: Shitful <2292683261@qq.com>
 Date: Sun, 7 Jun 2026 17:11:12 +0800
-Subject: [PATCH 3/4] Enable FAST_FLASH
+Subject: [PATCH 3/5] Enable FAST_FLASH
 
 ---
  0001-patch.patch            | 6024 +++++++++++++++++++++++++++++++++++
