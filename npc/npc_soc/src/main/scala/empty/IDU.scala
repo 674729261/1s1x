@@ -3,6 +3,32 @@ import chisel3._
 import chisel3.util._
 import chisel3.layer._
 
+object ALUOp {
+  def ADD = 0.U(4.W)
+  def SUB = 1.U(4.W)
+  def SLT = 2.U(4.W)
+  def SLTU = 3.U(4.W)
+  def SLL = 4.U(4.W)
+  def SRL = 5.U(4.W)
+  def SRA = 6.U(4.W)
+  def AND = 7.U(4.W)
+  def OR = 8.U(4.W)
+  def XOR = 9.U(4.W)
+}
+
+object GprWdataSel {
+  def ALU = 0.U(2.W)
+  def RAM = 1.U(2.W)
+  def SNPC = 2.U(2.W)
+  def CSR = 3.U(2.W)
+}
+
+object RamSize {
+  def BYTE = 0.U(2.W)
+  def HALF = 1.U(2.W)
+  def WORD = 2.U(2.W)
+}
+
 class InstFields extends Bundle {
   val rs1 = (UInt(5.W))
   val rs2 = (UInt(5.W))
@@ -38,19 +64,9 @@ class ImmType extends Bundle {
   val is_J = Bool()
   val is_U = Bool()
 }
-class ALUControl extends Bundle {
-  val is_alu_add = (Bool())
-  val is_alu_sub = (Bool())
-  val is_alu_slt = (Bool())
-  val is_alu_sltu = (Bool())
-  val is_alu_sll = (Bool())
-  val is_alu_srl = (Bool())
-  val is_alu_sra = (Bool())
-  val is_alu_and = (Bool())
-  val is_alu_or = (Bool())
-  val is_alu_xor = (Bool())
 
-  val is_alu_b_inv = (Bool())
+class ALUControl extends Bundle {
+  val op = UInt(4.W)
 }
 
 class ControlSignals extends Bundle {
@@ -58,17 +74,10 @@ class ControlSignals extends Bundle {
 
   val alu_controls = new ALUControl()
 
-  val is_gpr_wdata_from_ram = (Bool())
-  val is_gpr_wdata_from_snpc = (Bool())
-  val is_gpr_wdata_from_alu = (Bool())
-  // val is_gpr_wdata_from_imm = (Bool())
-  val is_gpr_wdata_from_csr = (Bool())
-
+  val gpr_wdata_sel = UInt(2.W)
   val is_gpr_wen = (Bool())
 
-  val is_ram_word = (Bool())
-  val is_ram_half = (Bool())
-  val is_ram_byte = (Bool())
+  val ram_size = UInt(2.W)
   val is_load_unsigned = (Bool())
 
   val is_ram_valid = (Bool())
@@ -84,10 +93,8 @@ class ControlSignals extends Bundle {
   val is_branch = Bool()
   val is_dnpc_jal_or_jalr = Bool()
   val is_dnpc_csr_jump = Bool()
-  val is_dnpc_snpc = Bool()
 
   val is_ebreak = Bool()
-
 }
 
 object decodeInstType {
@@ -205,51 +212,35 @@ object decodeInstControlSignal {
     val is_alu_force_add =
       it.is_mret || it.is_store || it.is_load || it.is_branch || it.is_auipc || it.is_jal || it.is_jalr || it.is_lui
 
-    ret.alu_controls.is_alu_add := is_alu_force_add || (fields.funct3 === "b000"
-      .U(
-        3.W
-      ) && !is_alu_sub_sra)
-    ret.alu_controls.is_alu_sub := (fields.funct3 === "b000".U(
-      3.W
-    ) && is_alu_sub_sra) && !is_alu_force_add
-    ret.alu_controls.is_alu_sll := (fields.funct3 === "b001".U(
-      3.W
-    )) && !is_alu_force_add
-    ret.alu_controls.is_alu_slt := (fields.funct3 === "b010".U(
-      3.W
-    )) && !is_alu_force_add
-    ret.alu_controls.is_alu_sltu := (fields.funct3 === "b011".U(
-      3.W
-    )) && !is_alu_force_add
-    ret.alu_controls.is_alu_srl := (fields.funct3 === "b101".U(
-      3.W
-    )) && !is_alu_sub_sra && !is_alu_force_add
-    ret.alu_controls.is_alu_sra := (fields.funct3 === "b101".U(
-      3.W
-    )) && is_alu_sub_sra && !is_alu_force_add
-    ret.alu_controls.is_alu_and := (fields.funct3 === "b111".U(
-      3.W
-    )) && !is_alu_force_add
-    ret.alu_controls.is_alu_or := (fields.funct3 === "b110".U(
-      3.W
-    )) && !is_alu_force_add
-    ret.alu_controls.is_alu_xor := (fields.funct3 === "b100".U(
-      3.W
-    )) && !is_alu_force_add
+    val alu_op = WireDefault(ALUOp.ADD)
+    when(!is_alu_force_add) {
+      switch(fields.funct3) {
+        is("b000".U) { alu_op := Mux(is_alu_sub_sra, ALUOp.SUB, ALUOp.ADD) }
+        is("b001".U) { alu_op := ALUOp.SLL }
+        is("b010".U) { alu_op := ALUOp.SLT }
+        is("b011".U) { alu_op := ALUOp.SLTU }
+        is("b100".U) { alu_op := ALUOp.XOR }
+        is("b101".U) { alu_op := Mux(is_alu_sub_sra, ALUOp.SRA, ALUOp.SRL) }
+        is("b110".U) { alu_op := ALUOp.OR }
+        is("b111".U) { alu_op := ALUOp.AND }
+      }
+    }
 
-    ret.alu_controls.is_alu_b_inv := ret.alu_controls.is_alu_sub || ret.alu_controls.is_alu_slt || ret.alu_controls.is_alu_sltu
+    val csr_visit = it.is_csrop && !is_funct3_zero
+    ret.is_csr_visit := csr_visit
+    ret.alu_controls.op := alu_op
 
-    ret.is_csr_visit := it.is_csrop && !is_funct3_zero
-    ret.is_gpr_wdata_from_ram := it.is_load
-    ret.is_gpr_wdata_from_snpc := it.is_jal || it.is_jalr
-    // ret.is_gpr_wdata_from_imm := it.is_lui
-    ret.is_gpr_wdata_from_csr := ret.is_csr_visit
-    ret.is_gpr_wdata_from_alu := (!ret.is_gpr_wdata_from_csr) && (!ret.is_gpr_wdata_from_ram) && (!ret.is_gpr_wdata_from_snpc)
-    ret.is_gpr_wen := ret.is_csr_visit || imm_type.is_U || it.is_load || imm_type.is_R || it.is_arithmetic_imm || it.is_jal || it.is_jalr
+    ret.gpr_wdata_sel := MuxCase(
+      GprWdataSel.ALU,
+      Seq(
+        it.is_load -> GprWdataSel.RAM,
+        (it.is_jal || it.is_jalr) -> GprWdataSel.SNPC,
+        csr_visit -> GprWdataSel.CSR
+      )
+    )
+    ret.is_gpr_wen := csr_visit || imm_type.is_U || it.is_load || imm_type.is_R || it.is_arithmetic_imm || it.is_jal || it.is_jalr
 
-    ret.is_ram_byte := (fields.funct3(1, 0) === "b00".U(2.W))
-    ret.is_ram_word := (fields.funct3(1, 0) === "b10".U(2.W))
-    ret.is_ram_half := (fields.funct3(1, 0) === "b01".U(2.W))
+    ret.ram_size := fields.funct3(1, 0)
     ret.is_load_unsigned := fields.funct3(2)
 
     ret.is_ram_valid := it.is_load || it.is_store
@@ -264,7 +255,6 @@ object decodeInstControlSignal {
     ret.is_branch := it.is_branch
     ret.is_dnpc_jal_or_jalr := it.is_jal || it.is_jalr
     ret.is_dnpc_csr_jump := it.is_mret
-    ret.is_dnpc_snpc := !ret.is_branch && !ret.is_dnpc_jal_or_jalr && !ret.is_dnpc_csr_jump
     ret.is_ebreak := it.is_ebreak
     return ret
   }
@@ -303,7 +293,6 @@ class ConflictInfoRS extends Bundle {
   val do_forward_src2 = Input(Bool())
   val forward_data_src1 = Input(UInt(32.W))
   val forward_data_src2 = Input(UInt(32.W))
-
 }
 
 class IDU() extends PrefixedModule {
@@ -373,7 +362,7 @@ class IDU() extends PrefixedModule {
   out.bits.sources.src2_or_csr := MuxCase(
     gpr_rdata2,
     Seq(
-      control_signals.is_gpr_wdata_from_csr -> fetch_port_in.csr_rdata,
+      (control_signals.gpr_wdata_sel === GprWdataSel.CSR) -> fetch_port_in.csr_rdata,
       inst_type.is_mret -> fetch_port_in.csr_mepc
     )
   )

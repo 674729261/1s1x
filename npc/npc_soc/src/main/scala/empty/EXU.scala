@@ -11,22 +11,25 @@ class WriteInfo extends Bundle {
   val alu_out = (UInt(32.W))
 }
 
+class WriteInfoWBU extends Bundle {
+  val mem_word_or_csr_wdata = (UInt(32.W))
+  val gpr_wdata = (UInt(32.W))
+  val dnpc = (UInt(32.W))
+}
+
 class PerformanceCounter_ICache extends ExtModule {
   val clock = IO(Input(Clock()))
   val reset = IO(Input(Reset()))
   val icache_hit = IO(Input(Bool()))
-
 }
 
 class ControlSignalsEXU extends Bundle {
   val is_csr_visit = (Bool())
 
   val is_gpr_wen = (Bool())
-  val is_gpr_wdata_from_ram = (Bool())
+  val gpr_wdata_sel = UInt(2.W)
 
-  val is_ram_word = (Bool())
-  val is_ram_half = (Bool())
-  val is_ram_byte = (Bool())
+  val ram_size = UInt(2.W)
   val is_load_unsigned = (Bool())
 
   val is_ram_valid = (Bool())
@@ -117,15 +120,10 @@ class EXU() extends PrefixedModule {
       (in.bits.itype.is_branch || in.bits.itype.is_jal || in.bits.itype.is_auipc) -> in.bits.pc
     )
   )
-  val alu_b_raw = Mux(
+  val alu_b = Mux(
     in.bits.itype.is_mret || in.bits.itype.is_arithmetic_reg,
     in.bits.sources.src2_or_csr,
     alu_imm
-  )
-  val alu_b = Mux(
-    in.bits.controls.alu_controls.is_alu_b_inv,
-    ~alu_b_raw,
-    alu_b_raw
   )
 
   alu.io.A := alu_a
@@ -140,11 +138,14 @@ class EXU() extends PrefixedModule {
 
   val snpc = in.bits.pc + 4.U(32.W)
 
-  out.bits.write_info.gpr_wdata := Mux1H(
+  out.bits.write_info.gpr_wdata := MuxLookup(
+    in.bits.controls.gpr_wdata_sel,
+    alu.io.out
+  )(
     Seq(
-      in.bits.controls.is_gpr_wdata_from_snpc -> snpc,
-      in.bits.controls.is_gpr_wdata_from_alu -> alu.io.out,
-      in.bits.controls.is_gpr_wdata_from_csr -> in.bits.sources.src2_or_csr
+      GprWdataSel.SNPC -> snpc,
+      GprWdataSel.CSR -> in.bits.sources.src2_or_csr,
+      GprWdataSel.ALU -> alu.io.out
     )
   )
 
@@ -175,7 +176,7 @@ class EXU() extends PrefixedModule {
   conf.rd_valid := has_signal && in.bits.rd_valid
   conf.csr_dest_valid := has_signal && in.bits.controls.is_csr_visit
   conf.csr_id := in.bits.controls.csrd
-  conf.ok_to_forward_rd := !in.bits.controls.is_gpr_wdata_from_ram
+  conf.ok_to_forward_rd := in.bits.controls.gpr_wdata_sel =/= GprWdataSel.RAM
   conf.rd_data := out.bits.write_info.gpr_wdata
 
   out.bits.itype := in.bits.itype
