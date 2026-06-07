@@ -40,3 +40,5 @@
 
 !patch/**
 /nvboard
+/ysyxSoC
+/am-kernels

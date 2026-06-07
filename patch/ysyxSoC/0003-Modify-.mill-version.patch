@@ -1,0 +1,21 @@
+From 73e03c8cbb619c9fec0a250816343e35128b64a3 Mon Sep 17 00:00:00 2001
+From: Shitful <2292683261@qq.com>
+Date: Sun, 7 Jun 2026 14:31:00 +0800
+Subject: [PATCH 3/3] Modify .mill-version
+
+---
+ .mill-version | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/.mill-version b/.mill-version
+index 1592299c..7fd0b1e8 100644
+--- a/.mill-version
++++ b/.mill-version
+@@ -1 +1 @@
+-0.12.16
+\ No newline at end of file
++0.12.4
+\ No newline at end of file
+-- 
+2.54.0
+

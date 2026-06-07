@@ -1,12 +1,12 @@
 .DEFAULT_GOAL := sim
 
-SOC_NPC_HOME := $(NPC_HOME)/npc_soc
 
+SOC_HOME := $(NPC_HOME)/../ysyxSoC
 include $(NVBOARD_HOME)/scripts/nvboard.mk
 
-NXDC = $(SOC_NPC_HOME)/nvboard/top.nxdc
-NXDC_CPP_PATH = $(SOC_NPC_HOME)/nvboard/generated
-NXDC_CPP = $(SOC_NPC_HOME)/nvboard/generated/auto_bind.cpp
+NXDC = $(NPC_HOME)/npc_soc/nvboard/top.nxdc
+NXDC_CPP_PATH = $(NPC_HOME)/npc_soc/nvboard/generated
+NXDC_CPP = $(NPC_HOME)/npc_soc/nvboard/generated/auto_bind.cpp
 
 CSRC = $(shell find csrc -name "*.cpp")
 CSRC += $(NPC_HOME)/npc_old/tools/replxx/libreplxx.a $(NVBOARD_ARCHIVE)
@@ -30,7 +30,7 @@ SVSRC = $(patsubst %,$(NPC_HOME)/generated_svsrc/%,$(SVSRC_FILES))
 VERILATOR = verilator
 PYTHON = python
 
-STA_DIR = $(SOC_NPC_HOME)/sta
+STA_DIR = $(NPC_HOME)/npc_soc/sta
 SDC_FILE = $(STA_DIR)/npc.sdc
 SCRIPT_FILE = $(STA_DIR)/sta.tcl
 
@@ -40,7 +40,7 @@ VERILATOR_CFLAGS = -Ofast -DFMT_HEADER_ONLY=1 -DSPDLOG_FMT_EXTERNAL=1  \
 VERILATOR_LDFLAGS = -flto=auto -fipa-pta 
 
 
-V_CXXFLAGS += -CFLAGS "$(VERILATOR_CFLAGS) -std=c++20 -I$(SOC_NPC_HOME)/include -DFMT_HEADER_ONLY=1 -DSPDLOG_FMT_EXTERNAL=1 -I$(NVBOARD_HOME)/usr/include" \
+V_CXXFLAGS += -CFLAGS "$(VERILATOR_CFLAGS) -std=c++20 -I$(NPC_HOME)/npc_soc/include -DFMT_HEADER_ONLY=1 -DSPDLOG_FMT_EXTERNAL=1 -I$(NVBOARD_HOME)/usr/include" \
 -LDFLAGS "-lSDL2 -lSDL2_image -lSDL2_ttf" 
 # VERILATORFLAGS += --noassert --trace --no-coverage --x-assign fast --x-initial fast -O3 --threads 1 --cc --exe --build -j 8 
 VERILATORFLAGS += --autoflush -I$(SOC_HOME)/perip/uart16550/rtl -I$(SOC_HOME)/perip/spi/rtl --trace \
@@ -53,7 +53,7 @@ FAST_FLAGS = -Ofast -march=native -mtune=native
 
 -include scripts/*.mk
 
-MDIR = $(SOC_NPC_HOME)/build/default/
+MDIR = $(NPC_HOME)/npc_soc/build/default/
 
 npc: $(SV_FILELIST) $(LIBCAPSTONE) $(NXDC_CPP)
 	make -C $(SOC_HOME) verilog
@@ -146,7 +146,7 @@ clean:
 	rm -rf ../generated_svsrc/*
 
 clean_log:
-	rm -rf $(SOC_NPC_HOME)/log/*
+	rm -rf $(NPC_HOME)/npc_soc/log/*
 
 clean_sta:
 	rm -rf $(STA_DIR)/result/*
