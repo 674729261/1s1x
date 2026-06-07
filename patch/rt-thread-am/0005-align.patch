@@ -1,7 +1,7 @@
 From efa4161ef1384071055ce3f09c67a778cd58b0d7 Mon Sep 17 00:00:00 2001
 From: Shitful <2292683261@qq.com>
 Date: Sun, 7 Jun 2026 22:12:11 +0800
-Subject: [PATCH 5/5] align
+Subject: [PATCH 5/6] align
 
 ---
  bsp/abstract-machine/src/init.c | 27 +++++++++++++++------------
