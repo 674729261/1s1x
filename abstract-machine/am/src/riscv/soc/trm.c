@@ -84,103 +84,125 @@ void _trm_init() {
   int ret = main(mainargs);
   halt(ret);
 }
-
 __attribute__((section(".fsbl"))) void fstbootloader() {
-  extern uint32_t __ssbl_load_start, __ssbl_load_end, __ssbl_start;
-  uint8_t *src = (uint8_t *)&__ssbl_load_start;
-  uint8_t *dst = (uint8_t *)&__ssbl_start;
-  size_t n = (uint8_t *)&__ssbl_load_end - (uint8_t *)&__ssbl_load_start;
-  while ((((uintptr_t)dst) & 0x3) && n) {
+  extern uint8_t __ssbl_load_start[];
+  extern uint8_t __ssbl_load_end[];
+  extern uint8_t __ssbl_start[];
+
+  uint8_t *src = __ssbl_load_start;
+  uint8_t *dst = __ssbl_start;
+  size_t n = (uintptr_t)__ssbl_load_end - (uintptr_t)__ssbl_load_start;
+
+  if ((((uintptr_t)dst ^ (uintptr_t)src) & 0x3) == 0) {
+    while ((((uintptr_t)dst) & 0x3) && n != 0) {
+      *dst++ = *src++;
+      n--;
+    }
+
+    while (n >= 4) {
+      *(uint32_t *)dst = *(const uint32_t *)src;
+      dst += 4;
+      src += 4;
+      n -= 4;
+    }
+  }
+
+  while (n != 0) {
     *dst++ = *src++;
     n--;
   }
 
-  while (n >= 4) {
-    *(uint32_t *)dst = *(const uint32_t *)src;
-    dst += 4;
-    src += 4;
-    n -= 4;
-  }
-
-  while (n-- > 0) {
-    *dst++ = *src++;
-  }
-
-  // while (src < &__ssbl_load_end) {
-  //   *dst = *src;
-  //   ++dst;
-  //   ++src;
-  // }
+  asm volatile("fence.i" ::: "memory");
 }
-
-__attribute__((section(".ssbl"))) static void *
-__ssbl__memcpy(void *out, const void *in, size_t n) {
+__attribute__((section(".ssbl")))
+__attribute__((noinline))
+static void *__ssbl__memcpy(void *out, const void *in, size_t n) {
   unsigned char *d = (unsigned char *)out;
   const unsigned char *s = (const unsigned char *)in;
 
-  while ((((uintptr_t)d) & 0x3) && n) {
+  if ((((uintptr_t)d ^ (uintptr_t)s) & 0x3) == 0) {
+    while ((((uintptr_t)d) & 0x3) && n != 0) {
+      *d++ = *s++;
+      n--;
+    }
+
+    while (n >= 4) {
+      *(uint32_t *)d = *(const uint32_t *)s;
+      d += 4;
+      s += 4;
+      n -= 4;
+    }
+  }
+
+  while (n != 0) {
     *d++ = *s++;
     n--;
   }
 
-  while (n >= 4) {
-    *(uint32_t *)d = *(const uint32_t *)s;
-    d += 4;
-    s += 4;
-    n -= 4;
-  }
-
-  while (n-- > 0) {
-    *d++ = *s++;
-  }
   return out;
 }
-
-__attribute__((section(".ssbl"))) static void *__ssbl_memset(void *s, int c,
-                                                             size_t n) {
+__attribute__((section(".ssbl")))
+__attribute__((noinline))
+static void *__ssbl_memset(void *s, int c, size_t n) {
   unsigned char *p = (unsigned char *)s;
-  while ((((uintptr_t)p) & 0x3) && n) {
+
+  while ((((uintptr_t)p) & 0x3) && n != 0) {
     *p++ = (unsigned char)c;
     n--;
   }
-  const uint32_t content = ((unsigned char)c << 24) | ((unsigned char)c << 16) |
-                           ((unsigned char)c << 8) | (unsigned char)c;
+
+  uint32_t uc = (uint8_t)c;
+  uint32_t content = uc * 0x01010101u;
+
   while (n >= 4) {
     *(uint32_t *)p = content;
     p += 4;
     n -= 4;
   }
 
-  const unsigned char uc = (unsigned char)c;
-  while (n-- > 0) {
-    *p++ = uc;
+  while (n != 0) {
+    *p++ = (unsigned char)uc;
+    n--;
   }
+
   return s;
 }
+
 
 __attribute__((weak)) __attribute__((section(".ssbl"))) void __ssbl_extra() {
   // do nothing
 }
-
 __attribute__((section(".ssbl"))) void secbootloader() {
-  extern char __data_load_start, __data_load_end, __data_start;
-  char *src = &__data_load_start;
-  char *dst = &__data_start;
-  __ssbl__memcpy(dst, src, &__data_load_end - &__data_load_start);
+  extern uint8_t __data_load_start[];
+  extern uint8_t __data_load_end[];
+  extern uint8_t __data_start[];
 
-  extern char __prog_load_start, __prog_load_end, __prog_start;
-  src = &__prog_load_start;
-  dst = &__prog_start;
-  __ssbl__memcpy(dst, src, &__prog_load_end - &__prog_load_start);
+  __ssbl__memcpy(
+      __data_start,
+      __data_load_start,
+      (uintptr_t)__data_load_end - (uintptr_t)__data_load_start
+  );
 
-  extern char __bss_start, __bss_end;
-  __ssbl_memset(&__bss_start, 0, &__bss_end - &__bss_start);
+  extern uint8_t __prog_load_start[];
+  extern uint8_t __prog_load_end[];
+  extern uint8_t __prog_start[];
+
+  __ssbl__memcpy(
+      __prog_start,
+      __prog_load_start,
+      (uintptr_t)__prog_load_end - (uintptr_t)__prog_load_start
+  );
+
+  extern uint8_t __bss_start[];
+  extern uint8_t __bss_end[];
+
+  __ssbl_memset(
+      __bss_start,
+      0,
+      (uintptr_t)__bss_end - (uintptr_t)__bss_start
+  );
 
   __ssbl_extra();
-  // #ifdef __RTTHREAD__
-  //   extern char rt_load_begin, rt_load_end, rt_begin;
-  //   src = &rt_load_begin;
-  //   dst = &rt_begin;
-  //   __ssbl__memcpy(dst, src, &rt_load_end - &rt_load_begin);
-  // #endif
+
+  asm volatile("fence.i" ::: "memory");
 }
