@@ -2,7 +2,9 @@
 #define AM_H__
 
 #include "area.h"
+#ifndef __cplusplus
 #include <stdatomic.h>
+#endif
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
