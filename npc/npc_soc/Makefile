@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := sim
 
 
-SOC_HOME ?= $(NPC_HOME)/../ysyxSoC
+SOC_HOME := $(NPC_HOME)/../ysyxSoC
 include $(NVBOARD_HOME)/scripts/nvboard.mk
 
 NXDC = $(NPC_HOME)/npc_soc/nvboard/top.nxdc
