@@ -1,0 +1,24 @@
+From bb4e35054c73c382f1f6921171001fdea434b4bc Mon Sep 17 00:00:00 2001
+From: Shitful <2292683261@qq.com>
+Date: Sun, 7 Jun 2026 18:37:10 +0800
+Subject: [PATCH 4/4] Suppress stringop-overflow
+
+---
+ bsp/abstract-machine/Makefile | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/bsp/abstract-machine/Makefile b/bsp/abstract-machine/Makefile
+index 4a4011485..5f0995aa6 100644
+--- a/bsp/abstract-machine/Makefile
++++ b/bsp/abstract-machine/Makefile
+@@ -32,6 +32,7 @@ init: $(RTCONFIG_H)
+ 	scons --verbose -n > $(FILE_TMP)
+ 	cat $(FILE_TMP) | grep -o '[^ ]*.c$$' | awk '{print "SRCS += " $$1}' > $(FILE_MK)
+ 	cat $(FILE_TMP) | grep 'gcc ' | head -n 1 | grep -o " -I[^ ]*" | awk '{print "CFLAGS += " $$1}' >> $(FILE_MK)
++	echo 'CFLAGS += -Wno-error=stringop-overflow' >> $(FILE_TMP)
+ 	rm $(FILE_TMP)
+ 
+ menuconfig:
+-- 
+2.54.0
+
