@@ -55,7 +55,7 @@ sim-iverilog-netlist:
 	mkdir -p ./iv_temp/ || true
 	cp $(NETLIST) ./iv_temp/netlist.v
 	objcopy -I binary -O verilog --verilog-data-width=4 $(IMG) ./iv_temp/temp.hex
-	iverilog -o ./iv_temp/tb.vvp -s tb_npc_netlist ./iv_temp/netlist.v $(CELLS) iverilog_tb/*.sv -g2012
+	iverilog -o ./iv_temp/tb.vvp -s tb_npc ./iv_temp/netlist.v $(CELLS) iverilog_tb/*.sv -g2012 -DSOC=1
 	vvp -n ./iv_temp/tb.vvp
 
 clean:

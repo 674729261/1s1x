@@ -219,28 +219,39 @@ module tb_npc;
     end
   end
 
-  // always @(posedge clock) begin
-  //   if (reset) inst_cnt <= 0;
-  //   else if (step) begin
-  //     inst_cnt = inst_cnt + 1;
-  //     //   $display("PC = %08x", pc);
-  //   end
-  // end
+`ifndef SOC
+  int inst_cnt;
+  wire step, ebreak;
+  wire [31:0] pc;
+  assign step = dut.cpu.io_ok_to_step;
+  assign ebreak = dut.cpu.io_ebreak;
+  assign pc =dut.cpu.io_pc;
 
-  // always @(posedge clock) begin
-  //   if (ebreak && !reset) begin
-  //     $display("HALT@PC=%08h, inst count : %0d", pc, inst_cnt);
-  //     $display("a0 = %08h", dut.cpu.gpr.register_bank_regs_9_r);
-  //     if (dut.cpu.gpr.register_bank_regs_9_r === 32'h0) begin
-  //       $display("HIT GOOD TRAP");
-  //       $finish;
-  //     end else begin
-  //       $display("HIT BAD TRAP");
-  //       $fatal;
-  //     end
+  initial inst_cnt = 1;
 
-  //   end
-  // end
+  always @(posedge clock) begin
+    if (reset) inst_cnt <= 0;
+    else if (step) begin
+      inst_cnt = inst_cnt + 1;
+      //   $display("PC = %08x", pc);
+    end
+  end
+
+  always @(posedge clock) begin
+    if (ebreak && !reset) begin
+      $display("HALT@PC=%08h, inst count : %0d", pc, inst_cnt);
+      $display("a0 = %08h", dut.cpu.gpr.register_bank_regs_9_r);
+      if (dut.cpu.gpr.register_bank_regs_9_r === 32'h0) begin
+        $display("HIT GOOD TRAP");
+        $finish;
+      end else begin
+        $display("HIT BAD TRAP");
+        $fatal;
+      end
+
+    end
+  end
+`endif
 
 
 
