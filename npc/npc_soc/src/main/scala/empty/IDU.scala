@@ -53,61 +53,22 @@ class ALUControl extends Bundle {
   val is_alu_b_inv = (Bool())
 }
 
-object ALUOp {
-  val add = 0.U(4.W)
-  val sub = 1.U(4.W)
-  val slt = 2.U(4.W)
-  val sltu = 3.U(4.W)
-  val sll = 4.U(4.W)
-  val srl = 5.U(4.W)
-  val sra = 6.U(4.W)
-  val and = 7.U(4.W)
-  val or = 8.U(4.W)
-  val xor = 9.U(4.W)
-
-  def needsInvertedB(op: UInt): Bool = {
-    op === sub || op === slt || op === sltu
-  }
-
-  def toControls(op: UInt): ALUControl = {
-    val ret = WireInit(0.U.asTypeOf(new ALUControl))
-    ret.is_alu_add := op === add
-    ret.is_alu_sub := op === sub
-    ret.is_alu_slt := op === slt
-    ret.is_alu_sltu := op === sltu
-    ret.is_alu_sll := op === sll
-    ret.is_alu_srl := op === srl
-    ret.is_alu_sra := op === sra
-    ret.is_alu_and := op === and
-    ret.is_alu_or := op === or
-    ret.is_alu_xor := op === xor
-    ret.is_alu_b_inv := needsInvertedB(op)
-    ret
-  }
-}
-
-object WbSel {
-  val alu = 0.U(2.W)
-  val snpc = 1.U(2.W)
-  val csr = 2.U(2.W)
-  val ram = 3.U(2.W)
-}
-
-object MemSize {
-  val byte = 0.U(2.W)
-  val half = 1.U(2.W)
-  val word = 2.U(2.W)
-}
-
 class ControlSignals extends Bundle {
   val is_csr_visit = (Bool())
 
-  val alu_op = UInt(4.W)
+  val alu_controls = new ALUControl()
 
-  val gpr_wdata_sel = UInt(2.W)
+  val is_gpr_wdata_from_ram = (Bool())
+  val is_gpr_wdata_from_snpc = (Bool())
+  val is_gpr_wdata_from_alu = (Bool())
+  // val is_gpr_wdata_from_imm = (Bool())
+  val is_gpr_wdata_from_csr = (Bool())
+
   val is_gpr_wen = (Bool())
 
-  val ram_size = UInt(2.W)
+  val is_ram_word = (Bool())
+  val is_ram_half = (Bool())
+  val is_ram_byte = (Bool())
   val is_load_unsigned = (Bool())
 
   val is_ram_valid = (Bool())
@@ -123,6 +84,7 @@ class ControlSignals extends Bundle {
   val is_branch = Bool()
   val is_dnpc_jal_or_jalr = Bool()
   val is_dnpc_csr_jump = Bool()
+  val is_dnpc_snpc = Bool()
 
   val is_ebreak = Bool()
 
@@ -243,34 +205,51 @@ object decodeInstControlSignal {
     val is_alu_force_add =
       it.is_mret || it.is_store || it.is_load || it.is_branch || it.is_auipc || it.is_jal || it.is_jalr || it.is_lui
 
-    val alu_op_raw = MuxCase(
-      ALUOp.add,
-      Seq(
-        (fields.funct3 === "b000".U(3.W)) -> Mux(is_alu_sub_sra, ALUOp.sub, ALUOp.add),
-        (fields.funct3 === "b001".U(3.W)) -> ALUOp.sll,
-        (fields.funct3 === "b010".U(3.W)) -> ALUOp.slt,
-        (fields.funct3 === "b011".U(3.W)) -> ALUOp.sltu,
-        (fields.funct3 === "b100".U(3.W)) -> ALUOp.xor,
-        (fields.funct3 === "b101".U(3.W)) -> Mux(is_alu_sub_sra, ALUOp.sra, ALUOp.srl),
-        (fields.funct3 === "b110".U(3.W)) -> ALUOp.or,
-        (fields.funct3 === "b111".U(3.W)) -> ALUOp.and
-      )
-    )
+    ret.alu_controls.is_alu_add := is_alu_force_add || (fields.funct3 === "b000"
+      .U(
+        3.W
+      ) && !is_alu_sub_sra)
+    ret.alu_controls.is_alu_sub := (fields.funct3 === "b000".U(
+      3.W
+    ) && is_alu_sub_sra) && !is_alu_force_add
+    ret.alu_controls.is_alu_sll := (fields.funct3 === "b001".U(
+      3.W
+    )) && !is_alu_force_add
+    ret.alu_controls.is_alu_slt := (fields.funct3 === "b010".U(
+      3.W
+    )) && !is_alu_force_add
+    ret.alu_controls.is_alu_sltu := (fields.funct3 === "b011".U(
+      3.W
+    )) && !is_alu_force_add
+    ret.alu_controls.is_alu_srl := (fields.funct3 === "b101".U(
+      3.W
+    )) && !is_alu_sub_sra && !is_alu_force_add
+    ret.alu_controls.is_alu_sra := (fields.funct3 === "b101".U(
+      3.W
+    )) && is_alu_sub_sra && !is_alu_force_add
+    ret.alu_controls.is_alu_and := (fields.funct3 === "b111".U(
+      3.W
+    )) && !is_alu_force_add
+    ret.alu_controls.is_alu_or := (fields.funct3 === "b110".U(
+      3.W
+    )) && !is_alu_force_add
+    ret.alu_controls.is_alu_xor := (fields.funct3 === "b100".U(
+      3.W
+    )) && !is_alu_force_add
 
-    ret.alu_op := Mux(is_alu_force_add, ALUOp.add, alu_op_raw)
+    ret.alu_controls.is_alu_b_inv := ret.alu_controls.is_alu_sub || ret.alu_controls.is_alu_slt || ret.alu_controls.is_alu_sltu
 
     ret.is_csr_visit := it.is_csrop && !is_funct3_zero
-    ret.gpr_wdata_sel := MuxCase(
-      WbSel.alu,
-      Seq(
-        it.is_load -> WbSel.ram,
-        (it.is_jal || it.is_jalr) -> WbSel.snpc,
-        ret.is_csr_visit -> WbSel.csr
-      )
-    )
+    ret.is_gpr_wdata_from_ram := it.is_load
+    ret.is_gpr_wdata_from_snpc := it.is_jal || it.is_jalr
+    // ret.is_gpr_wdata_from_imm := it.is_lui
+    ret.is_gpr_wdata_from_csr := ret.is_csr_visit
+    ret.is_gpr_wdata_from_alu := (!ret.is_gpr_wdata_from_csr) && (!ret.is_gpr_wdata_from_ram) && (!ret.is_gpr_wdata_from_snpc)
     ret.is_gpr_wen := ret.is_csr_visit || imm_type.is_U || it.is_load || imm_type.is_R || it.is_arithmetic_imm || it.is_jal || it.is_jalr
 
-    ret.ram_size := fields.funct3(1, 0)
+    ret.is_ram_byte := (fields.funct3(1, 0) === "b00".U(2.W))
+    ret.is_ram_word := (fields.funct3(1, 0) === "b10".U(2.W))
+    ret.is_ram_half := (fields.funct3(1, 0) === "b01".U(2.W))
     ret.is_load_unsigned := fields.funct3(2)
 
     ret.is_ram_valid := it.is_load || it.is_store
@@ -285,15 +264,14 @@ object decodeInstControlSignal {
     ret.is_branch := it.is_branch
     ret.is_dnpc_jal_or_jalr := it.is_jal || it.is_jalr
     ret.is_dnpc_csr_jump := it.is_mret
+    ret.is_dnpc_snpc := !ret.is_branch && !ret.is_dnpc_jal_or_jalr && !ret.is_dnpc_csr_jump
     ret.is_ebreak := it.is_ebreak
     return ret
   }
 }
 
 class Operands extends Bundle {
-  val alu_a = UInt(32.W)
   val mtvec = UInt(32.W)
-  val alu_b = UInt(32.W)
   val src1 = UInt(32.W)
   val src2_or_csr = UInt(32.W)
 }
@@ -392,40 +370,18 @@ class IDU() extends PrefixedModule {
   val gpr_rdata2 =
     Mux(conf.do_forward_src2, conf.forward_data_src2, fetch_port_in.gpr_rdata2)
   out.bits.sources.src1 := gpr_rdata1
-  out.bits.sources.src2_or_csr := Mux(
-    control_signals.gpr_wdata_sel === WbSel.csr,
-    fetch_port_in.csr_rdata,
-    gpr_rdata2
+  out.bits.sources.src2_or_csr := MuxCase(
+    gpr_rdata2,
+    Seq(
+      control_signals.is_gpr_wdata_from_csr -> fetch_port_in.csr_rdata,
+      inst_type.is_mret -> fetch_port_in.csr_mepc
+    )
   )
+
   out.bits.inst := in.bits.inst
   out.bits.predicted_jump := in.bits.predicted_jump
 
-  val is_alu_a_pc = imm_type.is_B || imm_type.is_J || inst_type.is_auipc
-  val is_alu_b_reg = imm_type.is_R
-
-  out.bits.sources.alu_a := MuxCase(
-    gpr_rdata1,
-    Seq(
-      (inst_type.is_lui || inst_type.is_mret) -> 0.U(32.W),
-      is_alu_a_pc -> in.bits.pc
-    )
-  )
   out.bits.sources.mtvec := fetch_port_in.csr_mtvec
-
-  val alu_b_raw = Mux(
-    inst_type.is_mret,
-    fetch_port_in.csr_mepc,
-    Mux(
-      is_alu_b_reg,
-      gpr_rdata2,
-      fields.imm
-    )
-  )
-  out.bits.sources.alu_b := Mux(
-    ALUOp.needsInvertedB(control_signals.alu_op),
-    ~alu_b_raw,
-    alu_b_raw
-  )
 
   out.bits.itype := inst_type
   conf.rs1_id := fields.rs1

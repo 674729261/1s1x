@@ -1,24 +1,25 @@
-From bb4e35054c73c382f1f6921171001fdea434b4bc Mon Sep 17 00:00:00 2001
+From bd05c98028b808b073c2532da4381b6eacf60e8a Mon Sep 17 00:00:00 2001
 From: Shitful <2292683261@qq.com>
 Date: Sun, 7 Jun 2026 18:37:10 +0800
 Subject: [PATCH 4/4] Suppress stringop-overflow
 
 ---
- bsp/abstract-machine/Makefile | 1 +
- 1 file changed, 1 insertion(+)
+ bsp/abstract-machine/Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/bsp/abstract-machine/Makefile b/bsp/abstract-machine/Makefile
-index 4a4011485..5f0995aa6 100644
+index 4a4011485..562dc0e86 100644
 --- a/bsp/abstract-machine/Makefile
 +++ b/bsp/abstract-machine/Makefile
-@@ -32,6 +32,7 @@ init: $(RTCONFIG_H)
- 	scons --verbose -n > $(FILE_TMP)
- 	cat $(FILE_TMP) | grep -o '[^ ]*.c$$' | awk '{print "SRCS += " $$1}' > $(FILE_MK)
- 	cat $(FILE_TMP) | grep 'gcc ' | head -n 1 | grep -o " -I[^ ]*" | awk '{print "CFLAGS += " $$1}' >> $(FILE_MK)
-+	echo 'CFLAGS += -Wno-error=stringop-overflow' >> $(FILE_TMP)
- 	rm $(FILE_TMP)
+@@ -7,7 +7,7 @@ RTCONFIG_H = rtconfig.h
+ NAME = rtthread
+ SRCS = $(shell find src -name "*.c")
+ CFLAGS += -DHAVE_CCONFIG_H -D__RTTHREAD__
+-CFLAGS += -Wno-nonnull-compare
++CFLAGS += -Wno-nonnull-compare -Wno-error=stringop-overflow
  
- menuconfig:
+ 
+ 
 -- 
 2.54.0
 
