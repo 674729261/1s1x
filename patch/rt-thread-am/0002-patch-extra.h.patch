@@ -1,0 +1,92 @@
+From cac59a029d1dacca6016dc5f757ee0d8060330c7 Mon Sep 17 00:00:00 2001
+From: Shitful <2292683261@qq.com>
+Date: Sun, 7 Jun 2026 17:21:33 +0800
+Subject: [PATCH 2/2] patch extra.h
+
+---
+ bsp/abstract-machine/include/extra.h | 57 +++++++++++++++-------------
+ 1 file changed, 30 insertions(+), 27 deletions(-)
+
+diff --git a/bsp/abstract-machine/include/extra.h b/bsp/abstract-machine/include/extra.h
+index f5e7ddef3..200f12b7a 100644
+--- a/bsp/abstract-machine/include/extra.h
++++ b/bsp/abstract-machine/include/extra.h
+@@ -10,7 +10,11 @@
+  * stays consistent with the toolchain instead of guessing with plain long.
+  */
+ #if defined(__GNUC__) && !defined(__ISA_NATIVE__) && !defined(__ARMCC_VERSION)
++#if __has_include(<sys/_types.h>)
+ #include <sys/_types.h>
++#else
++#include <sys/types.h>
++#endif
+ 
+ #if !defined(__clock_t_defined) && !defined(_CLOCK_T_DECLARED)
+ typedef _CLOCK_T_ clock_t;
+@@ -51,37 +55,36 @@ typedef unsigned long useconds_t;
+ 
+ #include <sys/types.h>
+ 
+-
+ #ifdef __ISA_NATIVE__
+ // rename posix API to avoid conflict with glibc in native
+-#define open      rt_open
+-#define creat     rt_creat
+-#define close     rt_close
+-#define read      rt_read
+-#define write     rt_write
+-#define lseek     rt_lseek
+-#define rename    rt_rename
+-#define unlink    rt_unlink
+-#define stat      rt_stat
+-#define fstat     rt_fstat
+-#define fsync     rt_fsync
+-#define fcntl     rt_fcntl
+-#define ioctl     rt_ioctl
++#define open rt_open
++#define creat rt_creat
++#define close rt_close
++#define read rt_read
++#define write rt_write
++#define lseek rt_lseek
++#define rename rt_rename
++#define unlink rt_unlink
++#define stat rt_stat
++#define fstat rt_fstat
++#define fsync rt_fsync
++#define fcntl rt_fcntl
++#define ioctl rt_ioctl
+ #define ftruncate rt_ftruncate
+-#define statfs    rt_statfs
+-#define fstatfs   rt_fstatfs
+-#define mkdir     rt_mkdir
+-#define rmdir     rt_rmdir
+-#define opendir   rt_opendir
+-#define readdir   rt_readdir
+-#define telldir   rt_telldir
+-#define seekdir   rt_seekdir
++#define statfs rt_statfs
++#define fstatfs rt_fstatfs
++#define mkdir rt_mkdir
++#define rmdir rt_rmdir
++#define opendir rt_opendir
++#define readdir rt_readdir
++#define telldir rt_telldir
++#define seekdir rt_seekdir
+ #define rewinddir rt_rewinddir
+-#define closedir  rt_closedir
+-#define chdir     rt_chdir
+-#define access    rt_access
+-#define setcwd    rt_setcwd
+-#define getcwd    rt_getcwd
++#define closedir rt_closedir
++#define chdir rt_chdir
++#define access rt_access
++#define setcwd rt_setcwd
++#define getcwd rt_getcwd
+ 
+ #define gettimeofday rt_gettimeofday
+ 
+-- 
+2.54.0
+
