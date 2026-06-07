@@ -7,7 +7,6 @@ class MessageIFU2IDU extends Bundle {
   val pc = (UInt(32.W))
   val inst = (UInt(32.W))
   val in_cache = (Bool())
-  val predicted_jump = (Bool())
 }
 
 class IFU(init_pc: UInt) extends PrefixedModule {
@@ -16,9 +15,6 @@ class IFU(init_pc: UInt) extends PrefixedModule {
     val flush_valid = Input(Bool())
     val fencei = Input(Bool())
 
-    val btb_pc = Output(UInt(32.W))
-    val btb_nxt_pc = Input(UInt(32.W))
-    val btb_jump = Input(Bool())
   })
 
   val fetch_port = IO(new AXI)
@@ -34,15 +30,12 @@ class IFU(init_pc: UInt) extends PrefixedModule {
   val timestamp_r = RegInit(UInt(2.W), 0.U(2.W))
   val timestamp = Mux(in.flush_valid, timestamp_r + 1.U(2.W), timestamp_r)
 
-  in.btb_pc := fetch_pc_r
-  val pc_next_predicted = in.btb_nxt_pc
-  val pc_predicted_jump = in.btb_jump
+  val pc_next = fetch_pc_r + 4.U(32.W)
 
   val has_inst = has_inst_r && !in.flush_valid
   val should_discard = (icache.io.timestamp_res =/= timestamp);
   fetch_port <> icache.fetch_port
   icache.io.addr := fetch_pc_r
-  icache.io.predicted_jump := pc_predicted_jump
   icache.io.timestamp_req := timestamp
   icache.io.avalid := !in.flush_valid
   icache.io.rready := out.fire || !has_inst
@@ -62,8 +55,6 @@ class IFU(init_pc: UInt) extends PrefixedModule {
     RegEnable(icache.io.rdata, cache_rfire)
   val inst_rpc =
     RegEnable(icache.io.rpc, cache_rfire)
-  val inst_predicted_jump =
-    RegEnable(icache.io.rjump, cache_rfire)
   val inst_incache =
     RegEnable(icache.io.in_cache, cache_rfire)
 
@@ -71,7 +62,7 @@ class IFU(init_pc: UInt) extends PrefixedModule {
     fetch_pc_r,
     Seq(
       (in.flush_valid) -> in.exu_dnpc,
-      (cache_afire) -> pc_next_predicted
+      (cache_afire) -> pc_next
     )
   )
 
@@ -85,6 +76,5 @@ class IFU(init_pc: UInt) extends PrefixedModule {
   out.bits.inst := inst_reg
   out.bits.pc := inst_rpc
   out.bits.in_cache := inst_incache
-  out.bits.predicted_jump := inst_predicted_jump
 
 }

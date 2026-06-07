@@ -1,25 +1,25 @@
-From 747938cc2b27bf383cf6482c07174121a3dd0fb6 Mon Sep 17 00:00:00 2001
+From 7af490c983ef2d07eb33e93c1c0412c51500cbba Mon Sep 17 00:00:00 2001
 From: Shitful <2292683261@qq.com>
-Date: Wed, 3 Jun 2026 00:32:28 +0800
-Subject: [PATCH 1/6] modifications
+Date: Sun, 7 Jun 2026 22:44:17 +0800
+Subject: [PATCH] patch
 
 ---
  bsp/abstract-machine/.gitignore               |   13 +
- bsp/abstract-machine/Makefile                 |   11 +-
+ bsp/abstract-machine/Makefile                 |   13 +-
  bsp/abstract-machine/extra.ld                 |    4 +
- bsp/abstract-machine/extra_soc.ld             |   49 +
- bsp/abstract-machine/include/extra.h          |   50 +
+ bsp/abstract-machine/extra_soc.ld             |   54 +
+ bsp/abstract-machine/include/extra.h          |  159 +-
  bsp/abstract-machine/integrate-am-apps.py     |   71 +-
  bsp/abstract-machine/rtconfig.h               |   99 ++
  bsp/abstract-machine/src/context.c            |   69 +-
- bsp/abstract-machine/src/init.c               |   50 +-
+ bsp/abstract-machine/src/init.c               |   53 +-
  bsp/abstract-machine/src/libc.c               |   10 +-
  bsp/abstract-machine/src/uart.c               |   46 +-
  components/libc/compilers/common/cstring.c    |    4 +-
  .../libc/compilers/common/include/sys/time.h  |    9 +
  components/utilities/utest/utest.c            |   12 +-
  include/rtdef.h                               | 1472 +++++++++--------
- 15 files changed, 1165 insertions(+), 804 deletions(-)
+ 15 files changed, 1255 insertions(+), 833 deletions(-)
  create mode 100644 bsp/abstract-machine/extra_soc.ld
  create mode 100644 bsp/abstract-machine/rtconfig.h
 
@@ -45,14 +45,16 @@ index 27ab723ff..1a6674602 100644
 +/.cache/**
 \ No newline at end of file
 diff --git a/bsp/abstract-machine/Makefile b/bsp/abstract-machine/Makefile
-index 8d70f310b..4a4011485 100644
+index 8d70f310b..562dc0e86 100644
 --- a/bsp/abstract-machine/Makefile
 +++ b/bsp/abstract-machine/Makefile
-@@ -8,9 +8,18 @@ NAME = rtthread
+@@ -7,10 +7,19 @@ RTCONFIG_H = rtconfig.h
+ NAME = rtthread
  SRCS = $(shell find src -name "*.c")
  CFLAGS += -DHAVE_CCONFIG_H -D__RTTHREAD__
- CFLAGS += -Wno-nonnull-compare
+-CFLAGS += -Wno-nonnull-compare
 -LDFLAGS += -T extra.ld
++CFLAGS += -Wno-nonnull-compare -Wno-error=stringop-overflow
 +
 +
 +
@@ -91,30 +93,33 @@ index 5cdc65670..0ce48ceae 100644
  
 diff --git a/bsp/abstract-machine/extra_soc.ld b/bsp/abstract-machine/extra_soc.ld
 new file mode 100644
-index 000000000..017f4b14a
+index 000000000..4546d674e
 --- /dev/null
 +++ b/bsp/abstract-machine/extra_soc.ld
-@@ -0,0 +1,49 @@
+@@ -0,0 +1,54 @@
 +SECTIONS {
 +  .data.extra : {
++    . = ALIGN(8);
 +    rt_begin = .;
++
 +    /* section information for finsh shell */
++    . = ALIGN(8);
 +    __fsymtab_start = .;
 +    KEEP(*(FSymTab))
 +    __fsymtab_end = .;
++
 +    . = ALIGN(8);
 +    __vsymtab_start = .;
 +    KEEP(*(VSymTab))
 +    __vsymtab_end = .;
-+    . = ALIGN(8);
 +
 +    /* section information for initial. */
 +    . = ALIGN(8);
 +    __rt_init_start = .;
 +    KEEP(*(SORT(.rti_fn*)))
 +    __rt_init_end = .;
-+    . = ALIGN(8);
 +
++    . = ALIGN(8);
 +    __rt_utest_tc_tab_start = .;
 +    KEEP(*(UtestTcTab))
 +    __rt_utest_tc_tab_end = .;
@@ -124,70 +129,114 @@ index 000000000..017f4b14a
 +    *(__am_apps.data*)
 +    *(__am_apps.sdata*)
 +    __am_apps_data_end = .;
++
 +    . = ALIGN(8);
 +  } > sdram AT> prog
 +
 +  rt_load_begin = LOADADDR(.data.extra);
-+  rt_load_end = rt_load_begin + SIZEOF(.data.extra);
++  rt_load_end = LOADADDR(.data.extra) + SIZEOF(.data.extra);
 +}
 +INSERT BEFORE .data;
 +
 +SECTIONS {
-+  .bss.extra : {
++  .bss.extra (NOLOAD) : {
 +    . = ALIGN(8);
 +    __am_apps_bss_start = .;
 +    *(__am_apps.bss*)
 +    *(__am_apps.sbss*)
 +    *(__am_apps.scommon*)
 +    __am_apps_bss_end = .;
++
 +    . = ALIGN(8);
 +  } > sdram
 +}
 +INSERT BEFORE .bss;
 diff --git a/bsp/abstract-machine/include/extra.h b/bsp/abstract-machine/include/extra.h
-index 27c72f4a5..f5e7ddef3 100644
+index 27c72f4a5..d31406d03 100644
 --- a/bsp/abstract-machine/include/extra.h
 +++ b/bsp/abstract-machine/include/extra.h
-@@ -1,7 +1,57 @@
-+/*
-+ * Work around newlib + RT-Thread header include cycle.
-+ *
-+ * newlib's sys/types.h may include <sys/select.h> before defining
-+ * clock_t/time_t/clockid_t/timer_t.  Because RT-Thread's sys/select.h
-+ * can be found first in the include path, it pulls in RT-Thread's
-+ * sys/time.h, which then includes newlib's time.h too early.
-+ *
-+ * Define these types using newlib's own internal type macros, so the ABI
-+ * stays consistent with the toolchain instead of guessing with plain long.
-+ */
+@@ -1,38 +1,141 @@
++#ifndef __RTTHREAD_AM_EXTRA_H__
++#define __RTTHREAD_AM_EXTRA_H__
++
++#include <stdint.h>
++#include <stddef.h>
++
++#ifndef __has_include
++#define __has_include(x) 0
++#endif
++
++
 +#if defined(__GNUC__) && !defined(__ISA_NATIVE__) && !defined(__ARMCC_VERSION)
++
++#if __has_include(<sys/_types.h>)
 +#include <sys/_types.h>
 +
-+#if !defined(__clock_t_defined) && !defined(_CLOCK_T_DECLARED)
++#if !defined(__clock_t_defined) && !defined(_CLOCK_T_DECLARED) && defined(_CLOCK_T_)
 +typedef _CLOCK_T_ clock_t;
 +#define __clock_t_defined
 +#define _CLOCK_T_DECLARED
 +#endif
 +
-+#if !defined(__time_t_defined) && !defined(_TIME_T_DECLARED)
++#if !defined(__time_t_defined) && !defined(_TIME_T_DECLARED) && defined(_TIME_T_)
 +typedef _TIME_T_ time_t;
 +#define __time_t_defined
 +#define _TIME_T_DECLARED
 +#endif
 +
-+#if !defined(__clockid_t_defined) && !defined(_CLOCKID_T_DECLARED)
++#if !defined(__clockid_t_defined) && !defined(_CLOCKID_T_DECLARED) && defined(_CLOCKID_T_)
 +typedef _CLOCKID_T_ clockid_t;
 +#define __clockid_t_defined
 +#define _CLOCKID_T_DECLARED
 +#endif
 +
-+#if !defined(__timer_t_defined) && !defined(_TIMER_T_DECLARED)
++#if !defined(__timer_t_defined) && !defined(_TIMER_T_DECLARED) && defined(_TIMER_T_)
 +typedef _TIMER_T_ timer_t;
 +#define __timer_t_defined
 +#define _TIMER_T_DECLARED
 +#endif
++
++#else
++
++/*
++ * riscv64-linux-gnu used as a freestanding cross compiler:
++ * Avoid including <sys/types.h> here, because it may trigger the RT-Thread
++ * sys/select.h -> sys/time.h include cycle too early.
++ *
++ * These definitions are enough for RT-Thread/AM builds.  The exact Linux
++ * userspace ABI is not relevant here because we are not linking against
++ * Linux libc as a normal userspace program.
++ */
++#if !defined(__clock_t_defined) && !defined(_CLOCK_T_DECLARED)
++typedef long clock_t;
++#define __clock_t_defined
++#define _CLOCK_T_DECLARED
 +#endif
 +
++#if !defined(__time_t_defined) && !defined(_TIME_T_DECLARED)
++typedef long time_t;
++#define __time_t_defined
++#define _TIME_T_DECLARED
++#endif
++
++#if !defined(__clockid_t_defined) && !defined(_CLOCKID_T_DECLARED)
++typedef int clockid_t;
++#define __clockid_t_defined
++#define _CLOCKID_T_DECLARED
++#endif
++
++#if !defined(__timer_t_defined) && !defined(_TIMER_T_DECLARED)
++typedef void *timer_t;
++#define __timer_t_defined
++#define _TIMER_T_DECLARED
++#endif
++
++#endif /* __has_include(<sys/_types.h>) */
++
++/*
++ * RT-Thread's sys/time.h needs these very early.
++ * Put them before any possible <sys/types.h> include.
++ */
 +#if !defined(__suseconds_t_defined) && !defined(_SUSECONDS_T_DECLARED)
  typedef long suseconds_t;
 +#define __suseconds_t_defined
@@ -200,12 +249,82 @@ index 27c72f4a5..f5e7ddef3 100644
 +#define _USECONDS_T_DECLARED
 +#endif
 +
++#endif /* GCC && !native && !ARMCC */
++
++
++/*
++ * Now it is safe to include sys/types.h.
++ * If it accidentally pulls RT-Thread sys/time.h first, the needed types
++ * above have already been declared.
++ */
  #include <sys/types.h>
  
 +
  #ifdef __ISA_NATIVE__
- // rename posix API to avoid conflict with glibc in native
- #define open      rt_open
+-// rename posix API to avoid conflict with glibc in native
+-#define open      rt_open
+-#define creat     rt_creat
+-#define close     rt_close
+-#define read      rt_read
+-#define write     rt_write
+-#define lseek     rt_lseek
+-#define rename    rt_rename
+-#define unlink    rt_unlink
+-#define stat      rt_stat
+-#define fstat     rt_fstat
+-#define fsync     rt_fsync
+-#define fcntl     rt_fcntl
+-#define ioctl     rt_ioctl
++
++/* rename POSIX API to avoid conflict with glibc in native */
++#define open rt_open
++#define creat rt_creat
++#define close rt_close
++#define read rt_read
++#define write rt_write
++#define lseek rt_lseek
++#define rename rt_rename
++#define unlink rt_unlink
++#define stat rt_stat
++#define fstat rt_fstat
++#define fsync rt_fsync
++#define fcntl rt_fcntl
++#define ioctl rt_ioctl
+ #define ftruncate rt_ftruncate
+-#define statfs    rt_statfs
+-#define fstatfs   rt_fstatfs
+-#define mkdir     rt_mkdir
+-#define rmdir     rt_rmdir
+-#define opendir   rt_opendir
+-#define readdir   rt_readdir
+-#define telldir   rt_telldir
+-#define seekdir   rt_seekdir
++#define statfs rt_statfs
++#define fstatfs rt_fstatfs
++#define mkdir rt_mkdir
++#define rmdir rt_rmdir
++#define opendir rt_opendir
++#define readdir rt_readdir
++#define telldir rt_telldir
++#define seekdir rt_seekdir
+ #define rewinddir rt_rewinddir
+-#define closedir  rt_closedir
+-#define chdir     rt_chdir
+-#define access    rt_access
+-#define setcwd    rt_setcwd
+-#define getcwd    rt_getcwd
++#define closedir rt_closedir
++#define chdir rt_chdir
++#define access rt_access
++#define setcwd rt_setcwd
++#define getcwd rt_getcwd
+ 
+ #define gettimeofday rt_gettimeofday
+ 
+-#endif
++#endif /* __ISA_NATIVE__ */
++
++#endif /* __RTTHREAD_AM_EXTRA_H__ */
 diff --git a/bsp/abstract-machine/integrate-am-apps.py b/bsp/abstract-machine/integrate-am-apps.py
 index 8968df387..9095b50ea 100644
 --- a/bsp/abstract-machine/integrate-am-apps.py
@@ -527,10 +646,10 @@ index ee38829ae..1778399dc 100644
 +  return (rt_uint8_t *)context_addr;
  }
 diff --git a/bsp/abstract-machine/src/init.c b/bsp/abstract-machine/src/init.c
-index 93e271154..060946433 100644
+index 93e271154..9bcfd72c3 100644
 --- a/bsp/abstract-machine/src/init.c
 +++ b/bsp/abstract-machine/src/init.c
-@@ -1,14 +1,44 @@
+@@ -1,14 +1,47 @@
  #include <am.h>
 -#include <rtthread.h>
 -#include <klib.h>
@@ -542,27 +661,30 @@ index 93e271154..060946433 100644
 +#define AM_APPS_HEAP_SIZE 0x2000000
  #define RT_HW_HEAP_BEGIN heap.start
  #define RT_HW_HEAP_END heap.end
- 
 +__attribute__((section(".ssbl"))) static void *
 +__ssbl__memcpy(void *out, const void *in, size_t n) {
 +  unsigned char *d = (unsigned char *)out;
 +  const unsigned char *s = (const unsigned char *)in;
 +
-+  while ((((uintptr_t)d) & 0x3) && n) {
++  if ((((uintptr_t)d ^ (uintptr_t)s) & 0x3) == 0) {
++    while ((((uintptr_t)d) & 0x3) && n != 0) {
++      *d++ = *s++;
++      n--;
++    }
++
++    while (n >= 4) {
++      *(uint32_t *)d = *(const uint32_t *)s;
++      d += 4;
++      s += 4;
++      n -= 4;
++    }
++  }
++
++  while (n != 0) {
 +    *d++ = *s++;
 +    n--;
 +  }
 +
-+  while (n >= 4) {
-+    *(uint32_t *)d = *(const uint32_t *)s;
-+    d += 4;
-+    s += 4;
-+    n -= 4;
-+  }
-+
-+  while (n-- > 0) {
-+    *d++ = *s++;
-+  }
 +  return out;
 +}
 +
@@ -572,14 +694,14 @@ index 93e271154..060946433 100644
 +  char *dst = &rt_begin;
 +  __ssbl__memcpy(dst, src, &rt_load_end - &rt_load_begin);
 +}
-+
+ 
  Area am_apps_heap = {}, am_apps_data = {}, am_apps_bss = {};
 -uint8_t * am_apps_data_content = NULL;
 +uint8_t *am_apps_data_content = NULL;
  
  void rt_hw_board_init() {
    int rt_hw_uart_init(void);
-@@ -21,15 +51,18 @@ void rt_hw_board_init() {
+@@ -21,15 +54,18 @@ void rt_hw_board_init() {
  
    uint32_t size = AM_APPS_HEAP_SIZE;
    void *p = NULL;
@@ -601,7 +723,7 @@ index 93e271154..060946433 100644
  
    uint32_t data_size = am_apps_data.end - am_apps_data.start;
    if (data_size != 0) {
-@@ -48,7 +81,8 @@ void rt_hw_board_init() {
+@@ -48,7 +84,8 @@ void rt_hw_board_init() {
  #endif
  
  #ifdef RT_USING_HEAP

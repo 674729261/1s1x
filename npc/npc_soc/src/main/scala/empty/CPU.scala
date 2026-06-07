@@ -107,16 +107,6 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean)
 
   ifu.fetch_port <> arbiter.IFU_AXI
 
-  val nxtpc_predictor = Module(new NextPCPredict(1, 31, 2))
-  ifu.in.btb_nxt_pc := nxtpc_predictor.io.predicted
-  ifu.in.btb_jump := nxtpc_predictor.io.predicted_jump
-  nxtpc_predictor.io.pc := ifu.in.btb_pc
-  nxtpc_predictor.io.wen := exu.btb.wen
-  nxtpc_predictor.io.write_pc := exu.btb.write_pc
-  nxtpc_predictor.io.write_target := exu.btb.target
-  nxtpc_predictor.io.is_jump_taken := exu.btb.is_jump_taken
-  nxtpc_predictor.io.init_cnt := exu.btb.init_cnt
-  nxtpc_predictor.io.clear := lsu.out_pc.flush_valid && lsu.out_pc.fencei
   StageConnect(ifu.out, idu.in)
   StageConnect(idu.out, exu.in)
   StageConnect(exu.out, lsu.in)
