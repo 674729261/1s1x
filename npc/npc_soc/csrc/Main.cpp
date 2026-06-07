@@ -133,7 +133,7 @@ int main(int argc, char *argv[]) {
   int return_value = -1;
   try {
     return_value = simulate();
-  } catch (std::exception e) {
+  } catch (const std::exception& e) {
     std::cerr << "Error : " << e.what() << std::endl;
   }
   spdlog::shutdown();
