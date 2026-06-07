@@ -1,7 +1,7 @@
 From ea6853639676017f168fd6e24f5dcfaabe01832b Mon Sep 17 00:00:00 2001
 From: Shitful <2292683261@qq.com>
 Date: Sun, 7 Jun 2026 14:20:22 +0800
-Subject: [PATCH 2/2] Modify .gitmodules
+Subject: [PATCH 2/3] Modify .gitmodules
 
 ---
  .gitignore  | 7 ++++---
