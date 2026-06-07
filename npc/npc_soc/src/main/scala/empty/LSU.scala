@@ -15,7 +15,7 @@ class MessageLSU2WBU extends Bundle {
   val pc = (UInt(32.W))
   val inst = (UInt(32.W))
   val controls = (new ControlSignalsLSU)
-  val write_info = (new WriteInfo)
+  val write_info = (new WriteInfoWBU)
   val itype = (new InstType)
   val rd_valid = (Bool())
   val exception = (Bool())
@@ -130,16 +130,12 @@ class LSU() extends PrefixedModule {
   fetch_port.b.ready := out_aw && out_w && !has_b
 
   ramLoader.io.word := fetch_port.r.data
-  ramLoader.io.is_byte := in.bits.controls.is_ram_byte
-  ramLoader.io.is_half := in.bits.controls.is_ram_half
-  ramLoader.io.is_word := in.bits.controls.is_ram_word
+  ramLoader.io.size := in.bits.controls.ram_size
   ramLoader.io.is_unsigned := in.bits.controls.is_load_unsigned
   ramLoader.io.lower2bit := in.bits.write_info.alu_out(1, 0)
 
   ramWriter.io.word := in.bits.write_info.mem_word_or_csr_wdata
-  ramWriter.io.is_word := in.bits.controls.is_ram_word
-  ramWriter.io.is_half := in.bits.controls.is_ram_half
-  ramWriter.io.is_byte := in.bits.controls.is_ram_byte
+  ramWriter.io.size := in.bits.controls.ram_size
   ramWriter.io.lower2bit := in.bits.write_info.alu_out(1, 0)
 
   val rdata_latched = RegEnable(ramLoader.io.out, fire.r_fire)
@@ -147,22 +143,20 @@ class LSU() extends PrefixedModule {
   out.bits.pc := in.bits.pc
   out.bits.inst := in.bits.inst
   out.bits.controls := in.bits.controls
-  out.bits.write_info := in.bits.write_info
-  when(in.bits.controls.is_gpr_wdata_from_ram) {
-    out.bits.write_info.gpr_wdata := rdata_latched
-  }
-  when(has_exception) {
-    out.bits.write_info.dnpc := in.bits.write_info.mtvec
-  }
+  out.bits.write_info.mem_word_or_csr_wdata := in.bits.write_info.mem_word_or_csr_wdata
+  out.bits.write_info.gpr_wdata := Mux(
+    in.bits.controls.gpr_wdata_sel === GprWdataSel.RAM,
+    rdata_latched,
+    in.bits.write_info.gpr_wdata
+  )
+  out.bits.write_info.dnpc := Mux(
+    has_exception,
+    in.bits.write_info.mtvec,
+    in.bits.write_info.dnpc
+  )
 
   fetch_port.ar.addr := in.bits.write_info.alu_out
-  fetch_port.ar.size := Mux1H(
-    Seq(
-      in.bits.controls.is_ram_byte -> "b000".U(3.W),
-      in.bits.controls.is_ram_half -> "b001".U(3.W),
-      in.bits.controls.is_ram_word -> "b010".U(3.W)
-    )
-  )
+  fetch_port.ar.size := Cat(0.U(1.W), in.bits.controls.ram_size)
 
   fetch_port.ar.id := "b1000".U(4.W)
   fetch_port.aw.addr := in.bits.write_info.alu_out
@@ -170,13 +164,7 @@ class LSU() extends PrefixedModule {
 
   fetch_port.w.data := ramWriter.io.out
   fetch_port.w.strb := ramWriter.io.mask
-  fetch_port.aw.size := Mux1H(
-    Seq(
-      in.bits.controls.is_ram_byte -> "b000".U(3.W),
-      in.bits.controls.is_ram_half -> "b001".U(3.W),
-      in.bits.controls.is_ram_word -> "b010".U(3.W)
-    )
-  )
+  fetch_port.aw.size := Cat(0.U(1.W), in.bits.controls.ram_size)
   fetch_port.w.last := true.B
 
   val no_pending_memory_access =
@@ -186,7 +174,7 @@ class LSU() extends PrefixedModule {
   conf.rd_valid := has_signal && in.bits.rd_valid
   conf.csr_dest_valid := has_signal && in.bits.itype.is_csrop
   conf.csr_id := in.bits.controls.csrd
-  conf.ok_to_forward_rd := has_r || !in.bits.controls.is_gpr_wdata_from_ram
+  conf.ok_to_forward_rd := has_r || in.bits.controls.gpr_wdata_sel =/= GprWdataSel.RAM
   conf.rd_data := out.bits.write_info.gpr_wdata
 
   out_pc.dnpc := Mux(
@@ -245,7 +233,6 @@ class LSU() extends PrefixedModule {
     when(fire.b_fire) {
       assert(fetch_port.b.resp === 0.U, "lsu.axi.bresp is not 0")
       assert(fetch_port.b.id === "b1000".U)
-
     }
   }
 }
