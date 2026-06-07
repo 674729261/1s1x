@@ -112,7 +112,6 @@ __attribute__((section(".fsbl"))) void fstbootloader() {
     n--;
   }
 
-  asm volatile("fence.i" ::: "memory");
 }
 __attribute__((section(".ssbl")))
 __attribute__((noinline))
@@ -204,5 +203,4 @@ __attribute__((section(".ssbl"))) void secbootloader() {
 
   __ssbl_extra();
 
-  asm volatile("fence.i" ::: "memory");
 }
