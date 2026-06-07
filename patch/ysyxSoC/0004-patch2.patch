@@ -1,4 +1,4 @@
-From 68cf9a61c445dbdd202c9f6cbd2b6f4fdbff6bb4 Mon Sep 17 00:00:00 2001
+From e97161d60827577662a23088681baff169aa77b3 Mon Sep 17 00:00:00 2001
 From: Shitful <2292683261@qq.com>
 Date: Sun, 7 Jun 2026 17:50:30 +0800
 Subject: [PATCH 4/4] patch2
@@ -6075,15 +6075,15 @@ index d8c622d4..00000000
 -2.54.0
 -
 diff --git a/Makefile b/Makefile
-index 75a1bca9..241188a0 100644
+index 75a1bca9..575e25a4 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -9,6 +9,8 @@ FIRTOOL_PATCH_DIR = $(shell pwd)/patch/firtool
  $(V_FILE_FINAL): $(SCALA_FILES)
  # Replace firtool with a newer version
  # TODO: This can be removed after chisel publishes a new version
-+	sed -i  "s/RegNext(r_sel0)/Reg(Bool())/g" src/main/scala/amba/axi4/SRAM.scala || true
-+	sed -i  "s/RegNext(w_sel0)/Reg(Bool())/g" src/main/scala/amba/axi4/SRAM.scala || true
++	sed -i  "s/RegNext(r_sel0)/Reg(Bool())/g" rocket-chip/src/main/scala/amba/axi4/SRAM.scala || true
++	sed -i  "s/RegNext(w_sel0)/Reg(Bool())/g" rocket-chip/src/main/scala/amba/axi4/SRAM.scala || true
  	@./patch/update-firtool.sh $(FIRTOOL_VERSION) $(FIRTOOL_PATCH_DIR)
  	CHISEL_FIRTOOL_PATH=$(FIRTOOL_PATCH_DIR)/firtool-$(FIRTOOL_VERSION)/bin \
  	mill -i ysyxsoc.runMain ysyx.Elaborate --target-dir $(@D)
