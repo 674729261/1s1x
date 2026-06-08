@@ -1,7 +1,7 @@
 From 51618d17ccec5b4d3b314db31f9ccd47cf34324a Mon Sep 17 00:00:00 2001
 From: Shitful <2292683261@qq.com>
 Date: Mon, 8 Jun 2026 14:53:39 +0800
-Subject: [PATCH 20/24] remove checksum for firtool
+Subject: [PATCH 20/25] remove checksum for firtool
 
 ---
  patch/update-firtool.sh | 10 +++++-----
