@@ -54,7 +54,7 @@ class CSR extends PrefixedModule {
   mcycle_nxt(1) := Mux(
     io.wen && is_mcycleh_w,
     io.wdata,
-    mcycle_inc(1)
+    Cat(0.U(16.W), mcycle_inc(1))(15, 0)
   )
 
   val csr_mstatus = RegEnable(io.wdata, "h1800".U(32.W), io.wen && is_mstatus_w)
@@ -74,7 +74,7 @@ class CSR extends PrefixedModule {
       is_mvendorid_r -> csr_mvendorid,
       is_marchid_r -> csr_marchid,
       is_mcycle_r -> csr_mcycle(0),
-      is_mcycleh_r -> csr_mcycle(1),
+      is_mcycleh_r -> Cat(0.U(16.W), csr_mcycle(1))(15, 0),
       is_mstatus_r -> csr_mstatus,
       is_mcause_r -> csr_mcause,
       is_mtvec_r -> csr_mtvec,
