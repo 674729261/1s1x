@@ -112,9 +112,10 @@ class LSU() extends PrefixedModule {
     )
   )
 
-  val has_exception =
-    has_signal && (bus_b_error || bus_r_error || in.bits.exeption)
-  out.bits.exception := (bus_b_error || bus_r_error) || in.bits.exeption
+  val mem_error = bus_b_error || bus_r_error
+  val exception_any = mem_error || in.bits.exeption
+  val has_exception = has_signal && exception_any
+  out.bits.exception := exception_any
   out.bits.cause := MuxCase(
     in.bits.cause,
     Seq(bus_r_error -> 5.U(4.W), bus_b_error -> 7.U(4.W))
@@ -144,16 +145,17 @@ class LSU() extends PrefixedModule {
   out.bits.inst := in.bits.inst
   out.bits.controls := in.bits.controls
   out.bits.write_info.mem_word_or_csr_wdata := in.bits.write_info.mem_word_or_csr_wdata
+  val dnpc_final = Mux(
+    has_exception,
+    in.bits.write_info.mtvec,
+    in.bits.write_info.dnpc
+  )
   out.bits.write_info.gpr_wdata := Mux(
     in.bits.controls.gpr_wdata_sel === GprWdataSel.RAM,
     rdata_latched,
     in.bits.write_info.gpr_wdata
   )
-  out.bits.write_info.dnpc := Mux(
-    has_exception,
-    in.bits.write_info.mtvec,
-    in.bits.write_info.dnpc
-  )
+  out.bits.write_info.dnpc := dnpc_final
 
   fetch_port.ar.addr := in.bits.write_info.alu_out
   fetch_port.ar.size := Cat(0.U(1.W), in.bits.controls.ram_size)
@@ -177,11 +179,7 @@ class LSU() extends PrefixedModule {
   conf.ok_to_forward_rd := has_r || in.bits.controls.gpr_wdata_sel =/= GprWdataSel.RAM
   conf.rd_data := out.bits.write_info.gpr_wdata
 
-  out_pc.dnpc := Mux(
-    has_exception,
-    in.bits.write_info.mtvec,
-    in.bits.write_info.dnpc
-  )
+  out_pc.dnpc := dnpc_final
   out_pc.flush_valid := has_exception || ((in.bits.itype.is_fence || in.bits.csr_jump) && has_signal)
   out_pc.fencei := in.bits.itype.is_fence
 

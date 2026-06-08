@@ -4,7 +4,6 @@ import chisel3.util._
 
 class WBU() extends PrefixedModule {
   val in = IO(Flipped(DecoupledIO(new MessageLSU2WBU)))
-  val conf = IO(new ConflictInfoRD)
   val out = IO(new Bundle {
     val ebreak = Output(Bool())
     val dnpc = Output(UInt(32.W))
@@ -29,7 +28,7 @@ class WBU() extends PrefixedModule {
   })
 
   in.ready := true.B
-  val commit = in.fire
+  val commit = in.valid
 
   out.ebreak := in.bits.controls.is_ebreak && commit
 
@@ -45,13 +44,6 @@ class WBU() extends PrefixedModule {
   out.gpr_waddr := in.bits.controls.rd
   out.gpr_wdata := in.bits.write_info.gpr_wdata
   out.gpr_wen := in.bits.controls.is_gpr_wen && commit && !in.bits.exception
-
-  conf.rd_id := in.bits.controls.rd
-  conf.rd_valid := commit && in.bits.rd_valid
-  conf.csr_dest_valid := commit && in.bits.itype.is_csrop
-  conf.csr_id := in.bits.controls.csrd
-  conf.ok_to_forward_rd := true.B
-  conf.rd_data := in.bits.write_info.gpr_wdata
 
   out.ok_to_step := commit
   out.retire_pc := in.bits.pc
