@@ -1,7 +1,7 @@
 From cfc7bf6d3f3e26ab0ea01cc72eb4a9bb4441c862 Mon Sep 17 00:00:00 2001
 From: Shitful <2292683261@qq.com>
 Date: Mon, 8 Jun 2026 11:49:08 +0800
-Subject: [PATCH] for CI
+Subject: [PATCH 1/2] for CI
 
 ---
  bsp/abstract-machine/.gitignore      |  13 +++
