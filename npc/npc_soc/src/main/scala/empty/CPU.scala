@@ -7,8 +7,11 @@ import chisel3.layers.Verification
 object PerformanceCounterLayer extends Layer(LayerConfig.Inline)
 
 object StageConnect {
-  def apply[T <: Data](left: DecoupledIO[T], right: DecoupledIO[T]) = {
-    val arch = "pipeline"
+  def apply[T <: Data](
+      left: DecoupledIO[T],
+      right: DecoupledIO[T],
+      arch: String
+  ) = {
     if (arch == "single") { right.bits := left.bits }
     else if (arch == "multi") { right <> left }
     else if (arch == "pipeline") {
@@ -107,10 +110,10 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean)
 
   ifu.fetch_port <> arbiter.IFU_AXI
 
-  StageConnect(ifu.out, idu.in)
-  StageConnect(idu.out, exu.in)
-  StageConnect(exu.out, lsu.in)
-  StageConnect(lsu.out, wbu.in)
+  StageConnect(ifu.out, idu.in, "pipeline")
+  StageConnect(idu.out, exu.in, "pipeline")
+  StageConnect(exu.out, lsu.in, "pipeline")
+  StageConnect(lsu.out, wbu.in, "multi")
 
   def check_conflict(
       rs_info: ConflictInfoRS,
@@ -157,61 +160,48 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean)
     data_lsu
   ) =
     check_conflict(idu.conf, lsu.conf)
-  val (
-    conf1_wbu,
-    fwd1_wbu,
-    conf2_wbu,
-    fwd2_wbu,
-    conf_csr_wbu,
-    data_wbu
-  ) =
-    check_conflict(idu.conf, wbu.conf)
 
   val stall_src1 = MuxCase(
     false.B,
     Seq(
       conf1_exu -> !fwd1_exu,
-      conf1_lsu -> !fwd1_lsu,
-      conf1_wbu -> !fwd1_wbu
+      conf1_lsu -> !fwd1_lsu
     )
   )
   val stall_src2 = MuxCase(
     false.B,
     Seq(
       conf2_exu -> !fwd2_exu,
-      conf2_lsu -> !fwd2_lsu,
-      conf2_wbu -> !fwd2_wbu
+      conf2_lsu -> !fwd2_lsu
     )
   )
   val stall_csr =
-    conf_csr_exu || conf_csr_lsu || conf_csr_wbu || wbu.out.csr_interruption
+    conf_csr_exu || conf_csr_lsu || wbu.out.csr_interruption
   idu.conf.stall := stall_src1 || stall_src2 || stall_csr
 
   idu.conf.do_forward_src1 := MuxCase(
     false.B,
     Seq(
       conf1_exu -> fwd1_exu,
-      conf1_lsu -> fwd1_lsu,
-      conf1_wbu -> fwd1_wbu
+      conf1_lsu -> fwd1_lsu
     )
   )
   idu.conf.do_forward_src2 := MuxCase(
     false.B,
     Seq(
       conf2_exu -> fwd2_exu,
-      conf2_lsu -> fwd2_lsu,
-      conf2_wbu -> fwd2_wbu
+      conf2_lsu -> fwd2_lsu
     )
   )
   idu.conf.forward_data_src1 := MuxCase(
-    data_wbu,
+    data_lsu,
     Seq(
       conf1_exu -> data_exu,
       conf1_lsu -> data_lsu
     )
   )
   idu.conf.forward_data_src2 := MuxCase(
-    data_wbu,
+    data_lsu,
     Seq(
       conf2_exu -> data_exu,
       conf2_lsu -> data_lsu
