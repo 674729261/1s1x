@@ -1,4 +1,5 @@
 package empty
+
 import chisel3._
 import chisel3.util._
 import chisel3.layer._
@@ -12,9 +13,11 @@ object StageConnect {
       right: DecoupledIO[T],
       arch: String
   ) = {
-    if (arch == "single") { right.bits := left.bits }
-    else if (arch == "multi") { right <> left }
-    else if (arch == "pipeline") {
+    if (arch == "single") {
+      right.bits := left.bits
+    } else if (arch == "multi") {
+      right <> left
+    } else if (arch == "pipeline") {
       left.ready := right.ready
       right.bits := RegEnable(left.bits, left.fire)
       right.valid := left.valid
@@ -29,7 +32,6 @@ class MemAccessBus extends Bundle {
   val wdata = Output(UInt(32.W))
   val wmask = Output(UInt(4.W))
   val rdata = Input(UInt(32.W))
-
   val reqValid = Output(Bool())
   val reqReady = Input(Bool())
   val respValid = Input(Bool())
@@ -54,14 +56,11 @@ class PerformanceCounter extends ExtModule {
   val idu_valid = IO(Input(Bool()))
   val wbu_valid = IO(Input(Bool()))
   val inst_type = IO(Input(new InstType))
-
   val stalled = IO(Input(Bool()))
   val flushed = IO(Input(Bool()))
-
 }
 
-class CPU_Core(init_pc: UInt, performance_counter: Boolean)
-    extends PrefixedModule {
+class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends PrefixedModule {
   val io = IO(new Bundle {
     val pc = Output(UInt(32.W))
     // val inst_bus_axi = new AXI_Lite
@@ -78,6 +77,7 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean)
   val exu = Module(new EXU)
   val lsu = Module(new LSU)
   val wbu = Module(new WBU)
+
   val pc = RegEnable(
     Cat(wbu.out.dnpc(31, 1), 0.U(1.W)),
     init_pc,
@@ -87,7 +87,6 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean)
 
   val gpr = Module(new GPR(CNT = 16, BITWIDTH = 32))
   val csrBank = Module(new CSR)
-
   val arbiter = Module(new Arbiter_2Master)
   val xbar = Module(new XBar_CLINT)
   val clint = Module(new Clint)
@@ -96,8 +95,12 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean)
   xbar.IN_AXI <> arbiter.OUT_AXI
   xbar.CLINT_AXI <> clint.in
 
+  // Reuse CSR.mcycle as CLINT.mtime low word. mtime high word stays 0 in Clint.
+  clint.mtime := csrBank.io.mcycle
+
   io.retire_pc := wbu.out.retire_pc
   io.retire_inst := wbu.out.retire_inst
+
   ifu.in.exu_dnpc := Mux(
     lsu.out_pc.flush_valid,
     lsu.out_pc.dnpc,
@@ -120,17 +123,14 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean)
       rd_info: ConflictInfoRD
   ): (Bool, Bool, Bool, Bool, Bool, UInt) = {
     val conf1 =
-      rs_info.rs1_valid && rd_info.rd_valid && (rs_info.rs1_id === rd_info.rd_id) && (rd_info.rd_id =/= 0
-        .U(5.W))
+      rs_info.rs1_valid && rd_info.rd_valid && (rs_info.rs1_id === rd_info.rd_id) && (rd_info.rd_id =/= 0.U(5.W))
     val conf2 =
-      rs_info.rs2_valid && rd_info.rd_valid && (rs_info.rs2_id === rd_info.rd_id) && (rd_info.rd_id =/= 0
-        .U(5.W))
+      rs_info.rs2_valid && rd_info.rd_valid && (rs_info.rs2_id === rd_info.rd_id) && (rd_info.rd_id =/= 0.U(5.W))
     // val conf_csr =
     //   rs_info.csr_src_valid && rd_info.csr_dest_valid && (rs_info.csr_src_id === rd_info.csr_id)
     val conf_csr = rd_info.csr_dest_valid
     val forward1 = conf1 && (rd_info.ok_to_forward_rd)
     val forward2 = conf2 && (rd_info.ok_to_forward_rd)
-
     return (
       conf1,
       forward1,
@@ -148,8 +148,7 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean)
     fwd2_exu,
     conf_csr_exu,
     data_exu
-  ) =
-    check_conflict(idu.conf, exu.conf)
+  ) = check_conflict(idu.conf, exu.conf)
 
   val (
     conf1_lsu,
@@ -158,8 +157,7 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean)
     fwd2_lsu,
     conf_csr_lsu,
     data_lsu
-  ) =
-    check_conflict(idu.conf, lsu.conf)
+  ) = check_conflict(idu.conf, lsu.conf)
 
   val stall_src1 = MuxCase(
     false.B,
@@ -177,8 +175,8 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean)
   )
   val stall_csr =
     conf_csr_exu || conf_csr_lsu || wbu.out.csr_interruption
-  idu.conf.stall := stall_src1 || stall_src2 || stall_csr
 
+  idu.conf.stall := stall_src1 || stall_src2 || stall_csr
   idu.conf.do_forward_src1 := MuxCase(
     false.B,
     Seq(
@@ -210,7 +208,6 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean)
 
   io.ok_to_step := wbu.out.ok_to_step
   csrBank.io.ok_to_step := wbu.out.ok_to_step
-
   idu.fetch_port_in.csr_rdata := csrBank.io.rdata
   idu.fetch_port_in.csr_mepc := csrBank.io.mepc
   idu.fetch_port_in.csr_mtvec := csrBank.io.mtvec
@@ -248,7 +245,6 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean)
     m_performance_counter.idu_valid := idu.out.valid
     m_performance_counter.wbu_valid := wbu.out.ok_to_step
     m_performance_counter.inst_type := wbu.out.inst_type
-
     m_performance_counter.ifu_arready := ifu.fetch_port.ar.ready
     m_performance_counter.ifu_arvalid := ifu.fetch_port.ar.valid
     m_performance_counter.ifu_rready := ifu.fetch_port.r.ready
@@ -257,9 +253,7 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean)
     m_performance_counter.lsu_arvalid := lsu.fetch_port.ar.valid
     m_performance_counter.lsu_rready := lsu.fetch_port.r.ready
     m_performance_counter.lsu_rvalid := lsu.fetch_port.r.valid
-
     m_performance_counter.stalled := idu.perf_cnt.stalled
     m_performance_counter.flushed := idu.perf_cnt.flushed
-
   }
 }

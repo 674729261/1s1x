@@ -1,4 +1,5 @@
 package empty
+
 import chisel3._
 import chisel3.util._
 import chisel3.layer._
@@ -17,9 +18,12 @@ class XBar_CLINT() extends PrefixedModule {
   val CLINT_fire = GenerateFireSignal(CLINT_AXI)
 
   val sel_clint_ar = (IN_AXI.ar.addr(31, 24) === 0x02.U(8.W))
+
   when(sel_clint_ar) {
     CLINT_AXI.ar <> IN_AXI.ar
-  }.otherwise { OUT_AXI.ar <> IN_AXI.ar }
+  }.otherwise {
+    OUT_AXI.ar <> IN_AXI.ar
+  }
 
   IN_AXI.aw <> OUT_AXI.aw
   IN_AXI.w <> OUT_AXI.w
@@ -33,24 +37,31 @@ class XBar_CLINT() extends PrefixedModule {
       sCLINT -> Mux(CLINT_fire.r_burst_last, sOUT, sCLINT)
     )
   )
+
   val should_bind_to_OUT_r = (r_state === sOUT)
   when(should_bind_to_OUT_r) {
     OUT_AXI.r <> IN_AXI.r
-  }.otherwise { CLINT_AXI.r <> IN_AXI.r }
-
+  }.otherwise {
+    CLINT_AXI.r <> IN_AXI.r
+  }
 }
 
 class Clint extends PrefixedModule {
   val in = IO(Flipped(new AXI))
+
+  // Low 32 bits of CSR.mcycle. The high 32 bits of mtime are kept as 0.
+  val mtime = IO(Input(UInt(32.W)))
+
   set_flipped_AXIfull_zero(in)
+
   val fire = GenerateFireSignal(in)
+  val has_ar = RegInit(false.B)
+  val low_or_high = RegInit(false.B)
 
-  val mtime = RegInit(0.U(32.W))
-  mtime := mtime + 1.U
+  when(fire.ar_fire) {
+    low_or_high := in.ar.addr(2)
+  }
 
-  val has_ar = RegInit(Bool(), false.B)
-  val out_r = RegInit(Bool(), false.B)
-  val low_or_high = RegEnable(in.ar.addr(2), fire.ar_fire)
   has_ar := MuxCase(
     has_ar,
     Seq(
@@ -58,6 +69,7 @@ class Clint extends PrefixedModule {
       fire.r_burst_last -> false.B
     )
   )
+
   in.ar.ready := !has_ar
   in.r.valid := has_ar
   in.r.data := Mux(low_or_high, 0.U(32.W), mtime)
@@ -71,7 +83,5 @@ class Clint extends PrefixedModule {
     }
     assert(!in.aw.valid, "CLINT can not be written")
     assert(!in.w.valid, "CLINT can not be written")
-
   }
-
 }
