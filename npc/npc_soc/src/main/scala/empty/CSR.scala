@@ -16,7 +16,7 @@ class CSR extends PrefixedModule {
     val new_cause = Input(UInt(32.W))
     val interruption = Input(Bool())
     val ok_to_step = Input(Bool())
-    val mcycle = Output(UInt(64.W))
+    val mcycle = Output(UInt(40.W))
   })
 
   val is_mvendorid_r = io.csr_r === 0xf11.U(12.W)
@@ -40,13 +40,13 @@ class CSR extends PrefixedModule {
   val csr_mvendorid = 0x79737978.U(32.W)
   val csr_marchid = 0x17eb198.U(32.W)
 
-  val csr_mcycle = RegInit(0.U(64.W))
+  val csr_mcycle = RegInit(0.U(40.W))
   when(io.wen && is_mcycle_w) {
-    csr_mcycle := Cat(csr_mcycle(63, 32), io.wdata)
+    csr_mcycle := Cat(csr_mcycle(39, 32), io.wdata)
   }.elsewhen(io.wen && is_mcycleh_w) {
-    csr_mcycle := Cat(io.wdata, csr_mcycle(31, 0))
+    csr_mcycle := Cat(io.wdata(7, 0), csr_mcycle(31, 0))
   }.otherwise {
-    csr_mcycle := csr_mcycle + 1.U
+    csr_mcycle := csr_mcycle +% 1.U
   }
 
   val csr_mstatus = RegEnable(io.wdata, "h1800".U(32.W), io.wen && is_mstatus_w)
@@ -65,7 +65,7 @@ class CSR extends PrefixedModule {
       is_mvendorid_r -> csr_mvendorid,
       is_marchid_r -> csr_marchid,
       is_mcycle_r -> csr_mcycle(31, 0),
-      is_mcycleh_r -> csr_mcycle(63, 32),
+      is_mcycleh_r -> Cat(0.U(24.W), csr_mcycle(39, 32)),
       is_mstatus_r -> csr_mstatus,
       is_mcause_r -> csr_mcause,
       is_mtvec_r -> csr_mtvec,
