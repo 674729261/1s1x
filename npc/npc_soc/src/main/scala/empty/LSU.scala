@@ -5,22 +5,22 @@ import chisel3.util._
 import chisel3.layer.block
 
 class ControlSignalsLSU extends Bundle {
-  val is_csr_visit = (Bool())
-  val is_gpr_wen = (Bool())
+  val is_csr_visit = Bool()
+  val is_gpr_wen = Bool()
   val rd = UInt(5.W)
   val csrd = UInt(12.W)
   val is_ebreak = Bool()
 }
 
 class MessageLSU2WBU extends Bundle {
-  val pc = (UInt(32.W))
-  val inst = (UInt(32.W))
-  val controls = (new ControlSignalsLSU)
-  val write_info = (new WriteInfoWBU)
-  val itype = (new InstType)
-  val rd_valid = (Bool())
-  val exception = (Bool())
-  val cause = (UInt(4.W))
+  val pc = UInt(32.W)
+  val inst = UInt(32.W)
+  val controls = new ControlSignalsLSU
+  val write_info = new WriteInfoWBU
+  val itype = new InstType
+  val rd_valid = Bool()
+  val exception = Bool()
+  val cause = UInt(4.W)
 }
 
 class LSU() extends PrefixedModule {
@@ -28,11 +28,11 @@ class LSU() extends PrefixedModule {
   val out = IO(DecoupledIO(new MessageLSU2WBU))
   val conf = IO(new ConflictInfoRD)
   val fetch_port = IO(new AXI)
-
   set_AXIfull_zero(fetch_port)
 
   val ramWriter = Module(new RamWriteData)
   val ramLoader = Module(new RamLoadData)
+
   val should_mem_access_r = Wire(Bool())
   val should_mem_access_w = Wire(Bool())
   val fire = GenerateFireSignal(fetch_port)
@@ -48,7 +48,7 @@ class LSU() extends PrefixedModule {
     has_signal,
     Seq(
       in.fire -> true.B,
-      out.fire -> false.B
+      out.fire -> false.B,
     )
   )
 
@@ -57,7 +57,7 @@ class LSU() extends PrefixedModule {
     out_ar,
     Seq(
       fire.ar_fire -> true.B,
-      out.fire -> false.B
+      out.fire -> false.B,
     )
   )
 
@@ -66,7 +66,7 @@ class LSU() extends PrefixedModule {
     has_r,
     Seq(
       fire.r_fire -> true.B,
-      out.fire -> false.B
+      out.fire -> false.B,
     )
   )
 
@@ -76,14 +76,14 @@ class LSU() extends PrefixedModule {
     out_aw,
     Seq(
       fire.aw_fire -> true.B,
-      out.fire -> false.B
+      out.fire -> false.B,
     )
   )
   out_w := MuxCase(
     out_w,
     Seq(
       fire.w_fire -> true.B,
-      out.fire -> false.B
+      out.fire -> false.B,
     )
   )
 
@@ -92,7 +92,7 @@ class LSU() extends PrefixedModule {
     has_b,
     Seq(
       fire.b_fire -> true.B,
-      out.fire -> false.B
+      out.fire -> false.B,
     )
   )
 
@@ -126,23 +126,18 @@ class LSU() extends PrefixedModule {
   out.bits.controls := in.bits.controls
   out.bits.write_info.mem_word_or_csr_wdata := in.bits.write_info.mem_word_or_csr_wdata
 
-  val dnpc_final = Mux(
-    has_exception,
-    in.bits.write_info.mtvec,
-    in.bits.write_info.dnpc
-  )
+  val dnpc_final = Mux(has_exception, in.bits.write_info.mtvec, in.bits.write_info.dnpc)
 
   out.bits.write_info.gpr_wdata := Mux(
     in.bits.controls.gpr_wdata_sel === GprWdataSel.RAM,
     rdata_latched,
-    in.bits.write_info.gpr_wdata
+    in.bits.write_info.gpr_wdata,
   )
   out.bits.write_info.dnpc := dnpc_final
 
   fetch_port.ar.addr := in.bits.write_info.alu_out
   fetch_port.ar.size := Cat(0.U(1.W), in.bits.controls.ram_size)
   fetch_port.ar.id := "b1000".U(4.W)
-
   fetch_port.aw.addr := in.bits.write_info.alu_out
   fetch_port.aw.id := "b1000".U(4.W)
   fetch_port.w.data := ramWriter.io.out
@@ -176,13 +171,7 @@ class LSU() extends PrefixedModule {
     check_signal_stable(
       fetch_port.ar.ready,
       fetch_port.ar.valid,
-      Cat(
-        fetch_port.ar.addr,
-        fetch_port.ar.burst,
-        fetch_port.ar.id,
-        fetch_port.ar.len,
-        fetch_port.ar.size
-      ),
+      Cat(fetch_port.ar.addr, fetch_port.ar.burst, fetch_port.ar.id, fetch_port.ar.len, fetch_port.ar.size),
       "LSU.ar"
     )
     check_signal_stable(
@@ -194,16 +183,9 @@ class LSU() extends PrefixedModule {
     check_signal_stable(
       fetch_port.aw.ready,
       fetch_port.aw.valid,
-      Cat(
-        fetch_port.aw.addr,
-        fetch_port.aw.burst,
-        fetch_port.aw.id,
-        fetch_port.aw.len,
-        fetch_port.aw.size
-      ),
+      Cat(fetch_port.aw.addr, fetch_port.aw.burst, fetch_port.aw.id, fetch_port.aw.len, fetch_port.aw.size),
       "LSU.aw"
     )
-
     when(fire.r_fire) {
       assert(fetch_port.r.last, "lsu.axi.rlast is not set")
       assert(fetch_port.r.id === "b1000".U, "lsu.axi.rid is not b1000")

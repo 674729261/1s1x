@@ -16,10 +16,7 @@ class CSR extends PrefixedModule {
     val new_cause = Input(UInt(32.W))
     val interruption = Input(Bool())
     val ok_to_step = Input(Bool())
-
-    // Export the low 32-bit mcycle value as the CLINT mtime source.
-    // mcycleh is intentionally kept as 0 in this design.
-    val mcycle = Output(UInt(32.W))
+    val mcycle = Output(UInt(64.W))
   })
 
   val is_mvendorid_r = io.csr_r === 0xf11.U(12.W)
@@ -43,32 +40,36 @@ class CSR extends PrefixedModule {
   val csr_mvendorid = 0x79737978.U(32.W)
   val csr_marchid = 0x17eb198.U(32.W)
 
-  // Only keep the low 32-bit counter. This matches the current mcycleh=0 policy
-  // and avoids another high-half register/adder just for CLINT mtime.
-  val csr_mcycle = RegInit(0.U(32.W))
-  csr_mcycle := Mux(io.wen && is_mcycle_w, io.wdata, csr_mcycle + 1.U)
+  val csr_mcycle = RegInit(0.U(64.W))
+  when(io.wen && is_mcycle_w) {
+    csr_mcycle := Cat(csr_mcycle(63, 32), io.wdata)
+  }.elsewhen(io.wen && is_mcycleh_w) {
+    csr_mcycle := Cat(io.wdata, csr_mcycle(31, 0))
+  }.otherwise {
+    csr_mcycle := csr_mcycle + 1.U
+  }
 
   val csr_mstatus = RegEnable(io.wdata, "h1800".U(32.W), io.wen && is_mstatus_w)
   val csr_mcause = RegEnable(
-    Mux(io.interruption, io.new_cause, io.wdata),
-    (io.wen && is_mcause_w) || io.interruption
+    Mux(io.interruption, 11.U(32.W), io.wdata),
+    (io.wen && is_mcause_w) || io.interruption,
   )
   val csr_mtvec = RegEnable(io.wdata, io.wen && is_mtvec_w)
   val csr_mepc = RegEnable(
     Mux(io.interruption, io.cur_pc, io.wdata),
-    (io.wen && is_mepc_w) || io.interruption
+    (io.wen && is_mepc_w) || io.interruption,
   )
 
   io.rdata := Mux1H(
     Seq(
       is_mvendorid_r -> csr_mvendorid,
       is_marchid_r -> csr_marchid,
-      is_mcycle_r -> csr_mcycle,
-      is_mcycleh_r -> 0.U(32.W),
+      is_mcycle_r -> csr_mcycle(31, 0),
+      is_mcycleh_r -> csr_mcycle(63, 32),
       is_mstatus_r -> csr_mstatus,
       is_mcause_r -> csr_mcause,
       is_mtvec_r -> csr_mtvec,
-      is_mepc_r -> csr_mepc
+      is_mepc_r -> csr_mepc,
     )
   )
 

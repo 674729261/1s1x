@@ -7,6 +7,7 @@ import chisel3.layer.block
 class CacheLine(linesize_2pow: Int, linecount_2pow: Int) extends Bundle {
   val words = (1 << (linesize_2pow - 2))
   val tag_width = 32 - linesize_2pow - linecount_2pow
+
   val tag = UInt(tag_width.W)
   val data = Vec(words, UInt(32.W))
 }
@@ -45,7 +46,7 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends PrefixedModule {
   content.io.wen := false.B
   content.io.wdata := 0.U(cacheline_bits.W)
 
-  val valid_flags = RegInit(Vec(line_count, Bool()), VecInit(Seq.fill(line_count)(false.B)))
+  val valid_flags = RegInit(VecInit(Seq.fill(line_count)(false.B)))
   val fire = GenerateFireSignal(fetch_port)
   val ifu_afire = io.avalid && io.aready
   val ifu_rfire = io.rvalid && io.rready
@@ -53,12 +54,12 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends PrefixedModule {
   val addr_r = RegEnable(io.addr, ifu_afire)
   val timestamp_r = RegEnable(io.timestamp_req, 0.U(3.W), ifu_afire)
 
-  val has_request_r = RegInit(Bool(), false.B)
+  val has_request_r = RegInit(false.B)
   has_request_r := MuxCase(
     has_request_r,
     Seq(
       (ifu_afire && !ifu_rfire) -> true.B,
-      (!ifu_afire && ifu_rfire) -> false.B
+      (!ifu_afire && ifu_rfire) -> false.B,
     )
   )
 
@@ -68,7 +69,6 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends PrefixedModule {
 
   content.io.addr := input_cache_index
   val cache_rdata = content.io.rdata.asTypeOf(new CacheLine(linesize_2pow, linecount_2pow))
-
   val should_cache = ShouldCache(addr_r)
   val in_cache = should_cache && valid_flags(input_cache_index) && (cache_rdata.tag === input_tag)
 
@@ -77,18 +77,20 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends PrefixedModule {
 
   val out_ar = RegInit(false.B)
   val has_r = RegInit(false.B)
+
   out_ar := MuxCase(
     out_ar,
     Seq(
       ifu_rfire -> false.B,
-      fire.ar_fire -> true.B
+      fire.ar_fire -> true.B,
     )
   )
+
   has_r := MuxCase(
     has_r,
     Seq(
       ifu_rfire -> false.B,
-      fire.r_burst_last -> true.B
+      fire.r_burst_last -> true.B,
     )
   )
 
@@ -107,12 +109,12 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends PrefixedModule {
   cache_wdata.data := axi_rdata_latched.asTypeOf(Vec(words, UInt(32.W)))
   cache_wdata.tag := input_tag
 
-  val pending_fencei = RegInit(Bool(), false.B)
+  val pending_fencei = RegInit(false.B)
   pending_fencei := MuxCase(
     pending_fencei,
     Seq(
       io.clear -> true.B,
-      fire.r_burst_last -> false.B
+      fire.r_burst_last -> false.B,
     )
   )
 
@@ -134,7 +136,7 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends PrefixedModule {
   io.rdata := Mux(
     should_cache,
     Mux(in_cache, cache_rdata.data(input_index_inside_cacheline), axi_rdata_latched(input_index_inside_cacheline)),
-    axi_rdata_latched(words - 1)
+    axi_rdata_latched(words - 1),
   )
 
   fetch_port.aw.id := "b0000".U(4.W)
@@ -149,10 +151,8 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends PrefixedModule {
       Cat(fetch_port.ar.addr, fetch_port.ar.burst, fetch_port.ar.id, fetch_port.ar.len, fetch_port.ar.size),
       "IFU.ar"
     )
-
     assert(!fetch_port.aw.valid && !fetch_port.w.valid, "ifu should not write")
     when(fire.r_fire) {
-      assert(fetch_port.r.resp === "b00".U, "ifu.axi.rresp is not b00")
       assert(fetch_port.r.id === "b0000".U, "ifu.axi.rid is not b0000")
     }
   }

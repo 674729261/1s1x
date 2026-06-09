@@ -5,6 +5,7 @@ import chisel3.util._
 
 class WBU() extends PrefixedModule {
   val in = IO(Flipped(DecoupledIO(new MessageLSU2WBU)))
+
   val out = IO(new Bundle {
     val ebreak = Output(Bool())
     val dnpc = Output(UInt(32.W))
@@ -24,17 +25,14 @@ class WBU() extends PrefixedModule {
   })
 
   in.ready := true.B
-
   val commit = in.valid
 
   out.ebreak := in.bits.controls.is_ebreak && commit
   out.csr_waddr := in.bits.controls.csrd
   out.csr_wen := in.bits.controls.is_csr_visit && commit && !in.bits.exception
   out.csr_cur_pc := in.bits.pc
-
   out.csr_mcause := 11.U(32.W)
   out.csr_interruption := in.bits.exception && commit
-
   out.csr_wdata := in.bits.write_info.mem_word_or_csr_wdata
   out.dnpc := in.bits.write_info.dnpc
   out.gpr_waddr := in.bits.controls.rd

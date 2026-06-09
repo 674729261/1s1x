@@ -17,8 +17,7 @@ class XBar_CLINT() extends PrefixedModule {
   val OUT_fire = GenerateFireSignal(OUT_AXI)
   val CLINT_fire = GenerateFireSignal(CLINT_AXI)
 
-  val sel_clint_ar = (IN_AXI.ar.addr(31, 24) === 0x02.U(8.W))
-
+  val sel_clint_ar = IN_AXI.ar.addr(31, 24) === 0x02.U(8.W)
   when(sel_clint_ar) {
     CLINT_AXI.ar <> IN_AXI.ar
   }.otherwise {
@@ -34,23 +33,44 @@ class XBar_CLINT() extends PrefixedModule {
   r_state := MuxLookup(r_state, sOUT)(
     Seq(
       sOUT -> Mux(CLINT_AXI.r.valid && !OUT_AXI.r.valid, sCLINT, sOUT),
-      sCLINT -> Mux(CLINT_fire.r_burst_last, sOUT, sCLINT)
+      sCLINT -> Mux(CLINT_fire.r_burst_last, sOUT, sCLINT),
     )
   )
 
-  val should_bind_to_OUT_r = (r_state === sOUT)
+  val should_bind_to_OUT_r = r_state === sOUT
   when(should_bind_to_OUT_r) {
     OUT_AXI.r <> IN_AXI.r
   }.otherwise {
     CLINT_AXI.r <> IN_AXI.r
   }
+  val ext_ar_addr_hold = RegInit(0.U(32.W))
+  val ext_ar_pending = RegInit(false.B)
+  when(OUT_fire.ar_fire) {
+    ext_ar_addr_hold := OUT_AXI.ar.addr
+    ext_ar_pending := true.B
+  }.elsewhen(OUT_fire.r_burst_last) {
+    ext_ar_pending := false.B
+  }
+  when(ext_ar_pending && !OUT_AXI.ar.valid) {
+    OUT_AXI.ar.addr := ext_ar_addr_hold
+  }
+
+  val ext_aw_addr_hold = RegInit(0.U(32.W))
+  val ext_aw_pending = RegInit(false.B)
+  when(OUT_fire.aw_fire) {
+    ext_aw_addr_hold := OUT_AXI.aw.addr
+    ext_aw_pending := true.B
+  }.elsewhen(OUT_fire.b_fire) {
+    ext_aw_pending := false.B
+  }
+  when(ext_aw_pending && !OUT_AXI.aw.valid) {
+    OUT_AXI.aw.addr := ext_aw_addr_hold
+  }
 }
 
 class Clint extends PrefixedModule {
   val in = IO(Flipped(new AXI))
-
-  // Low 32 bits of CSR.mcycle. The high 32 bits of mtime are kept as 0.
-  val mtime = IO(Input(UInt(32.W)))
+  val mtime = IO(Input(UInt(64.W)))
 
   set_flipped_AXIfull_zero(in)
 
@@ -66,13 +86,13 @@ class Clint extends PrefixedModule {
     has_ar,
     Seq(
       fire.ar_fire -> true.B,
-      fire.r_burst_last -> false.B
+      fire.r_burst_last -> false.B,
     )
   )
 
   in.ar.ready := !has_ar
   in.r.valid := has_ar
-  in.r.data := Mux(low_or_high, 0.U(32.W), mtime)
+  in.r.data := Mux(low_or_high, mtime(63, 32), mtime(31, 0))
   in.r.last := true.B
   in.r.id := "b1000".U(4.W)
 
