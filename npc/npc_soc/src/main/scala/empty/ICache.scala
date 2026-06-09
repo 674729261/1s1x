@@ -22,15 +22,16 @@ object ShouldCache {
     ) || high_4bit === 0xb.U(4.W)
   }
 }
+
 class ICache(linesize_2pow: Int, linecount_2pow: Int) extends PrefixedModule {
   val io = IO(new Bundle {
     val addr = Input(UInt(32.W))
-    val timestamp_req = Input(UInt(2.W))
+    val timestamp_req = Input(UInt(8.W))
     val avalid = Input(Bool())
     val aready = Output(Bool())
     val rdata = Output(UInt(32.W))
     val rpc = Output(UInt(32.W))
-    val timestamp_res = Output(UInt(2.W))
+    val timestamp_res = Output(UInt(8.W))
     val in_cache = Output(Bool())
     val rvalid = Output(Bool())
     val rready = Input(Bool())
@@ -43,24 +44,21 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends PrefixedModule {
   val bytes = (1 << linesize_2pow)
   val words = (1 << (linesize_2pow - 2))
   val line_count = (1 << linecount_2pow)
-
-  val cacheline_bits =
-    (32 - linesize_2pow - linecount_2pow) + words * 32
+  val cacheline_bits = (32 - linesize_2pow - linecount_2pow) + words * 32
 
   val content = Module(new FFRAM(linecount_2pow, cacheline_bits))
   content.suggestName("ysyx_25080216_ICacheRegisterFile")
   content.io.wen := false.B
   content.io.wdata := 0.U(cacheline_bits.W)
 
-  val valid_flags =
-    RegInit(Vec(line_count, Bool()), VecInit(Seq.fill(line_count)(false.B)))
-
+  val valid_flags = RegInit(Vec(line_count, Bool()), VecInit(Seq.fill(line_count)(false.B)))
   val fire = GenerateFireSignal(fetch_port)
+
   val ifu_afire = io.avalid && io.aready
   val ifu_rfire = io.rvalid && io.rready
 
   val addr_r = RegEnable(io.addr, ifu_afire)
-  val timestamp_r = RegEnable(io.timestamp_req, 0.U(2.W), ifu_afire)
+  val timestamp_r = RegEnable(io.timestamp_req, 0.U(8.W), ifu_afire)
   val has_request_r = RegInit(Bool(), false.B)
 
   has_request_r := MuxCase(
@@ -72,17 +70,13 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends PrefixedModule {
   )
 
   val input_tag = addr_r(31, linecount_2pow + linesize_2pow)
-  val input_cache_index =
-    addr_r(linecount_2pow + linesize_2pow - 1, linesize_2pow)
+  val input_cache_index = addr_r(linecount_2pow + linesize_2pow - 1, linesize_2pow)
   val input_index_inside_cacheline = addr_r(linesize_2pow - 1, 2)
 
   content.io.addr := input_cache_index
 
-  val cache_rdata =
-    content.io.rdata.asTypeOf(new CacheLine(linesize_2pow, linecount_2pow))
-
+  val cache_rdata = content.io.rdata.asTypeOf(new CacheLine(linesize_2pow, linecount_2pow))
   val should_cache = ShouldCache(addr_r)
-
   val in_cache = should_cache && valid_flags(
     input_cache_index
   ) && (cache_rdata.tag === input_tag)
@@ -114,7 +108,6 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends PrefixedModule {
     Cat(addr_r(31, linesize_2pow), 0.U(linesize_2pow.W)),
     addr_r
   )
-
   fetch_port.ar.valid := has_request_r && !out_ar && (!in_cache || !should_cache)
   fetch_port.r.ready := out_ar && !has_r
 
@@ -122,7 +115,6 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends PrefixedModule {
   val axi_rdata_latched = RegEnable(axi_rdata_latched_next, fire.r_fire)
 
   axi_rdata_latched_next(words - 1) := fetch_port.r.data
-
   for (i <- 0 until (words - 1))
     axi_rdata_latched_next(i) := axi_rdata_latched(i + 1)
 
@@ -151,19 +143,9 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends PrefixedModule {
       valid_flags(i) := false.B
   }
 
-  // for (i <- 0 until line_count) {
-  //   valid_flags(i) :=
-  //     Mux(
-  //       !in_cache && ifu_rfire && should_cache && (input_cache_index === i.U),
-  //       true.B,
-  //       valid_flags(i)
-  //     )
-  // }
-
   io.aready := (in_cache && ifu_rfire) || !has_request_r
   io.timestamp_res := timestamp_r
   io.rvalid := has_request_r && (in_cache || has_r)
-
   io.rdata := Mux(
     should_cache,
     Mux(
@@ -173,7 +155,6 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends PrefixedModule {
     ),
     axi_rdata_latched(words - 1)
   )
-
 
   fetch_port.aw.id := "b0000".U(4.W)
   fetch_port.ar.id := "b0000".U(4.W)
@@ -193,11 +174,8 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends PrefixedModule {
       ),
       "IFU.ar"
     )
-
     assert(!fetch_port.aw.valid && !fetch_port.w.valid, "ifu should not write")
-
     when(fire.r_fire) {
-      // assert(fetch_port.r.last, "ifu.axi.rlast is not set")
       assert(fetch_port.r.resp === "b00".U, "ifu.axi.rresp is not b00")
       assert(fetch_port.r.id === "b0000".U, "ifu.axi.rid is not b0000")
     }
