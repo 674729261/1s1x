@@ -15,23 +15,22 @@ object ShouldCache {
   def apply(addr: UInt): Bool = {
     val high_4bit = addr(31, 28)
     val high_8bit = addr(31, 24)
-    return high_4bit === 0x3.U(4.W) || high_4bit === 0x8.U(
-      4.W
-    ) || high_4bit === 0xa.U(
-      4.W
-    ) || high_4bit === 0xb.U(4.W)
+    return high_4bit === 0x3.U(4.W) ||
+      high_4bit === 0x8.U(4.W) ||
+      high_4bit === 0xa.U(4.W) ||
+      high_4bit === 0xb.U(4.W)
   }
 }
 
 class ICache(linesize_2pow: Int, linecount_2pow: Int) extends PrefixedModule {
   val io = IO(new Bundle {
     val addr = Input(UInt(32.W))
-    val timestamp_req = Input(UInt(8.W))
+    val timestamp_req = Input(UInt(3.W))
     val avalid = Input(Bool())
     val aready = Output(Bool())
     val rdata = Output(UInt(32.W))
     val rpc = Output(UInt(32.W))
-    val timestamp_res = Output(UInt(8.W))
+    val timestamp_res = Output(UInt(3.W))
     val in_cache = Output(Bool())
     val rvalid = Output(Bool())
     val rready = Input(Bool())
@@ -53,14 +52,13 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends PrefixedModule {
 
   val valid_flags = RegInit(Vec(line_count, Bool()), VecInit(Seq.fill(line_count)(false.B)))
   val fire = GenerateFireSignal(fetch_port)
-
   val ifu_afire = io.avalid && io.aready
   val ifu_rfire = io.rvalid && io.rready
 
   val addr_r = RegEnable(io.addr, ifu_afire)
-  val timestamp_r = RegEnable(io.timestamp_req, 0.U(8.W), ifu_afire)
-  val has_request_r = RegInit(Bool(), false.B)
+  val timestamp_r = RegEnable(io.timestamp_req, 0.U(3.W), ifu_afire)
 
+  val has_request_r = RegInit(Bool(), false.B)
   has_request_r := MuxCase(
     has_request_r,
     Seq(
@@ -77,9 +75,7 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends PrefixedModule {
 
   val cache_rdata = content.io.rdata.asTypeOf(new CacheLine(linesize_2pow, linecount_2pow))
   val should_cache = ShouldCache(addr_r)
-  val in_cache = should_cache && valid_flags(
-    input_cache_index
-  ) && (cache_rdata.tag === input_tag)
+  val in_cache = should_cache && valid_flags(input_cache_index) && (cache_rdata.tag === input_tag)
 
   io.rpc := addr_r
   io.in_cache := in_cache
@@ -103,27 +99,20 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends PrefixedModule {
     )
   )
 
-  fetch_port.ar.addr := Mux(
-    should_cache,
-    Cat(addr_r(31, linesize_2pow), 0.U(linesize_2pow.W)),
-    addr_r
-  )
+  fetch_port.ar.addr := Mux(should_cache, Cat(addr_r(31, linesize_2pow), 0.U(linesize_2pow.W)), addr_r)
   fetch_port.ar.valid := has_request_r && !out_ar && (!in_cache || !should_cache)
   fetch_port.r.ready := out_ar && !has_r
 
   val axi_rdata_latched_next = Wire(Vec(words, UInt(32.W)))
   val axi_rdata_latched = RegEnable(axi_rdata_latched_next, fire.r_fire)
-
   axi_rdata_latched_next(words - 1) := fetch_port.r.data
-  for (i <- 0 until (words - 1))
-    axi_rdata_latched_next(i) := axi_rdata_latched(i + 1)
+  for (i <- 0 until (words - 1)) axi_rdata_latched_next(i) := axi_rdata_latched(i + 1)
 
   val cache_wdata = Wire(new CacheLine(linesize_2pow, linecount_2pow))
   cache_wdata.data := axi_rdata_latched.asTypeOf(Vec(words, UInt(32.W)))
   cache_wdata.tag := input_tag
 
   val pending_fencei = RegInit(Bool(), false.B)
-
   pending_fencei := MuxCase(
     pending_fencei,
     Seq(
@@ -139,8 +128,7 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends PrefixedModule {
   }
 
   when(io.clear) {
-    for (i <- 0 until line_count)
-      valid_flags(i) := false.B
+    for (i <- 0 until line_count) valid_flags(i) := false.B
   }
 
   io.aready := (in_cache && ifu_rfire) || !has_request_r
@@ -148,11 +136,7 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends PrefixedModule {
   io.rvalid := has_request_r && (in_cache || has_r)
   io.rdata := Mux(
     should_cache,
-    Mux(
-      in_cache,
-      cache_rdata.data(input_index_inside_cacheline),
-      axi_rdata_latched(input_index_inside_cacheline)
-    ),
+    Mux(in_cache, cache_rdata.data(input_index_inside_cacheline), axi_rdata_latched(input_index_inside_cacheline)),
     axi_rdata_latched(words - 1)
   )
 
@@ -165,13 +149,7 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends PrefixedModule {
     check_signal_stable(
       fetch_port.ar.ready,
       fetch_port.ar.valid,
-      Cat(
-        fetch_port.ar.addr,
-        fetch_port.ar.burst,
-        fetch_port.ar.id,
-        fetch_port.ar.len,
-        fetch_port.ar.size
-      ),
+      Cat(fetch_port.ar.addr, fetch_port.ar.burst, fetch_port.ar.id, fetch_port.ar.len, fetch_port.ar.size),
       "IFU.ar"
     )
     assert(!fetch_port.aw.valid && !fetch_port.w.valid, "ifu should not write")

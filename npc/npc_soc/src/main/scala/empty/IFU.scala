@@ -24,20 +24,18 @@ class IFU(init_pc: UInt) extends PrefixedModule {
   val fetch_pc_r = RegInit(UInt(32.W), init_pc)
   val redirect_pending_r = RegInit(Bool(), false.B)
   val redirect_pc_r = RegInit(UInt(32.W), init_pc)
-  val timestamp_r = RegInit(UInt(8.W), 0.U(8.W))
+  val timestamp_r = RegInit(UInt(3.W), 0.U(3.W))
 
   val out = IO(DecoupledIO(new MessageIFU2IDU))
 
-  val timestamp_next = (timestamp_r + 1.U)(7, 0)
+  val timestamp_next = (timestamp_r + 1.U)(2, 0)
   val timestamp = Mux(in.flush_valid, timestamp_next, timestamp_r)
   val redirect_active = in.flush_valid || redirect_pending_r
   val fetch_addr = Mux(in.flush_valid, in.exu_dnpc, Mux(redirect_pending_r, redirect_pc_r, fetch_pc_r))
   val pc_next = fetch_addr + 4.U(32.W)
-
   val has_inst = has_inst_r && !redirect_active
 
   fetch_port <> icache.fetch_port
-
   icache.io.addr := fetch_addr
   icache.io.timestamp_req := timestamp
   icache.io.avalid := !in.flush_valid
@@ -71,7 +69,6 @@ class IFU(init_pc: UInt) extends PrefixedModule {
   )
 
   redirect_pc_r := Mux(in.flush_valid, in.exu_dnpc, redirect_pc_r)
-
   redirect_pending_r := MuxCase(
     redirect_pending_r,
     Seq(
@@ -79,7 +76,6 @@ class IFU(init_pc: UInt) extends PrefixedModule {
       redirect_accept -> false.B
     )
   )
-
   timestamp_r := Mux(in.flush_valid, timestamp_next, timestamp_r)
 
   out.valid := has_inst
