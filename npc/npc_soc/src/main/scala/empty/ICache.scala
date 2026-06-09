@@ -13,12 +13,7 @@ class CacheLine(linesize_2pow: Int, linecount_2pow: Int) extends Bundle {
 
 object ShouldCache {
   def apply(addr: UInt): Bool = {
-    val high_4bit = addr(31, 28)
-    val high_8bit = addr(31, 24)
-    return high_4bit === 0x3.U(4.W) ||
-      high_4bit === 0x8.U(4.W) ||
-      high_4bit === 0xa.U(4.W) ||
-      high_4bit === 0xb.U(4.W)
+    true.B
   }
 }
 
@@ -72,8 +67,8 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends PrefixedModule {
   val input_index_inside_cacheline = addr_r(linesize_2pow - 1, 2)
 
   content.io.addr := input_cache_index
-
   val cache_rdata = content.io.rdata.asTypeOf(new CacheLine(linesize_2pow, linecount_2pow))
+
   val should_cache = ShouldCache(addr_r)
   val in_cache = should_cache && valid_flags(input_cache_index) && (cache_rdata.tag === input_tag)
 
@@ -82,7 +77,6 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends PrefixedModule {
 
   val out_ar = RegInit(false.B)
   val has_r = RegInit(false.B)
-
   out_ar := MuxCase(
     out_ar,
     Seq(
@@ -90,7 +84,6 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends PrefixedModule {
       fire.ar_fire -> true.B
     )
   )
-
   has_r := MuxCase(
     has_r,
     Seq(
@@ -106,7 +99,9 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends PrefixedModule {
   val axi_rdata_latched_next = Wire(Vec(words, UInt(32.W)))
   val axi_rdata_latched = RegEnable(axi_rdata_latched_next, fire.r_fire)
   axi_rdata_latched_next(words - 1) := fetch_port.r.data
-  for (i <- 0 until (words - 1)) axi_rdata_latched_next(i) := axi_rdata_latched(i + 1)
+  for (i <- 0 until (words - 1)) {
+    axi_rdata_latched_next(i) := axi_rdata_latched(i + 1)
+  }
 
   val cache_wdata = Wire(new CacheLine(linesize_2pow, linecount_2pow))
   cache_wdata.data := axi_rdata_latched.asTypeOf(Vec(words, UInt(32.W)))
@@ -128,7 +123,9 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends PrefixedModule {
   }
 
   when(io.clear) {
-    for (i <- 0 until line_count) valid_flags(i) := false.B
+    for (i <- 0 until line_count) {
+      valid_flags(i) := false.B
+    }
   }
 
   io.aready := (in_cache && ifu_rfire) || !has_request_r
@@ -152,6 +149,7 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends PrefixedModule {
       Cat(fetch_port.ar.addr, fetch_port.ar.burst, fetch_port.ar.id, fetch_port.ar.len, fetch_port.ar.size),
       "IFU.ar"
     )
+
     assert(!fetch_port.aw.valid && !fetch_port.w.valid, "ifu should not write")
     when(fire.r_fire) {
       assert(fetch_port.r.resp === "b00".U, "ifu.axi.rresp is not b00")
