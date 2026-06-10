@@ -70,7 +70,7 @@ class XBar_CLINT() extends PrefixedModule {
 
 class Clint extends PrefixedModule {
   val in = IO(Flipped(new AXI))
-  val mtime = IO(Input(UInt(64.W)))
+  val mtime = IO(Input(UInt(40.W)))
 
   set_flipped_AXIfull_zero(in)
 
@@ -92,7 +92,7 @@ class Clint extends PrefixedModule {
 
   in.ar.ready := !has_ar
   in.r.valid := has_ar
-  in.r.data := Mux(low_or_high, mtime(63, 32), mtime(31, 0))
+  in.r.data := Mux(low_or_high, Cat(0.U(24.W), mtime(39, 32)), mtime(31, 0))
   in.r.last := true.B
   in.r.id := "b1000".U(4.W)
 

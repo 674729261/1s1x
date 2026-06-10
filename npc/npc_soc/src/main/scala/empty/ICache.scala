@@ -113,12 +113,13 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends PrefixedModule {
   pending_fencei := MuxCase(
     pending_fencei,
     Seq(
-      io.clear -> true.B,
-      fire.r_burst_last -> false.B,
+      (io.clear && has_request_r) -> true.B,
+      ifu_rfire -> false.B,
+      (!has_request_r) -> false.B,
     )
   )
 
-  when(!in_cache && ifu_rfire && should_cache && !pending_fencei) {
+  when(!in_cache && ifu_rfire && should_cache && !pending_fencei && !io.clear) {
     content.io.wen := true.B
     content.io.wdata := cache_wdata.asUInt
     valid_flags(input_cache_index) := true.B
