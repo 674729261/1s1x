@@ -225,6 +225,7 @@ class MessageIDU2EXU extends Bundle {
   val pc = UInt(32.W)
   val inst = UInt(32.W)
   val in_cache = Bool()
+  val predicted_jump = Bool()
   val controls = new ControlSignals
   val itype = new InstType
   val sources = new Operands
@@ -309,6 +310,7 @@ class IDU() extends PrefixedModule {
     )
   )
   out.bits.inst := in.bits.inst
+  out.bits.predicted_jump := in.bits.predicted_jump
   out.bits.sources.mtvec := fetch_port_in.csr_mtvec
   out.bits.itype := inst_type
 

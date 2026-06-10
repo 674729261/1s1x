@@ -61,6 +61,13 @@ class EXU() extends PrefixedModule {
   val in = IO(Flipped(DecoupledIO(new MessageIDU2EXU)))
   val out = IO(DecoupledIO(new MessageEXU2LSU))
   val conf = IO(new ConflictInfoRD)
+  val btb = IO(new Bundle {
+    val write_pc = Output(UInt(32.W))
+    val target = Output(UInt(32.W))
+    val is_jump_taken = Output(Bool())
+    val init_cnt = Output(UInt(2.W))
+    val wen = Output(Bool())
+  })
   val out_pc = IO(new Bundle {
     val dnpc = Output(UInt(32.W))
     val flush_valid = Output(Bool())
@@ -138,7 +145,7 @@ class EXU() extends PrefixedModule {
 
   val should_branch = in.bits.controls.is_branch && branch.io.jump
   val static_jump = should_branch || in.bits.itype.is_jal
-  val should_flush = in.bits.controls.is_dnpc_csr_jump || in.bits.itype.is_jalr || static_jump
+  val should_flush = in.bits.controls.is_dnpc_csr_jump || in.bits.itype.is_jalr || (static_jump ^ in.bits.predicted_jump)
 
   out_pc.dnpc := MuxCase(
     snpc,
@@ -160,6 +167,16 @@ class EXU() extends PrefixedModule {
   out.valid := has_signal
 
   val is_first_cycle = RegNext(in.fire, false.B)
+
+  btb.wen := (in.bits.controls.is_branch || in.bits.itype.is_jal) && is_first_cycle
+  btb.write_pc := in.bits.pc
+  btb.target := alu.io.out
+  btb.init_cnt := Mux(
+    in.bits.inst(31) || in.bits.itype.is_jal,
+    2.U(2.W),
+    1.U(2.W)
+  )
+  btb.is_jump_taken := branch.io.jump || in.bits.itype.is_jal
 
   out.bits.write_info.mtvec := in.bits.sources.mtvec
   out.bits.write_info.dnpc := out_pc.dnpc
