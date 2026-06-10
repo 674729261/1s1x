@@ -1,4 +1,5 @@
 package empty
+
 import chisel3._
 import chisel3.util._
 import chisel3.layer._
@@ -9,9 +10,11 @@ object PerformanceCounterLayer extends Layer(LayerConfig.Inline)
 object StageConnect {
   def apply[T <: Data](left: DecoupledIO[T], right: DecoupledIO[T]) = {
     val arch = "pipeline"
-    if (arch == "single") { right.bits := left.bits }
-    else if (arch == "multi") { right <> left }
-    else if (arch == "pipeline") {
+    if (arch == "single") {
+      right.bits := left.bits
+    } else if (arch == "multi") {
+      right <> left
+    } else if (arch == "pipeline") {
       left.ready := right.ready
       right.bits := RegEnable(left.bits, left.fire)
       right.valid := left.valid
@@ -26,7 +29,6 @@ class MemAccessBus extends Bundle {
   val wdata = Output(UInt(32.W))
   val wmask = Output(UInt(4.W))
   val rdata = Input(UInt(32.W))
-
   val reqValid = Output(Bool())
   val reqReady = Input(Bool())
   val respValid = Input(Bool())
@@ -51,19 +53,14 @@ class PerformanceCounter extends ExtModule {
   val idu_valid = IO(Input(Bool()))
   val wbu_valid = IO(Input(Bool()))
   val inst_type = IO(Input(new InstType))
-
   val stalled = IO(Input(Bool()))
   val flushed = IO(Input(Bool()))
-
 }
 
-class CPU_Core(init_pc: UInt, performance_counter: Boolean)
-    extends PrefixedModule {
+class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends PrefixedModule {
   val io = IO(new Bundle {
     val pc = Output(UInt(32.W))
-    // val inst_bus_axi = new AXI_Lite
     val ebreak = Output(Bool())
-    // val mem = new AXI_Lite
     val axi_bus = new AXI
     val ok_to_step = Output(Bool())
     val retire_pc = Output(UInt(32.W))
@@ -75,16 +72,17 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean)
   val exu = Module(new EXU)
   val lsu = Module(new LSU)
   val wbu = Module(new WBU)
+
   val pc = RegEnable(
     Cat(wbu.out.dnpc(31, 1), 0.U(1.W)),
     init_pc,
     wbu.out.ok_to_step
   )
+
   io.pc := pc
 
   val gpr = Module(new GPR(CNT = 16, BITWIDTH = 32))
   val csrBank = Module(new CSR)
-
   val arbiter = Module(new Arbiter_2Master)
   val xbar = Module(new XBar_CLINT)
   val clint = Module(new Clint)
@@ -92,9 +90,11 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean)
   io.axi_bus <> xbar.OUT_AXI
   xbar.IN_AXI <> arbiter.OUT_AXI
   xbar.CLINT_AXI <> clint.in
+  clint.mtime := csrBank.io.mcycle
 
   io.retire_pc := wbu.out.retire_pc
   io.retire_inst := wbu.out.retire_inst
+
   ifu.in.exu_dnpc := Mux(
     lsu.out_pc.flush_valid,
     lsu.out_pc.dnpc,
@@ -112,60 +112,18 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean)
   StageConnect(exu.out, lsu.in)
   StageConnect(lsu.out, wbu.in)
 
-  def check_conflict(
-      rs_info: ConflictInfoRS,
-      rd_info: ConflictInfoRD
-  ): (Bool, Bool, Bool, Bool, Bool, UInt) = {
-    val conf1 =
-      rs_info.rs1_valid && rd_info.rd_valid && (rs_info.rs1_id === rd_info.rd_id) && (rd_info.rd_id =/= 0
-        .U(5.W))
-    val conf2 =
-      rs_info.rs2_valid && rd_info.rd_valid && (rs_info.rs2_id === rd_info.rd_id) && (rd_info.rd_id =/= 0
-        .U(5.W))
-    // val conf_csr =
-    //   rs_info.csr_src_valid && rd_info.csr_dest_valid && (rs_info.csr_src_id === rd_info.csr_id)
+  def check_conflict(rs_info: ConflictInfoRS, rd_info: ConflictInfoRD): (Bool, Bool, Bool, Bool, Bool, UInt) = {
+    val conf1 = rs_info.rs1_valid && rd_info.rd_valid && (rs_info.rs1_id === rd_info.rd_id) && (rd_info.rd_id =/= 0.U(5.W))
+    val conf2 = rs_info.rs2_valid && rd_info.rd_valid && (rs_info.rs2_id === rd_info.rd_id) && (rd_info.rd_id =/= 0.U(5.W))
     val conf_csr = rd_info.csr_dest_valid
-    val forward1 = conf1 && (rd_info.ok_to_forward_rd)
-    val forward2 = conf2 && (rd_info.ok_to_forward_rd)
-
-    return (
-      conf1,
-      forward1,
-      conf2,
-      forward2,
-      conf_csr,
-      rd_info.rd_data
-    )
+    val forward1 = conf1 && rd_info.ok_to_forward_rd
+    val forward2 = conf2 && rd_info.ok_to_forward_rd
+    return (conf1, forward1, conf2, forward2, conf_csr, rd_info.rd_data)
   }
 
-  val (
-    conf1_exu,
-    fwd1_exu,
-    conf2_exu,
-    fwd2_exu,
-    conf_csr_exu,
-    data_exu
-  ) =
-    check_conflict(idu.conf, exu.conf)
-
-  val (
-    conf1_lsu,
-    fwd1_lsu,
-    conf2_lsu,
-    fwd2_lsu,
-    conf_csr_lsu,
-    data_lsu
-  ) =
-    check_conflict(idu.conf, lsu.conf)
-  val (
-    conf1_wbu,
-    fwd1_wbu,
-    conf2_wbu,
-    fwd2_wbu,
-    conf_csr_wbu,
-    data_wbu
-  ) =
-    check_conflict(idu.conf, wbu.conf)
+  val (conf1_exu, fwd1_exu, conf2_exu, fwd2_exu, conf_csr_exu, data_exu) = check_conflict(idu.conf, exu.conf)
+  val (conf1_lsu, fwd1_lsu, conf2_lsu, fwd2_lsu, conf_csr_lsu, data_lsu) = check_conflict(idu.conf, lsu.conf)
+  val (conf1_wbu, fwd1_wbu, conf2_wbu, fwd2_wbu, conf_csr_wbu, data_wbu) = check_conflict(idu.conf, wbu.conf)
 
   val stall_src1 = MuxCase(
     false.B,
@@ -183,10 +141,9 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean)
       conf2_wbu -> !fwd2_wbu
     )
   )
-  val stall_csr =
-    conf_csr_exu || conf_csr_lsu || conf_csr_wbu || wbu.out.csr_interruption
-  idu.conf.stall := stall_src1 || stall_src2 || stall_csr
+  val stall_csr = conf_csr_exu || conf_csr_lsu || conf_csr_wbu || wbu.out.csr_interruption
 
+  idu.conf.stall := stall_src1 || stall_src2 || stall_csr
   idu.conf.do_forward_src1 := MuxCase(
     false.B,
     Seq(
@@ -240,11 +197,8 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean)
   csrBank.io.cur_pc := wbu.out.csr_cur_pc
   csrBank.io.interruption := wbu.out.csr_interruption
   csrBank.io.wdata := wbu.out.csr_wdata
-  csrBank.io.new_cause := wbu.out.csr_mcause
   csrBank.io.wen := wbu.out.csr_wen
 
-  // val ebreak_reg = RegInit(false.B)
-  // ebreak_reg := ebreak_reg | wbu.out.ebreak
   io.ebreak := wbu.out.ebreak
 
   block(PerformanceCounterLayer) {
@@ -258,7 +212,6 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean)
     m_performance_counter.idu_valid := idu.out.valid
     m_performance_counter.wbu_valid := wbu.out.ok_to_step
     m_performance_counter.inst_type := wbu.out.inst_type
-
     m_performance_counter.ifu_arready := ifu.fetch_port.ar.ready
     m_performance_counter.ifu_arvalid := ifu.fetch_port.ar.valid
     m_performance_counter.ifu_rready := ifu.fetch_port.r.ready
@@ -267,9 +220,7 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean)
     m_performance_counter.lsu_arvalid := lsu.fetch_port.ar.valid
     m_performance_counter.lsu_rready := lsu.fetch_port.r.ready
     m_performance_counter.lsu_rvalid := lsu.fetch_port.r.valid
-
     m_performance_counter.stalled := idu.perf_cnt.stalled
     m_performance_counter.flushed := idu.perf_cnt.flushed
-
   }
 }

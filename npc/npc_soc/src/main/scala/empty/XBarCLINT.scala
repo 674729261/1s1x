@@ -1,4 +1,5 @@
 package empty
+
 import chisel3._
 import chisel3.util._
 import chisel3.layer._
@@ -16,10 +17,13 @@ class XBar_CLINT() extends PrefixedModule {
   val OUT_fire = GenerateFireSignal(OUT_AXI)
   val CLINT_fire = GenerateFireSignal(CLINT_AXI)
 
-  val sel_clint_ar = (IN_AXI.ar.addr(31, 24) === 0x02.U(8.W))
+  val sel_clint_ar = IN_AXI.ar.addr(31, 24) === 0x02.U(8.W)
+
   when(sel_clint_ar) {
     CLINT_AXI.ar <> IN_AXI.ar
-  }.otherwise { OUT_AXI.ar <> IN_AXI.ar }
+  }.otherwise {
+    OUT_AXI.ar <> IN_AXI.ar
+  }
 
   IN_AXI.aw <> OUT_AXI.aw
   IN_AXI.w <> OUT_AXI.w
@@ -27,30 +31,34 @@ class XBar_CLINT() extends PrefixedModule {
 
   val sOUT :: sCLINT :: Nil = Enum(2)
   val r_state = RegInit(sOUT)
+
   r_state := MuxLookup(r_state, sOUT)(
     Seq(
       sOUT -> Mux(CLINT_AXI.r.valid && !OUT_AXI.r.valid, sCLINT, sOUT),
       sCLINT -> Mux(CLINT_fire.r_burst_last, sOUT, sCLINT)
     )
   )
-  val should_bind_to_OUT_r = (r_state === sOUT)
+
+  val should_bind_to_OUT_r = r_state === sOUT
+
   when(should_bind_to_OUT_r) {
     OUT_AXI.r <> IN_AXI.r
-  }.otherwise { CLINT_AXI.r <> IN_AXI.r }
-
+  }.otherwise {
+    CLINT_AXI.r <> IN_AXI.r
+  }
 }
 
 class Clint extends PrefixedModule {
   val in = IO(Flipped(new AXI))
+  val mtime = IO(Input(UInt(64.W)))
+
   set_flipped_AXIfull_zero(in)
+
   val fire = GenerateFireSignal(in)
 
-  val mtime = RegInit(0.U(32.W))
-  mtime := mtime + 1.U
-
-  val has_ar = RegInit(Bool(), false.B)
-  val out_r = RegInit(Bool(), false.B)
+  val has_ar = RegInit(false.B)
   val low_or_high = RegEnable(in.ar.addr(2), fire.ar_fire)
+
   has_ar := MuxCase(
     has_ar,
     Seq(
@@ -58,9 +66,10 @@ class Clint extends PrefixedModule {
       fire.r_burst_last -> false.B
     )
   )
+
   in.ar.ready := !has_ar
   in.r.valid := has_ar
-  in.r.data := Mux(low_or_high, 0.U(32.W), mtime)
+  in.r.data := Mux(low_or_high, mtime(63, 32), mtime(31, 0))
   in.r.last := true.B
   in.r.id := "b1000".U(4.W)
 
@@ -71,7 +80,5 @@ class Clint extends PrefixedModule {
     }
     assert(!in.aw.valid, "CLINT can not be written")
     assert(!in.w.valid, "CLINT can not be written")
-
   }
-
 }

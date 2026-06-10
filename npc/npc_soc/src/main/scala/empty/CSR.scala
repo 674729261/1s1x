@@ -7,16 +7,13 @@ class CSR extends PrefixedModule {
   val io = IO(new Bundle {
     val csr_w = Input(UInt(12.W))
     val csr_r = Input(UInt(12.W))
-
     val wen = Input(Bool())
     val wdata = Input(UInt(32.W))
     val rdata = Output(UInt(32.W))
-
     val mepc = Output(UInt(32.W))
     val mtvec = Output(UInt(32.W))
-
+    val mcycle = Output(UInt(64.W))
     val cur_pc = Input(UInt(32.W))
-    val new_cause = Input(UInt(32.W))
     val interruption = Input(Bool())
     val ok_to_step = Input(Bool())
   })
@@ -45,24 +42,16 @@ class CSR extends PrefixedModule {
   val mcycle_nxt = Wire(Vec(2, UInt(32.W)))
   val mcycle_inc = Wire(Vec(2, UInt(32.W)))
   val csr_mcycle = RegNext(mcycle_nxt, VecInit(Seq(0.U(32.W), 0.U(32.W))))
+
   mcycle_inc := (csr_mcycle.asUInt + 1.U(64.W)).asTypeOf(Vec(2, UInt(32.W)))
-  mcycle_nxt(0) := Mux(
-    io.wen && is_mcycle_w,
-    io.wdata,
-    mcycle_inc(0)
-  )
-  mcycle_nxt(1) := Mux(
-    io.wen && is_mcycleh_w,
-    io.wdata,
-    mcycle_inc(1)
-  )
+  mcycle_nxt(0) := Mux(io.wen && is_mcycle_w, io.wdata, mcycle_inc(0))
+  mcycle_nxt(1) := Mux(io.wen && is_mcycleh_w, io.wdata, mcycle_inc(1))
 
   val csr_mstatus = RegEnable(io.wdata, "h1800".U(32.W), io.wen && is_mstatus_w)
-  val csr_mcause =
-    RegEnable(
-      Mux(io.interruption, io.new_cause, io.wdata),
-      (io.wen && is_mcause_w) || io.interruption
-    )
+  val csr_mcause = RegEnable(
+    Mux(io.interruption, 11.U(32.W), io.wdata),
+    (io.wen && is_mcause_w) || io.interruption
+  )
   val csr_mtvec = RegEnable(io.wdata, io.wen && is_mtvec_w)
   val csr_mepc = RegEnable(
     Mux(io.interruption, io.cur_pc, io.wdata),
@@ -81,8 +70,7 @@ class CSR extends PrefixedModule {
       is_mepc_r -> csr_mepc
     )
   )
-
   io.mepc := csr_mepc
   io.mtvec := csr_mtvec
-
+  io.mcycle := csr_mcycle.asUInt
 }
