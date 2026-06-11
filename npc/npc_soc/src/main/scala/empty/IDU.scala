@@ -72,7 +72,7 @@ class ALUControl extends Bundle {
 
 class ControlSignals extends Bundle {
   val is_csr_visit = Bool()
-  val alu_controls = new ALUControl()
+  val alu_controls = new ALUControl
   val gpr_wdata_sel = UInt(2.W)
   val is_gpr_wen = Bool()
   val ram_size = UInt(2.W)
@@ -93,7 +93,6 @@ object decodeInstType {
   def apply(inst: UInt, fields: InstFields): InstType = {
     val ret = WireInit(0.U.asTypeOf(new InstType))
     val opcode = inst(6, 2)
-
     switch(opcode) {
       is("b00100".U) { ret.is_arithmetic_imm := true.B }
       is("b01100".U) { ret.is_arithmetic_reg := true.B }
@@ -107,12 +106,11 @@ object decodeInstType {
       is("b11100".U) { ret.is_csrop := true.B }
       is("b00011".U) { ret.is_fence := true.B }
     }
-
     val is_funct3_zero = fields.funct3 === "b000".U(3.W)
     ret.is_ebreak := ret.is_csrop && is_funct3_zero && !inst(21) && inst(20)
     ret.is_ecall := ret.is_csrop && is_funct3_zero && !inst(21) && !inst(20)
     ret.is_mret := ret.is_csrop && is_funct3_zero && inst(21)
-    return ret
+    ret
   }
 }
 
@@ -125,14 +123,13 @@ object decodeImmType {
     ret.is_B := it.is_branch
     ret.is_J := it.is_jal
     ret.is_U := it.is_auipc || it.is_lui
-    return ret
+    ret
   }
 }
 
 object decodeInstFields {
   def apply(inst: UInt, immType: ImmType): InstFields = {
     val ret = Wire(new InstFields)
-
     ret.rs1 := inst(19, 15)
     ret.rs2 := inst(24, 20)
     ret.rd := inst(11, 7)
@@ -161,7 +158,7 @@ object decodeInstFields {
         immType.is_I -> imm_I
       )
     )
-    return ret
+    ret
   }
 }
 
@@ -187,7 +184,6 @@ object decodeInstControlSignal {
     }
 
     val csr_visit = it.is_csrop && !is_funct3_zero
-
     ret.is_csr_visit := csr_visit
     ret.alu_controls.op := alu_op
     ret.gpr_wdata_sel := MuxCase(
@@ -211,7 +207,7 @@ object decodeInstControlSignal {
     ret.is_dnpc_jal_or_jalr := it.is_jal || it.is_jalr
     ret.is_dnpc_csr_jump := it.is_mret
     ret.is_ebreak := it.is_ebreak
-    return ret
+    ret
   }
 }
 
@@ -279,8 +275,8 @@ class IDU() extends PrefixedModule {
       (out.fire || flush.valid) -> false.B
     )
   )
-
   val has_inst = has_inst_r && !flush.valid
+
   val imm_type = Wire(new ImmType)
   val fields = Wire(new InstFields)
   val inst_type = Wire(new InstType)
@@ -325,6 +321,7 @@ class IDU() extends PrefixedModule {
   out.valid := has_inst && !conf.stall
   out.bits.in_cache := in.bits.in_cache
   in.ready := (out.fire || !has_inst) && !conf.stall
+
   perf_cnt.stalled := has_inst && conf.stall
   perf_cnt.flushed := has_inst_r && flush.valid
   out.bits.exception := inst_type.is_ecall

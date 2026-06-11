@@ -78,7 +78,6 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends PrefixedModu
     init_pc,
     wbu.out.ok_to_step
   )
-
   io.pc := pc
 
   val gpr = Module(new GPR(CNT = 16, BITWIDTH = 32))
@@ -104,19 +103,10 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends PrefixedModu
   ifu.in.flush_valid := exu.out_pc.flush_valid || lsu.out_pc.flush_valid
   idu.flush.valid := exu.out_pc.flush_valid || lsu.out_pc.flush_valid
   exu.flush.valid := lsu.out_pc.flush_valid
-
   ifu.fetch_port <> arbiter.IFU_AXI
 
-  val nxtpc_predictor = Module(new NextPCPredict(1, 31, 2))
-  ifu.in.btb_nxt_pc := nxtpc_predictor.io.predicted
-  ifu.in.btb_jump := nxtpc_predictor.io.predicted_jump
-  nxtpc_predictor.io.pc := ifu.in.btb_pc
-  nxtpc_predictor.io.wen := exu.btb.wen
-  nxtpc_predictor.io.write_pc := exu.btb.write_pc
-  nxtpc_predictor.io.write_target := exu.btb.target
-  nxtpc_predictor.io.is_jump_taken := exu.btb.is_jump_taken
-  nxtpc_predictor.io.init_cnt := exu.btb.init_cnt
-  nxtpc_predictor.io.clear := lsu.out_pc.flush_valid && lsu.out_pc.fencei
+  ifu.in.btb_nxt_pc := ifu.in.btb_pc + 4.U(32.W)
+  ifu.in.btb_jump := false.B
 
   StageConnect(ifu.out, idu.in)
   StageConnect(idu.out, exu.in)
@@ -129,7 +119,7 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends PrefixedModu
     val conf_csr = rd_info.csr_dest_valid
     val forward1 = conf1 && rd_info.ok_to_forward_rd
     val forward2 = conf2 && rd_info.ok_to_forward_rd
-    return (conf1, forward1, conf2, forward2, conf_csr, rd_info.rd_data)
+    (conf1, forward1, conf2, forward2, conf_csr, rd_info.rd_data)
   }
 
   val (conf1_exu, fwd1_exu, conf2_exu, fwd2_exu, conf_csr_exu, data_exu) = check_conflict(idu.conf, exu.conf)

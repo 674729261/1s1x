@@ -108,6 +108,7 @@ class EXU() extends PrefixedModule {
       (in.bits.itype.is_arithmetic_imm || in.bits.itype.is_load || in.bits.itype.is_jalr || in.bits.itype.is_ebreak) -> imm_I
     )
   )
+
   val alu_a = MuxCase(
     in.bits.sources.src1,
     Seq(
@@ -127,6 +128,7 @@ class EXU() extends PrefixedModule {
   branch.io.funct3 := in.bits.controls.bra_funct3
 
   val snpc = in.bits.pc + 4.U(32.W)
+
   out.bits.write_info.gpr_wdata := MuxLookup(
     in.bits.controls.gpr_wdata_sel,
     alu.io.out
@@ -137,6 +139,7 @@ class EXU() extends PrefixedModule {
       GprWdataSel.ALU -> alu.io.out
     )
   )
+
   out.bits.write_info.mem_word_or_csr_wdata := Mux(
     in.bits.itype.is_store,
     in.bits.sources.src2_or_csr,
@@ -155,6 +158,7 @@ class EXU() extends PrefixedModule {
   )
 
   out.bits.controls.is_ebreak := in.bits.controls.is_ebreak
+
   conf.rd_id := in.bits.controls.rd
   conf.rd_valid := has_signal && in.bits.rd_valid
   conf.csr_dest_valid := has_signal && in.bits.controls.is_csr_visit
@@ -168,24 +172,20 @@ class EXU() extends PrefixedModule {
 
   val is_first_cycle = RegNext(in.fire, false.B)
 
-  btb.wen := (in.bits.controls.is_branch || in.bits.itype.is_jal) && is_first_cycle
-  btb.write_pc := in.bits.pc
-  btb.target := alu.io.out
-  btb.init_cnt := Mux(
-    in.bits.inst(31) || in.bits.itype.is_jal,
-    2.U(2.W),
-    1.U(2.W)
-  )
-  btb.is_jump_taken := branch.io.jump || in.bits.itype.is_jal
+  btb.wen := false.B
+  btb.write_pc := 0.U
+  btb.target := 0.U
+  btb.init_cnt := 0.U
+  btb.is_jump_taken := false.B
 
   out.bits.write_info.mtvec := in.bits.sources.mtvec
   out.bits.write_info.dnpc := out_pc.dnpc
 
   val flush_high = should_flush && is_first_cycle
-
   out_pc.flush_valid := flush_high
   out.bits.exeption := in.bits.exception
   out.bits.csr_jump := in.bits.controls.is_dnpc_csr_jump
+
   in.ready := out.fire || !has_signal
 
   block(PerformanceCounterLayer) {
