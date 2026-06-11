@@ -20,7 +20,6 @@ class WBU() extends PrefixedModule {
     val ok_to_step = Output(Bool())
     val retire_pc = Output(UInt(32.W))
     val retire_inst = Output(UInt(32.W))
-    val inst_type = Output(new InstType)
   })
 
   val has_signal = RegInit(false.B)
@@ -38,16 +37,14 @@ class WBU() extends PrefixedModule {
   out.gpr_wen := in.bits.controls.is_gpr_wen && has_signal && !in.bits.exception
 
   conf.rd_id := in.bits.controls.rd
-  conf.rd_valid := has_signal && in.bits.rd_valid
-  conf.csr_dest_valid := has_signal && in.bits.itype.is_csrop
+  conf.rd_valid := has_signal && in.bits.controls.is_gpr_wen
+  conf.csr_dest_valid := has_signal && in.bits.controls.is_csr_visit
   conf.csr_id := in.bits.controls.csrd
-  conf.rd_valid := in.bits.rd_valid
   conf.ok_to_forward_rd := true.B
   conf.rd_data := in.bits.write_info.gpr_wdata
 
-  in.ready := in.valid
+  in.ready := true.B
   out.ok_to_step := has_signal
   out.retire_pc := in.bits.pc
   out.retire_inst := in.bits.inst
-  out.inst_type := in.bits.itype
 }

@@ -35,28 +35,6 @@ class MemAccessBus extends Bundle {
   val respReady = Output(Bool())
 }
 
-class PerformanceCounter extends ExtModule {
-  val clock = IO(Input(Clock()))
-  val reset = IO(Input(Reset()))
-  val pc = IO(Input(UInt(32.W)))
-  val ifu_arready = IO(Input(Bool()))
-  val ifu_arvalid = IO(Input(Bool()))
-  val ifu_rready = IO(Input(Bool()))
-  val ifu_rvalid = IO(Input(Bool()))
-  val lsu_arready = IO(Input(Bool()))
-  val lsu_arvalid = IO(Input(Bool()))
-  val lsu_rready = IO(Input(Bool()))
-  val lsu_rvalid = IO(Input(Bool()))
-  val exu_ready = IO(Input(Bool()))
-  val exu_valid = IO(Input(Bool()))
-  val idu_ready = IO(Input(Bool()))
-  val idu_valid = IO(Input(Bool()))
-  val wbu_valid = IO(Input(Bool()))
-  val inst_type = IO(Input(new InstType))
-  val stalled = IO(Input(Bool()))
-  val flushed = IO(Input(Bool()))
-}
-
 class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends PrefixedModule {
   val io = IO(new Bundle {
     val pc = Output(UInt(32.W))
@@ -73,11 +51,7 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends PrefixedModu
   val lsu = Module(new LSU)
   val wbu = Module(new WBU)
 
-  val pc = RegEnable(
-    Cat(wbu.out.dnpc(31, 1), 0.U(1.W)),
-    init_pc,
-    wbu.out.ok_to_step
-  )
+  val pc = RegEnable(Cat(wbu.out.dnpc(31, 1), 0.U(1.W)), init_pc, wbu.out.ok_to_step)
   io.pc := pc
 
   val gpr = Module(new GPR(CNT = 16, BITWIDTH = 32))
@@ -94,19 +68,13 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends PrefixedModu
   io.retire_pc := wbu.out.retire_pc
   io.retire_inst := wbu.out.retire_inst
 
-  ifu.in.exu_dnpc := Mux(
-    lsu.out_pc.flush_valid,
-    lsu.out_pc.dnpc,
-    exu.out_pc.dnpc
-  )
+  ifu.in.exu_dnpc := Mux(lsu.out_pc.flush_valid, lsu.out_pc.dnpc, exu.out_pc.dnpc)
   ifu.in.fencei := lsu.out_pc.fencei
   ifu.in.flush_valid := exu.out_pc.flush_valid || lsu.out_pc.flush_valid
   idu.flush.valid := exu.out_pc.flush_valid || lsu.out_pc.flush_valid
   exu.flush.valid := lsu.out_pc.flush_valid
-  ifu.fetch_port <> arbiter.IFU_AXI
 
-  ifu.in.btb_nxt_pc := ifu.in.btb_pc + 4.U(32.W)
-  ifu.in.btb_jump := false.B
+  ifu.fetch_port <> arbiter.IFU_AXI
 
   StageConnect(ifu.out, idu.in)
   StageConnect(idu.out, exu.in)
@@ -143,8 +111,8 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends PrefixedModu
     )
   )
   val stall_csr = conf_csr_exu || conf_csr_lsu || conf_csr_wbu || wbu.out.csr_interruption
-
   idu.conf.stall := stall_src1 || stall_src2 || stall_csr
+
   idu.conf.do_forward_src1 := MuxCase(
     false.B,
     Seq(
@@ -178,7 +146,6 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends PrefixedModu
 
   io.ok_to_step := wbu.out.ok_to_step
   csrBank.io.ok_to_step := wbu.out.ok_to_step
-
   idu.fetch_port_in.csr_rdata := csrBank.io.rdata
   idu.fetch_port_in.csr_mepc := csrBank.io.mepc
   idu.fetch_port_in.csr_mtvec := csrBank.io.mtvec
@@ -201,27 +168,4 @@ class CPU_Core(init_pc: UInt, performance_counter: Boolean) extends PrefixedModu
   csrBank.io.wen := wbu.out.csr_wen
 
   io.ebreak := wbu.out.ebreak
-
-  block(PerformanceCounterLayer) {
-    val m_performance_counter = Module(new PerformanceCounter)
-    m_performance_counter.clock := clock
-    m_performance_counter.reset := reset
-    m_performance_counter.pc := pc
-    m_performance_counter.exu_ready := exu.out.ready
-    m_performance_counter.exu_valid := exu.out.valid
-    m_performance_counter.idu_ready := idu.out.ready
-    m_performance_counter.idu_valid := idu.out.valid
-    m_performance_counter.wbu_valid := wbu.out.ok_to_step
-    m_performance_counter.inst_type := wbu.out.inst_type
-    m_performance_counter.ifu_arready := ifu.fetch_port.ar.ready
-    m_performance_counter.ifu_arvalid := ifu.fetch_port.ar.valid
-    m_performance_counter.ifu_rready := ifu.fetch_port.r.ready
-    m_performance_counter.ifu_rvalid := ifu.fetch_port.r.valid
-    m_performance_counter.lsu_arready := lsu.fetch_port.ar.ready
-    m_performance_counter.lsu_arvalid := lsu.fetch_port.ar.valid
-    m_performance_counter.lsu_rready := lsu.fetch_port.r.ready
-    m_performance_counter.lsu_rvalid := lsu.fetch_port.r.valid
-    m_performance_counter.stalled := idu.perf_cnt.stalled
-    m_performance_counter.flushed := idu.perf_cnt.flushed
-  }
 }

@@ -89,6 +89,19 @@ class ControlSignals extends Bundle {
   val is_ebreak = Bool()
 }
 
+class ExuInstFlags extends Bundle {
+  val is_arithmetic_reg = Bool()
+  val is_store = Bool()
+  val is_branch = Bool()
+  val is_jal = Bool()
+  val is_jalr = Bool()
+  val is_lui = Bool()
+  val is_auipc = Bool()
+  val is_mret = Bool()
+  val is_csrop = Bool()
+  val is_fence = Bool()
+}
+
 object decodeInstType {
   def apply(inst: UInt, fields: InstFields): InstType = {
     val ret = WireInit(0.U.asTypeOf(new InstType))
@@ -137,17 +150,11 @@ object decodeInstFields {
     ret.funct7 := inst(31, 25)
     ret.csr := inst(31, 20)
 
-    val imm_B = Wire(UInt(32.W))
-    val imm_S = Wire(UInt(32.W))
-    val imm_J = Wire(UInt(32.W))
-    val imm_U = Wire(UInt(32.W))
-    val imm_I = Wire(UInt(32.W))
-
-    imm_B := Cat(Fill(20, inst(31)), inst(7), inst(30, 25), inst(11, 8), 0.U(1.W))
-    imm_S := Cat(Fill(20, inst(31)), inst(31, 25), inst(11, 7))
-    imm_J := Cat(Fill(12, inst(31)), inst(19, 12), inst(20), inst(30, 21), 0.U(1.W))
-    imm_U := Cat(inst(31, 12), 0.U(12.W))
-    imm_I := Cat(Fill(20, inst(31)), inst(31, 20))
+    val imm_B = Cat(Fill(20, inst(31)), inst(7), inst(30, 25), inst(11, 8), 0.U(1.W))
+    val imm_S = Cat(Fill(20, inst(31)), inst(31, 25), inst(11, 7))
+    val imm_J = Cat(Fill(12, inst(31)), inst(19, 12), inst(20), inst(30, 21), 0.U(1.W))
+    val imm_U = Cat(inst(31, 12), 0.U(12.W))
+    val imm_I = Cat(Fill(20, inst(31)), inst(31, 20))
 
     ret.imm := Mux1H(
       Seq(
@@ -169,7 +176,6 @@ object decodeInstControlSignal {
     val is_alu_sub_sra = fields.funct7(5) && !(it.is_arithmetic_imm && is_funct3_zero)
     val is_alu_force_add = it.is_mret || it.is_store || it.is_load || it.is_branch || it.is_auipc || it.is_jal || it.is_jalr || it.is_lui
     val alu_op = WireDefault(ALUOp.ADD)
-
     when(!is_alu_force_add) {
       switch(fields.funct3) {
         is("b000".U) { alu_op := Mux(is_alu_sub_sra, ALUOp.SUB, ALUOp.ADD) }
@@ -220,12 +226,9 @@ class Operands extends Bundle {
 class MessageIDU2EXU extends Bundle {
   val pc = UInt(32.W)
   val inst = UInt(32.W)
-  val in_cache = Bool()
-  val predicted_jump = Bool()
   val controls = new ControlSignals
-  val itype = new InstType
+  val flags = new ExuInstFlags
   val sources = new Operands
-  val rd_valid = Bool()
   val exception = Bool()
 }
 
@@ -245,15 +248,9 @@ class ConflictInfoRS extends Bundle {
 
 class IDU() extends PrefixedModule {
   val in = IO(Flipped(DecoupledIO(new MessageIFU2IDU)))
-  val perf_cnt = IO(new Bundle {
-    val stalled = Output(Bool())
-    val flushed = Output(Bool())
-  })
   val out = IO(DecoupledIO(new MessageIDU2EXU))
   val conf = IO(new ConflictInfoRS)
-  val flush = IO(new Bundle {
-    val valid = Input(Bool())
-  })
+  val flush = IO(new Bundle { val valid = Input(Bool()) })
   val fetch_port_out = IO(new Bundle {
     val gpr_raddr1 = Output(UInt(5.W))
     val gpr_raddr2 = Output(UInt(5.W))
@@ -282,9 +279,6 @@ class IDU() extends PrefixedModule {
   val inst_type = Wire(new InstType)
   val control_signals = Wire(new ControlSignals)
 
-  out.bits.pc := in.bits.pc
-  out.bits.controls := control_signals
-
   imm_type := decodeImmType(in.bits.inst, inst_type)
   fields := decodeInstFields(in.bits.inst, imm_type)
   inst_type := decodeInstType(in.bits.inst, fields)
@@ -297,6 +291,9 @@ class IDU() extends PrefixedModule {
   val gpr_rdata1 = Mux(conf.do_forward_src1, conf.forward_data_src1, fetch_port_in.gpr_rdata1)
   val gpr_rdata2 = Mux(conf.do_forward_src2, conf.forward_data_src2, fetch_port_in.gpr_rdata2)
 
+  out.bits.pc := in.bits.pc
+  out.bits.inst := in.bits.inst
+  out.bits.controls := control_signals
   out.bits.sources.src1 := gpr_rdata1
   out.bits.sources.src2_or_csr := MuxCase(
     gpr_rdata2,
@@ -305,10 +302,19 @@ class IDU() extends PrefixedModule {
       inst_type.is_mret -> fetch_port_in.csr_mepc
     )
   )
-  out.bits.inst := in.bits.inst
-  out.bits.predicted_jump := in.bits.predicted_jump
   out.bits.sources.mtvec := fetch_port_in.csr_mtvec
-  out.bits.itype := inst_type
+  out.bits.exception := inst_type.is_ecall
+
+  out.bits.flags.is_arithmetic_reg := inst_type.is_arithmetic_reg
+  out.bits.flags.is_store := inst_type.is_store
+  out.bits.flags.is_branch := inst_type.is_branch
+  out.bits.flags.is_jal := inst_type.is_jal
+  out.bits.flags.is_jalr := inst_type.is_jalr
+  out.bits.flags.is_lui := inst_type.is_lui
+  out.bits.flags.is_auipc := inst_type.is_auipc
+  out.bits.flags.is_mret := inst_type.is_mret
+  out.bits.flags.is_csrop := inst_type.is_csrop
+  out.bits.flags.is_fence := inst_type.is_fence
 
   conf.rs1_id := fields.rs1
   conf.rs2_id := fields.rs2
@@ -317,12 +323,6 @@ class IDU() extends PrefixedModule {
   conf.rs2_valid := has_inst && (imm_type.is_R || imm_type.is_S || imm_type.is_B)
   conf.csr_src_valid := has_inst && inst_type.is_csrop
 
-  out.bits.rd_valid := imm_type.is_R || imm_type.is_I || imm_type.is_U || imm_type.is_J || inst_type.is_csrop
   out.valid := has_inst && !conf.stall
-  out.bits.in_cache := in.bits.in_cache
   in.ready := (out.fire || !has_inst) && !conf.stall
-
-  perf_cnt.stalled := has_inst && conf.stall
-  perf_cnt.flushed := has_inst_r && flush.valid
-  out.bits.exception := inst_type.is_ecall
 }

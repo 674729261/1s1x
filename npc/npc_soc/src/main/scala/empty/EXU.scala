@@ -2,7 +2,6 @@ package empty
 
 import chisel3._
 import chisel3.util._
-import chisel3.layer.block
 
 class WriteInfo extends Bundle {
   val mem_word_or_csr_wdata = UInt(32.W)
@@ -16,12 +15,6 @@ class WriteInfoWBU extends Bundle {
   val mem_word_or_csr_wdata = UInt(32.W)
   val gpr_wdata = UInt(32.W)
   val dnpc = UInt(32.W)
-}
-
-class PerformanceCounter_ICache extends ExtModule {
-  val clock = IO(Input(Clock()))
-  val reset = IO(Input(Reset()))
-  val icache_hit = IO(Input(Bool()))
 }
 
 class ControlSignalsEXU extends Bundle {
@@ -42,8 +35,7 @@ class MessageEXU2LSU extends Bundle {
   val inst = UInt(32.W)
   val controls = new ControlSignalsEXU
   val write_info = new WriteInfo
-  val rd_valid = Bool()
-  val itype = new InstType
+  val fence = Bool()
   val exeption = Bool()
   val csr_jump = Bool()
 }
@@ -61,20 +53,11 @@ class EXU() extends PrefixedModule {
   val in = IO(Flipped(DecoupledIO(new MessageIDU2EXU)))
   val out = IO(DecoupledIO(new MessageEXU2LSU))
   val conf = IO(new ConflictInfoRD)
-  val btb = IO(new Bundle {
-    val write_pc = Output(UInt(32.W))
-    val target = Output(UInt(32.W))
-    val is_jump_taken = Output(Bool())
-    val init_cnt = Output(UInt(2.W))
-    val wen = Output(Bool())
-  })
   val out_pc = IO(new Bundle {
     val dnpc = Output(UInt(32.W))
     val flush_valid = Output(Bool())
   })
-  val flush = IO(new Bundle {
-    val valid = Input(Bool())
-  })
+  val flush = IO(new Bundle { val valid = Input(Bool()) })
 
   val has_signal_r = RegInit(false.B)
   has_signal_r := MuxCase(
@@ -98,25 +81,23 @@ class EXU() extends PrefixedModule {
   val imm_B = Cat(Fill(20, in.bits.inst(31)), in.bits.inst(7), in.bits.inst(30, 25), in.bits.inst(11, 8), 0.U(1.W))
   val imm_U = Cat(in.bits.inst(31, 12), 0.U(12.W))
   val imm_J = Cat(Fill(12, in.bits.inst(31)), in.bits.inst(19, 12), in.bits.inst(20), in.bits.inst(30, 21), 0.U(1.W))
-
-  val alu_imm = Mux1H(
+  val alu_imm = MuxCase(
+    imm_I,
     Seq(
-      in.bits.itype.is_branch -> imm_B,
-      in.bits.itype.is_store -> imm_S,
-      in.bits.itype.is_jal -> imm_J,
-      (in.bits.itype.is_auipc || in.bits.itype.is_lui) -> imm_U,
-      (in.bits.itype.is_arithmetic_imm || in.bits.itype.is_load || in.bits.itype.is_jalr || in.bits.itype.is_ebreak) -> imm_I
+      in.bits.flags.is_branch -> imm_B,
+      in.bits.flags.is_store -> imm_S,
+      in.bits.flags.is_jal -> imm_J,
+      (in.bits.flags.is_auipc || in.bits.flags.is_lui) -> imm_U
     )
   )
-
   val alu_a = MuxCase(
     in.bits.sources.src1,
     Seq(
-      (in.bits.itype.is_lui || in.bits.itype.is_mret) -> 0.U(32.W),
-      (in.bits.itype.is_branch || in.bits.itype.is_jal || in.bits.itype.is_auipc) -> in.bits.pc
+      (in.bits.flags.is_lui || in.bits.flags.is_mret) -> 0.U(32.W),
+      (in.bits.flags.is_branch || in.bits.flags.is_jal || in.bits.flags.is_auipc) -> in.bits.pc
     )
   )
-  val alu_b = Mux(in.bits.itype.is_mret || in.bits.itype.is_arithmetic_reg, in.bits.sources.src2_or_csr, alu_imm)
+  val alu_b = Mux(in.bits.flags.is_mret || in.bits.flags.is_arithmetic_reg, in.bits.sources.src2_or_csr, alu_imm)
 
   alu.io.A := alu_a
   alu.io.B := alu_b
@@ -128,6 +109,12 @@ class EXU() extends PrefixedModule {
   branch.io.funct3 := in.bits.controls.bra_funct3
 
   val snpc = in.bits.pc + 4.U(32.W)
+  val jalr_target = Cat(alu.io.out(31, 1), 0.U(1.W))
+  val branch_or_jal_target = alu.io.out
+  val taken_target = Mux(in.bits.flags.is_jalr, jalr_target, branch_or_jal_target)
+  val should_branch = in.bits.controls.is_branch && branch.io.jump
+  val should_redirect = should_branch || in.bits.flags.is_jal || in.bits.flags.is_jalr || in.bits.flags.is_mret
+  val actual_dnpc = Mux(should_redirect, taken_target, snpc)
 
   out.bits.write_info.gpr_wdata := MuxLookup(
     in.bits.controls.gpr_wdata_sel,
@@ -139,59 +126,29 @@ class EXU() extends PrefixedModule {
       GprWdataSel.ALU -> alu.io.out
     )
   )
-
   out.bits.write_info.mem_word_or_csr_wdata := Mux(
-    in.bits.itype.is_store,
+    in.bits.flags.is_store,
     in.bits.sources.src2_or_csr,
     Mux(in.bits.controls.is_csr_masked, in.bits.sources.src1 | in.bits.sources.src2_or_csr, in.bits.sources.src1)
   )
 
-  val should_branch = in.bits.controls.is_branch && branch.io.jump
-  val static_jump = should_branch || in.bits.itype.is_jal
-  val should_flush = in.bits.controls.is_dnpc_csr_jump || in.bits.itype.is_jalr || (static_jump ^ in.bits.predicted_jump)
-
-  out_pc.dnpc := MuxCase(
-    snpc,
-    Seq(
-      (should_branch || in.bits.controls.is_dnpc_jal_or_jalr || in.bits.controls.is_dnpc_csr_jump) -> alu.io.out
-    )
-  )
-
-  out.bits.controls.is_ebreak := in.bits.controls.is_ebreak
-
   conf.rd_id := in.bits.controls.rd
-  conf.rd_valid := has_signal && in.bits.rd_valid
+  conf.rd_valid := has_signal && in.bits.controls.is_gpr_wen
   conf.csr_dest_valid := has_signal && in.bits.controls.is_csr_visit
   conf.csr_id := in.bits.controls.csrd
   conf.ok_to_forward_rd := in.bits.controls.gpr_wdata_sel =/= GprWdataSel.RAM
   conf.rd_data := out.bits.write_info.gpr_wdata
 
-  out.bits.itype := in.bits.itype
-  out.bits.rd_valid := in.bits.rd_valid
   out.valid := has_signal
-
   val is_first_cycle = RegNext(in.fire, false.B)
 
-  btb.wen := false.B
-  btb.write_pc := 0.U
-  btb.target := 0.U
-  btb.init_cnt := 0.U
-  btb.is_jump_taken := false.B
-
   out.bits.write_info.mtvec := in.bits.sources.mtvec
-  out.bits.write_info.dnpc := out_pc.dnpc
-
-  val flush_high = should_flush && is_first_cycle
-  out_pc.flush_valid := flush_high
+  out.bits.write_info.dnpc := actual_dnpc
   out.bits.exeption := in.bits.exception
   out.bits.csr_jump := in.bits.controls.is_dnpc_csr_jump
+  out.bits.fence := in.bits.flags.is_fence
 
+  out_pc.dnpc := actual_dnpc
+  out_pc.flush_valid := has_signal && is_first_cycle && should_redirect
   in.ready := out.fire || !has_signal
-
-  block(PerformanceCounterLayer) {
-    val performancecounter_icache = Module(new PerformanceCounter_ICache)
-    performancecounter_icache.clock := clock
-    performancecounter_icache.reset := reset
-    performancecounter_icache.icache_hit := out.fire && in.bits.in_cache
-  }
 }

@@ -17,8 +17,6 @@ class MessageLSU2WBU extends Bundle {
   val inst = UInt(32.W)
   val controls = new ControlSignalsLSU
   val write_info = new WriteInfoWBU
-  val itype = new InstType
-  val rd_valid = Bool()
   val exception = Bool()
 }
 
@@ -27,7 +25,6 @@ class LSU() extends PrefixedModule {
   val out = IO(DecoupledIO(new MessageLSU2WBU))
   val conf = IO(new ConflictInfoRD)
   val fetch_port = IO(new AXI)
-
   set_AXIfull_zero(fetch_port)
 
   val ramWriter = Module(new RamWriteData)
@@ -58,7 +55,6 @@ class LSU() extends PrefixedModule {
       out.fire -> false.B
     )
   )
-
   val has_r = RegInit(false.B)
   has_r := MuxCase(
     has_r,
@@ -67,10 +63,8 @@ class LSU() extends PrefixedModule {
       out.fire -> false.B
     )
   )
-
   val out_aw = RegInit(false.B)
   val out_w = RegInit(false.B)
-
   out_aw := MuxCase(
     out_aw,
     Seq(
@@ -78,7 +72,6 @@ class LSU() extends PrefixedModule {
       out.fire -> false.B
     )
   )
-
   out_w := MuxCase(
     out_w,
     Seq(
@@ -86,7 +79,6 @@ class LSU() extends PrefixedModule {
       out.fire -> false.B
     )
   )
-
   val has_b = RegInit(false.B)
   has_b := MuxCase(
     has_b,
@@ -97,9 +89,7 @@ class LSU() extends PrefixedModule {
   )
 
   val has_exception = has_signal && in.bits.exeption
-
   out.bits.exception := in.bits.exeption
-
   should_mem_access_r := !in.bits.exeption && has_signal && in.bits.controls.is_ram_valid && !in.bits.controls.is_ram_wen
   should_mem_access_w := !in.bits.exeption && has_signal && in.bits.controls.is_ram_valid && in.bits.controls.is_ram_wen
 
@@ -113,7 +103,6 @@ class LSU() extends PrefixedModule {
   ramLoader.io.size := in.bits.controls.ram_size
   ramLoader.io.is_unsigned := in.bits.controls.is_load_unsigned
   ramLoader.io.lower2bit := in.bits.write_info.alu_out(1, 0)
-
   ramWriter.io.word := in.bits.write_info.mem_word_or_csr_wdata
   ramWriter.io.size := in.bits.controls.ram_size
   ramWriter.io.lower2bit := in.bits.write_info.alu_out(1, 0)
@@ -129,11 +118,7 @@ class LSU() extends PrefixedModule {
     rdata_latched,
     in.bits.write_info.gpr_wdata
   )
-  out.bits.write_info.dnpc := Mux(
-    has_exception,
-    in.bits.write_info.mtvec,
-    in.bits.write_info.dnpc
-  )
+  out.bits.write_info.dnpc := Mux(has_exception, in.bits.write_info.mtvec, in.bits.write_info.dnpc)
 
   fetch_port.ar.addr := in.bits.write_info.alu_out
   fetch_port.ar.size := Cat(0.U(1.W), in.bits.controls.ram_size)
@@ -148,23 +133,15 @@ class LSU() extends PrefixedModule {
   val no_pending_memory_access = (should_mem_access_r && has_r) || (should_mem_access_w && has_b) || (!should_mem_access_r && !should_mem_access_w)
 
   conf.rd_id := in.bits.controls.rd
-  conf.rd_valid := has_signal && in.bits.rd_valid
-  conf.csr_dest_valid := has_signal && in.bits.itype.is_csrop
+  conf.rd_valid := has_signal && in.bits.controls.is_gpr_wen
+  conf.csr_dest_valid := has_signal && in.bits.controls.is_csr_visit
   conf.csr_id := in.bits.controls.csrd
-  conf.ok_to_forward_rd := has_r || in.bits.controls.gpr_wdata_sel =/= GprWdataSel.RAM
+  conf.ok_to_forward_rd := in.bits.controls.gpr_wdata_sel =/= GprWdataSel.RAM
   conf.rd_data := out.bits.write_info.gpr_wdata
 
-  out_pc.dnpc := Mux(
-    has_exception,
-    in.bits.write_info.mtvec,
-    in.bits.write_info.dnpc
-  )
-  out_pc.flush_valid := has_exception || ((in.bits.itype.is_fence || in.bits.csr_jump) && has_signal)
-  out_pc.fencei := in.bits.itype.is_fence
-
-  out.bits.rd_valid := in.bits.rd_valid
-  out.bits.controls.is_ebreak := in.bits.controls.is_ebreak
-  out.bits.itype := in.bits.itype
+  out_pc.dnpc := Mux(has_exception, in.bits.write_info.mtvec, in.bits.write_info.dnpc)
+  out_pc.flush_valid := has_exception || ((in.bits.fence || in.bits.csr_jump) && has_signal)
+  out_pc.fencei := in.bits.fence
   out.valid := has_signal && no_pending_memory_access
   in.ready := no_pending_memory_access
 
@@ -172,35 +149,19 @@ class LSU() extends PrefixedModule {
     check_signal_stable(
       fetch_port.ar.ready,
       fetch_port.ar.valid,
-      Cat(
-        fetch_port.ar.addr,
-        fetch_port.ar.burst,
-        fetch_port.ar.id,
-        fetch_port.ar.len,
-        fetch_port.ar.size
-      ),
+      Cat(fetch_port.ar.addr, fetch_port.ar.burst, fetch_port.ar.id, fetch_port.ar.len, fetch_port.ar.size),
       "LSU.ar"
     )
     check_signal_stable(
       fetch_port.w.ready,
       fetch_port.w.valid,
-      Cat(
-        fetch_port.w.data,
-        fetch_port.w.last,
-        fetch_port.w.strb
-      ),
+      Cat(fetch_port.w.data, fetch_port.w.last, fetch_port.w.strb),
       "LSU.w"
     )
     check_signal_stable(
       fetch_port.aw.ready,
       fetch_port.aw.valid,
-      Cat(
-        fetch_port.aw.addr,
-        fetch_port.aw.burst,
-        fetch_port.aw.id,
-        fetch_port.aw.len,
-        fetch_port.aw.size
-      ),
+      Cat(fetch_port.aw.addr, fetch_port.aw.burst, fetch_port.aw.id, fetch_port.aw.len, fetch_port.aw.size),
       "LSU.aw"
     )
     when(fire.r_fire) {
