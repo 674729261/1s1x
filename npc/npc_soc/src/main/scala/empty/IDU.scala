@@ -226,6 +226,7 @@ class Operands extends Bundle {
 class MessageIDU2EXU extends Bundle {
   val pc = UInt(32.W)
   val inst = UInt(32.W)
+  val in_cache = Bool()
   val controls = new ControlSignals
   val flags = new ExuInstFlags
   val sources = new Operands
@@ -248,6 +249,10 @@ class ConflictInfoRS extends Bundle {
 
 class IDU() extends PrefixedModule {
   val in = IO(Flipped(DecoupledIO(new MessageIFU2IDU)))
+  val perf_cnt = IO(new Bundle {
+    val stalled = Output(Bool())
+    val flushed = Output(Bool())
+  })
   val out = IO(DecoupledIO(new MessageIDU2EXU))
   val conf = IO(new ConflictInfoRS)
   val flush = IO(new Bundle { val valid = Input(Bool()) })
@@ -293,6 +298,7 @@ class IDU() extends PrefixedModule {
 
   out.bits.pc := in.bits.pc
   out.bits.inst := in.bits.inst
+  out.bits.in_cache := in.bits.in_cache
   out.bits.controls := control_signals
   out.bits.sources.src1 := gpr_rdata1
   out.bits.sources.src2_or_csr := MuxCase(
@@ -325,4 +331,6 @@ class IDU() extends PrefixedModule {
 
   out.valid := has_inst && !conf.stall
   in.ready := (out.fire || !has_inst) && !conf.stall
+  perf_cnt.stalled := has_inst && conf.stall
+  perf_cnt.flushed := has_inst_r && flush.valid
 }

@@ -94,6 +94,7 @@ class ysyx_25080216(
     val master = new AXI_Flatten
     val slave = Flipped(new AXI_Flatten)
   })
+  if (performance_counter) enable(PerformanceCounterLayer)
   if (axiasset) enable(AXIAssertLayer)
   if (verifying) enable(Verifying)
   val cpu = Module(
@@ -128,7 +129,7 @@ class ysyx_25080216(
     inst_retire.reset := reset
     inst_retire.pc := cpu.io.pc
     inst_retire.retire := cpu.io.ok_to_step
-    inst_retire.inst := 0.U(32.W)
+    inst_retire.inst := cpu.io.retire_inst
 
     axi_checker.clock := clock
     axi_checker.reset := reset
