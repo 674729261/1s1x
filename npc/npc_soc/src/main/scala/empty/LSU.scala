@@ -136,7 +136,7 @@ class LSU() extends PrefixedModule {
   conf.rd_valid := has_signal && in.bits.controls.is_gpr_wen
   conf.csr_dest_valid := has_signal && in.bits.controls.is_csr_visit
   conf.csr_id := in.bits.controls.csrd
-  conf.ok_to_forward_rd := has_r || in.bits.controls.gpr_wdata_sel =/= GprWdataSel.RAM
+  conf.ok_to_forward_rd := in.bits.controls.gpr_wdata_sel =/= GprWdataSel.RAM
   conf.rd_data := out.bits.write_info.gpr_wdata
 
   out_pc.dnpc := Mux(has_exception, in.bits.write_info.mtvec, in.bits.write_info.dnpc)

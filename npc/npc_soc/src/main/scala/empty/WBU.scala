@@ -20,7 +20,6 @@ class WBU() extends PrefixedModule {
     val ok_to_step = Output(Bool())
     val retire_pc = Output(UInt(32.W))
     val retire_inst = Output(UInt(32.W))
-    val inst_type = Output(new InstType)
   })
 
   val has_signal = RegInit(false.B)
@@ -44,13 +43,8 @@ class WBU() extends PrefixedModule {
   conf.ok_to_forward_rd := true.B
   conf.rd_data := in.bits.write_info.gpr_wdata
 
-  in.ready := in.valid
+  in.ready := true.B
   out.ok_to_step := has_signal
   out.retire_pc := in.bits.pc
   out.retire_inst := in.bits.inst
-
-  val retire_fields = WireInit(0.U.asTypeOf(new InstFields))
-  retire_fields.funct3 := in.bits.inst(14, 12)
-  val retire_inst_type = decodeInstType(in.bits.inst, retire_fields)
-  out.inst_type := Mux(has_signal, retire_inst_type, 0.U.asTypeOf(new InstType))
 }

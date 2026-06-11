@@ -2,7 +2,6 @@ package empty
 
 import chisel3._
 import chisel3.util._
-import chisel3.layer.block
 
 class WriteInfo extends Bundle {
   val mem_word_or_csr_wdata = UInt(32.W)
@@ -16,12 +15,6 @@ class WriteInfoWBU extends Bundle {
   val mem_word_or_csr_wdata = UInt(32.W)
   val gpr_wdata = UInt(32.W)
   val dnpc = UInt(32.W)
-}
-
-class PerformanceCounter_ICache extends ExtModule {
-  val clock = IO(Input(Clock()))
-  val reset = IO(Input(Reset()))
-  val icache_hit = IO(Input(Bool()))
 }
 
 class ControlSignalsEXU extends Bundle {
@@ -56,7 +49,7 @@ class ConflictInfoRD extends Bundle {
   val rd_data = Output(UInt(32.W))
 }
 
-class EXU(performance_counter: Boolean = false) extends PrefixedModule {
+class EXU() extends PrefixedModule {
   val in = IO(Flipped(DecoupledIO(new MessageIDU2EXU)))
   val out = IO(DecoupledIO(new MessageEXU2LSU))
   val conf = IO(new ConflictInfoRD)
@@ -120,14 +113,8 @@ class EXU(performance_counter: Boolean = false) extends PrefixedModule {
   val branch_or_jal_target = alu.io.out
   val taken_target = Mux(in.bits.flags.is_jalr, jalr_target, branch_or_jal_target)
   val should_branch = in.bits.controls.is_branch && branch.io.jump
-  val is_control_flow = in.bits.controls.is_branch || in.bits.controls.is_dnpc_jal_or_jalr || in.bits.controls.is_dnpc_csr_jump
-  val actual_dnpc = MuxCase(
-    snpc,
-    Seq(
-      (should_branch || in.bits.flags.is_jal || in.bits.flags.is_jalr || in.bits.flags.is_mret) -> taken_target
-    )
-  )
-  val should_flush = is_control_flow && (actual_dnpc =/= snpc)
+  val should_redirect = should_branch || in.bits.flags.is_jal || in.bits.flags.is_jalr || in.bits.flags.is_mret
+  val actual_dnpc = Mux(should_redirect, taken_target, snpc)
 
   out.bits.write_info.gpr_wdata := MuxLookup(
     in.bits.controls.gpr_wdata_sel,
@@ -162,15 +149,6 @@ class EXU(performance_counter: Boolean = false) extends PrefixedModule {
   out.bits.fence := in.bits.flags.is_fence
 
   out_pc.dnpc := actual_dnpc
-  out_pc.flush_valid := has_signal && is_first_cycle && should_flush
+  out_pc.flush_valid := has_signal && is_first_cycle && should_redirect
   in.ready := out.fire || !has_signal
-
-  if (performance_counter) {
-    block(PerformanceCounterLayer) {
-      val performancecounter_icache = Module(new PerformanceCounter_ICache)
-      performancecounter_icache.clock := clock
-      performancecounter_icache.reset := reset
-      performancecounter_icache.icache_hit := out.fire && in.bits.in_cache
-    }
-  }
 }

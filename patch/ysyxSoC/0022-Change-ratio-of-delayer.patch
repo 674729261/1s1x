@@ -1,7 +1,7 @@
 From f9a69ee6ec867f5bb95e9f8fa71f76c0018c261c Mon Sep 17 00:00:00 2001
 From: Shitful <2292683261@qq.com>
 Date: Mon, 8 Jun 2026 18:54:54 +0800
-Subject: [PATCH 22/42] Change ratio of delayer
+Subject: [PATCH 22/41] Change ratio of delayer
 
 ---
  src/amba/APBDelayer.scala  | 2 +-
