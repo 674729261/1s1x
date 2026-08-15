@@ -94,6 +94,7 @@ class ysyx_25080216(
     val master = new AXI_Flatten
     val slave = Flipped(new AXI_Flatten)
   })
+  if (performance_counter) enable(PerformanceCounterLayer)
   if (axiasset) enable(AXIAssertLayer)
   if (verifying) enable(Verifying)
   val cpu = Module(

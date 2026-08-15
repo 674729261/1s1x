@@ -2,6 +2,7 @@ package empty
 
 import chisel3._
 import chisel3.util._
+import chisel3.layer.block
 
 class WriteInfo extends Bundle {
   val mem_word_or_csr_wdata = UInt(32.W)
@@ -15,6 +16,12 @@ class WriteInfoWBU extends Bundle {
   val mem_word_or_csr_wdata = UInt(32.W)
   val gpr_wdata = UInt(32.W)
   val dnpc = UInt(32.W)
+}
+
+class PerformanceCounter_ICache extends ExtModule {
+  val clock = IO(Input(Clock()))
+  val reset = IO(Input(Reset()))
+  val icache_hit = IO(Input(Bool()))
 }
 
 class ControlSignalsEXU extends Bundle {
@@ -151,4 +158,11 @@ class EXU() extends PrefixedModule {
   out_pc.dnpc := actual_dnpc
   out_pc.flush_valid := has_signal && is_first_cycle && should_redirect
   in.ready := out.fire || !has_signal
+
+  block(PerformanceCounterLayer) {
+    val performancecounter_icache = Module(new PerformanceCounter_ICache)
+    performancecounter_icache.clock := clock
+    performancecounter_icache.reset := reset
+    performancecounter_icache.icache_hit := out.fire && in.bits.in_cache
+  }
 }

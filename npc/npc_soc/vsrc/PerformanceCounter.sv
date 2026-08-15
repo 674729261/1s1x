@@ -90,7 +90,7 @@ module PerformanceCounter (
       if (pc[31:28] == 4'ha && wbu_valid) notify_new_inst_not_on_flash();
 
       exu_clear <= next_clear(exu_clear, exu_ready, exu_valid);
-      idu_clear <= next_clear(idu_clear, exu_ready, exu_valid);
+      idu_clear <= next_clear(idu_clear, idu_ready, idu_valid);
       if (wbu_valid) begin
         if (inst_type_is_arithmetic_imm) notify_inst_type_is_arithmetic_imm();
         if (inst_type_is_arithmetic_reg) notify_inst_type_is_arithmetic_reg();

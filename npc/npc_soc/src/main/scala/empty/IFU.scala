@@ -6,6 +6,7 @@ import chisel3.util._
 class MessageIFU2IDU extends Bundle {
   val pc = UInt(32.W)
   val inst = UInt(32.W)
+  val in_cache = Bool()
 }
 
 class IFU(init_pc: UInt) extends PrefixedModule {
@@ -46,6 +47,7 @@ class IFU(init_pc: UInt) extends PrefixedModule {
 
   val inst_reg = RegEnable(icache.io.rdata, cache_rfire)
   val inst_rpc = RegEnable(icache.io.rpc, cache_rfire)
+  val inst_incache = RegEnable(icache.io.in_cache, cache_rfire)
 
   fetch_pc_r := MuxCase(
     fetch_pc_r,
@@ -62,4 +64,5 @@ class IFU(init_pc: UInt) extends PrefixedModule {
   out.valid := has_inst
   out.bits.inst := inst_reg
   out.bits.pc := inst_rpc
+  out.bits.in_cache := inst_incache
 }

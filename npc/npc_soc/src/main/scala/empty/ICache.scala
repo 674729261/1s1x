@@ -31,6 +31,7 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends PrefixedModule {
     val rdata = Output(UInt(32.W))
     val rpc = Output(UInt(32.W))
     val timestamp_res = Output(UInt(2.W))
+    val in_cache = Output(Bool())
     val rvalid = Output(Bool())
     val rready = Input(Bool())
     val clear = Input(Bool())
@@ -87,6 +88,7 @@ class ICache(linesize_2pow: Int, linecount_2pow: Int) extends PrefixedModule {
   ) && (cache_rdata.tag === input_tag)
 
   io.rpc := addr_r
+  io.in_cache := in_cache
 
   val out_ar = RegInit(false.B)
   val has_r = RegInit(false.B)

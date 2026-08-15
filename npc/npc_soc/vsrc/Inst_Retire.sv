@@ -4,11 +4,11 @@ import "DPI-C" function void notify_retire(
 );
 
 module Inst_Retire (
-    input clock,
-    input reset,
-    input retire,
-    input [31:0] pc,
-    input [31:0] inst
+  input        clock,
+  input        reset,
+  input        retire,
+  input [31:0] pc,
+  input [31:0] inst
 );
   always @(posedge clock) begin
     if (retire && !reset) begin

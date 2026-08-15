@@ -35,6 +35,8 @@ class npc_top(init_pc: Long, performance_counter: Boolean) extends Module {
 
   })
 
+  if (performance_counter) enable(PerformanceCounterLayer)
+
   val cpu = Module(
     new CPU_Core(
       init_pc = init_pc.U(32.W),

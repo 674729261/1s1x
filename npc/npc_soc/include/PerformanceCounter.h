@@ -52,6 +52,8 @@ inline void clear_performance_count() {
   clock_count = 0;
   cycles_not_on_flash = 0;
   insts_not_on_flash = 0;
+  stalled_cycles = 0;
+  flushed_insts = 0;
 
   sum_ifu_fetch_delay = 0;
   min_ifu_fetch_delay = 1145141919810;
