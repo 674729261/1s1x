@@ -122,6 +122,7 @@ class EXU() extends PrefixedModule {
   val should_branch = in.bits.controls.is_branch && branch.io.jump
   val should_redirect = should_branch || in.bits.flags.is_jal || in.bits.flags.is_jalr || in.bits.flags.is_mret
   val actual_dnpc = Mux(should_redirect, taken_target, snpc)
+  val should_flush = should_redirect && actual_dnpc =/= snpc
 
   out.bits.write_info.gpr_wdata := MuxLookup(
     in.bits.controls.gpr_wdata_sel,
@@ -156,7 +157,7 @@ class EXU() extends PrefixedModule {
   out.bits.fence := in.bits.flags.is_fence
 
   out_pc.dnpc := actual_dnpc
-  out_pc.flush_valid := has_signal && is_first_cycle && should_redirect
+  out_pc.flush_valid := has_signal && is_first_cycle && should_flush
   in.ready := out.fire || !has_signal
 
   block(PerformanceCounterLayer) {
