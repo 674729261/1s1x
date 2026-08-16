@@ -30,8 +30,8 @@ class GPR(CNT: Int, BITWIDTH: Int) extends PrefixedModule {
 
   val data = register_bank.asTypeOf(Vec(CNT, UInt(BITWIDTH.W)))
 
-  io.rdata1 := Mux(io.wen && (io.waddr === io.raddr1) && (io.raddr1 =/= 0.U), io.wdata, data(io.raddr1))
-  io.rdata2 := Mux(io.wen && (io.waddr === io.raddr2) && (io.raddr2 =/= 0.U), io.wdata, data(io.raddr2))
+  io.rdata1 := data(io.raddr1)
+  io.rdata2 := data(io.raddr2)
 
   ENs := VecInit(UIntToOH(io.waddr).asBools)
 

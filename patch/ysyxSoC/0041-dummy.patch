@@ -16,7 +16,7 @@ index 9a3161fd..d242c78b 100644
  	sed -i  "s/RegNext(r_sel0)/Reg(Bool())/g" rocket-chip/src/main/scala/amba/axi4/SRAM.scala || true
  	sed -i  "s/RegNext(w_sel0)/Reg(Bool())/g" rocket-chip/src/main/scala/amba/axi4/SRAM.scala || true
 -#	dummy 33
-+#	dummy 36
++#	dummy 3121
  	@./patch/update-firtool.sh $(FIRTOOL_VERSION) $(FIRTOOL_PATCH_DIR)
  	CHISEL_FIRTOOL_PATH=$(FIRTOOL_PATCH_DIR)/firtool-$(FIRTOOL_VERSION)/bin \
  	mill -i ysyxsoc.runMain ysyx.Elaborate --target-dir $(@D)

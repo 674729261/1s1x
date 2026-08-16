@@ -59,7 +59,6 @@ object AddMain extends App {
         .action((_, c) =>
           c.copy(
             to_soc = false,
-            performanceCounter = false,
             output_dir = "generated_svsrc"
           )
         )
