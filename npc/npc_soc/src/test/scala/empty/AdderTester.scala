@@ -1,10 +1,3 @@
-/*
- * Dummy tester to start a Chisel project.
- *
- * Author: Martin Schoeberl (martin@jopdesign.com)
- *
- */
-
 package empty
 
 import chisel3._
@@ -28,73 +21,52 @@ class __Adder_test(WIDTH: Int) extends PrefixedModule {
 }
 
 class AdderTester extends AnyFlatSpec {
-  val random = new Random(12345)
-  val test_cases = 1024
+  val mask = 0xffffffffL
+
+  def check(dut: __Adder_test, a: Long, b: Long, cin: Int): Unit = {
+    val full = a + b + cin
+    val sum = full & mask
+    val carry = full > mask
+    val signA = (a & 0x80000000L) != 0
+    val signB = (b & 0x80000000L) != 0
+    val signSum = (sum & 0x80000000L) != 0
+    val overflow = signA == signB && signA != signSum
+
+    dut.io.A.poke(a.U(32.W))
+    dut.io.B.poke(b.U(32.W))
+    dut.io.Cin.poke((cin == 1).B)
+    dut.io.out.expect(sum.U(32.W))
+    dut.io.Cout.expect(carry.B)
+    dut.io.overflow.expect(overflow.B)
+  }
 
   behavior of "Adder"
-  it should "work correctly" in {
+
+  it should "handle carry and signed overflow boundaries" in {
     simulate(new __Adder_test(32)) { dut =>
-      dut.io.A.poke(0xffffffffL.U(32.W))
-      dut.io.B.poke(0.U(32.W))
-      dut.io.Cin.poke(false.B)
-      dut.io.out.expect(0xffffffffL.U(32.W))
-      dut.io.Cout.expect(false.B)
-      dut.io.overflow.expect(false.B)
+      Seq(
+        (0x00000000L, 0x00000000L, 0),
+        (0xffffffffL, 0x00000000L, 0),
+        (0xffffffffL, 0x00000001L, 0),
+        (0xffffffffL, 0x00000000L, 1),
+        (0x7fffffffL, 0x00000000L, 1),
+        (0x7fffffffL, 0x7fffffffL, 0),
+        (0x80000000L, 0x80000000L, 0),
+        (0x80000000L, 0xffffffffL, 0),
+        (0x00000001L, 0xffffffffL, 1)
+      ).foreach { case (a, b, cin) => check(dut, a, b, cin) }
+    }
+  }
 
-      dut.io.A.poke(0xffffffffL.U(32.W))
-      dut.io.B.poke(1.U(32.W))
-      dut.io.Cin.poke(false.B)
-      dut.io.out.expect(0.U(32.W))
-      dut.io.Cout.expect(true.B)
-      dut.io.overflow.expect(false.B)
+  it should "match randomized sums and flags" in {
+    simulate(new __Adder_test(32)) { dut =>
+      val random = new Random(12345)
 
-      dut.io.A.poke(0xffffffffL.U(32.W))
-      dut.io.B.poke(0.U(32.W))
-      dut.io.Cin.poke(true.B)
-      dut.io.out.expect(0.U(32.W))
-      dut.io.Cout.expect(true.B)
-      dut.io.overflow.expect(false.B)
-
-      dut.io.A.poke(0x7fffffffL.U(32.W))
-      dut.io.B.poke(0.U(32.W))
-      dut.io.Cin.poke(true.B)
-      dut.io.out.expect(0x80000000L.U(32.W))
-      dut.io.Cout.expect(false.B)
-      dut.io.overflow.expect(true.B)
-
-      dut.io.A.poke(1.U(32.W))
-      dut.io.B.poke(0x7fffffffL.U(32.W))
-      dut.io.Cin.poke(true.B)
-      dut.io.out.expect(0x80000001L.U(32.W))
-      dut.io.Cout.expect(false.B)
-      dut.io.overflow.expect(true.B)
-
-      dut.io.A.poke(1.U(32.W))
-      dut.io.B.poke(0xffffffffL.U(32.W))
-      dut.io.Cin.poke(true.B)
-      dut.io.out.expect(1.U(32.W))
-      dut.io.Cout.expect(true.B)
-      dut.io.overflow.expect(false.B)
-
-      for (i <- 0 until test_cases) {
-        val A = random.between(0L, 0x100000000L)
-        val B = random.between(0L, 0x100000000L)
-        val Cin = random.between(0L, 2L)
-        dut.io.A.poke(A.U(32.W))
-        dut.io.B.poke(B.U(32.W))
-        dut.io.Cin.poke(Cin.B)
-
-        val Sum = (A + B + Cin) % 0x100000000L;
-        val Cout = (A + B + Cin) >= 0x100000000L;
-        val a_signed = (if (A >= (1L << 31L)) A - (1L << 32L) else A)
-        val b_signed = (if (B >= (1L << 31L)) B - (1L << 32L) else B)
-        if (a_signed >= 0 && b_signed >= 0) {
-          val overflow = (Sum >= (1L << 31L))
-          dut.io.overflow.expect(overflow.B)
-        } else if (a_signed < 0 && b_signed < 0) {
-          val overflow = (Sum < (1L << 31L))
-          dut.io.overflow.expect(overflow.B)
-        } else dut.io.overflow.expect(false.B)
+      for (_ <- 0 until 1024) {
+        val a = random.nextLong(1L << 32)
+        val b = random.nextLong(1L << 32)
+        val cin = random.nextInt(2)
+        check(dut, a, b, cin)
       }
     }
   }

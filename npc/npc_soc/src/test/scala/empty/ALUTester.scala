@@ -1,10 +1,3 @@
-/*
- * Dummy tester to start a Chisel project.
- *
- * Author: Martin Schoeberl (martin@jopdesign.com)
- *
- */
-
 package empty
 
 import chisel3._
@@ -17,11 +10,8 @@ class __ALU_test(WIDTH: Int) extends PrefixedModule {
   val io = IO(new Bundle {
     val A = Input(UInt(WIDTH.W))
     val B = Input(UInt(WIDTH.W))
-    val funct3 = Input(UInt(3.W))
-    val is_sub_sra = Input(Bool())
-    val is_force_add = Input(Bool())
+    val controls = Input(new ALUControl)
     val out = Output(UInt(WIDTH.W))
-
   })
 
   val alu = Module(new ALU(WIDTH))
@@ -29,133 +19,108 @@ class __ALU_test(WIDTH: Int) extends PrefixedModule {
 }
 
 class ALUTester extends AnyFlatSpec {
-  def set_input(
-      dut: __ALU_test,
-      a: UInt,
-      b: UInt,
-      funct3: UInt,
-      is_sub_sra: Bool,
-      is_force_add: Bool
-  ) = {
-    dut.io.A.poke(a)
-    dut.io.B.poke(b)
-    dut.io.funct3.poke(funct3)
-    dut.io.is_sub_sra.poke(is_sub_sra)
-    dut.io.is_force_add.poke(is_force_add)
+  val mask = 0xffffffffL
+  val testCases = 128
+
+  def setInput(dut: __ALU_test, a: Long, b: Long, op: UInt): Unit = {
+    dut.io.A.poke(a.U(32.W))
+    dut.io.B.poke(b.U(32.W))
+    dut.io.controls.op.poke(op)
   }
 
-  val random = new Random(12345)
-  val test_cases = 128
+  def signed32(value: Long): Long = {
+    if ((value & 0x80000000L) != 0) value - (1L << 32) else value
+  }
+
   behavior of "ALU"
-  it should "work correctly" in {
+
+  it should "perform addition and subtraction" in {
     simulate(new __ALU_test(32)) { dut =>
-      for (i <- 0 until test_cases) { // add
-        val a: Long = random.nextLong(1L << 32)
-        val b: Long = random.nextLong(1L << 32)
-        val expected = (a + b) % (1L << 32)
+      val random = new Random(12345)
 
-        set_input(dut, a.U(32.W), b.U(32.W), "b000".U(3.W), false.B, false.B)
+      for (_ <- 0 until testCases) {
+        val a = random.nextLong(1L << 32)
+        val b = random.nextLong(1L << 32)
 
-        dut.io.out.expect(expected.U(32.W))
-        set_input(
-          dut,
-          a.U(32.W),
-          b.U(32.W),
-          random.nextLong(8).U(3.W),
-          false.B,
-          true.B
-        )
+        setInput(dut, a, b, ALUOp.ADD)
+        dut.io.out.expect(((a + b) & mask).U(32.W))
 
-        dut.io.out.expect(expected.U(32.W))
+        setInput(dut, a, b, ALUOp.SUB)
+        dut.io.out.expect(((a - b) & mask).U(32.W))
       }
-      for (i <- 0 until test_cases) { // sub
-        val a: Long = random.nextLong(1L << 32)
-        val b: Long = random.nextLong(1L << 32)
-        val expected = (a - b + (1L << 32)) % (1L << 32)
+    }
+  }
 
-        set_input(dut, a.U(32.W), b.U(32.W), "b000".U(3.W), true.B, false.B)
+  it should "perform signed and unsigned comparisons" in {
+    simulate(new __ALU_test(32)) { dut =>
+      val random = new Random(23456)
 
-        dut.io.out.expect(expected.U(32.W))
-      }
-      for (i <- 0 until test_cases) { // sltu
-        val a: Long = random.nextLong(1L << 32)
-        val b: Long = random.nextLong(1L << 32)
-        val expected = if (a < b) 1 else 0
+      for (_ <- 0 until testCases) {
+        val a = random.nextLong(1L << 32)
+        val b = random.nextLong(1L << 32)
 
-        set_input(dut, a.U(32.W), b.U(32.W), "b011".U(3.W), false.B, false.B)
+        setInput(dut, a, b, ALUOp.SLT)
+        dut.io.out.expect((if (signed32(a) < signed32(b)) 1 else 0).U(32.W))
 
-        dut.io.out.expect(expected.U(32.W))
-      }
-      for (i <- 0 until test_cases) { // slt
-        var a: Long = random.nextLong(1L << 32)
-        var b: Long = random.nextLong(1L << 32)
-        if (a >= (1L << 31)) a -= (1L << 32)
-        if (b >= (1L << 31)) b -= (1L << 32)
-        val expected = if (a < b) 1 else 0
-        a = (a + (1L << 32)) % (1L << 32)
-        b = (b + (1L << 32)) % (1L << 32)
-
-        set_input(dut, a.U(32.W), b.U(32.W), "b010".U(3.W), false.B, false.B)
-
-        dut.io.out.expect(expected.U(32.W))
-      }
-      for (i <- 0 until test_cases) { // and
-        val a: Long = random.nextLong(1L << 32)
-        val b: Long = random.nextLong(1L << 32)
-        val expected = a & b
-
-        set_input(dut, a.U(32.W), b.U(32.W), "b111".U(3.W), false.B, false.B)
-
-        dut.io.out.expect(expected.U(32.W))
-      }
-      for (i <- 0 until test_cases) { // or
-        val a: Long = random.nextLong(1L << 32)
-        val b: Long = random.nextLong(1L << 32)
-        val expected = a | b
-
-        set_input(dut, a.U(32.W), b.U(32.W), "b110".U(3.W), false.B, false.B)
-
-        dut.io.out.expect(expected.U(32.W))
-      }
-      for (i <- 0 until test_cases) { // xor
-        val a: Long = random.nextLong(1L << 32)
-        val b: Long = random.nextLong(1L << 32)
-        val expected = a ^ b
-
-        set_input(dut, a.U(32.W), b.U(32.W), "b100".U(3.W), false.B, false.B)
-
-        dut.io.out.expect(expected.U(32.W))
-      }
-      for (i <- 0 until test_cases) { // sll
-        val a: Long = random.nextLong(1L << 32)
-        val b: Long = random.nextLong(32)
-        val expected = (a << b) % (1L << 32)
-
-        set_input(dut, a.U(32.W), b.U(32.W), "b001".U(3.W), false.B, false.B)
-
-        dut.io.out.expect(expected.U(32.W))
-      }
-      for (i <- 0 until test_cases) { // srl
-        val a: Long = random.nextLong(1L << 32)
-        val b: Long = random.nextLong(32)
-        val expected = (a >> b)
-
-        set_input(dut, a.U(32.W), b.U(32.W), "b101".U(3.W), false.B, false.B)
-
-        dut.io.out.expect(expected.U(32.W))
-      }
-      for (i <- 0 until test_cases) { // sra
-        val a: Long = random.nextLong(1L << 32)
-        val b: Long = random.nextLong(32)
-        val expected =
-          if (a < (1L << 31)) (a >> b)
-          else (a >> b) | ((1L << 32) - (1L << (32 - b)))
-
-        set_input(dut, a.U(32.W), b.U(32.W), "b101".U(3.W), true.B, false.B)
-
-        dut.io.out.expect(expected.U(32.W))
+        setInput(dut, a, b, ALUOp.SLTU)
+        dut.io.out.expect((if (a < b) 1 else 0).U(32.W))
       }
 
+      setInput(dut, 0x80000000L, 0x7fffffffL, ALUOp.SLT)
+      dut.io.out.expect(1.U)
+
+      setInput(dut, 0x80000000L, 0x7fffffffL, ALUOp.SLTU)
+      dut.io.out.expect(0.U)
+    }
+  }
+
+  it should "perform bitwise operations" in {
+    simulate(new __ALU_test(32)) { dut =>
+      val random = new Random(34567)
+
+      for (_ <- 0 until testCases) {
+        val a = random.nextLong(1L << 32)
+        val b = random.nextLong(1L << 32)
+
+        setInput(dut, a, b, ALUOp.AND)
+        dut.io.out.expect((a & b).U(32.W))
+
+        setInput(dut, a, b, ALUOp.OR)
+        dut.io.out.expect((a | b).U(32.W))
+
+        setInput(dut, a, b, ALUOp.XOR)
+        dut.io.out.expect((a ^ b).U(32.W))
+      }
+    }
+  }
+
+  it should "perform logical and arithmetic shifts" in {
+    simulate(new __ALU_test(32)) { dut =>
+      val random = new Random(45678)
+
+      for (_ <- 0 until testCases) {
+        val a = random.nextLong(1L << 32)
+        val b = random.nextLong(1L << 32)
+        val shamt = (b & 31).toInt
+
+        setInput(dut, a, b, ALUOp.SLL)
+        dut.io.out.expect(((a << shamt) & mask).U(32.W))
+
+        setInput(dut, a, b, ALUOp.SRL)
+        dut.io.out.expect((a >> shamt).U(32.W))
+
+        setInput(dut, a, b, ALUOp.SRA)
+        dut.io.out.expect(((signed32(a) >> shamt) & mask).U(32.W))
+      }
+
+      setInput(dut, 1L, 32L, ALUOp.SLL)
+      dut.io.out.expect(1.U)
+
+      setInput(dut, 0x80000000L, 63L, ALUOp.SRL)
+      dut.io.out.expect(1.U)
+
+      setInput(dut, 0x80000000L, 63L, ALUOp.SRA)
+      dut.io.out.expect(0xffffffffL.U)
     }
   }
 }

@@ -1,10 +1,3 @@
-/*
- * Dummy tester to start a Chisel project.
- *
- * Author: Martin Schoeberl (martin@jopdesign.com)
- *
- */
-
 package empty
 
 import chisel3._
@@ -12,101 +5,66 @@ import chisel3.simulator.EphemeralSimulator._
 import org.scalatest.flatspec.AnyFlatSpec
 
 import scala.util.Random
-import empty.Branch
 
 class __Branch_test(WIDTH: Int) extends PrefixedModule {
   val io = IO(new Bundle {
     val A = Input(UInt(WIDTH.W))
     val B = Input(UInt(WIDTH.W))
     val funct3 = Input(UInt(3.W))
-    val jump = Output(UInt(WIDTH.W))
-
+    val jump = Output(Bool())
   })
 
-  val b = Module(new Branch(WIDTH))
-  b.io <> io
+  val branch = Module(new Branch(WIDTH))
+  branch.io <> io
 }
 
 class BranchTester extends AnyFlatSpec {
-  val random = new Random(12345)
-  val test_cases = 128
+  def check(dut: __Branch_test, a: Long, b: Long): Unit = {
+    val signedA = if (a >= (1L << 31)) a - (1L << 32) else a
+    val signedB = if (b >= (1L << 31)) b - (1L << 32) else b
+
+    dut.io.A.poke(a.U(32.W))
+    dut.io.B.poke(b.U(32.W))
+
+    Seq(
+      (0, a == b),
+      (1, a != b),
+      (4, signedA < signedB),
+      (5, signedA >= signedB),
+      (6, a < b),
+      (7, a >= b)
+    ).foreach { case (funct3, expected) =>
+      dut.io.funct3.poke(funct3.U)
+      dut.io.jump.expect(expected.B)
+    }
+  }
+
   behavior of "Branch"
-  it should "work correctly" in {
+
+  it should "compare equal and unequal operands" in {
     simulate(new __Branch_test(32)) { dut =>
-      dut.io.A.poke("h80000000".U(32.W))
-      dut.io.B.poke("h80000000".U(32.W))
-      dut.io.funct3.poke("b000".U(3.W))
-      dut.io.jump.expect(true.B)
-      dut.io.funct3.poke("b001".U(3.W))
-      dut.io.jump.expect(false.B)
-      dut.io.funct3.poke("b100".U(3.W))
-      dut.io.jump.expect(false.B)
-      dut.io.funct3.poke("b101".U(3.W))
-      dut.io.jump.expect(true.B)
-      dut.io.funct3.poke("b110".U(3.W))
-      dut.io.jump.expect(false.B)
-      dut.io.funct3.poke("b111".U(3.W))
-      dut.io.jump.expect(true.B)
+      check(dut, 0L, 0L)
+      check(dut, 0xffffffffL, 0xffffffffL)
+      check(dut, 0x12345678L, 0x12345679L)
+    }
+  }
 
-      dut.io.A.poke("h7FFFFFFF".U(32.W))
-      dut.io.B.poke("h80000000".U(32.W))
-      dut.io.funct3.poke("b000".U(3.W))
-      dut.io.jump.expect(false.B)
-      dut.io.funct3.poke("b001".U(3.W))
-      dut.io.jump.expect(true.B)
-      dut.io.funct3.poke("b100".U(3.W))
-      dut.io.jump.expect(false.B)
-      dut.io.funct3.poke("b101".U(3.W))
-      dut.io.jump.expect(true.B)
-      dut.io.funct3.poke("b110".U(3.W))
-      dut.io.jump.expect(true.B)
-      dut.io.funct3.poke("b111".U(3.W))
-      dut.io.jump.expect(false.B)
+  it should "handle signed and unsigned boundaries" in {
+    simulate(new __Branch_test(32)) { dut =>
+      check(dut, 0x80000000L, 0x7fffffffL)
+      check(dut, 0x7fffffffL, 0x80000000L)
+      check(dut, 0xffffffffL, 0L)
+      check(dut, 0L, 0xffffffffL)
+    }
+  }
 
-      for (i <- 0 until test_cases) {
-        val A = random.nextLong(1L << 32)
-        val B = random.nextLong(1L << 32)
-        dut.io.A.poke(A.U(32.W))
-        dut.io.B.poke(B.U(32.W))
+  it should "match randomized comparisons" in {
+    simulate(new __Branch_test(32)) { dut =>
+      val random = new Random(12345)
 
-        val res_eq = A == B
-        val res_ne = A != B
-        val res_ltu = A < B
-        val res_geu = A >= B
-        val As = if (A >= (1L << 31)) A - (1L << 32) else A
-        val Bs = if (B >= (1L << 31)) B - (1L << 32) else B
-        val res_lt = As < Bs
-        val res_ge = As >= Bs
-
-        dut.io.funct3.poke("b000".U(3.W))
-
-        dut.io.jump.expect(res_eq.B)
-        dut.io.funct3.poke("b001".U(3.W))
-
-        dut.io.jump.expect(res_ne.B)
-        dut.io.funct3.poke("b100".U(3.W))
-
-        dut.io.jump.expect(res_lt.B)
-        dut.io.funct3.poke("b101".U(3.W))
-
-        dut.io.jump.expect(res_ge.B)
-        dut.io.funct3.poke("b110".U(3.W))
-
-        dut.io.jump.expect(res_ltu.B)
-        dut.io.funct3.poke("b111".U(3.W))
-
-        dut.io.jump.expect(res_geu.B)
-
-        dut.io.A.poke(A.U(32.W))
-        dut.io.B.poke(A.U(32.W))
-        dut.io.funct3.poke("b000".U(3.W))
-
-        dut.io.jump.expect(true.B)
-        dut.io.funct3.poke("b001".U(3.W))
-
-        dut.io.jump.expect(false.B)
+      for (_ <- 0 until 256) {
+        check(dut, random.nextLong(1L << 32), random.nextLong(1L << 32))
       }
-
     }
   }
 }

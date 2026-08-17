@@ -1,27 +1,15 @@
-/*
- * Dummy tester to start a Chisel project.
- *
- * Author: Martin Schoeberl (martin@jopdesign.com)
- *
- */
-
 package empty
 
 import chisel3._
 import chisel3.simulator.EphemeralSimulator._
 import org.scalatest.flatspec.AnyFlatSpec
 
-import scala.util.Random
-
-class __RamLoadTester_test() extends PrefixedModule {
+class __RamLoadTester_test extends PrefixedModule {
   val io = IO(new Bundle {
     val word = Input(UInt(32.W))
     val lower2bit = Input(UInt(2.W))
-    val is_word = Input(Bool())
-    val is_half = Input(Bool())
-    val is_byte = Input(Bool())
+    val size = Input(UInt(2.W))
     val is_unsigned = Input(Bool())
-
     val out = Output(UInt(32.W))
   })
 
@@ -30,50 +18,66 @@ class __RamLoadTester_test() extends PrefixedModule {
 }
 
 class RamLoaderTester extends AnyFlatSpec {
-  behavior of "RamLoader"
-  it should "work correctly" in {
+  def setInput(
+      dut: __RamLoadTester_test,
+      word: Long,
+      offset: Int,
+      size: UInt,
+      unsigned: Boolean
+  ): Unit = {
+    dut.io.word.poke(word.U)
+    dut.io.lower2bit.poke(offset.U)
+    dut.io.size.poke(size)
+    dut.io.is_unsigned.poke(unsigned.B)
+  }
+
+  behavior of "RamLoadData"
+
+  it should "return complete words" in {
     simulate(new __RamLoadTester_test) { dut =>
-      dut.io.word.poke("h12345678".U(32.W))
-      dut.io.is_word.poke(true.B)
-      dut.io.out.expect("h12345678".U(32.W))
+      setInput(dut, 0x12345678L, 0, RamSize.WORD, false)
+      dut.io.out.expect(0x12345678L.U)
 
-      dut.io.is_word.poke(false.B)
-      dut.io.is_byte.poke(true.B)
-      dut.io.lower2bit.poke("b00".U(2.W))
-      dut.io.out.expect("h78".U(32.W))
-      dut.io.lower2bit.poke("b01".U(2.W))
-      dut.io.out.expect("h56".U(32.W))
-      dut.io.lower2bit.poke("b10".U(2.W))
-      dut.io.out.expect("h34".U(32.W))
-      dut.io.lower2bit.poke("b11".U(2.W))
-      dut.io.out.expect("h12".U(32.W))
+      setInput(dut, 0x89abcdefL, 3, RamSize.WORD, true)
+      dut.io.out.expect(0x89abcdefL.U)
+    }
+  }
 
-      dut.io.is_byte.poke(false.B)
-      dut.io.is_half.poke(true.B)
-      dut.io.lower2bit.poke("b00".U(2.W))
-      dut.io.out.expect("h5678".U(32.W))
-      dut.io.lower2bit.poke("b10".U(2.W))
-      dut.io.out.expect("h1234".U(32.W))
+  it should "select and sign extend bytes" in {
+    simulate(new __RamLoadTester_test) { dut =>
+      val expected = Seq(0x00000078L, 0x00000056L, 0xffffff84L, 0xffffff82L)
 
-      dut.io.word.poke("h82845678".U(32.W))
-      dut.io.is_half.poke(false.B)
-      dut.io.is_byte.poke(true.B)
-      dut.io.is_unsigned.poke(false.B)
-      dut.io.lower2bit.poke("b00".U(2.W))
-      dut.io.out.expect("h78".U(32.W))
-      dut.io.lower2bit.poke("b01".U(2.W))
-      dut.io.out.expect("h56".U(32.W))
-      dut.io.lower2bit.poke("b10".U(2.W))
-      dut.io.out.expect("hffffff84".U(32.W))
-      dut.io.lower2bit.poke("b11".U(2.W))
-      dut.io.out.expect("hffffff82".U(32.W))
+      expected.zipWithIndex.foreach { case (value, offset) =>
+        setInput(dut, 0x82845678L, offset, RamSize.BYTE, false)
+        dut.io.out.expect(value.U)
+      }
+    }
+  }
 
-      dut.io.is_byte.poke(false.B)
-      dut.io.is_half.poke(true.B)
-      dut.io.lower2bit.poke("b00".U(2.W))
-      dut.io.out.expect("h5678".U(32.W))
-      dut.io.lower2bit.poke("b10".U(2.W))
-      dut.io.out.expect("hffff8284".U(32.W))
+  it should "select and zero extend bytes" in {
+    simulate(new __RamLoadTester_test) { dut =>
+      val expected = Seq(0x00000078L, 0x00000056L, 0x00000084L, 0x00000082L)
+
+      expected.zipWithIndex.foreach { case (value, offset) =>
+        setInput(dut, 0x82845678L, offset, RamSize.BYTE, true)
+        dut.io.out.expect(value.U)
+      }
+    }
+  }
+
+  it should "select signed and unsigned halfwords" in {
+    simulate(new __RamLoadTester_test) { dut =>
+      setInput(dut, 0x82845678L, 0, RamSize.HALF, false)
+      dut.io.out.expect(0x00005678L.U)
+
+      setInput(dut, 0x82845678L, 2, RamSize.HALF, false)
+      dut.io.out.expect(0xffff8284L.U)
+
+      setInput(dut, 0x82845678L, 0, RamSize.HALF, true)
+      dut.io.out.expect(0x00005678L.U)
+
+      setInput(dut, 0x82845678L, 2, RamSize.HALF, true)
+      dut.io.out.expect(0x00008284L.U)
     }
   }
 }
