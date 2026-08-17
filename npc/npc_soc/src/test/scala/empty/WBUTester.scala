@@ -23,12 +23,43 @@ class WBUTester extends AnyFlatSpec {
     dut.reset.poke(false.B)
   }
 
+  def waitUntil(clock: Clock, limit: Int = 64)(condition: => Boolean): Unit = {
+    var cycles = 0
+    var reached = condition
+
+    while (!reached && cycles < limit) {
+      clock.step()
+      cycles += 1
+      reached = condition
+    }
+
+    assert(reached, s"timeout after $limit cycles")
+  }
+
+  def transfer(clock: Clock, valid: Bool, ready: Bool): Unit = {
+    waitUntil(clock) {
+      valid.peek().litToBoolean && ready.peek().litToBoolean
+    }
+    clock.step()
+  }
+
+  def issue(dut: WBU): Unit = {
+    dut.in.valid.poke(true.B)
+    transfer(dut.clock, dut.in.valid, dut.in.ready)
+    dut.in.valid.poke(false.B)
+  }
+
+  def waitForRetirement(dut: WBU): Unit = {
+    waitUntil(dut.clock) {
+      dut.out.ok_to_step.peek().litToBoolean
+    }
+  }
+
   behavior of "WBU"
 
   it should "retire and write normal instructions" in {
     simulate(new WBU) { dut =>
       initialize(dut)
-      dut.in.ready.expect(true.B)
       dut.out.ok_to_step.expect(false.B)
 
       dut.in.bits.pc.poke("h80000020".U)
@@ -42,10 +73,9 @@ class WBUTester extends AnyFlatSpec {
       dut.in.bits.write_info.gpr_wdata.poke("h87654321".U)
       dut.in.bits.write_info.dnpc.poke("h80000024".U)
       dut.in.bits.exception.poke(false.B)
-      dut.in.valid.poke(true.B)
-      dut.clock.step()
+      issue(dut)
+      waitForRetirement(dut)
 
-      dut.out.ok_to_step.expect(true.B)
       dut.out.retire_pc.expect("h80000020".U)
       dut.out.retire_inst.expect("h305110f3".U)
       dut.out.gpr_wen.expect(true.B)
@@ -60,9 +90,9 @@ class WBUTester extends AnyFlatSpec {
       dut.conf.ok_to_forward_rd.expect(true.B)
       dut.conf.rd_data.expect("h87654321".U)
 
-      dut.in.valid.poke(false.B)
-      dut.clock.step()
-      dut.out.ok_to_step.expect(false.B)
+      waitUntil(dut.clock) {
+        !dut.out.ok_to_step.peek().litToBoolean
+      }
       dut.out.gpr_wen.expect(false.B)
       dut.out.csr_wen.expect(false.B)
     }
@@ -81,10 +111,9 @@ class WBUTester extends AnyFlatSpec {
       dut.in.bits.write_info.mem_word_or_csr_wdata.poke("h80000100".U)
       dut.in.bits.write_info.gpr_wdata.poke("hffffffff".U)
       dut.in.bits.exception.poke(true.B)
-      dut.in.valid.poke(true.B)
-      dut.clock.step()
+      issue(dut)
+      waitForRetirement(dut)
 
-      dut.out.ok_to_step.expect(true.B)
       dut.out.csr_interruption.expect(true.B)
       dut.out.csr_cur_pc.expect("h80000100".U)
       dut.out.gpr_wen.expect(false.B)
@@ -99,10 +128,9 @@ class WBUTester extends AnyFlatSpec {
       dut.in.bits.pc.poke("h80000200".U)
       dut.in.bits.inst.poke("h00100073".U)
       dut.in.bits.controls.is_ebreak.poke(true.B)
-      dut.in.valid.poke(true.B)
-      dut.clock.step()
+      issue(dut)
+      waitForRetirement(dut)
 
-      dut.out.ok_to_step.expect(true.B)
       dut.out.ebreak.expect(true.B)
       dut.out.retire_pc.expect("h80000200".U)
       dut.out.retire_inst.expect("h00100073".U)

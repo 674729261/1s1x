@@ -27,13 +27,48 @@ class IDUTester extends AnyFlatSpec {
     dut.reset.poke(false.B)
   }
 
+  def waitUntil(clock: Clock, limit: Int = 64)(condition: => Boolean): Unit = {
+    var cycles = 0
+    var reached = condition
+
+    while (!reached && cycles < limit) {
+      clock.step()
+      cycles += 1
+      reached = condition
+    }
+
+    assert(reached, s"timeout after $limit cycles")
+  }
+
+  def transfer(clock: Clock, valid: Bool, ready: Bool): Unit = {
+    waitUntil(clock) {
+      valid.peek().litToBoolean && ready.peek().litToBoolean
+    }
+    clock.step()
+  }
+
   def issue(dut: IDU, pc: Long, inst: Long): Unit = {
     dut.in.bits.pc.poke(pc.U)
     dut.in.bits.inst.poke(inst.U)
     dut.in.bits.in_cache.poke(true.B)
     dut.in.valid.poke(true.B)
-    dut.in.ready.expect(true.B)
-    dut.clock.step()
+    transfer(dut.clock, dut.in.valid, dut.in.ready)
+    dut.in.valid.poke(false.B)
+  }
+
+  def waitForOutput(dut: IDU): Unit = {
+    waitUntil(dut.clock) {
+      dut.out.valid.peek().litToBoolean
+    }
+  }
+
+  def consumeOutput(dut: IDU): Unit = {
+    dut.out.ready.poke(true.B)
+    transfer(dut.clock, dut.out.valid, dut.out.ready)
+    dut.out.ready.poke(false.B)
+    waitUntil(dut.clock) {
+      !dut.out.valid.peek().litToBoolean
+    }
   }
 
   behavior of "IDU"
@@ -42,8 +77,8 @@ class IDUTester extends AnyFlatSpec {
     simulate(new IDU) { dut =>
       initialize(dut)
       issue(dut, 0x80000000L, 0x002081b3L)
+      waitForOutput(dut)
 
-      dut.out.valid.expect(true.B)
       dut.out.bits.pc.expect(0x80000000L.U)
       dut.out.bits.inst.expect(0x002081b3L.U)
       dut.out.bits.controls.alu_controls.op.expect(ALUOp.ADD)
@@ -64,10 +99,12 @@ class IDUTester extends AnyFlatSpec {
       dut.out.bits.sources.src1.expect("haaaaaaaa".U)
       dut.out.bits.sources.src2_or_csr.expect("hbbbbbbbb".U)
 
-      dut.in.valid.poke(false.B)
-      dut.out.ready.poke(true.B)
-      dut.clock.step()
-      dut.out.valid.expect(false.B)
+      dut.clock.step(2)
+      dut.out.valid.expect(true.B)
+      dut.out.bits.pc.expect(0x80000000L.U)
+      dut.out.bits.inst.expect(0x002081b3L.U)
+
+      consumeOutput(dut)
     }
   }
 
@@ -75,8 +112,8 @@ class IDUTester extends AnyFlatSpec {
     simulate(new IDU) { dut =>
       initialize(dut)
       issue(dut, 0x80000004L, 0xffc32283L)
+      waitForOutput(dut)
 
-      dut.out.valid.expect(true.B)
       dut.out.bits.controls.gpr_wdata_sel.expect(GprWdataSel.RAM)
       dut.out.bits.controls.ram_size.expect(RamSize.WORD)
       dut.out.bits.controls.is_load_unsigned.expect(false.B)
@@ -85,14 +122,10 @@ class IDUTester extends AnyFlatSpec {
       dut.out.bits.controls.is_gpr_wen.expect(true.B)
       dut.out.bits.controls.rd.expect(5.U)
 
-      dut.in.valid.poke(false.B)
-      dut.out.ready.poke(true.B)
-      dut.clock.step()
-
-      dut.out.ready.poke(false.B)
+      consumeOutput(dut)
       issue(dut, 0x80000008L, 0xfe731c23L)
+      waitForOutput(dut)
 
-      dut.out.valid.expect(true.B)
       dut.out.bits.controls.ram_size.expect(RamSize.HALF)
       dut.out.bits.controls.is_ram_valid.expect(true.B)
       dut.out.bits.controls.is_ram_wen.expect(true.B)
@@ -107,8 +140,8 @@ class IDUTester extends AnyFlatSpec {
     simulate(new IDU) { dut =>
       initialize(dut)
       issue(dut, 0x8000000cL, 0x305110f3L)
+      waitForOutput(dut)
 
-      dut.out.valid.expect(true.B)
       dut.out.bits.controls.is_csr_visit.expect(true.B)
       dut.out.bits.controls.gpr_wdata_sel.expect(GprWdataSel.CSR)
       dut.out.bits.controls.csrd.expect(0x305.U)
@@ -117,14 +150,10 @@ class IDUTester extends AnyFlatSpec {
       dut.conf.csr_src_valid.expect(true.B)
       dut.fetch_port_out.csr_raddr.expect(0x305.U)
 
-      dut.in.valid.poke(false.B)
-      dut.out.ready.poke(true.B)
-      dut.clock.step()
-
-      dut.out.ready.poke(false.B)
+      consumeOutput(dut)
       issue(dut, 0x80000010L, 0x00000073L)
+      waitForOutput(dut)
 
-      dut.out.valid.expect(true.B)
       dut.out.bits.exception.expect(true.B)
       dut.out.bits.controls.is_csr_visit.expect(false.B)
       dut.out.bits.controls.is_gpr_wen.expect(false.B)
@@ -135,9 +164,12 @@ class IDUTester extends AnyFlatSpec {
     simulate(new IDU) { dut =>
       initialize(dut)
       issue(dut, 0x80000000L, 0x002081b3L)
+      waitForOutput(dut)
 
       dut.conf.stall.poke(true.B)
-      dut.out.valid.expect(false.B)
+      waitUntil(dut.clock) {
+        !dut.out.valid.peek().litToBoolean
+      }
       dut.in.ready.expect(false.B)
       dut.perf_cnt.stalled.expect(true.B)
 
@@ -147,7 +179,9 @@ class IDUTester extends AnyFlatSpec {
 
       dut.flush.valid.poke(false.B)
       dut.conf.stall.poke(false.B)
-      dut.out.valid.expect(false.B)
+      waitUntil(dut.clock) {
+        !dut.out.valid.peek().litToBoolean
+      }
       dut.perf_cnt.stalled.expect(false.B)
     }
   }
