@@ -1,7 +1,7 @@
 From e9b51312eb2f5b59893c9e5a072f2bcce9503d82 Mon Sep 17 00:00:00 2001
 From: Shitful <2292683261@qq.com>
 Date: Tue, 9 Jun 2026 00:31:23 +0800
-Subject: [PATCH 27/41] dummy 19
+Subject: [PATCH 27/43] dummy 19
 
 ---
  Makefile | 2 +-
@@ -21,5 +21,5 @@ index 40f87bae..9be7aece 100644
  	CHISEL_FIRTOOL_PATH=$(FIRTOOL_PATCH_DIR)/firtool-$(FIRTOOL_VERSION)/bin \
  	mill -i ysyxsoc.runMain ysyx.Elaborate --target-dir $(@D)
 -- 
-2.54.0
+2.55.0
 
